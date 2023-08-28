@@ -1,5 +1,5 @@
 import { Checkbox, Label, TextInput } from "flowbite-react";
-import { useNavigate } from "react-router-dom";
+import { Link, useNavigate } from "react-router-dom";
 
 const LoginWh = () => {
   const navigate = useNavigate();
@@ -9,7 +9,7 @@ const LoginWh = () => {
   };
 
   const onSubmitLogin = () => {
-    navigate("/vendor-&-non-vendor");
+    navigate("/admin/vendor-&-non-vendor", { replace: true });
   };
   return (
     <>
@@ -49,6 +49,11 @@ const LoginWh = () => {
                 <Checkbox id="remember" />
                 <Label htmlFor="remember">Remember me</Label>
               </div>
+              <Link to="/">
+                <div className="text-[12px] text-slate-400 cursor-pointer hover:text-blue-400 hover:underline">
+                  Login sebagai vendor
+                </div>
+              </Link>
               {/* <Link to="/monitor">
                 <div className="text-[12px] text-slate-400 cursor-pointer hover:text-blue-400 hover:underline">
                   Login sebagai WH Smith

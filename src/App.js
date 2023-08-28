@@ -20,13 +20,13 @@ function App() {
           <Route path="/" element={<Login />} />
           <Route path="/wh-smith" element={<LoginWh />} />
           <Route path="/registration" element={<Registration />} />
-          <Route path="/profile" element={<Profile />} />
-          <Route path="/invoice/upload-invoice" element={<UploadFile />} />
-          <Route path="/invoice/records" element={<InvoiceRecords />} />
-          <Route path="/vendor-&-non-vendor" element={<VendorAndNonVendor />} />
-          <Route path="/cod" element={<Cod />} />
-          <Route path="/vendor/registration-list" element={<VendorRegistrationList />} />
-          <Route path="/vendor/vendor-list" element={<VendorList />} />
+          <Route path="vendor/profile" element={<Profile />} />
+          <Route path="vendor/invoice/upload-invoice" element={<UploadFile />} />
+          <Route path="vendor/invoice/records" element={<InvoiceRecords />} />
+          <Route path="admin/vendor-&-non-vendor" element={<VendorAndNonVendor />} />
+          <Route path="admin/cod" element={<Cod />} />
+          <Route path="admin/vendor/registration-list" element={<VendorRegistrationList />} />
+          <Route path="admin/vendor/vendor-list" element={<VendorList />} />
         </Routes>
       </BrowserRouter>
     </div>

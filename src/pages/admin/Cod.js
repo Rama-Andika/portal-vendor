@@ -56,7 +56,99 @@ const Cod = () => {
           screenSize < 768 ? "px-5 pt-32" : "px-10 pt-10"
         } font-roboto `}
       >
-        <div className="mb-3">COD</div>
+        <div className="mb-20">COD</div>
+        <div className="mb-5 w-[70%] max-[638px]:w-full">
+          <div className="mb-5 text-slate-400">Parameter Pencarian</div>
+          <div>
+            <form action="">
+              <div className="flex gap-5 items-center mb-5">
+                <div className="flex flex-col  gap-1  mb-3 w-full ">
+                  <div className="whitespace-nowrap flex">
+                    <label
+                      htmlFor=""
+                      className="w-36 text-[14px] text-slate-400"
+                    >
+                      Supplier Name
+                    </label>
+                    <div className="hidden ">:</div>
+                  </div>
+                  <div className="w-full relative">
+                    <input
+                      type="text"
+                      name=""
+                      id=""
+                      className="w-full h-[32px] text-slate-400 border border-slate-300 rounded-sm focus:border focus:border-[#0077b6]  "
+                    />
+                  </div>
+                </div>
+                <div className="flex flex-col  gap-1  mb-3 w-full ">
+                  <div className="whitespace-nowrap flex">
+                    <label
+                      htmlFor=""
+                      className="w-36 text-[14px] text-slate-400"
+                    >
+                      Incoming Number	
+                    </label>
+                    <div className="hidden">:</div>
+                  </div>
+                  <div className="w-full relative">
+                    <input
+                      type="text"
+                      name=""
+                      id=""
+                      className="w-full h-[32px] text-slate-400 border border-slate-300 rounded-sm focus:border focus:border-[#0077b6]  "
+                    />
+                  </div>
+                </div>
+              </div>
+              <div className="flex gap-5 items-center">
+                <div className="flex flex-col  gap-1  mb-3 w-full ">
+                  <div className="whitespace-nowrap flex">
+                    <label
+                      htmlFor=""
+                      className="w-36 text-[14px] text-slate-400"
+                    >
+                      PO Number
+                    </label>
+                    <div className="hidden">:</div>
+                  </div>
+                  <div className="w-full relative">
+                    <input
+                      type="text"
+                      name=""
+                      id=""
+                      className="w-full h-[32px] text-slate-400 border border-slate-300 rounded-sm focus:border focus:border-[#0077b6]  "
+                    />
+                  </div>
+                </div>
+                <div className="flex flex-col  gap-1  mb-3 w-full ">
+                  <div className="whitespace-nowrap flex">
+                    <label
+                      htmlFor=""
+                      className="w-36 text-[14px] text-slate-400"
+                    >
+                      Memo
+                    </label>
+                    <div className="hidden">:</div>
+                  </div>
+                  <div className="w-full relative">
+                    <input
+                      type="text"
+                      name=""
+                      id=""
+                      className="w-full h-[32px] text-slate-400 border border-slate-300 rounded-sm focus:border focus:border-[#0077b6]  "
+                    />
+                  </div>
+                </div>
+              </div>
+              <div className="flex justify-end mt-2">
+                <button className="py-1 max-[415px]:w-full px-10 rounded-sm shadow-sm bg-[#0077b6] text-white">
+                  Search
+                </button>
+              </div>
+            </form>
+          </div>
+        </div>
         <div className="w-full overflow-x-auto shadow-md text-[14px]">
           <table className="w-full table-monitoring">
             <thead>

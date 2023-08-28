@@ -9,7 +9,7 @@ const Login = () => {
   };
 
   const onSubmitLogin = () => {
-    navigate("/profile");
+    navigate("vendor/profile");
   };
   return (
     <>

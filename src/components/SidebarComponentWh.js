@@ -82,11 +82,11 @@ const SidebarComponentWh = () => {
                             })}
                             to={`/${
                               link.name2 !== undefined
-                                ? `${link.name2}/${link.name
+                                ? `admin/${link.name2}/${link.name
                                     .toLowerCase()
                                     .split(" ")
                                     .join("-")}`
-                                : `${link.name
+                                : `admin/${link.name
                                     .toLowerCase()
                                     .split(" ")
                                     .join("-")}`

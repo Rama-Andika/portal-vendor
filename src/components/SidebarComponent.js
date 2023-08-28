@@ -82,11 +82,11 @@ const SidebarComponent = () => {
                             })}
                             to={`/${
                               link.name2 !== undefined
-                                ? `${link.name2}/${link.name
+                                ? `vendor/${link.name2}/${link.name
                                     .toLowerCase()
                                     .split(" ")
                                     .join("-")}`
-                                : `${link.name
+                                : `vendor/${link.name
                                     .toLowerCase()
                                     .split(" ")
                                     .join("-")}`
