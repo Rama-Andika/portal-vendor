@@ -16,7 +16,7 @@ import {
   styled,
 } from "@mui/material";
 import { useEffect, useState } from "react";
-import { Link, useParams } from "react-router-dom";
+import { Link } from "react-router-dom";
 import Select from "react-select";
 import { DatePicker, LocalizationProvider } from "@mui/x-date-pickers";
 import { AdapterDayjs } from "@mui/x-date-pickers/AdapterDayjs";
@@ -92,8 +92,6 @@ const EdtPenagihan = () => {
   const [, setResiFile] = useState(undefined);
   const [isPajak, setIsPajak] = useState({ value: 0, label: "Ya", key: 0 });
   const [nomerSeriFakturPajak, setNomerSeriFakturPajak] = useState();
-
-  const { id } = useParams();
 
   const handleNext = () => {
     setActiveStep((prevActiveStep) => prevActiveStep + 1);
