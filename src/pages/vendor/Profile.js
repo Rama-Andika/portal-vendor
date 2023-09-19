@@ -1119,7 +1119,7 @@ const Profile = () => {
                       value={marketingFee}
                       onChange={onChangeMarketingFee}
                       onKeyDown={(evt) =>
-                        (evt.key === "e" || evt.key === "-") &&
+                        (evt.key === "e" || evt.key === "-" ) &&
                         evt.preventDefault()
                       }
                       className="w-full h-[36px] border border-slate-300 rounded-sm focus:border focus:border-[#0077b6]  "

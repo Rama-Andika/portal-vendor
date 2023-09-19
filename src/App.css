@@ -120,6 +120,7 @@ nav div:first-child {
     var(--tw-ring-shadow, 0 0 #0000), var(--tw-shadow);
 }
 
+
 * {
   padding: 0;
   margin: 0;

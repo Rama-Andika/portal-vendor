@@ -56,7 +56,7 @@ const SidebarComponent = () => {
                         style={({ isActive }) => ({
                           backgroundColor: isActive ? "#0077b6" : "",
                         })}
-                        to={`/${item.name.toLowerCase().split(" ").join("-")}`}
+                        to={`/vendor/${item.name.toLowerCase().split(" ").join("-")}`}
                         onClick={handleCloseSidebar}
                         className={({ isActive }) =>
                           isActive ? activeLink : normalLink
