@@ -10,6 +10,7 @@ import Api from "../../api";
 import toast from "react-hot-toast";
 import Cookies from "js-cookie";
 import { Backdrop, CircularProgress } from "@mui/material";
+import { FaCloudUploadAlt } from "react-icons/fa";
 
 const options = [
   { value: "cv", label: "CV", key: 1 },
@@ -1360,7 +1361,7 @@ const Profile = () => {
               <form action="">
                 <div className="flex flex-col min-[612px]:flex-row gap-5 min-[612px]:gap-2 mb-3 w-full min-[612px]:items-center">
                   <div className="flex flex-col gap-1">
-                    <div className="whitespace-nowrap flex">
+                    <div className=" flex">
                       <label htmlFor="" className="w-72">
                         NPWP / Surat Keterangan Bebas Pajak
                       </label>
@@ -1372,18 +1373,24 @@ const Profile = () => {
                   </div>
 
                   <div className="w-full relative">
+                    <label htmlFor="upload-npwp" className="w-fit">
+                      <div className="w-fit flex gap-1 items-center bg-blue-400 py-2 px-5 text-white hover:bg-blue-200 rounded-md">
+                        <span><FaCloudUploadAlt /></span>
+                        <div>Upload</div>
+                      </div>
+                    </label>
                     <input
                       type="file"
                       onChange={(e) => setNpwpFile(e.target.files[0])}
                       id="upload-npwp"
                       accept="image/jpg,.pdf"
-                      className=" w-full h-[36px] border border-slate-300 rounded-sm focus:border focus:border-[#0077b6]  "
+                      className="hidden w-full h-[36px] border border-slate-300 rounded-sm focus:border focus:border-[#0077b6]  "
                     />
                   </div>
                 </div>
                 <div className="flex flex-col min-[612px]:flex-row gap-5 min-[612px]:gap-2 mb-3 w-full min-[612px]:items-center">
                   <div className="flex flex-col gap-1">
-                    <div className="whitespace-nowrap flex">
+                    <div className=" flex">
                       <label htmlFor="" className="w-72">
                         KTP Pemilik
                       </label>
@@ -1394,18 +1401,24 @@ const Profile = () => {
                     </div>
                   </div>
                   <div className="w-full relative">
+                  <label htmlFor="upload-ktppemilik" className="w-fit">
+                      <div className="w-fit flex gap-1 items-center bg-blue-400 py-2 px-5 text-white hover:bg-blue-200 rounded-md">
+                        <span><FaCloudUploadAlt /></span>
+                        <div>Upload</div>
+                      </div>
+                    </label>
                     <input
                       onChange={(e) => setKtpPemilikFIle(e.target.files[0])}
                       type="file"
-                      id="upload-npwp"
+                      id="upload-ktppemilik"
                       accept="image/jpg,.pdf"
-                      className=" w-full h-[36px] border border-slate-300 rounded-sm focus:border focus:border-[#0077b6]  "
+                      className="hidden w-full h-[36px] border border-slate-300 rounded-sm focus:border focus:border-[#0077b6]  "
                     />
                   </div>
                 </div>
                 <div className="flex flex-col min-[612px]:flex-row gap-5 min-[612px]:gap-2 mb-3 w-full min-[612px]:items-center">
                   <div className="flex flex-col gap-1">
-                    <div className="whitespace-nowrap flex">
+                    <div className=" flex">
                       <label htmlFor="" className="w-72">
                         KTP Penganggung Jawab
                       </label>
@@ -1416,14 +1429,20 @@ const Profile = () => {
                     </div>
                   </div>
                   <div className="w-full relative">
+                  <label htmlFor="upload-ktppenanggungjawab" className="w-fit">
+                      <div className="w-fit flex gap-1 items-center bg-blue-400 py-2 px-5 text-white hover:bg-blue-200 rounded-md">
+                        <span><FaCloudUploadAlt /></span>
+                        <div>Upload</div>
+                      </div>
+                    </label>
                     <input
                       onChange={(e) =>
                         setKtpPenanggungJawabFile(e.target.files[0])
                       }
                       type="file"
-                      id="upload-npwp"
+                      id="upload-ktppenanggungjawab"
                       accept="image/jpg,.pdf"
-                      className=" w-full h-[36px] border border-slate-300 rounded-sm focus:border focus:border-[#0077b6]  "
+                      className="hidden w-full h-[36px] border border-slate-300 rounded-sm focus:border focus:border-[#0077b6]  "
                     />
                   </div>
                 </div>
@@ -1441,19 +1460,25 @@ const Profile = () => {
                     </div>
                   </div>
                   <div className="w-full relative">
+                  <label htmlFor="upload-spkp" className="w-fit">
+                      <div className="w-fit flex gap-1 items-center bg-blue-400 py-2 px-5 text-white hover:bg-blue-200 rounded-md">
+                        <span><FaCloudUploadAlt /></span>
+                        <div>Upload</div>
+                      </div>
+                    </label>
                     <input
                       type="file"
                       onChange={(e) => setSpkpFile(e.target.files[0])}
-                      id="upload-npwp"
+                      id="upload-spkp"
                       accept="image/jpg,.pdf"
-                      className=" w-full h-[36px] border border-slate-300 rounded-sm focus:border focus:border-[#0077b6]  "
+                      className="hidden w-full h-[36px] border border-slate-300 rounded-sm focus:border focus:border-[#0077b6]  "
                     />
                   </div>
                 </div>
 
                 <div className="flex flex-col min-[612px]:flex-row gap-5 min-[612px]:gap-2 mb-3 w-full min-[612px]:items-center">
                   <div className="flex flex-col gap-1">
-                    <div className="whitespace-nowrap flex">
+                    <div className=" flex">
                       <label htmlFor="" className="w-72">
                         Nomer Induk Berusaha (NIB)
                       </label>
@@ -1464,18 +1489,24 @@ const Profile = () => {
                     </div>
                   </div>
                   <div className="w-full relative">
+                  <label htmlFor="upload-nib" className="w-fit">
+                      <div className="w-fit flex gap-1 items-center bg-blue-400 py-2 px-5 text-white hover:bg-blue-200 rounded-md">
+                        <span><FaCloudUploadAlt /></span>
+                        <div>Upload</div>
+                      </div>
+                    </label>
                     <input
                       type="file"
                       onChange={(e) => setNibFile(e.target.files[0])}
-                      id="upload-npwp"
+                      id="upload-nib"
                       accept="image/jpg,.pdf"
-                      className=" w-full h-[36px] border border-slate-300 rounded-sm focus:border focus:border-[#0077b6]  "
+                      className="hidden w-full h-[36px] border border-slate-300 rounded-sm focus:border focus:border-[#0077b6]  "
                     />
                   </div>
                 </div>
                 <div className="flex flex-col min-[612px]:flex-row gap-5 min-[612px]:gap-2 mb-3 w-full min-[612px]:items-center">
                   <div className="flex flex-col gap-1">
-                    <div className="whitespace-nowrap flex">
+                    <div className=" flex">
                       <label htmlFor="" className="w-72">
                         Sreenshot Rekening Perusahaan
                       </label>
@@ -1486,18 +1517,24 @@ const Profile = () => {
                     </div>
                   </div>
                   <div className="w-full relative">
+                  <label htmlFor="upload-ssperusahaan" className="w-fit">
+                      <div className="w-fit flex gap-1 items-center bg-blue-400 py-2 px-5 text-white hover:bg-blue-200 rounded-md">
+                        <span><FaCloudUploadAlt /></span>
+                        <div>Upload</div>
+                      </div>
+                    </label>
                     <input
                       onChange={(e) => setSsPerusahaanFile(e.target.files[0])}
                       type="file"
-                      id="upload-npwp"
+                      id="upload-ssperusahaan"
                       accept="image/jpg,.pdf"
-                      className=" w-full h-[36px] border border-slate-300 rounded-sm focus:border focus:border-[#0077b6]  "
+                      className="hidden w-full h-[36px] border border-slate-300 rounded-sm focus:border focus:border-[#0077b6]  "
                     />
                   </div>
                 </div>
                 <div className="flex flex-col min-[612px]:flex-row gap-5 min-[612px]:gap-0 mb-3 w-full min-[612px]:items-center">
                   <div className="flex flex-col gap-1">
-                    <div className="whitespace-nowrap flex">
+                    <div className=" flex">
                       <label htmlFor="" className="w-72">
                         Sertifikasi BPOM
                       </label>
@@ -1516,12 +1553,18 @@ const Profile = () => {
                     :
                   </div>
                   <div className="w-full relative">
+                  <label htmlFor="upload-bpom" className="w-fit">
+                      <div className="w-fit flex gap-1 items-center bg-blue-400 py-2 px-5 text-white hover:bg-blue-200 rounded-md">
+                        <span><FaCloudUploadAlt /></span>
+                        <div>Upload</div>
+                      </div>
+                    </label>
                     <input
                       onChange={(e) => setSertifBpomFile(e.target.files[0])}
                       type="file"
-                      id="upload-npwp"
+                      id="upload-bpom"
                       accept="image/jpg,.pdf"
-                      className=" w-full h-[36px] border border-slate-300 rounded-sm focus:border focus:border-[#0077b6]  "
+                      className="hidden w-full h-[36px] border border-slate-300 rounded-sm focus:border focus:border-[#0077b6]  "
                     />
                   </div>
                 </div>

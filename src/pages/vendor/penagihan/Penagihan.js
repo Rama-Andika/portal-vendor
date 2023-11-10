@@ -29,6 +29,7 @@ import isEmpty from "../../../components/functions/CheckEmptyObject";
 import Api from "../../../api";
 import toast from "react-hot-toast";
 import Cookies from "js-cookie";
+import { FaCloudUploadAlt } from "react-icons/fa";
 
 const optionsTipePenagihan = [
   { value: 0, label: "Beli Putus", key: 0 },
@@ -479,6 +480,7 @@ const Penagihan = () => {
     e.preventDefault();
 
     const index = e.target.id;
+    console.log(index)
     setInvoiceTambahan((s) => {
       const newArr = s.slice();
       newArr[index] = e.target.files[0];
@@ -1934,12 +1936,18 @@ const Penagihan = () => {
                               <div>:</div>
                               <div className="flex items-center gap-1">
                                 <div>
+                                <label htmlFor="upload-purchaseorder" className="w-fit">
+                      <div className="w-fit flex gap-1 items-center bg-blue-400 py-2 px-5 text-white hover:bg-blue-200 rounded-md">
+                        <span><FaCloudUploadAlt /></span>
+                        <div>Upload</div>
+                      </div>
+                    </label>
                                   <input
                                     onChange={onChangePurchaseOrderFile}
                                     type="file"
-                                    id="upload-npwp"
+                                    id="upload-purchaseorder"
                                     accept=".jpg,.pdf"
-                                    className=" w-full h-[40px] border border-slate-300 rounded-sm focus:border focus:border-[#0077b6]  "
+                                    className="hidden w-full h-[40px] border border-slate-300 rounded-sm focus:border focus:border-[#0077b6]  "
                                   />
                                 </div>
                                 <div>*)</div>
@@ -1952,12 +1960,18 @@ const Penagihan = () => {
                               <div>:</div>
                               <div className="flex items-center gap-1">
                                 <div>
+                                <label htmlFor="upload-deliveryorder" className="w-fit">
+                      <div className="w-fit flex gap-1 items-center bg-blue-400 py-2 px-5 text-white hover:bg-blue-200 rounded-md">
+                        <span><FaCloudUploadAlt /></span>
+                        <div>Upload</div>
+                      </div>
+                    </label>
                                   <input
                                     onChange={onChangeDeliveryOrderFile}
                                     type="file"
-                                    id="upload-npwp"
+                                    id="upload-deliveryorder"
                                     accept="image/jpg,.pdf"
-                                    className=" w-full h-[40px] border border-slate-300 rounded-sm focus:border focus:border-[#0077b6]  "
+                                    className="hidden w-full h-[40px] border border-slate-300 rounded-sm focus:border focus:border-[#0077b6]  "
                                   />
                                 </div>
                                 <div>*)</div>
@@ -1970,12 +1984,18 @@ const Penagihan = () => {
                               <div>:</div>
                               <div className="flex items-center gap-1">
                                 <div>
+                                <label htmlFor="upload-invoice" className="w-fit">
+                      <div className="w-fit flex gap-1 items-center bg-blue-400 py-2 px-5 text-white hover:bg-blue-200 rounded-md">
+                        <span><FaCloudUploadAlt /></span>
+                        <div>Upload</div>
+                      </div>
+                    </label>
                                   <input
                                     onChange={onChangeInvoiceFile}
                                     type="file"
-                                    id="upload-npwp"
+                                    id="upload-invoice"
                                     accept="image/jpg,.pdf"
-                                    className=" w-full h-[40px] border border-slate-300 rounded-sm focus:border focus:border-[#0077b6]  "
+                                    className="hidden w-full h-[40px] border border-slate-300 rounded-sm focus:border focus:border-[#0077b6]  "
                                   />
                                 </div>
                                 <div>*)</div>
@@ -1998,12 +2018,18 @@ const Penagihan = () => {
                                     <div>:</div>
                                     <div className="flex items-center gap-1">
                                       <div>
+                                      <label htmlFor={i} className="w-fit">
+                      <div className="w-fit flex gap-1 items-center bg-blue-400 py-2 px-5 text-white hover:bg-blue-200 rounded-md">
+                        <span><FaCloudUploadAlt /></span>
+                        <div>Upload</div>
+                      </div>
+                    </label>
                                         <input
                                           type="file"
                                           id={i}
                                           onChange={onChangeInvoiceTambahan}
                                           accept="image/jpg,.pdf"
-                                          className=" w-full h-[40px] border border-slate-300 rounded-sm focus:border focus:border-[#0077b6]  "
+                                          className="hidden w-full h-[40px] border border-slate-300 rounded-sm focus:border focus:border-[#0077b6]  "
                                         />
                                       </div>
                                     </div>
@@ -2034,12 +2060,18 @@ const Penagihan = () => {
                               <div>:</div>
                               <div className="flex items-center gap-1">
                                 <div>
+                                <label htmlFor="upload-kwitansi" className="w-fit">
+                      <div className="w-fit flex gap-1 items-center bg-blue-400 py-2 px-5 text-white hover:bg-blue-200 rounded-md">
+                        <span><FaCloudUploadAlt /></span>
+                        <div>Upload</div>
+                      </div>
+                    </label>
                                   <input
                                     onChange={onChangeKwitansiFile}
                                     type="file"
-                                    id="upload-npwp"
+                                    id="upload-kwitansi"
                                     accept="image/jpg,.pdf"
-                                    className=" w-full h-[40px] border border-slate-300 rounded-sm focus:border focus:border-[#0077b6]  "
+                                    className="hidden w-full h-[40px] border border-slate-300 rounded-sm focus:border focus:border-[#0077b6]  "
                                   />
                                 </div>
                                 <div>*)</div>
@@ -2050,12 +2082,18 @@ const Penagihan = () => {
                               <div>:</div>
                               <div className="flex items-center gap-1">
                                 <div>
+                                <label htmlFor="upload-fakturpajak" className="w-fit">
+                      <div className="w-fit flex gap-1 items-center bg-blue-400 py-2 px-5 text-white hover:bg-blue-200 rounded-md">
+                        <span><FaCloudUploadAlt /></span>
+                        <div>Upload</div>
+                      </div>
+                    </label>
                                   <input
                                     onChange={onChangeFakturPajakFile}
                                     type="file"
-                                    id="upload-npwp"
+                                    id="upload-fakturpajak"
                                     accept="image/jpg,.pdf"
-                                    className=" w-full h-[40px] border border-slate-300 rounded-sm focus:border focus:border-[#0077b6]  "
+                                    className="hidden w-full h-[40px] border border-slate-300 rounded-sm focus:border focus:border-[#0077b6]  "
                                   />
                                 </div>
                                 <div>*)</div>
@@ -2078,12 +2116,18 @@ const Penagihan = () => {
                                     <div>:</div>
                                     <div className="flex items-center gap-1">
                                       <div>
+                                      <label htmlFor={i} className="w-fit">
+                      <div className="w-fit flex gap-1 items-center bg-blue-400 py-2 px-5 text-white hover:bg-blue-200 rounded-md">
+                        <span><FaCloudUploadAlt /></span>
+                        <div>Upload</div>
+                      </div>
+                    </label>
                                         <input
                                           type="file"
                                           id={i}
                                           onChange={onChangeFakturPajakTambahan}
                                           accept="image/jpg,.pdf"
-                                          className=" w-full h-[40px] border border-slate-300 rounded-sm focus:border focus:border-[#0077b6]  "
+                                          className="hidden w-full h-[40px] border border-slate-300 rounded-sm focus:border focus:border-[#0077b6]  "
                                         />
                                       </div>
                                     </div>
@@ -2107,12 +2151,18 @@ const Penagihan = () => {
                               <div>:</div>
                               <div className="flex items-center gap-1">
                                 <div>
+                                <label htmlFor="upload-receivingnote" className="w-fit">
+                      <div className="w-fit flex gap-1 items-center bg-blue-400 py-2 px-5 text-white hover:bg-blue-200 rounded-md">
+                        <span><FaCloudUploadAlt /></span>
+                        <div>Upload</div>
+                      </div>
+                    </label>
                                   <input
                                     onChange={onChangeReceivingNoteFile}
                                     type="file"
-                                    id="upload-npwp"
+                                    id="upload-receivingnote"
                                     accept="image/jpg,.pdf"
-                                    className=" w-full h-[40px] border border-slate-300 rounded-sm focus:border focus:border-[#0077b6]  "
+                                    className="hidden w-full h-[40px] border border-slate-300 rounded-sm focus:border focus:border-[#0077b6]  "
                                   />
                                 </div>
                                 <div>*)</div>
@@ -2154,6 +2204,12 @@ const Penagihan = () => {
                                 <div>:</div>
                                 <div className="flex items-center gap-1">
                                   <div>
+                                  <label htmlFor="upload-resi" className="w-fit">
+                      <div className="w-fit flex gap-1 items-center bg-blue-400 py-2 px-5 text-white hover:bg-blue-200 rounded-md">
+                        <span><FaCloudUploadAlt /></span>
+                        <div>Upload</div>
+                      </div>
+                    </label>
                                     <input
                                       disabled={
                                         tipePengiriman.value === 1
@@ -2162,9 +2218,9 @@ const Penagihan = () => {
                                       }
                                       type="file"
                                       onChange={onChangeResiBuktiPengirimanFile}
-                                      id="upload-npwp"
+                                      id="upload-resi"
                                       accept="image/jpg,.pdf"
-                                      className="w-full h-[40px] border border-slate-300 rounded-sm focus:border focus:border-[#0077b6] disabled:bg-gray-300 disabled:cursor-not-allowed"
+                                      className="hidden w-full h-[40px] border border-slate-300 rounded-sm focus:border focus:border-[#0077b6] disabled:bg-gray-300 disabled:cursor-not-allowed"
                                     />
                                   </div>
                                   <div>*)</div>
@@ -2189,12 +2245,18 @@ const Penagihan = () => {
                               <div>:</div>
                               <div className="flex items-center gap-1">
                                 <div>
+                                <label htmlFor="upload-purchaseorder" className="w-fit">
+                      <div className="w-fit flex gap-1 items-center bg-[#fff2cc] py-2 px-5 hover:bg-yellow-100 rounded-md">
+                        <span><FaCloudUploadAlt /></span>
+                        <div>Upload</div>
+                      </div>
+                    </label>
                                   <input
                                     type="file"
-                                    id="upload-npwp"
+                                    id="upload-purchaseorder"
                                     accept="image/jpg,.pdf"
                                     onChange={onChangePurchaseOrderFile}
-                                    className=" w-full h-[40px] border border-slate-300 rounded-sm focus:border focus:border-[#0077b6]  "
+                                    className="hidden w-full h-[40px] border border-slate-300 rounded-sm focus:border focus:border-[#0077b6]  "
                                   />
                                 </div>
                                 <div>*)</div>
@@ -2207,12 +2269,18 @@ const Penagihan = () => {
                               <div>:</div>
                               <div className="flex items-center gap-1">
                                 <div>
+                                <label htmlFor="upload-deliveryorder" className="w-fit">
+                      <div className="w-fit flex gap-1 items-center bg-[#fff2cc] py-2 px-5 hover:bg-yellow-100 rounded-md">
+                        <span><FaCloudUploadAlt /></span>
+                        <div>Upload</div>
+                      </div>
+                    </label>
                                   <input
                                     type="file"
-                                    id="upload-npwp"
+                                    id="upload-deliveryorder"
                                     accept="image/jpg,.pdf"
                                     onChange={onChangeDeliveryOrderFile}
-                                    className=" w-full h-[40px] border border-slate-300 rounded-sm focus:border focus:border-[#0077b6]  "
+                                    className="hidden w-full h-[40px] border border-slate-300 rounded-sm focus:border focus:border-[#0077b6]  "
                                   />
                                 </div>
                                 <div>*)</div>
@@ -2225,12 +2293,18 @@ const Penagihan = () => {
                               <div>:</div>
                               <div className="flex items-center gap-1">
                                 <div>
+                                <label htmlFor="upload-invoice" className="w-fit">
+                      <div className="w-fit flex gap-1 items-center bg-[#fff2cc] py-2 px-5 hover:bg-yellow-100 rounded-md">
+                        <span><FaCloudUploadAlt /></span>
+                        <div>Upload</div>
+                      </div>
+                    </label>
                                   <input
                                     type="file"
-                                    id="upload-npwp"
+                                    id="upload-invoice"
                                     accept="image/jpg,.pdf"
                                     onChange={onChangeInvoiceFile}
-                                    className=" w-full h-[40px] border border-slate-300 rounded-sm focus:border focus:border-[#0077b6]  "
+                                    className="hidden w-full h-[40px] border border-slate-300 rounded-sm focus:border focus:border-[#0077b6]  "
                                   />
                                 </div>
                                 <div>*)</div>
@@ -2253,12 +2327,18 @@ const Penagihan = () => {
                                     <div>:</div>
                                     <div className="flex items-center gap-1">
                                       <div>
+                                      <label htmlFor={i} className="w-fit">
+                      <div className="w-fit flex gap-1 items-center bg-[#fff2cc] py-2 px-5 hover:bg-yellow-100 rounded-md">
+                        <span><FaCloudUploadAlt /></span>
+                        <div>Upload</div>
+                      </div>
+                    </label>
                                         <input
                                           type="file"
                                           id={i}
                                           onChange={onChangeInvoiceTambahan}
                                           accept="image/jpg,.pdf"
-                                          className=" w-full h-[40px] border border-slate-300 rounded-sm focus:border focus:border-[#0077b6]  "
+                                          className="hidden w-full h-[40px] border border-slate-300 rounded-sm focus:border focus:border-[#0077b6]  "
                                         />
                                       </div>
                                     </div>
@@ -2288,12 +2368,18 @@ const Penagihan = () => {
                               <div>:</div>
                               <div className="flex items-center gap-1">
                                 <div>
+                                <label htmlFor="upload-kwitansi" className="w-fit">
+                      <div className="w-fit flex gap-1 items-center bg-[#fff2cc] py-2 px-5 hover:bg-yellow-100 rounded-md">
+                        <span><FaCloudUploadAlt /></span>
+                        <div>Upload</div>
+                      </div>
+                    </label>
                                   <input
                                     type="file"
-                                    id="upload-npwp"
+                                    id="upload-kwitansi"
                                     accept="image/jpg,.pdf"
                                     onChange={onChangeKwitansiFile}
-                                    className=" w-full h-[40px] border border-slate-300 rounded-sm focus:border focus:border-[#0077b6]  "
+                                    className="hidden w-full h-[40px] border border-slate-300 rounded-sm focus:border focus:border-[#0077b6]  "
                                   />
                                 </div>
                                 <div>*)</div>
@@ -2304,12 +2390,18 @@ const Penagihan = () => {
                               <div>:</div>
                               <div className="flex items-center gap-1">
                                 <div>
+                                <label htmlFor="upload-fakturpajak" className="w-fit">
+                      <div className="w-fit flex gap-1 items-center bg-[#fff2cc] py-2 px-5 hover:bg-yellow-100 rounded-md">
+                        <span><FaCloudUploadAlt /></span>
+                        <div>Upload</div>
+                      </div>
+                    </label>
                                   <input
                                     type="file"
-                                    id="upload-npwp"
+                                    id="upload-fakturpajak"
                                     onChange={onChangeFakturPajakFile}
                                     accept="image/jpg,.pdf"
-                                    className=" w-full h-[40px] border border-slate-300 rounded-sm focus:border focus:border-[#0077b6]  "
+                                    className="hidden w-full h-[40px] border border-slate-300 rounded-sm focus:border focus:border-[#0077b6]  "
                                   />
                                 </div>
                                 <div>*)</div>
@@ -2332,12 +2424,18 @@ const Penagihan = () => {
                                     <div>:</div>
                                     <div className="flex items-center gap-1">
                                       <div>
+                                      <label htmlFor={i} className="w-fit">
+                      <div className="w-fit flex gap-1 items-center bg-[#fff2cc] py-2 px-5 hover:bg-yellow-100 rounded-md">
+                        <span><FaCloudUploadAlt /></span>
+                        <div>Upload</div>
+                      </div>
+                    </label>
                                         <input
                                           type="file"
                                           id={i}
                                           onChange={onChangeFakturPajakTambahan}
                                           accept="image/jpg,.pdf"
-                                          className=" w-full h-[40px] border border-slate-300 rounded-sm focus:border focus:border-[#0077b6]  "
+                                          className="hidden w-full h-[40px] border border-slate-300 rounded-sm focus:border focus:border-[#0077b6]  "
                                         />
                                       </div>
                                     </div>
@@ -2361,12 +2459,18 @@ const Penagihan = () => {
                               <div>:</div>
                               <div className="flex items-center gap-1">
                                 <div>
+                                <label htmlFor="upload-scanreportsales" className="w-fit">
+                      <div className="w-fit flex gap-1 items-center bg-[#fff2cc] py-2 px-5 hover:bg-yellow-100 rounded-md">
+                        <span><FaCloudUploadAlt /></span>
+                        <div>Upload</div>
+                      </div>
+                    </label>
                                   <input
                                     type="file"
-                                    id="upload-npwp"
+                                    id="upload-scanreportsales"
                                     accept="image/jpg,.pdf"
                                     onChange={onChangeScanReportSalesFile}
-                                    className=" w-full h-[40px] border border-slate-300 rounded-sm focus:border focus:border-[#0077b6]  "
+                                    className="hidden w-full h-[40px] border border-slate-300 rounded-sm focus:border focus:border-[#0077b6]  "
                                   />
                                 </div>
                                 <div>*)</div>
@@ -2408,6 +2512,12 @@ const Penagihan = () => {
                                 <div>:</div>
                                 <div className="flex items-center gap-1">
                                   <div>
+                                  <label htmlFor="upload-resi" className="w-fit">
+                      <div className="w-fit flex gap-1 items-center bg-[#fff2cc] py-2 px-5 hover:bg-yellow-100 rounded-md">
+                        <span><FaCloudUploadAlt /></span>
+                        <div>Upload</div>
+                      </div>
+                    </label>
                                     <input
                                       disabled={
                                         tipePengiriman.value === 1
@@ -2415,9 +2525,9 @@ const Penagihan = () => {
                                           : true
                                       }
                                       type="file"
-                                      id="upload-npwp"
+                                      id="upload-resi"
                                       accept="image/jpg,.pdf"
-                                      className=" w-full h-[40px] border border-slate-300 rounded-sm focus:border focus:border-[#0077b6] disabled:bg-gray-300 disabled:cursor-not-allowed"
+                                      className="hidden w-full h-[40px] border border-slate-300 rounded-sm focus:border focus:border-[#0077b6] disabled:bg-gray-300 disabled:cursor-not-allowed"
                                     />
                                   </div>
                                   <div>*)</div>
@@ -3343,12 +3453,18 @@ const Penagihan = () => {
                                     </div>
 
                                     <div>
+                                    <label htmlFor="upload-purchaseorder" className="w-fit">
+                      <div className="w-fit flex gap-1 items-center bg-blue-400 py-2 px-5 text-white hover:bg-blue-200 rounded-md">
+                        <span><FaCloudUploadAlt /></span>
+                        <div>Upload</div>
+                      </div>
+                    </label>
                                       <input
                                         type="file"
-                                        id="upload-npwp"
+                                        id="upload-purchaseorder"
                                         accept="image/jpg,.pdf"
                                         onChange={onChangePurchaseOrderFile}
-                                        className=" w-full h-[40px] border border-slate-300 rounded-sm focus:border focus:border-[#0077b6]  "
+                                        className="hidden w-full h-[40px] border border-slate-300 rounded-sm focus:border focus:border-[#0077b6]  "
                                       />
                                     </div>
                                   </div>
@@ -3359,12 +3475,18 @@ const Penagihan = () => {
                                     </div>
 
                                     <div>
+                                    <label htmlFor="upload-deliveryorder" className="w-fit">
+                      <div className="w-fit flex gap-1 items-center bg-blue-400 py-2 px-5 text-white hover:bg-blue-200 rounded-md">
+                        <span><FaCloudUploadAlt /></span>
+                        <div>Upload</div>
+                      </div>
+                    </label>
                                       <input
                                         type="file"
-                                        id="upload-npwp"
+                                        id="upload-deliveryorder"
                                         accept="image/jpg,.pdf"
                                         onChange={onChangeDeliveryOrderFile}
-                                        className=" w-full h-[40px] border border-slate-300 rounded-sm focus:border focus:border-[#0077b6]  "
+                                        className="hidden w-full h-[40px] border border-slate-300 rounded-sm focus:border focus:border-[#0077b6]  "
                                       />
                                     </div>
                                   </div>
@@ -3374,12 +3496,18 @@ const Penagihan = () => {
                                     </div>
 
                                     <div>
+                                    <label htmlFor="upload-invoice" className="w-fit">
+                      <div className="w-fit flex gap-1 items-center bg-blue-400 py-2 px-5 text-white hover:bg-blue-200 rounded-md">
+                        <span><FaCloudUploadAlt /></span>
+                        <div>Upload</div>
+                      </div>
+                    </label>
                                       <input
                                         type="file"
-                                        id="upload-npwp"
+                                        id="upload-invoice"
                                         onChange={onChangeInvoiceFile}
                                         accept="image/jpg,.pdf"
-                                        className=" w-full h-[40px] border border-slate-300 rounded-sm focus:border focus:border-[#0077b6]  "
+                                        className="hidden w-full h-[40px] border border-slate-300 rounded-sm focus:border focus:border-[#0077b6]  "
                                       />
                                     </div>
                                   </div>
@@ -3396,12 +3524,18 @@ const Penagihan = () => {
                                           )}
 
                                           <div>
+                                          <label htmlFor={i} className="w-fit">
+                      <div className="w-fit flex gap-1 items-center bg-blue-400 py-2 px-5 text-white hover:bg-blue-200 rounded-md">
+                        <span><FaCloudUploadAlt /></span>
+                        <div>Upload</div>
+                      </div>
+                    </label>
                                             <input
                                               type="file"
                                               id={i}
                                               onChange={onChangeInvoiceTambahan}
                                               accept="image/jpg,.pdf"
-                                              className=" w-full h-[40px] border border-slate-300 rounded-sm focus:border focus:border-[#0077b6] "
+                                              className="hidden w-full h-[40px] border border-slate-300 rounded-sm focus:border focus:border-[#0077b6] "
                                             />
                                           </div>
                                         </div>
@@ -3432,12 +3566,18 @@ const Penagihan = () => {
                                     </div>
 
                                     <div className="w-full">
+                                    <label htmlFor="upload-kwitansi" className="w-fit">
+                      <div className="w-fit flex gap-1 items-center bg-blue-400 py-2 px-5 text-white hover:bg-blue-200 rounded-md">
+                        <span><FaCloudUploadAlt /></span>
+                        <div>Upload</div>
+                      </div>
+                    </label>
                                       <input
                                         type="file"
-                                        id="upload-npwp"
+                                        id="upload-kwitansi"
                                         accept="image/jpg,.pdf"
                                         onChange={onChangeKwitansiFile}
-                                        className=" w-full h-[40px] border border-slate-300 rounded-sm focus:border focus:border-[#0077b6]  "
+                                        className="hidden w-full h-[40px] border border-slate-300 rounded-sm focus:border focus:border-[#0077b6]  "
                                       />
                                     </div>
                                   </div>
@@ -3445,12 +3585,18 @@ const Penagihan = () => {
                                     <div>Faktur Pajak *)</div>
 
                                     <div>
+                                    <label htmlFor="upload-fakturpajak" className="w-fit">
+                      <div className="w-fit flex gap-1 items-center bg-blue-400 py-2 px-5 text-white hover:bg-blue-200 rounded-md">
+                        <span><FaCloudUploadAlt /></span>
+                        <div>Upload</div>
+                      </div>
+                    </label>
                                       <input
                                         type="file"
-                                        id="upload-npwp"
+                                        id="upload-fakturpajak"
                                         accept="image/jpg,.pdf"
                                         onChange={onChangeFakturPajakFile}
-                                        className=" w-full h-[40px] border border-slate-300 rounded-sm focus:border focus:border-[#0077b6]  "
+                                        className="hidden w-full h-[40px] border border-slate-300 rounded-sm focus:border focus:border-[#0077b6]  "
                                       />
                                     </div>
                                   </div>
@@ -3467,6 +3613,12 @@ const Penagihan = () => {
                                           )}
 
                                           <div>
+                                          <label htmlFor={i} className="w-fit">
+                      <div className="w-fit flex gap-1 items-center bg-blue-400 py-2 px-5 text-white hover:bg-blue-200 rounded-md">
+                        <span><FaCloudUploadAlt /></span>
+                        <div>Upload</div>
+                      </div>
+                    </label>
                                             <input
                                               type="file"
                                               id={i}
@@ -3474,7 +3626,7 @@ const Penagihan = () => {
                                                 onChangeFakturPajakTambahan
                                               }
                                               accept="image/jpg,.pdf"
-                                              className=" w-full h-[40px] border border-slate-300 rounded-sm focus:border focus:border-[#0077b6]  "
+                                              className="hidden w-full h-[40px] border border-slate-300 rounded-sm focus:border focus:border-[#0077b6]  "
                                             />
                                           </div>
                                         </div>
@@ -3497,12 +3649,18 @@ const Penagihan = () => {
                                     <div>Receiving Note *) :</div>
 
                                     <div>
+                                    <label htmlFor="upload-receivingnote" className="w-fit">
+                      <div className="w-fit flex gap-1 items-center bg-blue-400 py-2 px-5 text-white hover:bg-blue-200 rounded-md">
+                        <span><FaCloudUploadAlt /></span>
+                        <div>Upload</div>
+                      </div>
+                    </label>
                                       <input
                                         type="file"
-                                        id="upload-npwp"
+                                        id="upload-receivingnote"
                                         accept="image/jpg,.pdf"
                                         onChange={onChangeReceivingNoteFile}
-                                        className=" w-full h-[40px] border border-slate-300 rounded-sm focus:border focus:border-[#0077b6]  "
+                                        className="hidden w-full h-[40px] border border-slate-300 rounded-sm focus:border focus:border-[#0077b6]  "
                                       />
                                     </div>
                                   </div>
@@ -3532,6 +3690,12 @@ const Penagihan = () => {
                                       <div>Resi Bukti Pengiriman *) :</div>
 
                                       <div>
+                                      <label htmlFor="upload-resi" className="w-fit">
+                      <div className="w-fit flex gap-1 items-center bg-blue-400 py-2 px-5 text-white hover:bg-blue-200 rounded-md">
+                        <span><FaCloudUploadAlt /></span>
+                        <div>Upload</div>
+                      </div>
+                    </label>
                                         <input
                                           disabled={
                                             tipePengiriman.value === 1
@@ -3539,12 +3703,12 @@ const Penagihan = () => {
                                               : true
                                           }
                                           type="file"
-                                          id="upload-npwp"
+                                          id="upload-resi"
                                           accept="image/jpg,.pdf"
                                           onChange={
                                             onChangeResiBuktiPengirimanFile
                                           }
-                                          className=" w-full h-[40px] border border-slate-300 rounded-sm focus:border focus:border-[#0077b6] disabled:bg-gray-300 disabled:cursor-not-allowed"
+                                          className="hidden w-full h-[40px] border border-slate-300 rounded-sm focus:border focus:border-[#0077b6] disabled:bg-gray-300 disabled:cursor-not-allowed"
                                         />
                                       </div>
                                     </div>
@@ -3566,12 +3730,18 @@ const Penagihan = () => {
                                     <div>Purchase Order *) :</div>
 
                                     <div>
+                                    <label htmlFor="upload-purchaseorder" className="w-fit">
+                      <div className="w-fit flex gap-1 items-center bg-[#fff2cc] py-2 px-5 hover:bg-yellow-100 rounded-md">
+                        <span><FaCloudUploadAlt /></span>
+                        <div>Upload</div>
+                      </div>
+                    </label>
                                       <input
                                         type="file"
-                                        id="upload-npwp"
+                                        id="upload-purchaseorder"
                                         accept="image/jpg,.pdf"
                                         onChange={onChangePurchaseOrderFile}
-                                        className=" w-full h-[40px] border border-slate-300 rounded-sm focus:border focus:border-[#0077b6]  "
+                                        className="hidden w-full h-[40px] border border-slate-300 rounded-sm focus:border focus:border-[#0077b6]  "
                                       />
                                     </div>
                                   </div>
@@ -3582,12 +3752,18 @@ const Penagihan = () => {
                                     </div>
 
                                     <div>
+                                    <label htmlFor="upload-deliveryorder" className="w-fit">
+                      <div className="w-fit flex gap-1 items-center bg-[#fff2cc] py-2 px-5 hover:bg-yellow-100 rounded-md">
+                        <span><FaCloudUploadAlt /></span>
+                        <div>Upload</div>
+                      </div>
+                    </label>
                                       <input
                                         type="file"
-                                        id="upload-npwp"
+                                        id="upload-deliveryorder"
                                         accept="image/jpg,.pdf"
                                         onChange={onChangeDeliveryOrderFile}
-                                        className=" w-full h-[40px] border border-slate-300 rounded-sm focus:border focus:border-[#0077b6]  "
+                                        className="hidden w-full h-[40px] border border-slate-300 rounded-sm focus:border focus:border-[#0077b6]  "
                                       />
                                     </div>
                                   </div>
@@ -3595,12 +3771,18 @@ const Penagihan = () => {
                                     <div>Invoice (Faktur Penagihan) *) :</div>
 
                                     <div>
+                                    <label htmlFor="upload-invoice" className="w-fit">
+                      <div className="w-fit flex gap-1 items-center bg-[#fff2cc] py-2 px-5 hover:bg-yellow-100 rounded-md">
+                        <span><FaCloudUploadAlt /></span>
+                        <div>Upload</div>
+                      </div>
+                    </label>
                                       <input
                                         type="file"
-                                        id="upload-npwp"
+                                        id="upload-invoice"
                                         accept="image/jpg,.pdf"
                                         onChange={onChangeInvoiceFile}
-                                        className=" w-full h-[40px] border border-slate-300 rounded-sm focus:border focus:border-[#0077b6]  "
+                                        className="hidden w-full h-[40px] border border-slate-300 rounded-sm focus:border focus:border-[#0077b6]  "
                                       />
                                     </div>
                                   </div>
@@ -3615,12 +3797,18 @@ const Penagihan = () => {
                                           )}
 
                                           <div>
+                                          <label htmlFor={i} className="w-fit">
+                      <div className="w-fit flex gap-1 items-center bg-[#fff2cc] py-2 px-5 hover:bg-yellow-100 rounded-md">
+                        <span><FaCloudUploadAlt /></span>
+                        <div>Upload</div>
+                      </div>
+                    </label>
                                             <input
                                               type="file"
                                               id={i}
                                               onChange={onChangeInvoiceTambahan}
                                               accept="image/jpg,.pdf"
-                                              className=" w-full h-[40px] border border-slate-300 rounded-sm focus:border focus:border-[#0077b6]  "
+                                              className="hidden w-full h-[40px] border border-slate-300 rounded-sm focus:border focus:border-[#0077b6]  "
                                             />
                                           </div>
                                         </div>
@@ -3651,12 +3839,18 @@ const Penagihan = () => {
                                     </div>
 
                                     <div>
+                                    <label htmlFor="upload-kwitansi" className="w-fit">
+                      <div className="w-fit flex gap-1 items-center bg-[#fff2cc] py-2 px-5 hover:bg-yellow-100 rounded-md">
+                        <span><FaCloudUploadAlt /></span>
+                        <div>Upload</div>
+                      </div>
+                    </label>
                                       <input
                                         type="file"
-                                        id="upload-npwp"
+                                        id="upload-kwitansi"
                                         accept="image/jpg,.pdf"
                                         onChange={onChangeKwitansiFile}
-                                        className=" w-full h-[40px] border border-slate-300 rounded-sm focus:border focus:border-[#0077b6]  "
+                                        className="hidden w-full h-[40px] border border-slate-300 rounded-sm focus:border focus:border-[#0077b6]  "
                                       />
                                     </div>
                                   </div>
@@ -3664,12 +3858,18 @@ const Penagihan = () => {
                                     <div>Faktur Pajak *) :</div>
 
                                     <div>
+                                    <label htmlFor="upload-fakturpajak" className="w-fit">
+                      <div className="w-fit flex gap-1 items-center bg-[#fff2cc] py-2 px-5 hover:bg-yellow-100 rounded-md">
+                        <span><FaCloudUploadAlt /></span>
+                        <div>Upload</div>
+                      </div>
+                    </label>
                                       <input
                                         type="file"
-                                        id="upload-npwp"
+                                        id="upload-fakturpajak"
                                         accept="image/jpg,.pdf"
                                         onChange={onChangeFakturPajakFile}
-                                        className=" w-full h-[40px] border border-slate-300 rounded-sm focus:border focus:border-[#0077b6]  "
+                                        className="hidden w-full h-[40px] border border-slate-300 rounded-sm focus:border focus:border-[#0077b6]  "
                                       />
                                     </div>
                                   </div>
@@ -3688,6 +3888,12 @@ const Penagihan = () => {
                                           )}
 
                                           <div>
+                                          <label htmlFor={i} className="w-fit">
+                      <div className="w-fit flex gap-1 items-center bg-[#fff2cc] py-2 px-5 hover:bg-yellow-100 rounded-md">
+                        <span><FaCloudUploadAlt /></span>
+                        <div>Upload</div>
+                      </div>
+                    </label>
                                             <input
                                               type="file"
                                               id={i}
@@ -3695,7 +3901,7 @@ const Penagihan = () => {
                                                 onChangeFakturPajakTambahan
                                               }
                                               accept="image/jpg,.pdf"
-                                              className=" w-full h-[40px] border border-slate-300 rounded-sm focus:border focus:border-[#0077b6]  "
+                                              className="hidden w-full h-[40px] border border-slate-300 rounded-sm focus:border focus:border-[#0077b6]  "
                                             />
                                           </div>
                                         </div>
@@ -3718,12 +3924,18 @@ const Penagihan = () => {
                                     <div>Scan Report Sales *) :</div>
 
                                     <div>
+                                    <label htmlFor="upload-scanreportsales" className="w-fit">
+                      <div className="w-fit flex gap-1 items-center bg-[#fff2cc] py-2 px-5 hover:bg-yellow-100 rounded-md">
+                        <span><FaCloudUploadAlt /></span>
+                        <div>Upload</div>
+                      </div>
+                    </label>
                                       <input
                                         type="file"
-                                        id="upload-npwp"
+                                        id="upload-scanreportsales"
                                         accept="image/jpg,.pdf"
                                         onChange={onChangeScanReportSalesFile}
-                                        className=" w-full h-[40px] border border-slate-300 rounded-sm focus:border focus:border-[#0077b6]  "
+                                        className="hidden w-full h-[40px] border border-slate-300 rounded-sm focus:border focus:border-[#0077b6]  "
                                       />
                                     </div>
                                   </div>
@@ -3757,6 +3969,12 @@ const Penagihan = () => {
                                       </div>
 
                                       <div>
+                                      <label htmlFor="upload-resi" className="w-fit">
+                      <div className="w-fit flex gap-1 items-center bg-[#fff2cc] py-2 px-5 hover:bg-yellow-100 rounded-md">
+                        <span><FaCloudUploadAlt /></span>
+                        <div>Upload</div>
+                      </div>
+                    </label>
                                         <input
                                           disabled={
                                             tipePengiriman.value === 1
@@ -3764,12 +3982,12 @@ const Penagihan = () => {
                                               : true
                                           }
                                           type="file"
-                                          id="upload-npwp"
+                                          id="upload-resi"
                                           onChange={
                                             onChangeResiBuktiPengirimanFile
                                           }
                                           accept="image/jpg,.pdf"
-                                          className=" w-full h-[40px] border border-slate-300 rounded-sm focus:border focus:border-[#0077b6] disabled:bg-gray-300 disabled:cursor-not-allowed"
+                                          className="hidden w-full h-[40px] border border-slate-300 rounded-sm focus:border focus:border-[#0077b6] disabled:bg-gray-300 disabled:cursor-not-allowed"
                                         />
                                       </div>
                                     </div>
