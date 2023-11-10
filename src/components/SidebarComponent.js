@@ -22,6 +22,7 @@ const SidebarComponent = () => {
     "flex items-center gap-3 pt-3 pl-[40px] pb-2.5 rounded-lg text-md text-gray-700 dark:text-gray-200 dark:hover:text-black hover:bg-light-gray";
   return (
     <div className="ml-3 h-screen md:overflow-hidden overflow-auto md:hover:overflow-auto pb-10 relative">
+      
       <div>
         <button
           type="button"
@@ -56,7 +57,7 @@ const SidebarComponent = () => {
                         style={({ isActive }) => ({
                           backgroundColor: isActive ? "#0077b6" : "",
                         })}
-                        to={`/vendor/${item.name.toLowerCase().split(" ").join("-")}`}
+                        to={`/vendor/${item.name.toLowerCase().split(" ").join("-")} `}
                         onClick={handleCloseSidebar}
                         className={({ isActive }) =>
                           isActive ? activeLink : normalLink

@@ -1,30 +1,48 @@
-import { Backdrop, Fade, Modal } from "@mui/material";
+import { Backdrop, CircularProgress, Fade, Modal } from "@mui/material";
 import { useStateContext } from "../../contexts/ContextProvider";
 import Admin from "../../layouts/Admin";
-import { useState } from "react";
+import { useEffect, useState } from "react";
 import { Link } from "react-router-dom";
+import Cookies from "js-cookie";
+import Api from "../../api";
+import dayjs from "dayjs";
 
 const Monitoring = () => {
   const { screenSize } = useStateContext();
-  const [open, setOpen] = useState();
+  const [open, setOpen] = useState(false);
+  const [openBackdrop, setOpenBackdrop] = useState(false)
+  // eslint-disable-next-line no-unused-vars
   const [status, setStatus] = useState();
+  const vendorId = Cookies.get("vendor_id")
+  const [listPenagihan, setListPenagihan] = useState([]);
+  const [detail, setDetail] = useState({});
+
+  const fetchData = async () => {
+    setOpenBackdrop(true)
+    await Api.get(`penagihan?vendor_id=${vendorId}`).then((response) => {
+        setListPenagihan(response.data)
+        setOpenBackdrop(false)
+    })
+  }
 
   const handleOpen = () => setOpen(true);
   const handleClose = () => setOpen(false);
-  const array = [
-    "Draft",
-    "Waiting for approval",
-    "Reject",
-    "Approved",
-    "Deleted",
-  ];
 
-  const onClickNoRequest = (status) => {
-    setStatus(status);
+
+  const onClickNoRequest = (item) => {
     handleOpen();
+    setDetail(item)
   };
+
+  useEffect(() => {
+    fetchData()
+  // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [])
+  
   return (
+    <>
     <Admin>
+      {console.log(detail)}
       <div
         className={`${
           screenSize < 768 ? "px-5 pt-20" : "px-10"
@@ -44,7 +62,7 @@ const Monitoring = () => {
                 </tr>
               </thead>
               <tbody>
-                {array.map((item, index) => (
+                {listPenagihan.map((item, index) => (
                   <tr
                     key={index}
                     className="text-center whitespace-nowrap hover:bg-slate-100 border bg-white "
@@ -53,13 +71,13 @@ const Monitoring = () => {
                       onClick={() => onClickNoRequest(item)}
                       className="p-5 border underline text-blue-400 cursor-pointer"
                     >
-                      1234567890/09/23
+                      {item.no_request}
                     </td>
-                    <td className="p-5 border">12/09/23</td>
+                    <td className="p-5 border">{dayjs(item.tanggal_po).format('DD/MM/YYYY')}</td>
 
-                    <td className="p-5 border">Rp. 100.000,00</td>
-                    <td className="p-5 border">{item}</td>
-                    <td className="p-5 border">FR/mm/yy/12345</td>
+                    <td className="p-5 border"></td>
+                    <td className="p-5 border">{item.status}</td>
+                    <td className="p-5 border"></td>
                   </tr>
                 ))}
               </tbody>
@@ -96,7 +114,7 @@ const Monitoring = () => {
                   </div>
                   <div className="max-[549px]:hidden min-[550px]:block">:</div>
                   <div className="w-[240px] whitespace-nowrap overflow-ellipsis overflow-hidden">
-                    000000000/mm/yy
+                    {detail.no_request}
                   </div>
                 </div>
                 <div className="flex max-[549px]:flex-col max-[549px]:items-start items-center gap-2">
@@ -105,7 +123,7 @@ const Monitoring = () => {
                   </div>
                   <div className="max-[549px]:hidden min-[550px]:block">:</div>
                   <div className="w-[240px] whitespace-nowrap overflow-ellipsis overflow-hidden">
-                    18/09/23
+                    {detail.tanggal_po}
                   </div>
                 </div>
                 <div className="flex max-[549px]:flex-col max-[549px]:items-start items-center gap-2">
@@ -123,7 +141,12 @@ const Monitoring = () => {
                   </div>
                   <div className="max-[549px]:hidden min-[550px]:block">:</div>
                   <div className="w-[240px] whitespace-nowrap overflow-ellipsis overflow-hidden text-red-500">
-                    Beli Putus
+                    {detail.tipe_penagihan === 0 ? (
+                      'Beli Putus'
+                    ) : (
+                      'Konsinyasi'
+                    )}
+                    
                   </div>
                 </div>
                 <div className="flex max-[549px]:flex-col max-[549px]:items-start items-center gap-2">
@@ -132,7 +155,7 @@ const Monitoring = () => {
                   </div>
                   <div className="max-[549px]:hidden min-[550px]:block">:</div>
                   <div className="w-[240px] whitespace-nowrap overflow-ellipsis overflow-hidden">
-                    PO12345678
+                    {detail.nomer_do}
                   </div>
                 </div>
                 <div className="flex max-[549px]:flex-col max-[549px]:items-start items-center gap-2">
@@ -141,7 +164,7 @@ const Monitoring = () => {
                   </div>
                   <div className="max-[549px]:hidden min-[550px]:block">:</div>
                   <div className="w-[240px] whitespace-nowrap overflow-ellipsis overflow-hidden">
-                    18/09/23
+                    {detail.tanggal_po}
                   </div>
                 </div>
                 <div className="flex max-[549px]:flex-col max-[549px]:items-start items-center gap-2">
@@ -154,7 +177,7 @@ const Monitoring = () => {
                   </div>
                 </div>
                 <div className="flex max-[549px]:flex-col max-[549px]:items-start items-center gap-2">
-                  <div className="w-[270px] whitespace-nowrap font-bold">
+                  <div className="w-[270px] whitespace-nowwrap font-bold">
                     Periode Acuan Penagihan
                   </div>
                   <div className="max-[549px]:hidden min-[550px]:block">:</div>
@@ -195,7 +218,13 @@ const Monitoring = () => {
                   </div>
                   <div className="max-[549px]:hidden min-[550px]:block">:</div>
                   <div className="w-[240px] whitespace-nowrap overflow-ellipsis overflow-hidden flex flex-col">
-                    <div>Tidak</div>
+                    <div>
+                    {detail.is_pajak === 0 ? (
+                      'Ya'
+                    ) : (
+                      'Tidak'
+                    )}
+                    </div>
                   </div>
                 </div>
                 <div className="flex max-[549px]:flex-col max-[549px]:items-start items-start gap-2">
@@ -204,8 +233,8 @@ const Monitoring = () => {
                   </div>
                   <div className="max-[549px]:hidden min-[550px]:block">:</div>
                   <div className="w-[240px] whitespace-nowrap overflow-ellipsis overflow-hidden flex flex-col">
-                    <div>010.010-23.12345678</div>
-                    <div>010.010-23.12345678</div>
+                    <div>{detail.nomer_seri_pajak}</div>
+                                
                   </div>
                 </div>
                 <div className="flex max-[549px]:flex-col max-[549px]:items-start items-center gap-2">
@@ -214,7 +243,7 @@ const Monitoring = () => {
                   </div>
                   <div className="max-[549px]:hidden min-[550px]:block">:</div>
                   <div className="w-[240px] whitespace-nowrap overflow-ellipsis overflow-hidden flex flex-col font-bold underline">
-                    <div>{status}</div>
+                    <div>{detail.status}</div>
                   </div>
                 </div>
                 {status === "Reject" && (
@@ -242,6 +271,13 @@ const Monitoring = () => {
         </Modal>
       </div>
     </Admin>
+    <Backdrop
+        sx={{ color: '#fff', zIndex: (theme) => theme.zIndex.drawer + 99999 }}
+        open={openBackdrop}
+      >
+        <CircularProgress color="inherit" />
+      </Backdrop>
+    </>
   );
 };
 

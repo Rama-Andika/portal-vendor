@@ -1,16 +1,62 @@
 import { Checkbox, Label, TextInput } from "flowbite-react";
 import { Link, useNavigate } from "react-router-dom";
+import Api from "../api";
+import toast from "react-hot-toast";
+import { useState } from "react";
+import { useEffect } from "react";
+import Cookies from "js-cookie";
 
 const Login = () => {
   const navigate = useNavigate();
+  const [username, setUsername] = useState("");
+  const [password, setPassword] = useState("");
+
+  const [users, setUsers] = useState([]);
   const unsplashimg = {
     src: "https://source.unsplash.com/1600x900/?random",
     alt: "random unsplash image",
   };
 
-  const onSubmitLogin = () => {
-    navigate("vendor/profile");
+  const fetchUser = async () => {
+    await Api.get("/users").then((response) => setUsers(response.data));
   };
+
+  const onSubmitLogin = (e) => {
+    e.preventDefault();
+    // eslint-disable-next-line array-callback-return
+    const login = users.filter(
+      (user) => user.username === username && user.password === password
+    );
+    if (login.length > 0) {
+      toast.success("Login Success", {
+        position: "top-right",
+        style: {
+          borderRadius: "10px",
+          background: "#333",
+          color: "#fff",
+        },
+      });
+      Cookies.set("token", "grgr464464646hthth56557")
+      Cookies.set("vendor_id", login[0].vendor_id)
+      navigate(`/vendor/profile`);
+    } else {
+      toast.error("Login Failed!", {
+        position: "top-right",
+        style: {
+          borderRadius: "10px",
+          background: "#333",
+          color: "#fff",
+        },
+      });
+    }
+  };
+
+  useEffect(() => {
+    fetchUser();
+    Cookies.remove("token")
+    Cookies.remove("vendor_id")
+  }, []);
+
   return (
     <>
       <div className="grid grid-cols-12 min-h-screen relative font-roboto">
@@ -30,20 +76,27 @@ const Login = () => {
           <form className="flex flex-col gap-4">
             <div>
               <div className="mb-2 block">
-                <Label htmlFor="email1" value="Your email" />
+                <Label htmlFor="email1" value="Username" />
               </div>
               <TextInput
                 id="email1"
-                placeholder="name@flowbite.com"
+                value={username}
                 required
-                type="email"
+                type="text"
+                onChange={(e) => setUsername(e.target.value)}
               />
             </div>
             <div>
               <div className="mb-2 block">
                 <Label htmlFor="password1" value="Your password" />
               </div>
-              <TextInput id="password1" required type="password" />
+              <TextInput
+                id="password1"
+                required
+                type="password"
+                value={password}
+                onChange={(e) => setPassword(e.target.value)}
+              />
             </div>
             <div className="flex flex-col gap-2">
               <div className="flex items-center gap-2">
@@ -68,7 +121,7 @@ const Login = () => {
             <button
               type="submit"
               className="bg-[#0077b6] py-3 text-white rounded-sm shadow-sm "
-              onClick={onSubmitLogin}
+              onClick={(e) => onSubmitLogin(e)}
             >
               LOGIN
             </button>

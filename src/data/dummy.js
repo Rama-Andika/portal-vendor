@@ -19,12 +19,12 @@ export const links = [
     icon: FiShoppingBag,
     links: [{ name: "profile" }],
   },
-  {
-    title: "Invoice",
-    name: "invoice",
-    icon: LiaFileInvoiceSolid,
-    links: [{ name2:"invoice", name: "upload invoice" }, {name2:"invoice", name: "records" }],
-  },
+  // {
+  //   title: "Invoice",
+  //   name: "invoice",
+  //   icon: LiaFileInvoiceSolid,
+  //   links: [{ name2:"invoice", name: "upload invoice" }, {name2:"invoice", name: "records" }],
+  // },
   {
     title: "Penagihan",
     name: "penagihan",

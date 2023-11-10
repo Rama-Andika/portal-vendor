@@ -5,7 +5,9 @@ import { MdKeyboardArrowDown } from "react-icons/md";
 import { useStateContext } from "../contexts/ContextProvider";
 import { BiSolidUpArrow } from "react-icons/bi";
 import { useRef } from "react";
-import { Link } from "react-router-dom";
+import { useNavigate } from "react-router-dom";
+import Cookies from "js-cookie";
+import toast from "react-hot-toast";
 
 const NavButton = ({ title, customFunc, icon, color, dotColor }) => (
   <button
@@ -31,6 +33,7 @@ const Navbar = () => {
   const [dropdown, setDropdown] = useState(false);
 
   const dropDownSection = useRef();
+  const navigate = useNavigate();
 
   useEffect(() => {
     const handleResize = () => setScreenSize(window.innerWidth);
@@ -53,7 +56,6 @@ const Navbar = () => {
   }, [screenSize]);
 
   const onClickDropdown = () => {
-    console.log(!dropdown);
     if (!dropdown) {
       dropDownSection.current.classList.remove("hidden");
     } else {
@@ -63,7 +65,21 @@ const Navbar = () => {
     setDropdown((prevDropdown) => !prevDropdown);
   };
 
+  const logout = () => {
+    Cookies.remove("token");
+    Cookies.remove("vendor_id");
+    toast.success("Logout Successfully", {
+      duration: 4000,
+      position: "top-right",
+      style: {
+        borderRadius: "10px",
+        background: "#333",
+        color: "#fff",
+      },
+    });
 
+    navigate("/");
+  };
 
   return (
     <div className="flex p-2 md:mx-6 relative gap-5 z-[99]">
@@ -97,10 +113,11 @@ const Navbar = () => {
               <div className="text-[20px] text-white contrast-100">
                 <BiSolidUpArrow />
               </div>
-              <div className="text-gray-400 text-14 py-2 px-5 bg-white drop-shadow-lg  mt-[-7px]">
-                <Link to="/">
-                  <div>logout</div>
-                </Link>
+              <div
+                onClick={logout}
+                className="text-gray-400 text-14 py-2 px-5 bg-white drop-shadow-lg  mt-[-7px]"
+              >
+                <div>logout</div>
               </div>
             </div>
           </div>

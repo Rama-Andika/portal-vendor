@@ -19,51 +19,57 @@ import { MdPayments } from "react-icons/md";
 import { HiOutlineDocument } from "react-icons/hi";
 import Select from "react-select";
 import { PiWarningCircleLight } from "react-icons/pi";
-import { DatePicker, LocalizationProvider } from "@mui/x-date-pickers";
-import { DemoContainer } from "@mui/x-date-pickers/internals/demo";
-import { AdapterDayjs } from "@mui/x-date-pickers/AdapterDayjs";
 import ApiDataWilayahIndonesia from "../../api/ApiDataWilayahIndonesia";
-import dayjs from "dayjs";
-import { Link } from "react-router-dom";
+import { Link, useNavigate } from "react-router-dom";
+import isEmpty from "../../components/functions/CheckEmptyObject";
+import toast from "react-hot-toast";
+import Api from "../../api";
 
 const steps = ["Company Profile", "Contact Person", "Payment", "Document"];
 const options = [
-  { value: "CV", label: "CV", key: 1 },
-  { value: "PT", label: "PT", key: 2 },
+  { value: "cv", label: "CV", key: 1 },
+  { value: "pt", label: "PT", key: 2 },
+  { value: "ud", label: "UD", key: 3 },
+  { value: "perseorangan", label: "Perseorangan", key: 4 },
+  { value: "lainnya", label: "Lainnya", key: 5 },
 ];
 
 const optionTipePembelian = [
-  { value: "01", label: "Konsinyasi", key: 1 },
-  { value: "02", label: "Beli Putus", key: 2 },
+  { value: "konsinyasi", label: "Konsinyasi", key: 1 },
+  { value: "beli putus", label: "Beli Putus", key: 2 },
 ];
 
 const optionStatusPajak = [
-  { value: "01", label: "Perusahaan Kena Pajak (PKP)", key: 1 },
-  { value: "02", label: "Non Perusahaan Kena Pajak (NPKP)", key: 2 },
+  { value: "PKP", label: "Perusahaan Kena Pajak (PKP)", key: 1 },
+  { value: "NPKP", label: "Non Perusahaan Kena Pajak (NPKP)", key: 2 },
 ];
 
 const optionMetodePengiriman = [
-  { value: "01", label: "Darat", key: 1 },
-  { value: "02", label: "Laut", key: 2 },
-  { value: "03", label: "Udara", key: 2 },
+  { value: "darat", label: "Darat", key: 1 },
+  { value: "laut", label: "Laut", key: 2 },
+  { value: "udara", label: "Udara", key: 3 },
 ];
 
 const Registration = () => {
   const { screenSize, setScreenSize } = useStateContext();
   const [activeStep, setActiveStep] = useState(0);
   const [optionProvinsi, setOptionProvinsi] = useState([]);
-  const [optionKota, setOptionKota] = useState([]);
+
+  const [username, setUsername] = useState("");
+  const [email, setEmail] = useState("");
+  const [password, setPassword] = useState("");
 
   const [tipePerusahaan, setTipePerusahaan] = useState({});
+  const [tipePerusahaanText, setTipePerusahaanText] = useState("");
   const [namaPerusahaan, setNamaPerusahaan] = useState("");
   const [alamat, setAlamat] = useState("");
   const [provinsi, setProvinsi] = useState({});
-  const [kota, setKota] = useState({});
+  const [kota, setKota] = useState("");
   const [kodePos, setKodePos] = useState("");
   const [tipePembelian, setTipePembelian] = useState({});
   const [npwp, setNpwp] = useState("");
   const [statusPajak, setStatusPajak] = useState({
-    value: "01",
+    value: "PKP",
     label: "Perusahaan Kena Pajak (PKP)",
     key: "01",
   });
@@ -82,31 +88,119 @@ const Registration = () => {
   const [emailKorespondensiKeuangan, setEmailKorespondensiKeuangan] =
     useState("");
   const [termPembayaran, setTermPembayaran] = useState("");
+  const [pengembalianBarang, setPengembalianBarang] = useState("");
   const [bank, setBank] = useState("");
   const [nomorRekening, setRekening] = useState("");
   const [namaRekening, setNamaRekening] = useState("");
   const [kantorCabangBank, setKantorCabangBank] = useState("");
   const [metodePengiriman, setMetodePengiriman] = useState({});
-  const [pengembalianBarang, setPengembalianBarang] = useState({});
   const [rebate, setRebate] = useState("");
   const [marketingFee, setMarketingFee] = useState("");
   const [listingFee, setListingFee] = useState("");
   const [promotionFund, setPromotionFund] = useState("");
 
-  const [, setNpwpFile] = useState(null);
-  const [, setKtpPemilikFIle] = useState(null);
-  const [, setKtpPenanggungJawabFile] = useState(null);
-  const [, setSpkpFile] = useState(null);
-  const [, setSiupFile] = useState(null);
-  const [, setNibFile] = useState(null);
-  const [, setSsPerusahaanFile] = useState(null);
-  const [, setSertifBpomFile] = useState(null);
+  const [npwpFile, setNpwpFile] = useState(null);
+  const [ktpPemilikFile, setKtpPemilikFIle] = useState(null);
+  const [ktpPenanggungJawabFile, setKtpPenanggungJawabFile] = useState(null);
+  const [spkpFile, setSpkpFile] = useState(null);
+  const [nibFile, setNibFile] = useState(null);
+  const [ssPerusahaanFile, setSsPerusahaanFile] = useState(null);
+  const [sertifBpomFile, setSertifBpomFile] = useState(null);
+
+  const [isError, setIsError] = useState(false);
+  const navigate = useNavigate();
 
   const handleNext = () => {
-    setActiveStep((prevActiveStep) => prevActiveStep + 1);
+    if (activeStep === 0) {
+      if (
+        username.trim().length > 0 &&
+        email.trim().length > 0 &&
+        password.trim().length > 0 &&
+        namaPerusahaan !== "" &&
+        alamat.trim().length > 0 &&
+        !isEmpty(provinsi) &&
+        kota.trim().length > 0 &&
+        kodePos.trim().length > 0 &&
+        !isEmpty(tipePembelian) &&
+        !isEmpty(statusPajak)
+      ) {
+        if (statusPajak.value === "PKP") {
+          if (npwp.trim().length === 20) {
+            setIsError(false);
+          } else {
+            return setIsError(true);
+          }
+        }
+
+        if (!isEmpty(tipePerusahaan)) {
+          if (tipePerusahaan.value === "lainnya") {
+            if (tipePerusahaanText.trim().length > 0) {
+              setIsError(false);
+              setActiveStep((prevActiveStep) => prevActiveStep + 1);
+            } else {
+              setIsError(true);
+            }
+          } else {
+            setIsError(false);
+            setActiveStep((prevActiveStep) => prevActiveStep + 1);
+          }
+        } else {
+          setIsError(true);
+        }
+      } else {
+        setIsError(true);
+      }
+    } else if (activeStep === 1) {
+      if (
+        namaPemilikPerusahaan.trim().length > 0 &&
+        namaPenanggungJawab.trim().length > 0 &&
+        jabatanPenanggungJawab.trim().length > 0 &&
+        noTelpKantor.trim().length > 0 &&
+        whatsappPO.trim().length > 0 &&
+        namaKontak.trim().length > 0 &&
+        whatsappKeuangan.trim().length > 0 &&
+        namaKontakKeuangan.trim().length > 0 &&
+        jabatanKeuangan.trim().length > 0
+      ) {
+        setIsError(false);
+        setActiveStep((prevActiveStep) => prevActiveStep + 1);
+      } else {
+        setIsError(true);
+      }
+    } else if (activeStep === 2) {
+      if (
+        termPembayaran.trim().length > 0 &&
+        bank.trim().length > 0 &&
+        nomorRekening.trim().length > 0 &&
+        namaRekening.trim().length > 0 &&
+        kantorCabangBank.trim().length > 0 &&
+        !isEmpty(metodePengiriman) &&
+        pengembalianBarang.trim().length > 0
+      ) {
+        setIsError(false);
+        setActiveStep((prevActiveStep) => prevActiveStep + 1);
+      } else {
+        setIsError(true);
+      }
+    } else if (activeStep === 3) {
+      if (
+        npwpFile !== null &&
+        ktpPemilikFile !== null &&
+        ktpPenanggungJawabFile !== null &&
+        spkpFile !== null &&
+        nibFile !== null &&
+        ssPerusahaanFile !== null
+      ) {
+        setIsError(false);
+        saveVendor();
+      } else {
+        setIsError(true);
+      }
+    }
   };
 
   const handleBack = () => {
+    setIsError(false);
     setActiveStep((prevActiveStep) => prevActiveStep - 1);
   };
 
@@ -201,7 +295,7 @@ const Registration = () => {
       const provinsiValue = response.data.map((item, i) => {
         const provinsiCopy = [...optionProvinsi];
         return (provinsiCopy[i] = {
-          value: item.id,
+          value: item.name,
           label: item.name,
           key: item.id,
         });
@@ -211,21 +305,143 @@ const Registration = () => {
     });
   };
 
-  const fetchKota = async (id) => {
-    await ApiDataWilayahIndonesia.get(`regencies/${id}.json`).then(
-      (response) => {
-        const optionsValue = response.data.map((item, i) => {
-          const optionCopy = [...optionKota];
-          return (optionCopy[i] = {
-            value: item.id,
-            label: item.name,
-            key: item.id,
-          });
-        });
+  const saveVendor = async () => {
+    let npwpText;
+    let ktpPemilikText;
+    let ktpPenanggungJawabText;
+    let spkpText;
+    let nibText;
+    let ssRekeningText;
+    let sertifBpomText;
 
-        setOptionKota(optionsValue);
-      }
-    );
+    if (npwpFile !== null) {
+      npwpText = npwpFile.name;
+    } else {
+      npwpText = "";
+    }
+
+    if (ktpPemilikFile !== null) {
+      ktpPemilikText = ktpPemilikFile.name;
+    } else {
+      ktpPemilikText = "";
+    }
+
+    if (ktpPenanggungJawabFile !== null) {
+      ktpPenanggungJawabText = ktpPenanggungJawabFile.name;
+    } else {
+      ktpPenanggungJawabText = "";
+    }
+
+    if (spkpFile !== null) {
+      spkpText = spkpFile.name;
+    } else {
+      spkpText = "";
+    }
+
+    if (nibFile !== null) {
+      nibText = nibFile.name;
+    } else {
+      nibText = "";
+    }
+
+    if (ssPerusahaanFile !== null) {
+      ssRekeningText = ssPerusahaanFile.name;
+    } else {
+      ssRekeningText = "";
+    }
+
+    if (sertifBpomFile !== null) {
+      sertifBpomText = sertifBpomFile.name;
+    } else {
+      sertifBpomText = "";
+    }
+
+    const inititalValue = {
+      nama: namaPerusahaan,
+      tipe_perusahaan: tipePerusahaan.value,
+      tipe_perusahaan_lainnya: tipePerusahaanText,
+      alamat: alamat,
+      provinsi: provinsi.value,
+      kota: kota,
+      kode_pos: kodePos,
+      tipe_pembelian: tipePembelian.value,
+      status_pajak: statusPajak.value,
+      npwp: npwp,
+      website: website,
+      nama_pemilik: namaPemilikPerusahaan,
+      nama_penanggung_jawab: namaPenanggungJawab,
+      jabatan_penanggung_jawab: jabatanPenanggungJawab,
+      no_telp_kantor: noTelpKantor,
+      no_wa_purchase_order: whatsappPO,
+      email_korespondensi: emailKorespondensiPo,
+      nama_kontak: namaKontak,
+      jabatan_kontak: jabatan,
+      no_wa_keuangan: whatsappKeuangan,
+      email_korespondensi_keuangan: emailKorespondensiKeuangan,
+      nama_kontak_keuangan: namaKontakKeuangan,
+      jabatan_keuangan: jabatanKeuangan,
+      term_pembayaran: termPembayaran,
+      bank: bank,
+      no_rekening_bank: nomorRekening,
+      nama_rekening_bank: namaRekening,
+      kantor_cabang_bank: kantorCabangBank,
+      metode_pengiriman: metodePengiriman.value,
+      rebate: rebate,
+      marketing_fee: marketingFee,
+      listing_fee: listingFee,
+      promotion_found: promotionFund,
+      file_npwp: npwpText,
+      file_ktp_pemilik: ktpPemilikText,
+      file_ktp_penanggung_jawab: ktpPenanggungJawabText,
+      file_spkp: spkpText,
+      file_nib: nibText,
+      file_screenshot_rekening: ssRekeningText,
+      file_sertikasi_bpom: sertifBpomText,
+    };
+
+    await Api.post("/vendors", inititalValue, {
+      headers: {
+        "content-type": "application/json",
+      },
+    })
+      .then((response) => {
+        saveUser(response.data.id);
+      })
+      .catch(() => {
+        toast.error("Failed to sign up!", {
+          position: "top-right",
+          style: {
+            borderRadius: "10px",
+            background: "#333",
+            color: "#fff",
+          },
+        });
+      });
+  };
+
+  const saveUser = async (id) => {
+    const inititalValue = {
+      email: email,
+      username: username,
+      password: password,
+      vendor_id: id,
+    };
+
+    await Api.post("/users", inititalValue, {
+      headers: {
+        "content-type": "application/json",
+      },
+    }).then(() => {
+      toast.success("Sign up success!", {
+        position: "top-right",
+        style: {
+          borderRadius: "10px",
+          background: "#333",
+          color: "#fff",
+        },
+      });
+      navigate(`/`);
+    });
   };
 
   useEffect(() => {
@@ -233,7 +449,6 @@ const Registration = () => {
   }, [activeStep]);
 
   useEffect(() => {
-    setPengembalianBarang(dayjs(new Date()));
     fetchProvince();
 
     // eslint-disable-next-line react-hooks/exhaustive-deps
@@ -288,6 +503,14 @@ const Registration = () => {
     }
   };
 
+  const onChangeNoTelpKantor = (e) => {
+    if (e.target.validity.valid) {
+      setNoTelpKantor(e.target.value);
+    } else {
+      setNoTelpKantor("");
+    }
+  };
+
   const onChangeWhatsappPO = (e) => {
     if (e.target.validity.valid) {
       setWhatsappPO(e.target.value);
@@ -304,8 +527,12 @@ const Registration = () => {
     }
   };
 
-  const onChangePengembalianBarang = (newValue) => {
-    setPengembalianBarang(newValue);
+  const onChangePengembalianBarang = (e) => {
+    if (e.target.validity.valid) {
+      setPengembalianBarang(e.target.value);
+    } else {
+      setPengembalianBarang("");
+    }
   };
 
   const onChangeMarketingFee = (e) => {
@@ -329,15 +556,85 @@ const Registration = () => {
   };
 
   const onChangeNpwpFile = (e) => {
-    setNpwpFile(e.target.files[0]);
+    if(e.target.files[0] !== undefined){
+      if (e.target.files[0].size <= 2000000) {
+        setNpwpFile(e.target.files[0]);
+      } else {
+        setNpwpFile(null);
+      }
+    }
+  };
+
+  const onChangeKtpPemilikFile = (e) => {
+    if(e.target.files[0] !== undefined){
+      if (e.target.files[0].size <= 2000000) {
+        setKtpPemilikFIle(e.target.files[0]);
+      } else {
+        setKtpPemilikFIle(null);
+      }
+    }
+  };
+
+  const onChangeKtpPenanggungJawabFile = (e) => {
+    if(e.target.files[0] !== undefined){
+      if (e.target.files[0].size <= 2000000) {
+        setKtpPenanggungJawabFile(e.target.files[0]);
+      } else {
+        setKtpPenanggungJawabFile(null);
+      }
+    }
+  };
+
+  const onChangeSpkpFile = (e) => {
+    if(e.target.files[0] !== undefined){
+      if (e.target.files[0].size <= 2000000) {
+        setSpkpFile(e.target.files[0]);
+      } else {
+        setSpkpFile(null);
+      }
+    }
+  };
+
+  const onChangeNibFile = (e) => {
+    if(e.target.files[0] !== undefined){
+      if (e.target.files[0].size <= 2000000) {
+        setNibFile(e.target.files[0]);
+      } else {
+        setNibFile(null);
+      }
+    }
+  };
+
+  const onChangeSsRekeningFile = (e) => {
+    if(e.target.files[0] !== undefined){
+      if (e.target.files[0].size <= 2000000) {
+        setSsPerusahaanFile(e.target.files[0]);
+      } else {
+        setSsPerusahaanFile(null);
+      }
+    }
+  };
+
+  const onChangeBpomFile = (e) => {
+    if(e.target.files[0] !== undefined){
+      if (e.target.files[0].size <= 2000000) {
+        setSertifBpomFile(e.target.files[0]);
+      } else {
+        setSertifBpomFile(null);
+      }
+    }
   };
 
   const onChangeProvinsi = (item) => {
     if (provinsi.value !== item.value) {
       setProvinsi(item);
-      setKota({});
+    }
+  };
 
-      fetchKota(item.value);
+  const onChangeTipePerusahaan = (item) => {
+    setTipePerusahaan(item);
+    if (item.value !== "lainnya") {
+      setTipePerusahaanText("");
     }
   };
 
@@ -383,21 +680,152 @@ const Registration = () => {
                     <div className="flex gap-2 items-center mb-3">
                       <div className="whitespace-nowrap flex">
                         <label htmlFor="" className="w-36">
-                          Tipe Perusahaan
+                          Username
                         </label>
                         <div>:</div>
                       </div>
                       <div className="w-1/2 relative">
+                        <input
+                          value={username}
+                          onChange={(e) => setUsername(e.target.value)}
+                          type="text"
+                          name=""
+                          id=""
+                          className={`w-full h-[36px] rounded-sm focus:border focus:border-[#0077b6] ${
+                            isError && username.trim().length === 0
+                              ? "border-red-400"
+                              : "border-slate-300"
+                          } `}
+                        />
+                        <div className="absolute right-[-20px] top-0">
+                          {isError && username.trim().length === 0 ? (
+                            <div className="text-red-500">
+                              <PiWarningCircleLight />
+                            </div>
+                          ) : (
+                            "*)"
+                          )}
+                        </div>
+                      </div>
+                    </div>
+                    <div className="flex gap-2 items-center mb-3">
+                      <div className="whitespace-nowrap flex">
+                        <label htmlFor="" className="w-36">
+                          Email
+                        </label>
+                        <div>:</div>
+                      </div>
+                      <div className="w-1/2 relative">
+                        <input
+                          value={email}
+                          onChange={(e) => setEmail(e.target.value)}
+                          type="email"
+                          name=""
+                          id=""
+                          className={`w-full h-[36px] rounded-sm focus:border focus:border-[#0077b6] ${
+                            isError && email.trim().length === 0
+                              ? "border-red-400"
+                              : "border-slate-300"
+                          } `}
+                        />
+                        <div className="absolute right-[-20px] top-0">
+                          {isError && email.trim().length === 0 ? (
+                            <div className="text-red-500">
+                              <PiWarningCircleLight />
+                            </div>
+                          ) : (
+                            "*)"
+                          )}
+                        </div>
+                      </div>
+                    </div>
+                    <div className="flex gap-2 items-center mb-10">
+                      <div className="whitespace-nowrap flex">
+                        <label htmlFor="" className="w-36">
+                          Password
+                        </label>
+                        <div>:</div>
+                      </div>
+                      <div className="w-1/2 relative">
+                        <input
+                          value={password}
+                          onChange={(e) => setPassword(e.target.value)}
+                          type="password"
+                          name=""
+                          id=""
+                          className={`w-full h-[36px] rounded-sm focus:border focus:border-[#0077b6] ${
+                            isError && password.trim().length === 0
+                              ? "border-red-400"
+                              : "border-slate-300"
+                          } `}
+                        />
+                        <div className="absolute right-[-20px] top-0">
+                          {isError && password.trim().length === 0 ? (
+                            <div className="text-red-500">
+                              <PiWarningCircleLight />
+                            </div>
+                          ) : (
+                            "*)"
+                          )}
+                        </div>
+                      </div>
+                    </div>
+                    <div className="flex gap-2 items-center mb-3">
+                      <div className="whitespace-nowrap flex">
+                        <label htmlFor="" className="w-36">
+                          Tipe Perusahaan
+                        </label>
+                        <div>:</div>
+                      </div>
+                      <div className="w-1/2 relative flex flex-col gap-1">
                         <Select
                           value={tipePerusahaan}
-                          onChange={(item) => setTipePerusahaan(item)}
+                          onChange={onChangeTipePerusahaan}
                           options={options}
                           noOptionsMessage={() => "Data not found"}
                           styles={customeStyles}
                           placeholder="Pilih Tipe Perusahaan..."
                           required
                         />
-                        <div className="absolute right-[-20px] top-0">*)</div>
+                        <div className="absolute right-[-20px] top-0">
+                          {isError && isEmpty(tipePerusahaan) ? (
+                            <div className="text-red-500">
+                              <PiWarningCircleLight />
+                            </div>
+                          ) : (
+                            "*)"
+                          )}
+                        </div>
+                        {tipePerusahaan.value === "lainnya" && (
+                          <div className="relative">
+                            <input
+                              value={tipePerusahaanText}
+                              onChange={(e) =>
+                                setTipePerusahaanText(e.target.value)
+                              }
+                              type="text"
+                              name=""
+                              id=""
+                              placeholder="Tulis tipe perusahaan..."
+                              className={`w-full h-[36px] border border-slate-300 rounded-sm focus:border focus:border-[#0077b6] ${
+                                isError &&
+                                tipePerusahaanText.trim().length === 0 &&
+                                "border-red-400"
+                              } `}
+                            />
+
+                            <div className="absolute right-[-20px] top-0">
+                              {isError &&
+                              tipePerusahaanText.trim().length === 0 ? (
+                                <div className="text-red-500">
+                                  <PiWarningCircleLight />
+                                </div>
+                              ) : (
+                                "*)"
+                              )}
+                            </div>
+                          </div>
+                        )}
                       </div>
                     </div>
                     <div className="flex gap-2 items-center mb-3">
@@ -414,9 +842,21 @@ const Registration = () => {
                           type="text"
                           name=""
                           id=""
-                          className="w-full h-[36px] border border-slate-300 rounded-sm focus:border focus:border-[#0077b6]  "
+                          className={`w-full h-[36px] rounded-sm focus:border focus:border-[#0077b6] ${
+                            isError && namaPerusahaan.trim().length === 0
+                              ? "border-red-400"
+                              : "border-slate-300"
+                          } `}
                         />
-                        <div className="absolute right-[-20px] top-0">*)</div>
+                        <div className="absolute right-[-20px] top-0">
+                          {isError && namaPerusahaan.trim().length === 0 ? (
+                            <div className="text-red-500">
+                              <PiWarningCircleLight />
+                            </div>
+                          ) : (
+                            "*)"
+                          )}
+                        </div>
                       </div>
                     </div>
                     <div className="flex gap-2 mb-3">
@@ -433,9 +873,21 @@ const Registration = () => {
                           onChange={(e) => setAlamat(e.target.value)}
                           name=""
                           id=""
-                          className="w-full border border-slate-300 rounded-sm focus:border focus:border-[#0077b6]  "
+                          className={`w-full borderrounded-sm focus:border focus:border-[#0077b6] ${
+                            isError && alamat.trim().length === 0
+                              ? "border-red-400"
+                              : "border-slate-300"
+                          } `}
                         />
-                        <div className="absolute right-[-20px] top-0">*)</div>
+                        <div className="absolute right-[-20px] top-0">
+                          {isError && alamat.trim().length === 0 ? (
+                            <div className="text-red-500">
+                              <PiWarningCircleLight />
+                            </div>
+                          ) : (
+                            "*)"
+                          )}
+                        </div>
                       </div>
                     </div>
                     <div className="flex gap-2 items-center mb-3">
@@ -455,7 +907,15 @@ const Registration = () => {
                           placeholder="Pilih Provinsi..."
                           required
                         />
-                        <div className="absolute right-[-20px] top-0">*)</div>
+                        <div className="absolute right-[-20px] top-0">
+                          {isError && isEmpty(provinsi) ? (
+                            <div className="text-red-500">
+                              <PiWarningCircleLight />
+                            </div>
+                          ) : (
+                            "*)"
+                          )}
+                        </div>
                       </div>
                     </div>
                     <div className="flex gap-2 items-center mb-3">
@@ -466,16 +926,27 @@ const Registration = () => {
                         <div>:</div>
                       </div>
                       <div className="w-1/2 relative">
-                        <Select
+                        <input
                           value={kota}
-                          onChange={(item) => setKota(item)}
-                          options={optionKota}
-                          noOptionsMessage={() => "Kota not found"}
-                          styles={customeStyles}
-                          placeholder="Pilih Kota..."
-                          required
+                          onChange={(e) => setKota(e.target.value)}
+                          type="text"
+                          name=""
+                          id=""
+                          className={`w-full h-[36px] rounded-sm focus:border focus:border-[#0077b6] ${
+                            isError && kota.trim().length === 0
+                              ? "border-red-400"
+                              : "border-slate-300"
+                          } `}
                         />
-                        <div className="absolute right-[-20px] top-0">*)</div>
+                        <div className="absolute right-[-20px] top-0">
+                          {isError && kota.trim().length === 0 ? (
+                            <div className="text-red-500">
+                              <PiWarningCircleLight />
+                            </div>
+                          ) : (
+                            "*)"
+                          )}
+                        </div>
                       </div>
                     </div>
                     <div className="flex gap-2 items-center mb-3">
@@ -492,9 +963,21 @@ const Registration = () => {
                           type="text"
                           name=""
                           id=""
-                          className="w-full h-[36px] border border-slate-300 rounded-sm focus:border focus:border-[#0077b6]  "
+                          className={`w-full h-[36px] rounded-sm focus:border focus:border-[#0077b6] ${
+                            isError && kodePos.trim().length === 0
+                              ? "border-red-400"
+                              : "border-slate-300"
+                          } `}
                         />
-                        <div className="absolute right-[-20px] top-0">*)</div>
+                        <div className="absolute right-[-20px] top-0">
+                          {isError && kodePos.trim().length === 0 ? (
+                            <div className="text-red-500">
+                              <PiWarningCircleLight />
+                            </div>
+                          ) : (
+                            "*)"
+                          )}
+                        </div>
                       </div>
                     </div>
                     <div className="flex gap-2 items-center mb-3">
@@ -514,7 +997,15 @@ const Registration = () => {
                           placeholder="Pilih tipe Pembelian..."
                           required
                         />
-                        <div className="absolute right-[-20px] top-0">*)</div>
+                        <div className="absolute right-[-20px] top-0">
+                          {isError && isEmpty(tipePembelian) ? (
+                            <div className="text-red-500">
+                              <PiWarningCircleLight />
+                            </div>
+                          ) : (
+                            "*)"
+                          )}
+                        </div>
                       </div>
                     </div>
                     <div className="flex gap-2 items-center mb-3">
@@ -534,29 +1025,61 @@ const Registration = () => {
                           placeholder="Pilih status pajak..."
                           required
                         />
-                        <div className="absolute right-[-20px] top-0">*)</div>
+                        <div className="absolute right-[-20px] top-0">
+                          {isError && isEmpty(statusPajak) ? (
+                            <div className="text-red-500">
+                              <PiWarningCircleLight />
+                            </div>
+                          ) : (
+                            "*)"
+                          )}
+                        </div>
                       </div>
                     </div>
 
-                    <div className="flex gap-2 items-center mb-3">
-                      <div className="whitespace-nowrap flex">
-                        <label htmlFor="" className="w-36">
-                          NPWP
-                        </label>
-                        <div>:</div>
+                    <div className="flex items-center mb-3">
+                      <div className="flex flex-col gap-1">
+                        <div className="whitespace-nowrap flex">
+                          <label htmlFor="" className="w-36">
+                            NPWP
+                          </label>
+                        </div>
+
+                        <div className="flex gap-1 items-center text-[12px]">
+                          <div>
+                            <PiWarningCircleLight />
+                          </div>
+                          <div>Harus 15 digit</div>
+                        </div>
                       </div>
+                      <div className="mr-2">:</div>
+
                       <div className="w-1/2 relative">
                         <input
                           maxLength={20}
                           type="text"
                           name=""
                           id=""
-                          className="w-full h-[36px] border border-slate-300 rounded-sm focus:border focus:border-[#0077b6]  "
+                          className={`w-full h-[36px] rounded-sm focus:border focus:border-[#0077b6] ${
+                            isError &&
+                            statusPajak.value === "PKP" &&
+                            namaPerusahaan.trim().length < 20
+                              ? "border-red-400"
+                              : "border-slate-300"
+                          } `}
                           value={npwp}
                           onChange={(e) => formatNpwp(e.target.value)}
                         />
-                        {statusPajak.value === "01" ? (
-                          <div className="absolute right-[-20px] top-0">*)</div>
+                        {statusPajak.value === "PKP" ? (
+                          <div className="absolute right-[-20px] top-0">
+                            {isError && npwp.trim().length !== 20 ? (
+                              <div className="text-red-500">
+                                <PiWarningCircleLight />
+                              </div>
+                            ) : (
+                              "*)"
+                            )}
+                          </div>
                         ) : (
                           <div className="absolute right-[-20px] top-0"></div>
                         )}
@@ -580,6 +1103,16 @@ const Registration = () => {
                         />
                       </div>
                     </div>
+                    {isError && (
+                      <div className="mt-10 mb-3">
+                        <div className="w-fit flex gap-1 items-center text-[14px] bg-red-500 text-white py-3 px-5 ">
+                          <div>
+                            <PiWarningCircleLight />
+                          </div>
+                          <div>Data masih belum lengkap</div>
+                        </div>
+                      </div>
+                    )}
                   </form>
                 </div>
               ) : activeStep === 1 ? (
@@ -606,9 +1139,22 @@ const Registration = () => {
                           type="text"
                           name=""
                           id=""
-                          className="w-full h-[36px] border border-slate-300 rounded-sm focus:border focus:border-[#0077b6]  "
+                          className={`w-full h-[36px] rounded-sm focus:border focus:border-[#0077b6] ${
+                            isError && namaPemilikPerusahaan.trim().length === 0
+                              ? "border-red-400"
+                              : "border-slate-300"
+                          }  `}
                         />
-                        <div className="absolute right-[-20px] top-0">*)</div>
+                        <div className="absolute right-[-20px] top-0">
+                          {isError &&
+                          namaPemilikPerusahaan.trim().length === 0 ? (
+                            <div className="text-red-500">
+                              <PiWarningCircleLight />
+                            </div>
+                          ) : (
+                            "*)"
+                          )}
+                        </div>
                       </div>
                     </div>
                     <div className="flex gap-2 items-center mb-3">
@@ -627,9 +1173,22 @@ const Registration = () => {
                           type="text"
                           name=""
                           id=""
-                          className="w-full h-[36px] border border-slate-300 rounded-sm focus:border focus:border-[#0077b6]  "
+                          className={`w-full h-[36px] rounded-sm focus:border focus:border-[#0077b6] ${
+                            isError && namaPenanggungJawab.trim().length === 0
+                              ? "border-red-400"
+                              : "border-slate-300"
+                          }  `}
                         />
-                        <div className="absolute right-[-20px] top-0">*)</div>
+                        <div className="absolute right-[-20px] top-0">
+                          {isError &&
+                          namaPenanggungJawab.trim().length === 0 ? (
+                            <div className="text-red-500">
+                              <PiWarningCircleLight />
+                            </div>
+                          ) : (
+                            "*)"
+                          )}
+                        </div>
                       </div>
                     </div>
                     <div className="flex gap-2 mb-3 items-center">
@@ -648,9 +1207,23 @@ const Registration = () => {
                           type="text"
                           name=""
                           id=""
-                          className="w-full h-[36px] border border-slate-300 rounded-sm focus:border focus:border-[#0077b6]  "
+                          className={`w-full h-[36px] rounded-sm focus:border focus:border-[#0077b6] ${
+                            isError &&
+                            jabatanPenanggungJawab.trim().length === 0
+                              ? "border-red-400"
+                              : "border-slate-300"
+                          }  `}
                         />
-                        <div className="absolute right-[-20px] top-0">*)</div>
+                        <div className="absolute right-[-20px] top-0">
+                          {isError &&
+                          jabatanPenanggungJawab.trim().length === 0 ? (
+                            <div className="text-red-500">
+                              <PiWarningCircleLight />
+                            </div>
+                          ) : (
+                            "*)"
+                          )}
+                        </div>
                       </div>
                     </div>
                     <div className="flex gap-2 items-center mb-3">
@@ -663,13 +1236,26 @@ const Registration = () => {
                       <div className="w-1/2 relative">
                         <input
                           value={noTelpKantor}
-                          onChange={(e) => setNoTelpKantor(e.target.value)}
+                          onChange={(e) => onChangeNoTelpKantor(e)}
                           type="text"
                           name=""
                           id=""
-                          className="w-full h-[36px] border border-slate-300 rounded-sm focus:border focus:border-[#0077b6]  "
+                          pattern="[0-9]*"
+                          className={`w-full h-[36px] rounded-sm focus:border focus:border-[#0077b6] ${
+                            isError && noTelpKantor.trim().length === 0
+                              ? "border-red-400"
+                              : "border-slate-300"
+                          }  `}
                         />
-                        <div className="absolute right-[-20px] top-0">*)</div>
+                        <div className="absolute right-[-20px] top-0">
+                          {isError && noTelpKantor.trim().length === 0 ? (
+                            <div className="text-red-500">
+                              <PiWarningCircleLight />
+                            </div>
+                          ) : (
+                            "*)"
+                          )}
+                        </div>
                       </div>
                     </div>
                     <div className="mt-10 font-semibold underline">
@@ -690,9 +1276,21 @@ const Registration = () => {
                           id=""
                           value={whatsappPO}
                           onChange={(e) => onChangeWhatsappPO(e)}
-                          className="w-full h-[36px] border border-slate-300 rounded-sm focus:border focus:border-[#0077b6]  "
+                          className={`w-full h-[36px]  rounded-sm focus:border focus:border-[#0077b6] ${
+                            isError && whatsappPO.trim().length === 0
+                              ? "border-red-400"
+                              : "border-slate-300"
+                          }  `}
                         />
-                        <div className="absolute right-[-20px] top-0">*)</div>
+                        <div className="absolute right-[-20px] top-0">
+                          {isError && whatsappPO.trim().length === 0 ? (
+                            <div className="text-red-500">
+                              <PiWarningCircleLight />
+                            </div>
+                          ) : (
+                            "*)"
+                          )}
+                        </div>
                       </div>
                     </div>
                     <div className="flex gap-2 items-center mb-3">
@@ -729,9 +1327,21 @@ const Registration = () => {
                           type="text"
                           name=""
                           id=""
-                          className="w-full h-[36px] border border-slate-300 rounded-sm focus:border focus:border-[#0077b6]  "
+                          className={`w-full h-[36px] rounded-sm focus:border focus:border-[#0077b6]  ${
+                            isError && namaKontak.trim().length === 0
+                              ? "border-red-400"
+                              : "border-slate-300"
+                          } `}
                         />
-                        <div className="absolute right-[-20px] top-0">*)</div>
+                        <div className="absolute right-[-20px] top-0">
+                          {isError && namaKontak.trim().length === 0 ? (
+                            <div className="text-red-500">
+                              <PiWarningCircleLight />
+                            </div>
+                          ) : (
+                            "*)"
+                          )}
+                        </div>
                       </div>
                     </div>
                     <div className="flex gap-2 items-center mb-3">
@@ -769,9 +1379,21 @@ const Registration = () => {
                           id=""
                           value={whatsappKeuangan}
                           onChange={(e) => onChangeWhatsappKeuangan(e)}
-                          className="w-full h-[36px] border border-slate-300 rounded-sm focus:border focus:border-[#0077b6]  "
+                          className={`w-full h-[36px] rounded-sm focus:border focus:border-[#0077b6] ${
+                            isError && whatsappKeuangan.trim().length === 0
+                              ? "border-red-400"
+                              : "border-slate-300"
+                          }  `}
                         />
-                        <div className="absolute right-[-20px] top-0">*)</div>
+                        <div className="absolute right-[-20px] top-0">
+                          {isError && whatsappKeuangan.trim().length === 0 ? (
+                            <div className="text-red-500">
+                              <PiWarningCircleLight />
+                            </div>
+                          ) : (
+                            "*)"
+                          )}
+                        </div>
                       </div>
                     </div>
                     <div className="flex gap-2 items-center mb-3">
@@ -811,9 +1433,21 @@ const Registration = () => {
                           type="text"
                           name=""
                           id=""
-                          className="w-full h-[36px] border border-slate-300 rounded-sm focus:border focus:border-[#0077b6]  "
+                          className={`w-full h-[36px] rounded-sm focus:border focus:border-[#0077b6] ${
+                            isError && namaKontakKeuangan.trim().length === 0
+                              ? "border-red-400"
+                              : "border-slate-300"
+                          } `}
                         />
-                        <div className="absolute right-[-20px] top-0">*)</div>
+                        <div className="absolute right-[-20px] top-0">
+                          {isError && namaKontakKeuangan.trim().length === 0 ? (
+                            <div className="text-red-500">
+                              <PiWarningCircleLight />
+                            </div>
+                          ) : (
+                            "*)"
+                          )}
+                        </div>
                       </div>
                     </div>
                     <div className="flex gap-2 items-center mb-3">
@@ -831,11 +1465,34 @@ const Registration = () => {
                           type="text"
                           name=""
                           id=""
-                          className="w-full h-[36px] border border-slate-300 rounded-sm focus:border focus:border-[#0077b6]  "
+                          className={`w-full h-[36px] rounded-sm focus:border focus:border-[#0077b6] ${
+                            isError && jabatanKeuangan.trim().length === 0
+                              ? "border-red-400"
+                              : "border-slate-300"
+                          } `}
                         />
-                        <div className="absolute right-[-20px] top-0">*)</div>
+                        <div className="absolute right-[-20px] top-0">
+                          {isError && jabatanKeuangan.trim().length === 0 ? (
+                            <div className="text-red-500">
+                              <PiWarningCircleLight />
+                            </div>
+                          ) : (
+                            "*)"
+                          )}
+                        </div>
                       </div>
                     </div>
+
+                    {isError && (
+                      <div className="mt-10 mb-3">
+                        <div className="w-fit flex gap-1 items-center text-[14px] bg-red-500 text-white py-3 px-5 ">
+                          <div>
+                            <PiWarningCircleLight />
+                          </div>
+                          <div>Data masih belum lengkap</div>
+                        </div>
+                      </div>
+                    )}
                   </form>
                 </div>
               ) : activeStep === 2 ? (
@@ -864,10 +1521,22 @@ const Registration = () => {
                           id=""
                           value={termPembayaran}
                           onChange={onChangeTermPembayaran}
-                          className="w-full h-[36px] border border-slate-300 rounded-sm focus:border focus:border-[#0077b6]  "
+                          className={`w-full h-[36px] rounded-sm focus:border focus:border-[#0077b6] ${
+                            isError && termPembayaran.trim().length === 0
+                              ? "border-red-400"
+                              : "border-slate-300"
+                          } `}
                         />
                         <div>Hari</div>
-                        <div className="absolute right-[-20px] top-0">*)</div>
+                        <div className="absolute right-[-20px] top-0">
+                          {isError && termPembayaran.trim().length === 0 ? (
+                            <div className="text-red-500">
+                              <PiWarningCircleLight />
+                            </div>
+                          ) : (
+                            "*)"
+                          )}
+                        </div>
                       </div>
                     </div>
                     <div className="flex gap-2 items-center mb-3">
@@ -884,9 +1553,21 @@ const Registration = () => {
                           type="text"
                           name=""
                           id=""
-                          className="w-full h-[36px] border border-slate-300 rounded-sm focus:border focus:border-[#0077b6]  "
+                          className={`w-full h-[36px]  rounded-sm focus:border focus:border-[#0077b6] ${
+                            isError && bank.trim().length === 0
+                              ? "border-red-400"
+                              : "border-slate-300"
+                          } `}
                         />
-                        <div className="absolute right-[-20px] top-0">*)</div>
+                        <div className="absolute right-[-20px] top-0">
+                          {isError && bank.trim().length === 0 ? (
+                            <div className="text-red-500">
+                              <PiWarningCircleLight />
+                            </div>
+                          ) : (
+                            "*)"
+                          )}
+                        </div>
                       </div>
                     </div>
                     <div className="flex gap-2 mb-3 items-center">
@@ -903,9 +1584,21 @@ const Registration = () => {
                           type="text"
                           name=""
                           id=""
-                          className="w-full h-[36px] border border-slate-300 rounded-sm focus:border focus:border-[#0077b6]  "
+                          className={`w-full h-[36px] rounded-sm focus:border focus:border-[#0077b6] ${
+                            isError && nomorRekening.trim().length === 0
+                              ? "border-red-400"
+                              : "border-slate-300"
+                          } `}
                         />
-                        <div className="absolute right-[-20px] top-0">*)</div>
+                        <div className="absolute right-[-20px] top-0">
+                          {isError && nomorRekening.trim().length === 0 ? (
+                            <div className="text-red-500">
+                              <PiWarningCircleLight />
+                            </div>
+                          ) : (
+                            "*)"
+                          )}
+                        </div>
                       </div>
                     </div>
                     <div className="flex gap-2 items-center mb-3">
@@ -922,9 +1615,21 @@ const Registration = () => {
                           type="text"
                           name=""
                           id=""
-                          className="w-full h-[36px] border border-slate-300 rounded-sm focus:border focus:border-[#0077b6]  "
+                          className={`w-full h-[36px] rounded-sm focus:border focus:border-[#0077b6] ${
+                            isError && namaRekening.trim().length === 0
+                              ? "border-red-400"
+                              : "border-slate-300"
+                          } `}
                         />
-                        <div className="absolute right-[-20px] top-0">*)</div>
+                        <div className="absolute right-[-20px] top-0">
+                          {isError && namaRekening.trim().length === 0 ? (
+                            <div className="text-red-500">
+                              <PiWarningCircleLight />
+                            </div>
+                          ) : (
+                            "*)"
+                          )}
+                        </div>
                       </div>
                     </div>
                     <div className="flex gap-2 items-center mb-3">
@@ -942,9 +1647,21 @@ const Registration = () => {
                           type="text"
                           name=""
                           id=""
-                          className="w-full h-[36px] border border-slate-300 rounded-sm focus:border focus:border-[#0077b6]  "
+                          className={`w-full h-[36px] rounded-sm focus:border focus:border-[#0077b6] ${
+                            isError && kantorCabangBank.trim().length === 0
+                              ? "border-red-400"
+                              : "border-slate-300"
+                          } `}
                         />
-                        <div className="absolute right-[-20px] top-0">*)</div>
+                        <div className="absolute right-[-20px] top-0">
+                          {isError && kantorCabangBank.trim().length === 0 ? (
+                            <div className="text-red-500">
+                              <PiWarningCircleLight />
+                            </div>
+                          ) : (
+                            "*)"
+                          )}
+                        </div>
                       </div>
                     </div>
                     <div className="flex gap-2 items-center mb-3">
@@ -964,28 +1681,48 @@ const Registration = () => {
                           placeholder="Pilih metode pengiriman..."
                           required
                         />
-                        <div className="absolute right-[-20px] top-0">*)</div>
+                        <div className="absolute right-[-20px] top-0">
+                          {isError && isEmpty(metodePengiriman) ? (
+                            <div className="text-red-500">
+                              <PiWarningCircleLight />
+                            </div>
+                          ) : (
+                            "*)"
+                          )}
+                        </div>
                       </div>
                     </div>
-                    <div className="flex gap-2 items-center mb-3">
+                    <div className="flex gap-2 items-center mb-3 mt-5">
                       <div className="whitespace-nowrap flex">
                         <label htmlFor="" className="w-44">
                           Pengembalian Barang
                         </label>
                         <div>:</div>
                       </div>
-                      <div className="w-1/2 relative">
-                        <LocalizationProvider dateAdapter={AdapterDayjs}>
-                          <DemoContainer components={["DatePicker"]}>
-                            <DatePicker
-                              className=" w-full"
-                              value={pengembalianBarang}
-                              onChange={onChangePengembalianBarang}
-                            />
-                          </DemoContainer>
-                        </LocalizationProvider>
-
-                        <div className="absolute right-[-20px] top-0">*)</div>
+                      <div className="w-1/2 relative flex items-center gap-2">
+                        <input
+                          type="text"
+                          pattern="[0-9]*"
+                          name=""
+                          id=""
+                          value={pengembalianBarang}
+                          onChange={onChangePengembalianBarang}
+                          className={`w-full h-[36px] rounded-sm focus:border focus:border-[#0077b6] ${
+                            isError && pengembalianBarang.trim().length === 0
+                              ? "border-red-400"
+                              : "border-slate-300"
+                          } `}
+                        />
+                        <div>Hari</div>
+                        <div className="absolute right-[-20px] top-0">
+                          {isError && pengembalianBarang.trim().length === 0 ? (
+                            <div className="text-red-500">
+                              <PiWarningCircleLight />
+                            </div>
+                          ) : (
+                            "*)"
+                          )}
+                        </div>
                       </div>
                     </div>
 
@@ -1078,6 +1815,16 @@ const Registration = () => {
                         />
                       </div>
                     </div>
+                    {isError && (
+                      <div className="mt-10 mb-3">
+                        <div className="w-fit flex gap-1 items-center text-[14px] bg-red-500 text-white py-3 px-5 ">
+                          <div>
+                            <PiWarningCircleLight />
+                          </div>
+                          <div>Data masih belum lengkap</div>
+                        </div>
+                      </div>
+                    )}
                   </form>
                 </div>
               ) : (
@@ -1098,141 +1845,230 @@ const Registration = () => {
 
                   <form action="">
                     <div className="flex gap-2 items-center mb-3">
-                      <div className="whitespace-nowrap flex">
-                        <label htmlFor="" className="w-72">
-                          NPWP / Surat Keterangan Bebas Pajak
-                        </label>
-                        <div>:</div>
+                      <div className="flex flex-col gap-1">
+                        <div className="whitespace-nowrap flex">
+                          <label htmlFor="" className="w-72">
+                            NPWP / Surat Keterangan Bebas Pajak
+                          </label>
+                          <div>:</div>
+                        </div>
+                        <div className="text-[10px] text-gray-500">
+                          Max size 2 mb
+                        </div>
                       </div>
+
                       <div className="w-1/2 relative">
                         <input
                           type="file"
                           onChange={onChangeNpwpFile}
                           id="upload-npwp"
-                          accept="image/jpg,.pdf"
-                          className=" w-full h-[36px] border border-slate-300 rounded-sm focus:border focus:border-[#0077b6]  "
+                          accept=".jpg,.pdf"
+                          className={`w-full h-[36px] border rounded-sm focus:border focus:border-[#0077b6] ${
+                            isError && npwpFile === null
+                              ? "border-red-400"
+                              : "border-slate-300"
+                          }  `}
                         />
-                        <div className="absolute right-[-20px] top-0">*)</div>
+                        <div className="absolute right-[-20px] top-0">
+                          {isError && npwpFile === null ? (
+                            <div className="text-red-500">
+                              <PiWarningCircleLight />
+                            </div>
+                          ) : (
+                            "*)"
+                          )}
+                        </div>
                       </div>
                     </div>
                     <div className="flex gap-2 items-center mb-3">
-                      <div className="whitespace-nowrap flex">
-                        <label htmlFor="" className="w-72">
-                          KTP Pemilik
-                        </label>
-                        <div>:</div>
-                      </div>
-                      <div className="w-1/2 relative">
-                        <input
-                          type="file"
-                          onChange={(e) => setKtpPemilikFIle(e.target.files[0])}
-                          id="upload-npwp"
-                          accept="image/jpg,.pdf"
-                          className=" w-full h-[36px] border border-slate-300 rounded-sm focus:border focus:border-[#0077b6]  "
-                        />
-                        <div className="absolute right-[-20px] top-0">*)</div>
-                      </div>
-                    </div>
-                    <div className="flex gap-2 items-center mb-3">
-                      <div className="whitespace-nowrap flex">
-                        <label htmlFor="" className="w-72">
-                          KTP Penanggung Jawab
-                        </label>
-                        <div>:</div>
-                      </div>
-                      <div className="w-1/2 relative">
-                        <input
-                          type="file"
-                          onChange={(e) =>
-                            setKtpPenanggungJawabFile(e.target.files[0])
-                          }
-                          id="upload-npwp"
-                          accept="image/jpg,.pdf"
-                          className=" w-full h-[36px] border border-slate-300 rounded-sm focus:border focus:border-[#0077b6]  "
-                        />
-                        <div className="absolute right-[-20px] top-0">*)</div>
-                      </div>
-                    </div>
-                    <div className="flex gap-2 items-center mb-3">
-                      <div className="whitespace-nowrap flex">
-                        <label htmlFor="" className="w-72">
-                          Surat Pengukuhan Kena Pajak (SPKP)
-                        </label>
-                        <div>:</div>
-                      </div>
-                      <div className="w-1/2 relative">
-                        <input
-                          type="file"
-                          onChange={(e) => setSpkpFile(e.target.files[0])}
-                          id="upload-npwp"
-                          accept="image/jpg,.pdf"
-                          className=" w-full h-[36px] border border-slate-300 rounded-sm focus:border focus:border-[#0077b6]  "
-                        />
-                        <div className="absolute right-[-20px] top-0">*)</div>
-                      </div>
-                    </div>
-                    <div className="flex gap-2 items-center mb-3">
-                      <div className="whitespace-nowrap flex">
-                        <label htmlFor="" className="w-72">
-                          Surat Ijin Usaha Perdagangan (SIUP)
-                        </label>
-                        <div>:</div>
-                      </div>
-                      <div className="w-1/2 relative">
-                        <input
-                          type="file"
-                          onChange={(e) => setSiupFile(e.target.files[0])}
-                          id="upload-npwp"
-                          accept="image/jpg,.pdf"
-                          className=" w-full h-[36px] border border-slate-300 rounded-sm focus:border focus:border-[#0077b6]  "
-                        />
-                        <div className="absolute right-[-20px] top-0">*)</div>
-                      </div>
-                    </div>
-                    <div className="flex gap-2 items-center mb-3">
-                      <div className="whitespace-nowrap flex">
-                        <label htmlFor="" className="w-72">
-                          Nomor Induk Berusaha (NIB)
-                        </label>
-                        <div>:</div>
-                      </div>
-                      <div className="w-1/2 relative">
-                        <input
-                          type="file"
-                          onChange={(e) => setNibFile(e.target.files[0])}
-                          accept="image/jpg,.pdf"
-                          id="upload-npwp"
-                          className=" w-full h-[36px] border border-slate-300 rounded-sm focus:border focus:border-[#0077b6]  "
-                        />
-                        <div className="absolute right-[-20px] top-0">*)</div>
-                      </div>
-                    </div>
-                    <div className="flex gap-2 items-center mb-3">
-                      <div className="whitespace-nowrap flex">
-                        <label htmlFor="" className="w-72">
-                          Screenshoot Rekening Perusahaan
-                        </label>
-                        <div>:</div>
-                      </div>
-                      <div className="w-1/2 relative">
-                        <input
-                          type="file"
-                          onChange={(e) =>
-                            setSsPerusahaanFile(e.target.files[0])
-                          }
-                          id="upload-npwp"
-                          accept="image/jpg,.pdf"
-                          className=" w-full h-[36px] border border-slate-300 rounded-sm focus:border focus:border-[#0077b6]  "
-                        />
-                        <div className="absolute right-[-20px] top-0">*)</div>
-                      </div>
-                    </div>
-                    <div className="flex gap-2 items-center mb-3">
-                      <div className="flex flex-col">
+                      <div className="flex flex-col gap-1">
                         <div className="whitespace-nowrap flex">
-                          <label htmlFor="" className="w-[17.5rem]">
+                          <label htmlFor="" className="w-72">
+                            KTP Pemilik
+                          </label>
+                          <div>:</div>
+                        </div>
+                        <div className="text-[10px] text-gray-500">
+                          Max size 2 mb
+                        </div>
+                      </div>
+                      <div className="w-1/2 relative">
+                        <input
+                          type="file"
+                          onChange={onChangeKtpPemilikFile}
+                          id="upload-npwp"
+                          accept=".jpg,.pdf"
+                          className={` w-full h-[36px] border rounded-sm focus:border focus:border-[#0077b6] ${
+                            isError && ktpPemilikFile === null
+                              ? "border-red-400"
+                              : "border-slate-300"
+                          } `}
+                        />
+                        <div className="absolute right-[-20px] top-0">
+                          {isError && ktpPemilikFile === null ? (
+                            <div className="text-red-500">
+                              <PiWarningCircleLight />
+                            </div>
+                          ) : (
+                            "*)"
+                          )}
+                        </div>
+                      </div>
+                    </div>
+                    <div className="flex gap-2 items-center mb-3">
+                      <div className="flex flex-col gap-1">
+                        <div className="whitespace-nowrap flex">
+                          <label htmlFor="" className="w-72">
+                            KTP Penanggung Jawab
+                          </label>
+                          <div>:</div>
+                        </div>
+                        <div className="text-[10px] text-gray-500">
+                          Max size 2 mb
+                        </div>
+                      </div>
+                      <div className="w-1/2 relative">
+                        <input
+                          type="file"
+                          onChange={onChangeKtpPenanggungJawabFile}
+                          id="upload-npwp"
+                          accept=".jpg,.pdf"
+                          className={` w-full h-[36px] border rounded-sm focus:border focus:border-[#0077b6] ${
+                            isError && ktpPenanggungJawabFile === null
+                              ? "border-red-400"
+                              : "border-slate-300"
+                          } `}
+                        />
+                        <div className="absolute right-[-20px] top-0">
+                          {isError && ktpPenanggungJawabFile === null ? (
+                            <div className="text-red-500">
+                              <PiWarningCircleLight />
+                            </div>
+                          ) : (
+                            "*)"
+                          )}
+                        </div>
+                      </div>
+                    </div>
+                    <div className="flex gap-2 items-center mb-3">
+                      <div className="flex flex-col gap-1">
+                        <div className="whitespace-nowrap flex items-center">
+                          <label
+                            htmlFor=""
+                            className="w-72 whitespace-pre-wrap"
+                          >
+                            Surat Pengukuhan Kena Pajak (SPKP) / Surat
+                            Keterangan Non PKP (Bagi Pengusaha Tidak Kena Pajak)
+                          </label>
+                          <div>:</div>
+                        </div>
+                        <div className="text-[10px] text-gray-500">
+                          Max size 2 mb
+                        </div>
+                      </div>
+                      <div className="w-1/2 relative">
+                        <input
+                          type="file"
+                          onChange={onChangeSpkpFile}
+                          id="upload-npwp"
+                          accept=".jpg,.pdf"
+                          className={` w-full h-[36px] border rounded-sm focus:border focus:border-[#0077b6] ${
+                            isError && spkpFile === null
+                              ? "border-red-400"
+                              : "border-slate-300"
+                          } `}
+                        />
+                        <div className="absolute right-[-20px] top-0">
+                          {isError && spkpFile === null ? (
+                            <div className="text-red-500">
+                              <PiWarningCircleLight />
+                            </div>
+                          ) : (
+                            "*)"
+                          )}
+                        </div>
+                      </div>
+                    </div>
+
+                    <div className="flex gap-2 items-center mb-3">
+                      <div className="flex flex-col gap-1">
+                        <div className="whitespace-nowrap flex">
+                          <label htmlFor="" className="w-72">
+                            Nomer Induk Berusaha (NIB)
+                          </label>
+                          <div>:</div>
+                        </div>
+                        <div className="text-[10px] text-gray-500">
+                          Max size 2 mb
+                        </div>
+                      </div>
+                      <div className="w-1/2 relative">
+                        <input
+                          type="file"
+                          onChange={onChangeNibFile}
+                          accept=".jpg,.pdf"
+                          id="upload-npwp"
+                          className={` w-full h-[36px] border rounded-sm focus:border focus:border-[#0077b6] ${
+                            isError && nibFile === null
+                              ? "border-red-400"
+                              : "border-slate-300"
+                          } `}
+                        />
+                        <div className="absolute right-[-20px] top-0">
+                          {isError && nibFile === null ? (
+                            <div className="text-red-500">
+                              <PiWarningCircleLight />
+                            </div>
+                          ) : (
+                            "*)"
+                          )}
+                        </div>
+                      </div>
+                    </div>
+                    <div className="flex gap-2 items-center mb-3">
+                      <div className="flex flex-col gap-1">
+                        <div className="whitespace-nowrap flex">
+                          <label htmlFor="" className="w-72">
+                            Screenshot Rekening Perusahaan
+                          </label>
+                          <div>:</div>
+                        </div>
+                        <div className="text-[10px] text-gray-500">
+                          Max size 2 mb
+                        </div>
+                      </div>
+                      <div className="w-1/2 relative">
+                        <input
+                          type="file"
+                          onChange={onChangeSsRekeningFile}
+                          id="upload-npwp"
+                          accept=".jpg,.pdf"
+                          className={` w-full h-[36px] border rounded-sm focus:border focus:border-[#0077b6] ${
+                            isError && ssPerusahaanFile === null
+                              ? "border-red-400"
+                              : "border-slate-300"
+                          } `}
+                        />
+                        <div className="absolute right-[-20px] top-0">
+                          {isError && ssPerusahaanFile === null ? (
+                            <div className="text-red-500">
+                              <PiWarningCircleLight />
+                            </div>
+                          ) : (
+                            "*)"
+                          )}
+                        </div>
+                      </div>
+                    </div>
+                    <div className="flex items-center mb-3">
+                      <div className="flex flex-col gap-1">
+                        <div className="whitespace-nowrap flex">
+                          <label htmlFor="" className="w-72">
                             Sertifikasi BPOM
                           </label>
+                        </div>
+                        <div className="text-[10px] text-gray-500">
+                          Max size 1 mb
                         </div>
                         <div className="flex gap-1 items-center text-[12px]">
                           <div>
@@ -1241,15 +2077,14 @@ const Registration = () => {
                           <div>Untuk supplier makanan & minuman</div>
                         </div>
                       </div>
-
-                      <div>:</div>
+                      <div className="mr-2">:</div>
 
                       <div className="w-1/2 relative">
                         <input
                           type="file"
-                          onChange={(e) => setSertifBpomFile(e.target.files[0])}
+                          onChange={onChangeBpomFile}
                           id="upload-npwp"
-                          accept="image/jpg,.pdf"
+                          accept=".jpg,.pdf"
                           className=" w-full h-[36px] border border-slate-300 rounded-sm focus:border focus:border-[#0077b6]  "
                         />
                       </div>
@@ -1268,6 +2103,20 @@ const Registration = () => {
                       aktif kepada PT Karya Prima Unggulan
                     </div>
                   </div>
+
+                  {isError && (
+                    <div className="mt-10 mb-3">
+                      <div className="w-fit flex gap-1 items-center text-[14px] bg-red-500 text-white py-3 px-5 ">
+                        <div>
+                          <PiWarningCircleLight />
+                        </div>
+                        <div>
+                          File yang bertanda *) tidak boleh kosong atau maksimal
+                          size file adalah 2 mb
+                        </div>
+                      </div>
+                    </div>
+                  )}
                 </div>
               )}
 
@@ -1291,14 +2140,12 @@ const Registration = () => {
                 )}
 
                 {activeStep === steps.length - 1 ? (
-                  <Link to="/profile">
-                    <button
-                      onClick={handleNext}
-                      className="bg-[#0077b6] text-white py-2 px-10 rounded-sm shadow-sm hover:bg-[#00b4d8]"
-                    >
-                      Finish
-                    </button>
-                  </Link>
+                  <button
+                    onClick={handleNext}
+                    className="bg-[#0077b6] text-white py-2 px-10 rounded-sm shadow-sm hover:bg-[#00b4d8]"
+                  >
+                    Finish
+                  </button>
                 ) : (
                   <button
                     onClick={handleNext}
@@ -1328,11 +2175,114 @@ const Registration = () => {
                         <form action="">
                           <div className="flex flex-col gap-2 mb-3">
                             <div className="whitespace-nowrap flex">
-                              <label htmlFor="" className="w-36">
-                                Tipe Perusahaan *
+                              <label
+                                htmlFor=""
+                                className="w-36 flex gap-1 items-center"
+                              >
+                                Username{" "}
+                                {isError && username.trim().length === 0 ? (
+                                  <span className="text-red-400">
+                                    <PiWarningCircleLight />
+                                  </span>
+                                ) : (
+                                  "*"
+                                )}
                               </label>
                             </div>
-                            <div className="w-full whitespace-nowrap">
+                            <div className="whitespace-nowrap">
+                              <input
+                                value={username}
+                                onChange={(e) => setUsername(e.target.value)}
+                                type="text"
+                                name=""
+                                id=""
+                                className={`w-full h-[36px] rounded-sm focus:border focus:border-[#0077b6] ${
+                                  isError && username.trim().length === 0
+                                    ? "border-red-400"
+                                    : "border-slate-300"
+                                } `}
+                              />
+                            </div>
+                          </div>
+                          <div className="flex flex-col gap-2 mb-3">
+                            <div className="whitespace-nowrap flex">
+                              <label
+                                htmlFor=""
+                                className="w-36 flex gap-1 items-center"
+                              >
+                                Email{" "}
+                                {isError && email.trim().length === 0 ? (
+                                  <span className="text-red-400">
+                                    <PiWarningCircleLight />
+                                  </span>
+                                ) : (
+                                  "*"
+                                )}
+                              </label>
+                            </div>
+                            <div className="whitespace-nowrap">
+                              <input
+                                value={email}
+                                onChange={(e) => setEmail(e.target.value)}
+                                type="email"
+                                name=""
+                                id=""
+                                className={`w-full h-[36px] rounded-sm focus:border focus:border-[#0077b6] ${
+                                  isError && email.trim().length === 0
+                                    ? "border-red-400"
+                                    : "border-slate-300"
+                                } `}
+                              />
+                            </div>
+                          </div>
+                          <div className="flex flex-col gap-2 mb-10">
+                            <div className="whitespace-nowrap flex">
+                              <label
+                                htmlFor=""
+                                className="w-36 flex gap-1 items-center"
+                              >
+                                Password{" "}
+                                {isError && password.trim().length === 0 ? (
+                                  <span className="text-red-400">
+                                    <PiWarningCircleLight />
+                                  </span>
+                                ) : (
+                                  "*"
+                                )}
+                              </label>
+                            </div>
+                            <div className="whitespace-nowrap">
+                              <input
+                                value={password}
+                                onChange={(e) => setPassword(e.target.value)}
+                                type="password"
+                                name=""
+                                id=""
+                                className={`w-full h-[36px] rounded-sm focus:border focus:border-[#0077b6] ${
+                                  isError && password.trim().length === 0
+                                    ? "border-red-400"
+                                    : "border-slate-300"
+                                } `}
+                              />
+                            </div>
+                          </div>
+                          <div className="flex flex-col gap-2 mb-3">
+                            <div className="whitespace-nowrap flex">
+                              <label
+                                htmlFor=""
+                                className="w-36 flex gap-1 items-center"
+                              >
+                                Tipe Perusahaan{" "}
+                                {isError && isEmpty(tipePerusahaan) ? (
+                                  <span className="text-red-400">
+                                    <PiWarningCircleLight />
+                                  </span>
+                                ) : (
+                                  "*"
+                                )}
+                              </label>
+                            </div>
+                            <div className="w-full whitespace-nowrap flex flex-col gap-1">
                               <Select
                                 value={tipePerusahaan}
                                 onChange={(item) => setTipePerusahaan(item)}
@@ -1342,12 +2292,41 @@ const Registration = () => {
                                 placeholder="Pilih Tipe Perusahaan..."
                                 required
                               />
+                              {tipePerusahaan.value === "lainnya" && (
+                                <input
+                                  value={tipePerusahaanText}
+                                  onChange={(e) =>
+                                    setTipePerusahaanText(e.target.value)
+                                  }
+                                  type="text"
+                                  name=""
+                                  id=""
+                                  placeholder="Tulis tipe perusahaan..."
+                                  className={`w-full h-[36px] rounded-sm focus:border focus:border-[#0077b6] ${
+                                    isError &&
+                                    tipePerusahaanText.trim().length === 0
+                                      ? "border-red-400"
+                                      : "border-slate-400"
+                                  } `}
+                                />
+                              )}
                             </div>
                           </div>
                           <div className="flex flex-col gap-2 mb-3">
                             <div className="whitespace-nowrap flex">
-                              <label htmlFor="" className="w-36">
-                                Nama Perusahaan *
+                              <label
+                                htmlFor=""
+                                className="w-36 flex gap-1 items-center"
+                              >
+                                Nama Perusahaan{" "}
+                                {isError &&
+                                namaPerusahaan.trim().length === 0 ? (
+                                  <span className="text-red-400">
+                                    <PiWarningCircleLight />
+                                  </span>
+                                ) : (
+                                  "*"
+                                )}
                               </label>
                             </div>
                             <div className="whitespace-nowrap">
@@ -1359,14 +2338,28 @@ const Registration = () => {
                                 type="text"
                                 name=""
                                 id=""
-                                className="w-full h-[36px] border border-slate-300 rounded-sm focus:border focus:border-[#0077b6]  "
+                                className={`w-full h-[36px] rounded-sm focus:border focus:border-[#0077b6] ${
+                                  isError && namaPerusahaan.trim().length === 0
+                                    ? "border-red-400"
+                                    : "border-x-slate-300"
+                                } `}
                               />
                             </div>
                           </div>
                           <div className="flex flex-col gap-2 mb-3">
                             <div className="whitespace-nowrap flex">
-                              <label htmlFor="" className="w-36">
-                                Alamat *
+                              <label
+                                htmlFor=""
+                                className="w-36 flex gap-1 items-center"
+                              >
+                                alamat{" "}
+                                {isError && alamat.trim().length === 0 ? (
+                                  <span className="text-red-400">
+                                    <PiWarningCircleLight />
+                                  </span>
+                                ) : (
+                                  "*"
+                                )}
                               </label>
                             </div>
                             <div>
@@ -1376,14 +2369,29 @@ const Registration = () => {
                                 onChange={(e) => setAlamat(e.target.value)}
                                 name=""
                                 id=""
-                                className="w-full border border-slate-300 rounded-sm focus:border focus:border-[#0077b6]  "
+                                className={`w-full rounded-sm focus:border focus:border-[#0077b6] ${
+                                  isError && alamat.trim().length === 0
+                                    ? "border-red-400"
+                                    : "border-slate-300"
+                                } `}
                               />
                             </div>
                           </div>
                           <div className="flex flex-col gap-2 mb-3">
                             <div className="whitespace-nowrap flex">
-                              <label htmlFor="" className="w-36">
-                                Provinsi *
+                            <label
+                                htmlFor=""
+                                className="w-36 flex gap-1 items-center"
+                              >
+                                Provinsi{" "}
+                                {isError &&
+                                isEmpty(provinsi) ? (
+                                  <span className="text-red-400">
+                                    <PiWarningCircleLight />
+                                  </span>
+                                ) : (
+                                  "*"
+                                )}
                               </label>
                             </div>
                             <div className=" whitespace-nowrap">
@@ -1400,26 +2408,49 @@ const Registration = () => {
                           </div>
                           <div className="flex flex-col gap-2 mb-3">
                             <div className="whitespace-nowrap flex">
-                              <label htmlFor="" className="w-36">
-                                Kota *
+                              <label
+                                htmlFor=""
+                                className="w-36 flex gap-1 items-center"
+                              >
+                                Kota{" "}
+                                {isError && kota.trim().length === 0 ? (
+                                  <span className="text-red-400">
+                                    <PiWarningCircleLight />
+                                  </span>
+                                ) : (
+                                  "*"
+                                )}
                               </label>
                             </div>
                             <div className=" whitespace-nowrap">
-                              <Select
+                              <input
                                 value={kota}
-                                onChange={(item) => setKota(item)}
-                                options={optionKota}
-                                noOptionsMessage={() => "Kota not found"}
-                                styles={customeStyles}
-                                placeholder="Pilih Kota..."
-                                required
+                                onChange={(e) => setKota(e.target.value)}
+                                type="text"
+                                name=""
+                                id=""
+                                className={`w-full h-[36px] border rounded-sm focus:border focus:border-[#0077b6] ${
+                                  isError && kota.trim().length === 0
+                                    ? "border-red-400"
+                                    : "border-slate-300"
+                                } `}
                               />
                             </div>
                           </div>
                           <div className="flex flex-col gap-2 mb-3">
                             <div className="whitespace-nowrap flex">
-                              <label htmlFor="" className="w-36">
-                                Kode Pos *
+                              <label
+                                htmlFor=""
+                                className="w-36 flex gap-1 items-center"
+                              >
+                                Kode Pos{" "}
+                                {isError && kodePos.trim().length === 0 ? (
+                                  <span className="text-red-400">
+                                    <PiWarningCircleLight />
+                                  </span>
+                                ) : (
+                                  "*"
+                                )}
                               </label>
                             </div>
                             <div className="">
@@ -1429,14 +2460,28 @@ const Registration = () => {
                                 type="text"
                                 name=""
                                 id=""
-                                className="w-full h-[36px] border border-slate-300 rounded-sm focus:border focus:border-[#0077b6]  "
+                                className={`w-full h-[36px] border rounded-sm focus:border focus:border-[#0077b6] ${
+                                  isError && kodePos.trim().length === 0
+                                    ? "border-red-400"
+                                    : "border-slate-300"
+                                } `}
                               />
                             </div>
                           </div>
                           <div className="flex flex-col gap-2 mb-3">
                             <div className="whitespace-nowrap flex">
-                              <label htmlFor="" className="w-36">
-                                Tipe Pembelian *
+                              <label
+                                htmlFor=""
+                                className="w-36 flex gap-1 items-center"
+                              >
+                                Tipe Pembelian{" "}
+                                {isError && isEmpty(tipePembelian) ? (
+                                  <span className="text-red-400">
+                                    <PiWarningCircleLight />
+                                  </span>
+                                ) : (
+                                  "*"
+                                )}
                               </label>
                             </div>
                             <div className=" whitespace-nowrap">
@@ -1453,8 +2498,18 @@ const Registration = () => {
                           </div>
                           <div className="flex flex-col gap-2  mb-3">
                             <div className="whitespace-nowrap flex">
-                              <label htmlFor="" className="w-36">
-                                Status Pajak *
+                              <label
+                                htmlFor=""
+                                className="w-36 flex gap-1 items-center"
+                              >
+                                Status Pajak{" "}
+                                {isError && isEmpty(statusPajak) ? (
+                                  <span className="text-red-400">
+                                    <PiWarningCircleLight />
+                                  </span>
+                                ) : (
+                                  "*"
+                                )}
                               </label>
                             </div>
                             <div className=" whitespace-nowrap">
@@ -1472,16 +2527,35 @@ const Registration = () => {
                             </div>
                           </div>
                           <div className="flex flex-col gap-2 mb-3">
-                            <div className="whitespace-nowrap flex">
-                              {statusPajak.value === "01" ? (
-                                <label htmlFor="" className="w-36">
-                                  NPWP *
-                                </label>
-                              ) : (
-                                <label htmlFor="" className="w-36">
-                                  NPWP
-                                </label>
-                              )}
+                            <div className="flex flex-col">
+                              <div className="whitespace-nowrap flex">
+                                {statusPajak.value === "PKP" ? (
+                                  <label
+                                    htmlFor=""
+                                    className="w-36 flex gap-1 items-center"
+                                  >
+                                    NPWP{" "}
+                                    {isError && npwp.trim().length === 0 ? (
+                                      <span className="text-red-400">
+                                        <PiWarningCircleLight />
+                                      </span>
+                                    ) : (
+                                      "*"
+                                    )}
+                                  </label>
+                                ) : (
+                                  <label htmlFor="" className="w-36">
+                                    NPWP
+                                  </label>
+                                )}
+                              </div>
+
+                              <div className="flex gap-1 items-center text-[12px]">
+                                <div>
+                                  <PiWarningCircleLight />
+                                </div>
+                                <div>Harus 15 digit</div>
+                              </div>
                             </div>
                             <div className=" relative">
                               <input
@@ -1490,7 +2564,13 @@ const Registration = () => {
                                 maxLength={20}
                                 name=""
                                 id=""
-                                className="w-full h-[36px] border border-slate-300 rounded-sm focus:border focus:border-[#0077b6]  "
+                                className={`w-full h-[36px] rounded-sm focus:border focus:border-[#0077b6] ${
+                                  isError &&
+                                  npwp.trim().length === 0 &&
+                                  statusPajak.value === "PKP"
+                                    ? "border-red-400"
+                                    : "border-slate-300"
+                                } `}
                                 value={npwp}
                                 onChange={(e) => formatNpwp(e.target.value)}
                               />
@@ -1513,6 +2593,16 @@ const Registration = () => {
                               />
                             </div>
                           </div>
+                          {isError && (
+                            <div className="mt-10 mb-3">
+                              <div className="w-fit flex gap-1 items-center text-[14px] bg-red-500 text-white py-3 px-5 ">
+                                
+                                <div>
+                                  Data Masih Belum Lengkap!
+                                </div>
+                              </div>
+                            </div>
+                          )}
                         </form>
                         <div className="flex max-[348px]:flex-col max-[348px]:gap-2 mt-24 justify-between">
                           {screenSize > 348 ? (
@@ -1566,9 +2656,20 @@ const Registration = () => {
                         </div>
                         <form action="">
                           <div className="flex flex-col gap-2 mb-3">
-                            <div className="whitespace-nowrap flex">
-                              <label htmlFor="" className="w-36">
-                                Nama Pemilik Perusahaan *
+                            <div className=" flex">
+                            <label
+                                htmlFor=""
+                                className="flex gap-1 items-center"
+                              >
+                                Nama Pemilik Perusahaan{" "}
+                                {isError &&
+                                namaPemilikPerusahaan.trim().length === 0 ? (
+                                  <span className="text-red-400">
+                                    <PiWarningCircleLight />
+                                  </span>
+                                ) : (
+                                  "*"
+                                )}
                               </label>
                             </div>
                             <div className="w-full whitespace-nowrap">
@@ -1580,14 +2681,25 @@ const Registration = () => {
                                 type="text"
                                 name=""
                                 id=""
-                                className="w-full h-[36px] border border-slate-300 rounded-sm focus:border focus:border-[#0077b6]  "
+                                className={`w-full h-[36px] rounded-sm focus:border focus:border-[#0077b6] ${isError && namaPemilikPerusahaan.trim().length === 0 ? 'border-red-400' : 'border-slate-300'} `}
                               />
                             </div>
                           </div>
                           <div className="flex flex-col gap-2 mb-3">
-                            <div className="whitespace-nowrap flex">
-                              <label htmlFor="" className="w-36">
-                                Nama Penanggung Jawab *
+                            <div className="flex">
+                            <label
+                                htmlFor=""
+                                className=" flex gap-1 items-center"
+                              >
+                                Nama Penanggung Jawab{" "}
+                                {isError &&
+                                namaPenanggungJawab.trim().length === 0 ? (
+                                  <span className="text-red-400">
+                                    <PiWarningCircleLight />
+                                  </span>
+                                ) : (
+                                  "*"
+                                )}
                               </label>
                             </div>
                             <div className="whitespace-nowrap">
@@ -1599,14 +2711,25 @@ const Registration = () => {
                                 type="text"
                                 name=""
                                 id=""
-                                className="w-full h-[36px] border border-slate-300 rounded-sm focus:border focus:border-[#0077b6]  "
+                                className={`w-full h-[36px] rounded-sm focus:border focus:border-[#0077b6] ${isError && namaPenanggungJawab.trim().length === 0 ? 'border-red-400' : 'border-slate-300'} `}
                               />
                             </div>
                           </div>
                           <div className="flex flex-col gap-2 mb-3">
-                            <div className="whitespace-nowrap flex">
-                              <label htmlFor="" className="w-36">
-                                Jabatan Penanggung Jawab *
+                            <div className="flex">
+                            <label
+                                htmlFor=""
+                                className=" flex gap-1 items-center"
+                              >
+                                Jabatan Penanggung Jawab{" "}
+                                {isError &&
+                                jabatanPenanggungJawab.trim().length === 0 ? (
+                                  <span className="text-red-400">
+                                    <PiWarningCircleLight />
+                                  </span>
+                                ) : (
+                                  "*"
+                                )}
                               </label>
                             </div>
                             <div>
@@ -1618,14 +2741,25 @@ const Registration = () => {
                                 type="text"
                                 name=""
                                 id=""
-                                className="w-full h-[36px] border border-slate-300 rounded-sm focus:border focus:border-[#0077b6]  "
+                                className={`w-full h-[36px] rounded-sm focus:border focus:border-[#0077b6] ${isError && jabatanPenanggungJawab.trim().length === 0 ? 'border-red-400' : 'border-slate-300'} `}
                               />
                             </div>
                           </div>
                           <div className="flex flex-col gap-2 mb-3">
-                            <div className="whitespace-nowrap flex">
-                              <label htmlFor="" className="w-36">
-                                No Telp Kantor *
+                            <div className=" flex">
+                            <label
+                                htmlFor=""
+                                className=" flex gap-1 items-center"
+                              >
+                                No Telp Kantor{" "}
+                                {isError &&
+                                noTelpKantor.trim().length === 0 ? (
+                                  <span className="text-red-400">
+                                    <PiWarningCircleLight />
+                                  </span>
+                                ) : (
+                                  "*"
+                                )}
                               </label>
                             </div>
                             <div className=" whitespace-nowrap">
@@ -1637,7 +2771,7 @@ const Registration = () => {
                                 type="text"
                                 name=""
                                 id=""
-                                className="w-full h-[36px] border border-slate-300 rounded-sm focus:border focus:border-[#0077b6]  "
+                                className={`w-full h-[36px] border rounded-sm focus:border focus:border-[#0077b6] ${isError && noTelpKantor.trim().length === 0 ? 'border-red-400' : 'border-slate-300'} `}
                               />
                             </div>
                           </div>
@@ -1646,8 +2780,19 @@ const Registration = () => {
                           </div>
                           <div className="flex flex-col gap-2 mb-3 mt-2">
                             <div className="flex">
-                              <label htmlFor="" className="w-72">
-                                No Whatsapp Purchase Order (PO) *
+                            <label
+                                htmlFor=""
+                                className=" flex gap-1 items-center"
+                              >
+                                No Whatsapp Purchase Order (PO){" "}
+                                {isError &&
+                                whatsappPO.trim().length === 0 ? (
+                                  <span className="text-red-400">
+                                    <PiWarningCircleLight />
+                                  </span>
+                                ) : (
+                                  "*"
+                                )}
                               </label>
                             </div>
                             <div className=" whitespace-nowrap">
@@ -1658,7 +2803,7 @@ const Registration = () => {
                                 id=""
                                 value={whatsappPO}
                                 onChange={(e) => onChangeWhatsappPO(e)}
-                                className="w-full h-[36px] border border-slate-300 rounded-sm focus:border focus:border-[#0077b6]  "
+                                className={`w-full h-[36px] rounded-sm focus:border focus:border-[#0077b6] ${isError && whatsappPO.trim().length === 0 ? 'border-red-400' : 'border-slate-300'} `}
                               />
                             </div>
                           </div>
@@ -1682,9 +2827,20 @@ const Registration = () => {
                             </div>
                           </div>
                           <div className="flex flex-col gap-2 mb-3">
-                            <div className="whitespace-nowrap flex">
-                              <label htmlFor="" className="w-36">
-                                Nama Kontak *
+                            <div className=" flex">
+                            <label
+                                htmlFor=""
+                                className=" flex gap-1 items-center"
+                              >
+                                Nama Kontak{" "}
+                                {isError &&
+                                namaKontak.trim().length === 0 ? (
+                                  <span className="text-red-400">
+                                    <PiWarningCircleLight />
+                                  </span>
+                                ) : (
+                                  "*"
+                                )}
                               </label>
                             </div>
                             <div className=" whitespace-nowrap">
@@ -1694,7 +2850,7 @@ const Registration = () => {
                                 type="text"
                                 name=""
                                 id=""
-                                className="w-full h-[36px] border border-slate-300 rounded-sm focus:border focus:border-[#0077b6]  "
+                                className={`w-full h-[36px] rounded-sm focus:border focus:border-[#0077b6] ${isError && namaKontak.trim().length === 0 ? 'border-red-400' : 'border-slate-300'} `}
                               />
                             </div>
                           </div>
@@ -1717,8 +2873,19 @@ const Registration = () => {
                           </div>
                           <div className="flex flex-col gap-2 mb-3 mt-10">
                             <div className="whitespace-nowrap flex">
-                              <label htmlFor="" className="w-36">
-                                No Whatsapp Keuangan *
+                            <label
+                                htmlFor=""
+                                className=" flex gap-1 items-center"
+                              >
+                                No Whatsapp Keuangan{" "}
+                                {isError &&
+                                whatsappKeuangan.trim().length === 0 ? (
+                                  <span className="text-red-400">
+                                    <PiWarningCircleLight />
+                                  </span>
+                                ) : (
+                                  "*"
+                                )}
                               </label>
                             </div>
                             <div className=" relative">
@@ -1730,7 +2897,7 @@ const Registration = () => {
                                 id=""
                                 value={whatsappKeuangan}
                                 onChange={(e) => onChangeWhatsappKeuangan(e)}
-                                className="w-full h-[36px] border border-slate-300 rounded-sm focus:border focus:border-[#0077b6]  "
+                                className={`w-full h-[36px] rounded-sm focus:border focus:border-[#0077b6] ${isError && whatsappKeuangan.trim().length === 0 ? 'border-red-400' : 'border-slate-300'} `}
                               />
                             </div>
                           </div>
@@ -1755,8 +2922,19 @@ const Registration = () => {
                           </div>
                           <div className="flex flex-col gap-2 mb-3">
                             <div className="whitespace-nowrap flex">
-                              <label htmlFor="" className="w-36">
-                                Nama Kontak *
+                            <label
+                                htmlFor=""
+                                className=" flex gap-1 items-center"
+                              >
+                                Nama Kontak{" "}
+                                {isError &&
+                                namaKontakKeuangan.trim().length === 0 ? (
+                                  <span className="text-red-400">
+                                    <PiWarningCircleLight />
+                                  </span>
+                                ) : (
+                                  "*"
+                                )}
                               </label>
                             </div>
                             <div className="">
@@ -1768,14 +2946,25 @@ const Registration = () => {
                                 type="text"
                                 name=""
                                 id=""
-                                className="w-full h-[36px] border border-slate-300 rounded-sm focus:border focus:border-[#0077b6]  "
+                                className={`w-full h-[36px] rounded-sm focus:border focus:border-[#0077b6] ${isError && namaKontakKeuangan.trim().length === 0 ? 'border-red-400' : 'border-slate-300'} `}
                               />
                             </div>
                           </div>
                           <div className="flex flex-col gap-2 mb-3">
                             <div className="whitespace-nowrap flex">
-                              <label htmlFor="" className="w-36">
-                                Jabatan
+                            <label
+                                htmlFor=""
+                                className=" flex gap-1 items-center"
+                              >
+                                Jabatan{" "}
+                                {isError &&
+                                jabatanKeuangan.trim().length === 0 ? (
+                                  <span className="text-red-400">
+                                    <PiWarningCircleLight />
+                                  </span>
+                                ) : (
+                                  "*"
+                                )}
                               </label>
                             </div>
                             <div className="">
@@ -1787,10 +2976,20 @@ const Registration = () => {
                                 type="text"
                                 name=""
                                 id=""
-                                className="w-full h-[36px] border border-slate-300 rounded-sm focus:border focus:border-[#0077b6]  "
+                                className={`w-full h-[36px] rounded-sm focus:border focus:border-[#0077b6] ${isError && jabatanKeuangan.trim().length === 0 ? 'border-red-400' : 'border-slate-300'} `}
                               />
                             </div>
                           </div>
+                          {isError && (
+                            <div className="mt-10 mb-3">
+                              <div className="w-fit flex gap-1 items-center text-[14px] bg-red-500 text-white py-3 px-5 ">
+                                
+                                <div>
+                                  Data Masih Belum Lengkap!
+                                </div>
+                              </div>
+                            </div>
+                          )}
                         </form>
                         <div className="flex max-[348px]:flex-col max-[348px]:gap-2 mt-24 justify-between">
                           {screenSize > 348 ? (
@@ -1851,8 +3050,19 @@ const Registration = () => {
                         <form action="">
                           <div className="flex flex-col gap-2 mb-3 mt-5">
                             <div className="whitespace-nowrap flex">
-                              <label htmlFor="" className="w-44">
-                                Term Pembayaran *
+                            <label
+                                htmlFor=""
+                                className=" flex gap-1 items-center"
+                              >
+                                Term Pembayaran{" "}
+                                {isError &&
+                                termPembayaran.trim().length === 0 ? (
+                                  <span className="text-red-400">
+                                    <PiWarningCircleLight />
+                                  </span>
+                                ) : (
+                                  "*"
+                                )}
                               </label>
                             </div>
                             <div className="relative flex items-center gap-2">
@@ -1863,15 +3073,26 @@ const Registration = () => {
                                 id=""
                                 value={termPembayaran}
                                 onChange={onChangeTermPembayaran}
-                                className="w-full h-[36px] border border-slate-300 rounded-sm focus:border focus:border-[#0077b6]  "
+                                className={`w-full h-[36px] rounded-sm focus:border focus:border-[#0077b6]  ${isError && termPembayaran.trim().length === 0 ? 'border-red-400' : 'border-slate-300'} `}
                               />
                               <div>Hari</div>
                             </div>
                           </div>
                           <div className="flex flex-col gap-2 mb-3">
                             <div className="whitespace-nowrap flex">
-                              <label htmlFor="" className="w-44">
-                                Bank *
+                            <label
+                                htmlFor=""
+                                className=" flex gap-1 items-center"
+                              >
+                                Bank{" "}
+                                {isError &&
+                                bank.trim().length === 0 ? (
+                                  <span className="text-red-400">
+                                    <PiWarningCircleLight />
+                                  </span>
+                                ) : (
+                                  "*"
+                                )}
                               </label>
                             </div>
                             <div className="relative">
@@ -1881,14 +3102,25 @@ const Registration = () => {
                                 type="text"
                                 name=""
                                 id=""
-                                className="w-full h-[36px] border border-slate-300 rounded-sm focus:border focus:border-[#0077b6]  "
+                                className={`w-full h-[36px] rounded-sm focus:border focus:border-[#0077b6] ${isError && bank.trim().length === 0 ? 'border-red-400' : 'border-slate-300'} `}
                               />
                             </div>
                           </div>
                           <div className="flex flex-col gap-2 mb-3">
                             <div className="whitespace-nowrap flex">
-                              <label htmlFor="" className="w-44">
-                                No. Rekening Bank *
+                            <label
+                                htmlFor=""
+                                className=" flex gap-1 items-center"
+                              >
+                                No. Rekening Bank{" "}
+                                {isError &&
+                                nomorRekening.trim().length === 0 ? (
+                                  <span className="text-red-400">
+                                    <PiWarningCircleLight />
+                                  </span>
+                                ) : (
+                                  "*"
+                                )}
                               </label>
                             </div>
                             <div className="relative">
@@ -1898,14 +3130,25 @@ const Registration = () => {
                                 type="text"
                                 name=""
                                 id=""
-                                className="w-full h-[36px] border border-slate-300 rounded-sm focus:border focus:border-[#0077b6]  "
+                                className={`w-full h-[36px] rounded-sm focus:border focus:border-[#0077b6] ${isError && nomorRekening.trim().length === 0 ? 'border-red-400' : 'border-slate-300'} `}
                               />
                             </div>
                           </div>
                           <div className="flex gap-2 flex-col  mb-3">
                             <div className="whitespace-nowrap flex">
-                              <label htmlFor="" className="w-44">
-                                Nama Rekening Bank *
+                            <label
+                                htmlFor=""
+                                className=" flex gap-1 items-center"
+                              >
+                                Nama Rekening Bank{" "}
+                                {isError &&
+                                namaRekening.trim().length === 0 ? (
+                                  <span className="text-red-400">
+                                    <PiWarningCircleLight />
+                                  </span>
+                                ) : (
+                                  "*"
+                                )}
                               </label>
                             </div>
                             <div className="relative">
@@ -1917,14 +3160,25 @@ const Registration = () => {
                                 type="text"
                                 name=""
                                 id=""
-                                className="w-full h-[36px] border border-slate-300 rounded-sm focus:border focus:border-[#0077b6]  "
+                                className={`w-full h-[36px] rounded-sm focus:border focus:border-[#0077b6] ${isError && namaRekening.trim().length === 0 ? 'border-red-400' : 'border-slate-300'} `}
                               />
                             </div>
                           </div>
                           <div className="flex flex-col gap-2 mb-3">
                             <div className="whitespace-nowrap flex">
-                              <label htmlFor="" className="w-44">
-                                Kantor Cabang Bank *
+                            <label
+                                htmlFor=""
+                                className=" flex gap-1 items-center"
+                              >
+                                Kantor Cabang Bank{" "}
+                                {isError &&
+                                kantorCabangBank.trim().length === 0 ? (
+                                  <span className="text-red-400">
+                                    <PiWarningCircleLight />
+                                  </span>
+                                ) : (
+                                  "*"
+                                )}
                               </label>
                             </div>
                             <div className="relative flex items-center gap-2">
@@ -1937,14 +3191,25 @@ const Registration = () => {
                                 type="text"
                                 name=""
                                 id=""
-                                className="w-full h-[36px] border border-slate-300 rounded-sm focus:border focus:border-[#0077b6]  "
+                                className={`w-full h-[36px] rounded-sm focus:border focus:border-[#0077b6] ${isError && kantorCabangBank.trim().length === 0 ? 'border-red-400' : 'border-slate-300'} `}
                               />
                             </div>
                           </div>
                           <div className="flex flex-col gap-2 mb-3">
                             <div className="whitespace-nowrap flex">
-                              <label htmlFor="" className="w-44">
-                                Metode Pengiriman *
+                            <label
+                                htmlFor=""
+                                className=" flex gap-1 items-center"
+                              >
+                                Metode Pengiriman{" "}
+                                {isError &&
+                                isEmpty(metodePengiriman) ? (
+                                  <span className="text-red-400">
+                                    <PiWarningCircleLight />
+                                  </span>
+                                ) : (
+                                  "*"
+                                )}
                               </label>
                             </div>
                             <div className="relative">
@@ -1960,24 +3225,34 @@ const Registration = () => {
                               />
                             </div>
                           </div>
-                          <div className="flex flex-col gap-2 mb-3">
+                          <div className="flex flex-col gap-2 mb-3 mt-5">
                             <div className="whitespace-nowrap flex">
-                              <label htmlFor="" className="w-44">
-                                Pengembalian Barang *
+                            <label
+                                htmlFor=""
+                                className=" flex gap-1 items-center"
+                              >
+                                Pengembalian Barang{" "}
+                                {isError &&
+                                pengembalianBarang.trim().length === 0 ? (
+                                  <span className="text-red-400">
+                                    <PiWarningCircleLight />
+                                  </span>
+                                ) : (
+                                  "*"
+                                )}
                               </label>
                             </div>
-                            <div className=" relative">
-                              <LocalizationProvider dateAdapter={AdapterDayjs}>
-                                <DemoContainer components={["DatePicker"]}>
-                                  <DatePicker
-                                    className=" w-full"
-                                    value={pengembalianBarang}
-                                    onChange={(newValue) =>
-                                      setPengembalianBarang(newValue)
-                                    }
-                                  />
-                                </DemoContainer>
-                              </LocalizationProvider>
+                            <div className="relative flex items-center gap-2">
+                              <input
+                                type="text"
+                                pattern="[0-9]*"
+                                name=""
+                                id=""
+                                value={pengembalianBarang}
+                                onChange={onChangePengembalianBarang}
+                                className={`w-full h-[36px] rounded-sm focus:border focus:border-[#0077b6] ${isError && pengembalianBarang.trim().length === 0 ? 'border-red-400' : 'border-slate-300'} `}
+                              />
+                              <div>Hari</div>
                             </div>
                           </div>
                           <div className="flex flex-col gap-2 mb-3 mt-10">
@@ -2065,6 +3340,16 @@ const Registration = () => {
                               />
                             </div>
                           </div>
+                          {isError && (
+                            <div className="mt-10 mb-3">
+                              <div className="w-fit flex gap-1 items-center text-[14px] bg-red-500 text-white py-3 px-5 ">
+                                
+                                <div>
+                                  Data Masih Belum Lengkap!
+                                </div>
+                              </div>
+                            </div>
+                          )}
                         </form>
                         <div className="flex max-[348px]:flex-col max-[348px]:gap-2 mt-24 justify-between">
                           {screenSize > 348 ? (
@@ -2129,11 +3414,29 @@ const Registration = () => {
                         </div>
                         <form action="">
                           <div className="flex flex-col gap-2 mb-3">
-                            <div className=" flex">
-                              <label htmlFor="" className="w-[19rem]">
-                                NPWP / Surat Keterangan Bebas Pajak *
+                            <div className="flex flex-col gap-1">
+                              <div className=" flex">
+                              <label
+                                htmlFor=""
+                                className=" flex gap-1 items-center"
+                              >
+                                NPWP / Surat Keterangan Bebas Pajak {" "}
+                                {isError &&
+                                npwpFile === null ? (
+                                  <span className="text-red-400">
+                                    <PiWarningCircleLight />
+                                  </span>
+                                ) : (
+                                  "*"
+                                )}
                               </label>
+                               
+                              </div>
+                              <div className="text-[10px] text-gray-400">
+                                Max size 2 mb
+                              </div>
                             </div>
+
                             <div className="relative">
                               <input
                                 type="file"
@@ -2145,17 +3448,31 @@ const Registration = () => {
                             </div>
                           </div>
                           <div className="flex flex-col gap-2 mb-3">
-                            <div className=" flex">
-                              <label htmlFor="" className="w-72">
-                                KTP Pemilik *
+                            <div className="flex flex-col gap-1">
+                              <div className=" flex">
+                              <label
+                                htmlFor=""
+                                className=" flex gap-1 items-center"
+                              >
+                                KTP Pemilik {" "}
+                                {isError &&
+                                ktpPemilikFile === null ? (
+                                  <span className="text-red-400">
+                                    <PiWarningCircleLight />
+                                  </span>
+                                ) : (
+                                  "*"
+                                )}
                               </label>
+                              </div>
+                              <div className="text-[10px] text-gray-400">
+                                Max size 2 mb
+                              </div>
                             </div>
                             <div className="relative">
                               <input
                                 type="file"
-                                onChange={(e) =>
-                                  setKtpPemilikFIle(e.target.files[0])
-                                }
+                                onChange={onChangeKtpPemilikFile}
                                 id="upload-npwp"
                                 accept="image/jpg,.pdf"
                                 className=" w-full h-[36px] border border-slate-300 rounded-sm focus:border focus:border-[#0077b6]  "
@@ -2163,17 +3480,31 @@ const Registration = () => {
                             </div>
                           </div>
                           <div className="flex flex-col gap-2  mb-3">
-                            <div className="flex">
-                              <label htmlFor="" className="w-72">
-                                KTP Penanggung Jawab *
+                            <div className="flex flex-col gap-1">
+                              <div className=" flex">
+                              <label
+                                htmlFor=""
+                                className=" flex gap-1 items-center"
+                              >
+                                KTP Penanggung Jawab {" "}
+                                {isError &&
+                                ktpPenanggungJawabFile === null ? (
+                                  <span className="text-red-400">
+                                    <PiWarningCircleLight />
+                                  </span>
+                                ) : (
+                                  "*"
+                                )}
                               </label>
+                              </div>
+                              <div className="text-[10px] text-gray-400">
+                                Max size 2 mb
+                              </div>
                             </div>
                             <div className=" relative">
                               <input
                                 type="file"
-                                onChange={(e) =>
-                                  setKtpPenanggungJawabFile(e.target.files[0])
-                                }
+                                onChange={onChangeKtpPenanggungJawabFile}
                                 id="upload-npwp"
                                 accept="image/jpg,.pdf"
                                 className=" w-full h-[36px] border border-slate-300 rounded-sm focus:border focus:border-[#0077b6]  "
@@ -2181,66 +3512,98 @@ const Registration = () => {
                             </div>
                           </div>
                           <div className="flex flex-col gap-2  mb-3">
-                            <div className=" flex">
-                              <label htmlFor="" className="">
-                                Surat Pengukuhan Kena Pajak (SPKP) *
+                            <div className="flex flex-col gap-1">
+                              <div className=" flex">
+                              <label
+                                htmlFor=""
+                                className=" flex gap-1 items-center"
+                              >
+                                Surat Pengukuhan Kena Pajak (SPKP) / Surat
+                            Keterangan Non PKP (Bagi Pengusaha Tidak Kena Pajak) {" "}
+                                {isError &&
+                                spkpFile === null ? (
+                                  <span className="text-red-400">
+                                    <PiWarningCircleLight />
+                                  </span>
+                                ) : (
+                                  "*"
+                                )}
                               </label>
+                               
+                              </div>
+                              <div className="text-[10px] text-gray-400">
+                                Max size 2 mb
+                              </div>
                             </div>
                             <div className="relative">
                               <input
                                 type="file"
-                                onChange={(e) => setSpkpFile(e.target.files[0])}
+                                onChange={onChangeSpkpFile}
                                 id="upload-npwp"
                                 accept="image/jpg,.pdf"
                                 className=" w-full h-[36px] border border-slate-300 rounded-sm focus:border focus:border-[#0077b6]  "
                               />
                             </div>
                           </div>
-                          <div className="flex flex-col gap-2 mb-3">
-                            <div className=" flex">
-                              <label htmlFor="" className="">
-                                Surat Ijin Usaha Perdagangan (SIUP) *
+
+                          <div className="flex flex-col gap-2  mb-3">
+                            <div className="flex flex-col gap-1">
+                              <div className=" flex">
+                              <label
+                                htmlFor=""
+                                className=" flex gap-1 items-center"
+                              >
+                                Nomer Induk Berusaha (NIB) {" "}
+                                {isError &&
+                                nibFile === null ? (
+                                  <span className="text-red-400">
+                                    <PiWarningCircleLight />
+                                  </span>
+                                ) : (
+                                  "*"
+                                )}
                               </label>
-                              <div>:</div>
+                              </div>
+                              <div className="text-[10px] text-gray-400">
+                                Max size 2 mb
+                              </div>
                             </div>
                             <div className="relative">
                               <input
                                 type="file"
-                                onChange={(e) => setSiupFile(e.target.files[0])}
-                                id="upload-npwp"
+                                onChange={onChangeNibFile}
                                 accept="image/jpg,.pdf"
+                                id="upload-npwp"
                                 className=" w-full h-[36px] border border-slate-300 rounded-sm focus:border focus:border-[#0077b6]  "
                               />
                             </div>
                           </div>
                           <div className="flex flex-col gap-2  mb-3">
-                            <div className="flex">
-                              <label htmlFor="" className="">
-                                Nomor Induk Berusaha (NIB) *
+                            <div className="flex flex-col gap-1">
+                              <div className=" flex">
+                              <label
+                                htmlFor=""
+                                className=" flex gap-1 items-center"
+                              >
+                                Screenshot Rekening Perusahaan {" "}
+                                {isError &&
+                                spkpFile === null ? (
+                                  <span className="text-red-400">
+                                    <PiWarningCircleLight />
+                                  </span>
+                                ) : (
+                                  "*"
+                                )}
                               </label>
+                              </div>
+                              <div className="text-[10px] text-gray-400">
+                                Max size 2 mb
+                              </div>
                             </div>
                             <div className="relative">
                               <input
                                 type="file"
-                                onChange={(e) => setNibFile(e.target.files[0])}
-                                accept="image/jpg,.pdf"
-                                id="upload-npwp"
-                                className=" w-full h-[36px] border border-slate-300 rounded-sm focus:border focus:border-[#0077b6]  "
-                              />
-                            </div>
-                          </div>
-                          <div className="flex flex-col gap-2  mb-3">
-                            <div className=" flex">
-                              <label htmlFor="" className="">
-                                Screenshoot Rekening Perusahaan *
-                              </label>
-                            </div>
-                            <div className="relative">
-                              <input
-                                type="file"
-                                onChange={(e) =>
-                                  setSsPerusahaanFile(e.target.files[0])
-                                }
+                                onChange={onChangeSsRekeningFile}
                                 id="upload-npwp"
                                 accept="image/jpg,.pdf"
                                 className=" w-full h-[36px] border border-slate-300 rounded-sm focus:border focus:border-[#0077b6]  "
@@ -2254,6 +3617,9 @@ const Registration = () => {
                                   Sertifikasi BPOM
                                 </label>
                               </div>
+                              <div className="text-[10px] text-gray-400">
+                                Max size 1 mb
+                              </div>
                               <div className="flex gap-1 items-center text-[12px]">
                                 <div>
                                   <PiWarningCircleLight />
@@ -2265,15 +3631,23 @@ const Registration = () => {
                             <div className=" relative">
                               <input
                                 type="file"
-                                onChange={(e) =>
-                                  setSertifBpomFile(e.target.files[0])
-                                }
+                                onChange={onChangeBpomFile}
                                 id="upload-npwp"
                                 accept="image/jpg,.pdf"
                                 className=" w-full h-[36px] border border-slate-300 rounded-sm focus:border focus:border-[#0077b6]  "
                               />
                             </div>
                           </div>
+                          {isError && (
+                            <div className="mt-10 mb-3">
+                              <div className="w-fit flex gap-1 items-center text-[14px] bg-red-500 text-white py-3 px-5 ">
+                                
+                                <div>
+                                  Data Masih Belum Lengkap!
+                                </div>
+                              </div>
+                            </div>
+                          )}
                         </form>
                         <div className="flex gap-2 mt-20">
                           <div>
@@ -2301,14 +3675,12 @@ const Registration = () => {
                                 Back
                               </button>
                               {activeStep === steps.length - 1 ? (
-                                <Link to="/profile">
-                                  <button
-                                    onClick={handleNext}
-                                    className="bg-[#0077b6] text-white py-2 px-10 rounded-sm shadow-sm hover:bg-[#00b4d8]"
-                                  >
-                                    Finish
-                                  </button>
-                                </Link>
+                                <button
+                                  onClick={handleNext}
+                                  className="bg-[#0077b6] text-white py-2 px-10 rounded-sm shadow-sm hover:bg-[#00b4d8]"
+                                >
+                                  Finish
+                                </button>
                               ) : (
                                 <button
                                   onClick={handleNext}
@@ -2331,14 +3703,12 @@ const Registration = () => {
                               </button>
 
                               {activeStep === steps.length - 1 ? (
-                                <Link to="/profile">
-                                  <button
-                                    onClick={handleNext}
-                                    className="bg-[#0077b6] text-white py-2 px-10 rounded-sm shadow-sm hover:bg-[#00b4d8]"
-                                  >
-                                    Finish
-                                  </button>
-                                </Link>
+                                <button
+                                  onClick={handleNext}
+                                  className="bg-[#0077b6] text-white py-2 px-10 rounded-sm shadow-sm hover:bg-[#00b4d8]"
+                                >
+                                  Finish
+                                </button>
                               ) : (
                                 <button
                                   onClick={handleNext}

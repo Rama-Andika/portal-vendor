@@ -65,6 +65,10 @@ input::-webkit-inner-spin-button {
   margin: 0;
 }
 
+input[type=number] {
+  -moz-appearance:textfield;
+}
+
 input[type="number"]:focus {
   --tw-ring-color: transparent !important;
 }
