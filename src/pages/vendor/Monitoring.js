@@ -2,10 +2,11 @@ import { Backdrop, CircularProgress, Fade, Modal } from "@mui/material";
 import { useStateContext } from "../../contexts/ContextProvider";
 import Admin from "../../layouts/Admin";
 import { useEffect, useState } from "react";
-import { Link } from "react-router-dom";
+import { Link, useNavigate } from "react-router-dom";
 import Cookies from "js-cookie";
 import Api from "../../api";
 import dayjs from "dayjs";
+import titleCase from "../../components/functions/TitleCase";
 
 const Monitoring = () => {
   const { screenSize } = useStateContext();
@@ -17,9 +18,11 @@ const Monitoring = () => {
   const [listPenagihan, setListPenagihan] = useState([]);
   const [detail, setDetail] = useState({});
 
+  const navigate = useNavigate()
+
   const fetchData = async () => {
     setOpenBackdrop(true)
-    await Api.get(`penagihan?vendor_id=${vendorId}`).then((response) => {
+    await Api.get(`penagihan?vendor.id=${vendorId}`).then((response) => {
         setListPenagihan(response.data)
         setOpenBackdrop(false)
     })
@@ -30,8 +33,13 @@ const Monitoring = () => {
 
 
   const onClickNoRequest = (item) => {
-    handleOpen();
-    setDetail(item)
+    if(item.status === "DRAFT"){
+      navigate(`/vendor/penagihan/edit/${item.id}`, {state: {vendor_id: vendorId}})
+    }else{
+      handleOpen();
+      setDetail(item)
+    }
+    
   };
 
   useEffect(() => {
@@ -42,7 +50,6 @@ const Monitoring = () => {
   return (
     <>
     <Admin>
-      {console.log(detail)}
       <div
         className={`${
           screenSize < 768 ? "px-5 pt-20" : "px-10"
@@ -73,10 +80,9 @@ const Monitoring = () => {
                     >
                       {item.no_request}
                     </td>
-                    <td className="p-5 border">{dayjs(item.tanggal_po).format('DD/MM/YYYY')}</td>
-
+                    <td className="p-5 border">{dayjs(item.created_at).format('DD/MM/YYYY')}</td>
                     <td className="p-5 border"></td>
-                    <td className="p-5 border">{item.status}</td>
+                    <td className="p-5 border">{titleCase(item.status, "_")}</td>
                     <td className="p-5 border"></td>
                   </tr>
                 ))}
@@ -242,25 +248,25 @@ const Monitoring = () => {
                     Status
                   </div>
                   <div className="max-[549px]:hidden min-[550px]:block">:</div>
-                  <div className="w-[240px] whitespace-nowrap overflow-ellipsis overflow-hidden flex flex-col font-bold underline">
+                  <div className="w-[240px] whitespace-nowrap overflow-ellipsis overflow-hidden flex flex-col underline">
                     <div>{detail.status}</div>
                   </div>
                 </div>
-                {status === "Reject" && (
-                  <div className="flex max-[549px]:flex-col max-[549px]:items-start items-center gap-2">
+                {detail.status === "REJECT" && (
+                  <div className="flex max-[549px]:flex-col max-[549px]:items-start gap-2">
                   <div className="w-[270px] whitespace-nowrap font-bold">
                     Reject Message
                   </div>
                   <div className="max-[549px]:hidden min-[550px]:block">:</div>
-                  <div className="w-[240px] overflow-hidden flex flex-col">
-                    <div>Dokumen yang disubmit kurang lengkap dan nilai tidak sesuai dengan invoice</div>
+                  <div className="w-[240px] max-[549px]:w-full overflow-hidden flex flex-col">
+                    <div>{detail.reason}</div>
                   </div>
                 </div>
                 )}
               </div>
 
-              {(status === "Draft" || status === "Reject") && (
-                <Link className="flex justify-end" to="/vendor/penagihan/edit/2">
+              {(detail.status === "REJECT") && (
+                <Link className="flex justify-end" to={`/vendor/penagihan/edit/${detail.id}`} state={{vendor_id: vendorId}}>
                   <div className="mt-5 rounded-sm py-1 px-8 text-white bg-[#00b4d8] w-fit cursor-pointer">
                     Revisi
                   </div>

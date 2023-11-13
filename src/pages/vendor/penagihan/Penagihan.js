@@ -18,7 +18,7 @@ import {
   styled,
 } from "@mui/material";
 import { useEffect, useState } from "react";
-import {  useNavigate } from "react-router-dom";
+import { useNavigate } from "react-router-dom";
 import Select from "react-select";
 import { DatePicker, LocalizationProvider } from "@mui/x-date-pickers";
 import { AdapterDayjs } from "@mui/x-date-pickers/AdapterDayjs";
@@ -32,14 +32,14 @@ import Cookies from "js-cookie";
 import { FaCloudUploadAlt } from "react-icons/fa";
 
 const optionsTipePenagihan = [
-  { value: 0, label: "Beli Putus", key: 0 },
-  { value: 1, label: "Konsinyasi", key: 1 },
+  { value: "beli_putus", label: "Beli Putus", key: 0 },
+  { value: "konsinyasi", label: "Konsinyasi", key: 1 },
 ];
 const optionsDeliveryArea = [
-  { value: 0, label: "Tangerang", key: 0 },
-  { value: 1, label: "Jakarta", key: 1 },
-  { value: 2, label: "Bali", key: 2 },
-  { value: 3, label: "Makassar", key: 3 },
+  { value: "tangerang", label: "Tangerang", key: 0 },
+  { value: "jakarta", label: "Jakarta", key: 1 },
+  { value: "bali", label: "Bali", key: 2 },
+  { value: "makassar", label: "Makassar", key: 3 },
 ];
 const options = [
   { value: 0, label: "Ya", key: 0 },
@@ -95,7 +95,7 @@ const Penagihan = () => {
   const [activeStep, setActiveStep] = useState(0);
 
   const [tipePenagihan, setTipePenagihan] = useState({
-    value: 0,
+    value: "beli putus",
     label: "Beli Putus",
     key: 0,
   });
@@ -107,16 +107,14 @@ const Penagihan = () => {
   const [endDatePeriode, setEndDatePeriode] = useState();
   const [nomerDo, setNomerDo] = useState("");
   const [deliveryArea, setDeliveryArea] = useState({
-    value: 0,
+    value: "tangerang",
     label: "Tangerang",
     key: 0,
   });
   const [nomerInvoice, setNomerInvoice] = useState(inputArr);
   const [nilaiInvoice, setNilaiInvoice] = useState(inputNilaiInvoice);
-  const [invoiceTambahan, setInvoiceTambahan] = useState([{ type: "file" }]);
-  const [fakturPajakTambahan, setFakturPajakTambahan] = useState([
-    { type: "file" },
-  ]);
+  const [invoiceTambahan, setInvoiceTambahan] = useState([]);
+  const [fakturPajakTambahan, setFakturPajakTambahan] = useState([]);
   const [tipePengiriman, setTipePengiriman] = useState({
     value: 0,
     label: "Drop Box Gudang PT KPU",
@@ -135,6 +133,9 @@ const Penagihan = () => {
   const [receivingNoteFile, setReceivingNoteFile] = useState(null);
   const [resiFile, setResiFile] = useState(null);
   const [scanReportSalesFile, setScanReportSalesFile] = useState(null);
+  const [createdAt, setCreatedAt] = useState();
+  // eslint-disable-next-line no-unused-vars
+  const [updatedAt, setUpdatedAt] = useState();
 
   const [isError, setIsError] = useState(false);
   const [openBackdrop, setOpenBackdrop] = useState(false);
@@ -142,6 +143,15 @@ const Penagihan = () => {
   const [nomerRequest, setNomerRequest] = useState("");
   const navigate = useNavigate();
   const vendorId = Cookies.get("vendor_id");
+  const [vendors, setVendors] = useState({});
+
+  const fetchvendor = async () => {
+    setOpenBackdrop(true)
+    await Api.get(`/vendors/${vendorId}`).then((response) => {
+      setOpenBackdrop(false)
+      setVendors(response.data);
+    });
+  };
 
   const handleNext = () => {
     console.log("handle next 1");
@@ -401,6 +411,12 @@ const Penagihan = () => {
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [activeStep]);
 
+  useEffect(() => {
+    fetchvendor();
+
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, []);
+
   const onChangeTipePenagihan = (item) => {
     setTipePenagihan(item);
   };
@@ -480,10 +496,10 @@ const Penagihan = () => {
     e.preventDefault();
 
     const index = e.target.id;
-    console.log(index)
+    console.log(index);
     setInvoiceTambahan((s) => {
       const newArr = s.slice();
-      newArr[index] = e.target.files[0];
+      newArr[index].file = e.target.files[0];
 
       return newArr;
     });
@@ -495,7 +511,7 @@ const Penagihan = () => {
     const index = e.target.id;
     setFakturPajakTambahan((s) => {
       const newArr = s.slice();
-      newArr[index] = e.target.files[0];
+      newArr[index].file = e.target.files[0];
 
       return newArr;
     });
@@ -543,7 +559,7 @@ const Penagihan = () => {
   const addInvoiceTambahan = () => {
     if (invoiceTambahan.length < 5) {
       setInvoiceTambahan((s) => {
-        return [...s, { type: "file" }];
+        return [...s, { }];
       });
     }
   };
@@ -551,7 +567,7 @@ const Penagihan = () => {
   const addFakturPajakFile = () => {
     if (fakturPajakTambahan.length < 5) {
       setFakturPajakTambahan((s) => {
-        return [...s, { type: "file" }];
+        return [...s, {}];
       });
     }
   };
@@ -704,7 +720,14 @@ const Penagihan = () => {
     // eslint-disable-next-line array-callback-return
     const nilaiInvoiceList = nilaiInvoice.map((nilai) => {
       if (nilai.value.trim().length > 0) {
-        return nilai.value;
+        return parseFloat(nilai.value);
+      }
+    });
+
+    // eslint-disable-next-line array-callback-return
+    const nomerSeriFakturPajakList = nomerSeriFakturPajak.map((nomer) => {
+      if (nomer.value.trim().length === 19 && nomer.value.trim().length > 0) {
+        return nomer.value;
       }
     });
 
@@ -735,55 +758,106 @@ const Penagihan = () => {
       const noRequest = formattedNumber + "/" + (month + 1) + "/" + year;
       setNomerRequest(noRequest);
 
-      const inititalValue = {
-        vendor_id: vendorId,
-        no_request: noRequest,
-        tipe_penagihan: tipePenagihan.value,
-        nomer_po: nomerPo,
-        tanggal_po: dayjs(tanggalPo).format("YYYY-MM-DD"),
-        nomer_do: nomerDo,
-        delivery_area: deliveryArea.value,
-        nomer_invoices: invoiceList,
-        tanggal_invoices: tanggalList,
-        nilai_invoices: nilaiInvoiceList,
-        is_pajak: isPajak.value,
-        nomer_seri_pajak: nomerSeriFakturPajak[0].value,
-        start_date_periode: null,
-        end_date_periode: null,
-        status: "DRAFT",
-      };
-
-      console.log(inititalValue);
-
-      await Api.post("/penagihan", inititalValue, {
-        Headers: {
-          "content-type": "application/json",
-        },
-      })
-        .then((response) => {
-          setId(response.data.id);
-          setOpenBackdrop(false);
-          toast.success("Penagihan create success!", {
-            position: "top-right",
-            style: {
-              borderRadius: "10px",
-              background: "#333",
-              color: "#fff",
-            },
-          });
+      if (id === 0) {
+        const inititalValue = {
+          vendor: vendors,
+          no_request: noRequest,
+          tipe_penagihan: tipePenagihan.value,
+          tipe_pengiriman: tipePengiriman.value,
+          nomer_po: "PO" + nomerPo,
+          tanggal_po: dayjs(tanggalPo).format("YYYY-MM-DD"),
+          nomer_do: "DO" + nomerDo,
+          delivery_area: deliveryArea.value,
+          nomer_invoices: invoiceList,
+          tanggal_invoices: tanggalList,
+          nilai_invoices: nilaiInvoiceList,
+          is_pajak: isPajak.value,
+          nomer_seri_pajak: nomerSeriFakturPajakList,
+          start_date_periode: null,
+          end_date_periode: null,
+          created_at: dayjs(new Date()).format("YYYY-MM-DD HH:mm:ss"),
+          updated_at: dayjs(new Date()).format("YYYY-MM-DD HH:mm:ss"),
+          status: "DRAFT",
+        };
+        await Api.post("/penagihan", inititalValue, {
+          Headers: {
+            "content-type": "application/json",
+          },
         })
-        .catch(() => {
-          setId(0);
-          setOpenBackdrop(false);
-          toast.error("Penagihan create failed!", {
-            position: "top-right",
-            style: {
-              borderRadius: "10px",
-              background: "#333",
-              color: "#fff",
-            },
+          .then((response) => {
+            setId(response.data.id);
+            setCreatedAt(response.data.created_at);
+            setOpenBackdrop(false);
+            toast.success("Penagihan create success!", {
+              position: "top-right",
+              style: {
+                borderRadius: "10px",
+                background: "#333",
+                color: "#fff",
+              },
+            });
+          })
+          .catch(() => {
+            setOpenBackdrop(false);
+            toast.error("Penagihan create failed!", {
+              position: "top-right",
+              style: {
+                borderRadius: "10px",
+                background: "#333",
+                color: "#fff",
+              },
+            });
           });
-        });
+      } else {
+        const inititalValue = {
+          vendor: vendors,
+          no_request: noRequest,
+          tipe_penagihan: tipePenagihan.value,
+          tipe_pengiriman: tipePengiriman.value,
+          nomer_po: "PO" + nomerPo,
+          tanggal_po: dayjs(tanggalPo).format("YYYY-MM-DD"),
+          nomer_do: "DO" + nomerDo,
+          delivery_area: deliveryArea.value,
+          nomer_invoices: invoiceList,
+          tanggal_invoices: tanggalList,
+          nilai_invoices: nilaiInvoiceList,
+          is_pajak: isPajak.value,
+          nomer_seri_pajak: nomerSeriFakturPajakList,
+          start_date_periode: null,
+          end_date_periode: null,
+          created_at: createdAt,
+          updated_at: dayjs(new Date()).format("YYYY-MM-DD HH:mm:ss"),
+          status: "DRAFT",
+        };
+        await Api.put(`/penagihan/${id}`, inititalValue, {
+          Headers: {
+            "content-type": "application/json",
+          },
+        })
+          .then((response) => {
+            setId(response.data.id);
+            setOpenBackdrop(false);
+            toast.success("Penagihan update success!", {
+              position: "top-right",
+              style: {
+                borderRadius: "10px",
+                background: "#333",
+                color: "#fff",
+              },
+            });
+          })
+          .catch(() => {
+            setOpenBackdrop(false);
+            toast.error("Penagihan update failed!", {
+              position: "top-right",
+              style: {
+                borderRadius: "10px",
+                background: "#333",
+                color: "#fff",
+              },
+            });
+          });
+      }
     } else {
       setOpenBackdrop(false);
     }
@@ -834,7 +908,14 @@ const Penagihan = () => {
     // eslint-disable-next-line array-callback-return
     const nilaiInvoiceList = nilaiInvoice.map((nilai) => {
       if (nilai.value.trim().length > 0) {
-        return nilai.value;
+        return parseFloat(nilai.value);
+      }
+    });
+
+    // eslint-disable-next-line array-callback-return
+    const nomerSeriFakturPajakList = nomerSeriFakturPajak.map((nomer) => {
+      if (nomer.value.trim().length === 19) {
+        return nomer.value;
       }
     });
 
@@ -865,53 +946,108 @@ const Penagihan = () => {
       const noRequest = formattedNumber + "/" + (month + 1) + "/" + year;
       setNomerRequest(noRequest);
 
-      const inititalValue = {
-        vendor_id: vendorId,
-        no_request: noRequest,
-        tipe_penagihan: tipePenagihan.value,
-        nomer_po: nomerPo,
-        tanggal_po: dayjs(tanggalPo).format("YYYY-MM-DD"),
-        nomer_do: "",
-        delivery_area: deliveryArea.value,
-        nomer_invoices: invoiceList,
-        tanggal_invoices: tanggalList,
-        nilai_invoices: nilaiInvoiceList,
-        start_date_periode: dayjs(startDatePeriode).format("YYYY-MM-DD"),
-        end_date_periode: dayjs(endDatePeriode).format("YYYY-MM-DD"),
-        is_pajak: isPajak.value,
-        nomer_seri_pajak: nomerSeriFakturPajak[0].value,
-        status: "DRAFT",
-      };
+      if (id === 0) {
+        const inititalValue = {
+          vendor: vendors,
+          no_request: noRequest,
+          tipe_penagihan: tipePenagihan.value,
+          tipe_pengiriman: tipePengiriman.value,
+          nomer_po: "PO" + nomerPo,
+          tanggal_po: dayjs(tanggalPo).format("YYYY-MM-DD"),
+          nomer_do: "",
+          delivery_area: deliveryArea.value,
+          nomer_invoices: invoiceList,
+          tanggal_invoices: tanggalList,
+          nilai_invoices: nilaiInvoiceList,
+          start_date_periode: dayjs(startDatePeriode).format("YYYY-MM-DD"),
+          end_date_periode: dayjs(endDatePeriode).format("YYYY-MM-DD"),
+          is_pajak: isPajak.value,
+          nomer_seri_pajak: nomerSeriFakturPajakList,
+          created_at: dayjs(new Date()).format("YYYY-MM-DD HH:mm:ss"),
+          updated_at: dayjs(new Date()).format("YYYY-MM-DD HH:mm:ss"),
+          status: "DRAFT",
+        };
 
-      await Api.post("/penagihan", inititalValue, {
-        Headers: {
-          "content-type": "application/json",
-        },
-      })
-        .then((response) => {
-          setId(response.data.id);
-          setOpenBackdrop(false);
-          toast.success("Penagihan create success!", {
-            position: "top-right",
-            style: {
-              borderRadius: "10px",
-              background: "#333",
-              color: "#fff",
-            },
-          });
+        await Api.post("/penagihan", inititalValue, {
+          Headers: {
+            "content-type": "application/json",
+          },
         })
-        .catch(() => {
-          setId(0);
-          setOpenBackdrop(false);
-          toast.error("Penagihan create failed!", {
-            position: "top-right",
-            style: {
-              borderRadius: "10px",
-              background: "#333",
-              color: "#fff",
-            },
+          .then((response) => {
+            setId(response.data.id);
+            setCreatedAt(response.data.created_at);
+            setOpenBackdrop(false);
+            toast.success("Penagihan create success!", {
+              position: "top-right",
+              style: {
+                borderRadius: "10px",
+                background: "#333",
+                color: "#fff",
+              },
+            });
+          })
+          .catch(() => {
+            setOpenBackdrop(false);
+            toast.error("Penagihan create failed!", {
+              position: "top-right",
+              style: {
+                borderRadius: "10px",
+                background: "#333",
+                color: "#fff",
+              },
+            });
           });
-        });
+      } else {
+        const inititalValue = {
+          vendor: vendors,
+          no_request: noRequest,
+          tipe_penagihan: tipePenagihan.value,
+          tipe_pengiriman: tipePengiriman.value,
+          nomer_po: "PO" + nomerPo,
+          tanggal_po: dayjs(tanggalPo).format("YYYY-MM-DD"),
+          nomer_do: "",
+          delivery_area: deliveryArea.value,
+          nomer_invoices: invoiceList,
+          tanggal_invoices: tanggalList,
+          nilai_invoices: nilaiInvoiceList,
+          start_date_periode: dayjs(startDatePeriode).format("YYYY-MM-DD"),
+          end_date_periode: dayjs(endDatePeriode).format("YYYY-MM-DD"),
+          is_pajak: isPajak.value,
+          nomer_seri_pajak: nomerSeriFakturPajakList,
+          created_at: createdAt,
+          updated_at: dayjs(new Date()).format("YYYY-MM-DD HH:mm:ss"),
+          status: "DRAFT",
+        };
+
+        await Api.put(`/penagihan/${id}`, inititalValue, {
+          Headers: {
+            "content-type": "application/json",
+          },
+        })
+          .then((response) => {
+            setId(response.data.id);
+            setOpenBackdrop(false);
+            toast.success("Penagihan update success!", {
+              position: "top-right",
+              style: {
+                borderRadius: "10px",
+                background: "#333",
+                color: "#fff",
+              },
+            });
+          })
+          .catch(() => {
+            setOpenBackdrop(false);
+            toast.error("Penagihan update failed!", {
+              position: "top-right",
+              style: {
+                borderRadius: "10px",
+                background: "#333",
+                color: "#fff",
+              },
+            });
+          });
+      }
     } else {
       setOpenBackdrop(false);
     }
@@ -961,18 +1097,26 @@ const Penagihan = () => {
     // eslint-disable-next-line array-callback-return
     const nilaiInvoiceList = nilaiInvoice.map((nilai) => {
       if (nilai.value.trim().length > 0) {
-        return nilai.value;
+        return parseFloat(nilai.value);
+      }
+    });
+
+    // eslint-disable-next-line array-callback-return
+    const nomerSeriFakturPajakList = nomerSeriFakturPajak.map((nomer) => {
+      if (nomer.value.trim().length === 19) {
+        return nomer.value;
       }
     });
 
     if (id !== 0) {
       const inititalValue = {
-        vendor_id: vendorId,
+        vendor: vendors,
         no_request: nomerRequest,
         tipe_penagihan: tipePenagihan.value,
-        nomer_po: nomerPo,
+        tipe_pengiriman: tipePengiriman.value,
+        nomer_po: "PO" + nomerPo,
         tanggal_po: dayjs(tanggalPo).format("YYYY-MM-DD"),
-        nomer_do: nomerDo,
+        nomer_do: "DO" + nomerDo,
         delivery_area: deliveryArea.value,
         nomer_invoices: invoiceList,
         tanggal_invoices: tanggalList,
@@ -980,8 +1124,10 @@ const Penagihan = () => {
         start_date_periode: null,
         end_date_periode: null,
         is_pajak: isPajak.value,
-        nomer_seri_pajak: nomerSeriFakturPajak[0].value,
-        status: "Waiting for Approval",
+        nomer_seri_pajak: nomerSeriFakturPajakList,
+        created_at: createdAt,
+        updated_at: dayjs(new Date()).format("YYYY-MM-DD HH:mm:ss"),
+        status: "waiting_for_approval",
       };
 
       await Api.put(`/penagihan/${id}`, inititalValue, {
@@ -1003,7 +1149,6 @@ const Penagihan = () => {
           navigate("/vendor/monitoring");
         })
         .catch(() => {
-          setId(0);
           setOpenBackdrop(false);
           toast.error("Penagihan update failed!", {
             position: "top-right",
@@ -1016,12 +1161,13 @@ const Penagihan = () => {
         });
     } else {
       const inititalValue = {
-        vendor_id: vendorId,
+        vendor: vendors,
         no_request: noRequest,
         tipe_penagihan: tipePenagihan.value,
-        nomer_po: nomerPo,
+        tipe_pengiriman: tipePengiriman.value,
+        nomer_po: "PO" + nomerPo,
         tanggal_po: dayjs(tanggalPo).format("YYYY-MM-DD"),
-        nomer_do: nomerDo,
+        nomer_do: "DO" + nomerDo,
         delivery_area: deliveryArea.value,
         nomer_invoices: invoiceList,
         tanggal_invoices: tanggalList,
@@ -1029,8 +1175,10 @@ const Penagihan = () => {
         start_date_periode: null,
         end_date_periode: null,
         is_pajak: isPajak.value,
-        nomer_seri_pajak: nomerSeriFakturPajak[0].value,
-        status: "Waiting for Approval",
+        nomer_seri_pajak: nomerSeriFakturPajakList,
+        created_at: dayjs(new Date()).format("YYYY-MM-DD HH:mm:ss"),
+        updated_at: dayjs(new Date()).format("YYYY-MM-DD HH:mm:ss"),
+        status: "waiting_for_approval",
       };
 
       await Api.post(`/penagihan`, inititalValue, {
@@ -1052,7 +1200,6 @@ const Penagihan = () => {
           navigate("/vendor/monitoring");
         })
         .catch(() => {
-          setId(0);
           setOpenBackdrop(false);
           toast.error("Penagihan create failed!", {
             position: "top-right",
@@ -1110,15 +1257,24 @@ const Penagihan = () => {
     // eslint-disable-next-line array-callback-return
     const nilaiInvoiceList = nilaiInvoice.map((nilai) => {
       if (nilai.value.trim().length > 0) {
-        return nilai.value;
+        return parseFloat(nilai.value);
+      }
+    });
+
+    // eslint-disable-next-line array-callback-return
+    const nomerSeriFakturPajakList = nomerSeriFakturPajak.map((nomer) => {
+      if (nomer.value.trim().length === 19) {
+        return nomer.value;
       }
     });
 
     if (id !== 0) {
       const inititalValue = {
+        vendor: vendors,
         no_request: nomerRequest,
         tipe_penagihan: tipePenagihan.value,
-        nomer_po: nomerPo,
+        tipe_pengiriman: tipePengiriman.value,
+        nomer_po: "PO" + nomerPo,
         tanggal_po: dayjs(tanggalPo).format("YYYY-MM-DD"),
         nomer_do: "",
         delivery_area: deliveryArea.value,
@@ -1128,8 +1284,10 @@ const Penagihan = () => {
         start_date_periode: dayjs(startDatePeriode).format("YYYY-MM-DD"),
         end_date_periode: dayjs(endDatePeriode).format("YYYY-MM-DD"),
         is_pajak: isPajak.value,
-        nomer_seri_pajak: nomerSeriFakturPajak[0].value,
-        status: "Waiting For Approval",
+        nomer_seri_pajak: nomerSeriFakturPajakList,
+        created_at: createdAt,
+        updated_at: dayjs(new Date()).format("YYYY-MM-DD HH:mm:ss"),
+        status: "waiting_for_approval",
       };
 
       await Api.put(`/penagihan/${id}`, inititalValue, {
@@ -1164,9 +1322,11 @@ const Penagihan = () => {
         });
     } else {
       const inititalValue = {
+        vendor: vendors,
         no_request: noRequest,
         tipe_penagihan: tipePenagihan.value,
-        nomer_po: nomerPo,
+        tipe_pengiriman: tipePengiriman.value,
+        nomer_po: "PO" + nomerPo,
         tanggal_po: dayjs(tanggalPo).format("YYYY-MM-DD"),
         nomer_do: "",
         delivery_area: deliveryArea.value,
@@ -1176,8 +1336,10 @@ const Penagihan = () => {
         start_date_periode: dayjs(startDatePeriode).format("YYYY-MM-DD"),
         end_date_periode: dayjs(endDatePeriode).format("YYYY-MM-DD"),
         is_pajak: isPajak.value,
-        nomer_seri_pajak: nomerSeriFakturPajak[0].value,
-        status: "Waiting For Approval",
+        nomer_seri_pajak: nomerSeriFakturPajakList,
+        created_at: dayjs(new Date()).format("YYYY-MM-DD HH:mm:ss"),
+        updated_at: dayjs(new Date()).format("YYYY-MM-DD HH:mm:ss"),
+        status: "waiting_for_approval",
       };
 
       await Api.post(`/penagihan`, inititalValue, {
@@ -1216,278 +1378,567 @@ const Penagihan = () => {
   const steps = ["Tipe Penagihan", "Billing", "Dokumen"];
   return (
     <Admin>
-      <div
-        className={`${
-          screenSize < 768 ? "px-5 pt-20" : "px-10"
-        } pt-20 font-roboto `}
-      >
-        Penagihan
-        {screenSize > 621 ? (
-          <div className="w-full mt-20">
-            <Stepper
-              activeStep={activeStep}
-              alternativeLabel={screenSize > 720 ? false : true}
-              connector={<ColorlibConnector />}
-            >
-              {steps.map((item, index) => {
-                return (
-                  <Step key={index}>
-                    <StepLabel StepIconComponent={ColorlibStepIcon}>
-                      {item}
-                    </StepLabel>
-                  </Step>
-                );
-              })}
-            </Stepper>
-            {activeStep === steps.length ? (
-              <>
-                <Typography sx={{ mt: 2, mb: 1 }}>
-                  All steps completed - you&apos;re finished
-                </Typography>
-                <Box sx={{ display: "flex", flexDirection: "row", pt: 2 }}>
-                  <Box sx={{ flex: "1 1 auto" }} />
-                  <Button onClick={handleReset}>Reset</Button>
-                </Box>
-              </>
-            ) : (
-              <>
-                {activeStep === 0 ? (
-                  <div className="mt-20 ps-3">
-                    <form action="">
-                      <div className="flex items-center gap-2">
-                        <div className="w-[150px]">
-                          <label htmlFor="">Tipe Penagihan</label>
+      {console.log(invoiceTambahan)}
+      {vendors.status === "ACTIVE" ? (
+        <div
+          className={`${
+            screenSize < 768 ? "px-5 pt-20" : "px-10"
+          } pt-20 font-roboto `}
+        >
+          Penagihan
+          {screenSize > 621 ? (
+            <div className="w-full mt-20">
+              <Stepper
+                activeStep={activeStep}
+                alternativeLabel={screenSize > 720 ? false : true}
+                connector={<ColorlibConnector />}
+              >
+                {steps.map((item, index) => {
+                  return (
+                    <Step key={index}>
+                      <StepLabel StepIconComponent={ColorlibStepIcon}>
+                        {item}
+                      </StepLabel>
+                    </Step>
+                  );
+                })}
+              </Stepper>
+              {activeStep === steps.length ? (
+                <>
+                  <Typography sx={{ mt: 2, mb: 1 }}>
+                    All steps completed - you&apos;re finished
+                  </Typography>
+                  <Box sx={{ display: "flex", flexDirection: "row", pt: 2 }}>
+                    <Box sx={{ flex: "1 1 auto" }} />
+                    <Button onClick={handleReset}>Reset</Button>
+                  </Box>
+                </>
+              ) : (
+                <>
+                  {activeStep === 0 ? (
+                    <div className="mt-20 ps-3">
+                      <form action="">
+                        <div className="flex items-center gap-2">
+                          <div className="w-[150px]">
+                            <label htmlFor="">Tipe Penagihan</label>
+                          </div>
+                          <div>:</div>
+                          <div className="w-[70%]">
+                            <Select
+                              value={tipePenagihan}
+                              onChange={onChangeTipePenagihan}
+                              className="whitespace-nowrap"
+                              options={optionsTipePenagihan}
+                              noOptionsMessage={() => "Data not found"}
+                              styles={customeStyles}
+                              required
+                            />
+                          </div>
                         </div>
-                        <div>:</div>
-                        <div className="w-[70%]">
-                          <Select
-                            value={tipePenagihan}
-                            onChange={onChangeTipePenagihan}
-                            className="whitespace-nowrap"
-                            options={optionsTipePenagihan}
-                            noOptionsMessage={() => "Data not found"}
-                            styles={customeStyles}
-                            required
-                          />
-                        </div>
-                      </div>
-                    </form>
-                  </div>
-                ) : activeStep === 1 ? (
-                  <div className="mt-20 ps-3 max-[697px]:pe-3">
-                    <form action="">
-                      {tipePenagihan.label === "Beli Putus" ? (
-                        <>
-                          <div className="flex items-center gap-2 mb-3">
-                            <div className="w-[250px]">
-                              No Purchase Order (PO)
-                            </div>
-                            <div>:</div>
-                            <div className="flex items-center gap-1 ">
-                              <div>PO</div>
-                              <div>
-                                <input
-                                  maxLength={8}
-                                  type="text"
-                                  pattern="[0-9]*"
-                                  name=""
-                                  id=""
-                                  value={nomerPo}
-                                  onChange={(e) => onChangeNomerPo(e)}
-                                  className={`last:max-[821px]:w-full w-[246.4px] h-[40px] rounded-sm focus:border focus:border-[#0077b6] bg-[#ddebf7] ${
-                                    isError && nomerPo.trim().length === 0
-                                      ? "border-red-400"
-                                      : "border-slate-300"
-                                  } `}
-                                />
+                      </form>
+                    </div>
+                  ) : activeStep === 1 ? (
+                    <div className="mt-20 ps-3 max-[697px]:pe-3">
+                      <form action="">
+                        {tipePenagihan.label === "Beli Putus" ? (
+                          <>
+                            <div className="flex items-center gap-2 mb-3">
+                              <div className="w-[250px]">
+                                No Purchase Order (PO)
                               </div>
-                              <div>
-                                {isError && nomerPo.trim().length === 0 ? (
-                                  <div className="text-red-500">
-                                    <PiWarningCircleLight />
-                                  </div>
-                                ) : (
-                                  "*)"
-                                )}
-                              </div>
-                            </div>
-                          </div>
-                          <div className="flex items-center gap-2 mb-3">
-                            <div className="w-[250px]">Tanggal PO</div>
-
-                            <div>:</div>
-                            <div className="flex items-center gap-1">
-                              <div className="w-[21.1px]"></div>
-                              <div>
-                                <LocalizationProvider
-                                  dateAdapter={AdapterDayjs}
-                                >
-                                  <DemoContainer components={["DatePicker"]}>
-                                    <DatePicker
-                                      className="w-full bg-[#ddebf7]"
-                                      value={tanggalPo}
-                                      onChange={onChangeTanggalPo}
-                                      slotProps={{
-                                        textField: { size: "small" },
-                                      }}
-                                    />
-                                  </DemoContainer>
-                                </LocalizationProvider>
-                              </div>
-                              <div>
-                                {isError && tanggalPo === undefined ? (
-                                  <div className="text-red-500">
-                                    <PiWarningCircleLight />
-                                  </div>
-                                ) : (
-                                  "*)"
-                                )}
-                              </div>
-                            </div>
-                          </div>
-                          <div className="flex items-center gap-2 mb-3">
-                            <div className="w-[250px]">
-                              No Delivery Order (DO)
-                            </div>
-                            <div>:</div>
-                            <div className="flex items-center gap-1 ">
-                              <div className="w-[21.1px]"></div>
-                              <div>
-                                <input
-                                  maxLength={20}
-                                  type="text"
-                                  name=""
-                                  id=""
-                                  value={nomerDo}
-                                  onChange={(e) => setNomerDo(e.target.value)}
-                                  className={`max-[821px]:w-full w-[246.4px] h-[40px] rounded-sm focus:border focus:border-[#0077b6] bg-[#ddebf7] ${
-                                    isError && nomerDo.trim().length === 0
-                                      ? "border-red-400"
-                                      : "border-slate-300"
-                                  } `}
-                                />
-                              </div>
-                              <div>
-                                {isError && nomerDo.trim().length === 0 ? (
-                                  <div className="text-red-500">
-                                    <PiWarningCircleLight />
-                                  </div>
-                                ) : (
-                                  "*)"
-                                )}
-                              </div>
-                            </div>
-                          </div>
-                          <div className="flex items-center gap-2 mb-10">
-                            <div className="w-[250px]">Delivery Area</div>
-                            <div>:</div>
-                            <div className="flex items-center gap-1 max-[821px]:w-[249.56px] w-[287.96px]">
-                              <div className="w-[24px]"></div>
-                              <div className="w-full ">
-                                <Select
-                                  value={deliveryArea}
-                                  onChange={onChangeDeliveryArea}
-                                  className="whitespace-nowrap"
-                                  options={optionsDeliveryArea}
-                                  noOptionsMessage={() => "Data not found"}
-                                  styles={customeStyles}
-                                  required
-                                />
-                              </div>
-                              <div>
-                                {isError && isEmpty(deliveryArea) ? (
-                                  <div className="text-red-500">
-                                    <PiWarningCircleLight />
-                                  </div>
-                                ) : (
-                                  "*)"
-                                )}
-                              </div>
-                            </div>
-                          </div>
-                          <div className="mb-10">
-                            {nomerInvoice.map((item, i) => (
-                              <div
-                                className="flex items-center gap-2 mb-3"
-                                key={i}
-                              >
-                                {i === 0 ? (
-                                  <div className="w-[250px]">No Invoice</div>
-                                ) : (
-                                  <div className="w-[250px]">
-                                    No Invoice {i + 1}
-                                  </div>
-                                )}
-                                <div>:</div>
-                                <div className="flex items-center gap-1 ">
-                                  <div className="w-[21.1px]"></div>
-                                  <div>
-                                    <input
-                                      maxLength={20}
-                                      type="text"
-                                      name=""
-                                      id={i}
-                                      value={item.value}
-                                      onChange={onChangeInvoice}
-                                      className="max-[821px]:w-full w-[246.4px] h-[40px] border border-slate-300 rounded-sm focus:border focus:border-[#0077b6] bg-[#ddebf7]"
-                                    />
-                                  </div>
-                                  <div>*)</div>
+                              <div>:</div>
+                              <div className="flex items-center gap-1 ">
+                                <div>PO</div>
+                                <div>
+                                  <input
+                                    maxLength={8}
+                                    type="text"
+                                    pattern="[0-9]*"
+                                    name=""
+                                    id=""
+                                    value={nomerPo}
+                                    onChange={(e) => onChangeNomerPo(e)}
+                                    className={`last:max-[821px]:w-full w-[246.4px] h-[40px] rounded-sm focus:border focus:border-[#0077b6] bg-[#ddebf7] ${
+                                      isError && nomerPo.trim().length === 0
+                                        ? "border-red-400"
+                                        : "border-slate-300"
+                                    } `}
+                                  />
                                 </div>
-                              </div>
-                            ))}
-                            <div
-                              onClick={addInput}
-                              className={`py-1 px-4 rounded-sm shadow-sm text-white bg-[#305496]  w-fit ${
-                                nomerInvoice.length === 4
-                                  ? "cursor-not-allowed"
-                                  : "cursor-pointer"
-                              } `}
-                            >
-                              Add row
-                            </div>
-                          </div>
-
-                          <div className="mb-3">
-                            {nomerInvoice.map((item, i) => (
-                              <div key={i}>
-                                <div className="flex items-center gap-2 mb-3">
-                                  {i === 0 ? (
-                                    <div className="w-[250px]">
-                                      Tanggal Invoice
+                                <div>
+                                  {isError && nomerPo.trim().length === 0 ? (
+                                    <div className="text-red-500">
+                                      <PiWarningCircleLight />
                                     </div>
                                   ) : (
+                                    "*)"
+                                  )}
+                                </div>
+                              </div>
+                            </div>
+                            <div className="flex items-center gap-2 mb-3">
+                              <div className="w-[250px]">Tanggal PO</div>
+
+                              <div>:</div>
+                              <div className="flex items-center gap-1">
+                                <div className="w-[21.1px]"></div>
+                                <div>
+                                  <LocalizationProvider
+                                    dateAdapter={AdapterDayjs}
+                                  >
+                                    <DemoContainer components={["DatePicker"]}>
+                                      <DatePicker
+                                        className="w-full bg-[#ddebf7]"
+                                        value={tanggalPo}
+                                        onChange={onChangeTanggalPo}
+                                        slotProps={{
+                                          textField: { size: "small" },
+                                        }}
+                                      />
+                                    </DemoContainer>
+                                  </LocalizationProvider>
+                                </div>
+                                <div>
+                                  {isError && tanggalPo === undefined ? (
+                                    <div className="text-red-500">
+                                      <PiWarningCircleLight />
+                                    </div>
+                                  ) : (
+                                    "*)"
+                                  )}
+                                </div>
+                              </div>
+                            </div>
+                            <div className="flex items-center gap-2 mb-3">
+                              <div className="w-[250px]">
+                                No Delivery Order (DO)
+                              </div>
+                              <div>:</div>
+                              <div className="flex items-center gap-1 ">
+                                <div className="w-[21.1px]"></div>
+                                <div>
+                                  <input
+                                    maxLength={20}
+                                    type="text"
+                                    name=""
+                                    id=""
+                                    value={nomerDo}
+                                    onChange={(e) => setNomerDo(e.target.value)}
+                                    className={`max-[821px]:w-full w-[246.4px] h-[40px] rounded-sm focus:border focus:border-[#0077b6] bg-[#ddebf7] ${
+                                      isError && nomerDo.trim().length === 0
+                                        ? "border-red-400"
+                                        : "border-slate-300"
+                                    } `}
+                                  />
+                                </div>
+                                <div>
+                                  {isError && nomerDo.trim().length === 0 ? (
+                                    <div className="text-red-500">
+                                      <PiWarningCircleLight />
+                                    </div>
+                                  ) : (
+                                    "*)"
+                                  )}
+                                </div>
+                              </div>
+                            </div>
+                            <div className="flex items-center gap-2 mb-10">
+                              <div className="w-[250px]">Delivery Area</div>
+                              <div>:</div>
+                              <div className="flex items-center gap-1 max-[821px]:w-[249.56px] w-[287.96px]">
+                                <div className="w-[24px]"></div>
+                                <div className="w-full ">
+                                  <Select
+                                    value={deliveryArea}
+                                    onChange={onChangeDeliveryArea}
+                                    className="whitespace-nowrap"
+                                    options={optionsDeliveryArea}
+                                    noOptionsMessage={() => "Data not found"}
+                                    styles={customeStyles}
+                                    required
+                                  />
+                                </div>
+                                <div>
+                                  {isError && isEmpty(deliveryArea) ? (
+                                    <div className="text-red-500">
+                                      <PiWarningCircleLight />
+                                    </div>
+                                  ) : (
+                                    "*)"
+                                  )}
+                                </div>
+                              </div>
+                            </div>
+                            <div className="mb-10">
+                              {nomerInvoice.map((item, i) => (
+                                <div
+                                  className="flex items-center gap-2 mb-3"
+                                  key={i}
+                                >
+                                  {i === 0 ? (
+                                    <div className="w-[250px]">No Invoice</div>
+                                  ) : (
                                     <div className="w-[250px]">
-                                      Tanggal Invoice {i + 1}
+                                      No Invoice {i + 1}
                                     </div>
                                   )}
                                   <div>:</div>
-                                  <div className="flex items-center gap-1">
+                                  <div className="flex items-center gap-1 ">
                                     <div className="w-[21.1px]"></div>
                                     <div>
-                                      <LocalizationProvider
-                                        dateAdapter={AdapterDayjs}
-                                      >
-                                        <DemoContainer
-                                          components={["DatePicker"]}
-                                        >
-                                          <DatePicker
-                                            className="w-full bg-[#ddebf7]"
-                                            value={tanggalInvoice[i].value}
-                                            onChange={(item) =>
-                                              onChangeTanggalInvoice(item, i)
-                                            }
-                                            slotProps={{
-                                              textField: { size: "small" },
-                                            }}
-                                          />
-                                        </DemoContainer>
-                                      </LocalizationProvider>
+                                      <input
+                                        maxLength={20}
+                                        type="text"
+                                        name=""
+                                        id={i}
+                                        value={item.value}
+                                        onChange={onChangeInvoice}
+                                        className="max-[821px]:w-full w-[246.4px] h-[40px] border border-slate-300 rounded-sm focus:border focus:border-[#0077b6] bg-[#ddebf7]"
+                                      />
                                     </div>
                                     <div>*)</div>
                                   </div>
                                 </div>
-                                <div className="flex items-center gap-2 mb-3">
+                              ))}
+                              <div
+                                onClick={addInput}
+                                className={`py-1 px-4 rounded-sm shadow-sm text-white bg-[#305496]  w-fit ${
+                                  nomerInvoice.length === 4
+                                    ? "cursor-not-allowed"
+                                    : "cursor-pointer"
+                                } `}
+                              >
+                                Add row
+                              </div>
+                            </div>
+
+                            <div className="mb-3">
+                              {nomerInvoice.map((item, i) => (
+                                <div key={i}>
+                                  <div className="flex items-center gap-2 mb-3">
+                                    {i === 0 ? (
+                                      <div className="w-[250px]">
+                                        Tanggal Invoice
+                                      </div>
+                                    ) : (
+                                      <div className="w-[250px]">
+                                        Tanggal Invoice {i + 1}
+                                      </div>
+                                    )}
+                                    <div>:</div>
+                                    <div className="flex items-center gap-1">
+                                      <div className="w-[21.1px]"></div>
+                                      <div>
+                                        <LocalizationProvider
+                                          dateAdapter={AdapterDayjs}
+                                        >
+                                          <DemoContainer
+                                            components={["DatePicker"]}
+                                          >
+                                            <DatePicker
+                                              className="w-full bg-[#ddebf7]"
+                                              value={tanggalInvoice[i].value}
+                                              onChange={(item) =>
+                                                onChangeTanggalInvoice(item, i)
+                                              }
+                                              slotProps={{
+                                                textField: { size: "small" },
+                                              }}
+                                            />
+                                          </DemoContainer>
+                                        </LocalizationProvider>
+                                      </div>
+                                      <div>*)</div>
+                                    </div>
+                                  </div>
+                                  <div className="flex items-center gap-2 mb-3">
+                                    {i === 0 ? (
+                                      <div className="w-[250px]">
+                                        Nilai Invoice
+                                      </div>
+                                    ) : (
+                                      <div className="w-[250px]">
+                                        Nilai Invoice {i + 1}
+                                      </div>
+                                    )}
+                                    <div>:</div>
+                                    <div className="flex items-center gap-1 ">
+                                      <div>Rp</div>
+                                      <div>
+                                        <input
+                                          id={i}
+                                          type="number"
+                                          min={0}
+                                          max={999999999999}
+                                          step={0.01}
+                                          onKeyDown={(evt) =>
+                                            (evt.key === "e" ||
+                                              evt.key === "-") &&
+                                            evt.preventDefault()
+                                          }
+                                          value={nilaiInvoice[i].value}
+                                          onChange={onChangeNilaiInvoice}
+                                          className="max-[821px]:w-[208px] w-[246.4px] h-[40px] border border-slate-300 rounded-sm focus:border focus:border-[#0077b6] bg-[#ddebf7]"
+                                        />
+                                      </div>
+                                      <div>*)</div>
+                                    </div>
+                                  </div>
+                                </div>
+                              ))}
+                            </div>
+                            <div className="flex items-center gap-2 mb-10 mt-10">
+                              <div className="w-[250px]">
+                                Apakah barang termasuk pajak?
+                              </div>
+                              <div>:</div>
+                              <div className="flex items-center gap-1 max-[821px]:w-[249.56px] w-[287.96px]">
+                                <div className="w-[24px]"></div>
+                                <div className="w-full ">
+                                  <Select
+                                    value={isPajak}
+                                    onChange={onChangeIsPajak}
+                                    className="whitespace-nowrap"
+                                    options={options}
+                                    noOptionsMessage={() => "Data not found"}
+                                    styles={customeStyles}
+                                    required
+                                  />
+                                </div>
+                                <div>*)</div>
+                              </div>
+                            </div>
+                            <div className="flex items-start gap-2 mb-3">
+                              <div className="w-[250px]">
+                                No seri faktur pajak
+                              </div>
+                              <div>:</div>
+                              <div className="flex items-center gap-1 ">
+                                <div className="w-[21.1px]"></div>
+                                <div className="flex flex-col gap-1">
+                                  {nomerSeriFakturPajak.map((input, i) => (
+                                    <div
+                                      key={i}
+                                      className="flex items-center gap-1"
+                                    >
+                                      <input
+                                        maxLength={19}
+                                        disabled={
+                                          isPajak.label === "Tidak"
+                                            ? true
+                                            : false
+                                        }
+                                        type={input.type}
+                                        name=""
+                                        id=""
+                                        value={input.value}
+                                        onChange={(e) =>
+                                          formatFakturPajak(e.target.value, i)
+                                        }
+                                        className={`max-[821px]:w-full w-[246.4px] h-[40px] border border-slate-300 rounded-sm focus:border focus:border-[#0077b6] bg-[#ddebf7] disabled:bg-gray-300`}
+                                      />
+                                      <div>{i === 0 ? "*)" : ""}</div>
+                                    </div>
+                                  ))}
+                                </div>
+                              </div>
+                            </div>
+                            {isError && (
+                              <div className="mt-10 mb-3">
+                                <div className="w-fit flex gap-1 items-center text-[14px] bg-red-500 text-white py-3 px-5 ">
+                                  <div>
+                                    <PiWarningCircleLight />
+                                  </div>
+                                  <div>Data masih belum lengkap</div>
+                                </div>
+                              </div>
+                            )}
+                          </>
+                        ) : (
+                          <>
+                            <div className="flex items-center gap-2 mb-3">
+                              <div className="w-[250px]">
+                                No Purchase Order (PO)
+                              </div>
+                              <div>:</div>
+                              <div className="flex items-center gap-1 ">
+                                <div>PO</div>
+                                <div>
+                                  <input
+                                    maxLength={8}
+                                    type="text"
+                                    pattern="[0-9]*"
+                                    name=""
+                                    id=""
+                                    value={nomerPo}
+                                    onChange={(e) => onChangeNomerPo(e)}
+                                    className={`max-[821px]:w-full w-[246.4px] h-[40px] rounded-sm focus:border focus:border-[#0077b6] bg-[#fff2cc] ${
+                                      isError && nomerPo.trim().length === 0
+                                        ? "border-red-400"
+                                        : "border-slate-300"
+                                    } `}
+                                  />
+                                </div>
+                                <div>
+                                  {isError && nomerPo.trim().length === 0 ? (
+                                    <div className="text-red-500">
+                                      <PiWarningCircleLight />
+                                    </div>
+                                  ) : (
+                                    "*)"
+                                  )}
+                                </div>
+                              </div>
+                            </div>
+                            <div className="flex items-center gap-2 mb-3">
+                              <div className="w-[250px]">Tanggal PO</div>
+                              <div>:</div>
+                              <div className="flex items-center gap-1">
+                                <div className="w-[21.1px]"></div>
+                                <div>
+                                  <LocalizationProvider
+                                    dateAdapter={AdapterDayjs}
+                                  >
+                                    <DemoContainer components={["DatePicker"]}>
+                                      <DatePicker
+                                        className="w-full bg-[#fff2cc]"
+                                        value={tanggalPo}
+                                        onChange={onChangeTanggalPo}
+                                        slotProps={{
+                                          textField: { size: "small" },
+                                        }}
+                                      />
+                                    </DemoContainer>
+                                  </LocalizationProvider>
+                                </div>
+                                <div>
+                                  {isError && tanggalPo === undefined ? (
+                                    <div className="text-red-500">
+                                      <PiWarningCircleLight />
+                                    </div>
+                                  ) : (
+                                    "*)"
+                                  )}
+                                </div>
+                              </div>
+                            </div>
+
+                            <div className="flex items-center gap-2 mb-10">
+                              <div className="w-[250px]">Delivery Area</div>
+                              <div>:</div>
+                              <div className="flex items-center gap-1 max-[821px]:w-[249.56px] w-[287.96px]">
+                                <div className="w-[24px]"></div>
+                                <div className="w-full ">
+                                  <Select
+                                    value={deliveryArea}
+                                    onChange={onChangeDeliveryArea}
+                                    className="whitespace-nowrap"
+                                    options={optionsDeliveryArea}
+                                    noOptionsMessage={() => "Data not found"}
+                                    styles={customeStyles}
+                                    required
+                                  />
+                                </div>
+                                <div>
+                                  {isError && isEmpty(deliveryArea) ? (
+                                    <div className="text-red-500">
+                                      <PiWarningCircleLight />
+                                    </div>
+                                  ) : (
+                                    "*)"
+                                  )}
+                                </div>
+                              </div>
+                            </div>
+                            <div className="mb-10">
+                              {nomerInvoice.map((item, i) => (
+                                <div key={i}>
+                                  <div className="flex items-center gap-2 mb-3">
+                                    {i === 0 ? (
+                                      <div className="w-[250px]">
+                                        No Invoice
+                                      </div>
+                                    ) : (
+                                      <div className="w-[250px]">
+                                        No Invoice {i + 1}
+                                      </div>
+                                    )}
+
+                                    <div>:</div>
+                                    <div className="flex items-center gap-1 ">
+                                      <div className="w-[21.1px]"></div>
+                                      <div>
+                                        <input
+                                          maxLength={20}
+                                          type="text"
+                                          name=""
+                                          id={i}
+                                          value={item.value}
+                                          onChange={onChangeInvoice}
+                                          className="max-[821px]:w-full w-[246.4px] h-[40px] border border-slate-300 rounded-sm focus:border focus:border-[#0077b6] bg-[#fff2cc]"
+                                        />
+                                      </div>
+                                      <div>*)</div>
+                                    </div>
+                                  </div>
+
+                                  <div className="flex items-center gap-2 mb-3">
+                                    {i === 0 ? (
+                                      <div className="w-[250px]">
+                                        Tanggal Invoice
+                                      </div>
+                                    ) : (
+                                      <div className="w-[250px]">
+                                        Tanggal Invoice {i + 1}
+                                      </div>
+                                    )}
+                                    <div>:</div>
+                                    <div className="flex items-center gap-1">
+                                      <div className="w-[21.1px]"></div>
+                                      <div>
+                                        <LocalizationProvider
+                                          dateAdapter={AdapterDayjs}
+                                        >
+                                          <DemoContainer
+                                            components={["DatePicker"]}
+                                          >
+                                            <DatePicker
+                                              className="w-full bg-[#fff2cc]"
+                                              id={i}
+                                              value={tanggalInvoice2[i].value}
+                                              onChange={(item) =>
+                                                onChangeTanggalInvoice2(item, i)
+                                              }
+                                              slotProps={{
+                                                textField: { size: "small" },
+                                              }}
+                                            />
+                                          </DemoContainer>
+                                        </LocalizationProvider>
+                                      </div>
+                                      <div>*)</div>
+                                    </div>
+                                  </div>
+                                </div>
+                              ))}
+                              <div
+                                onClick={addInput}
+                                className={`py-1 px-4 rounded-sm shadow-sm text-white bg-[#305496]  w-fit ${
+                                  nomerInvoice.length === 4
+                                    ? "cursor-not-allowed"
+                                    : "cursor-pointer"
+                                } `}
+                              >
+                                Add row
+                              </div>
+                            </div>
+
+                            <div className="mb-10">
+                              {nomerInvoice.map((item, i) => (
+                                <div
+                                  key={i}
+                                  className="flex items-center gap-2 mb-3"
+                                >
                                   {i === 0 ? (
                                     <div className="w-[250px]">
                                       Nilai Invoice
@@ -1514,1386 +1965,1691 @@ const Penagihan = () => {
                                         }
                                         value={nilaiInvoice[i].value}
                                         onChange={onChangeNilaiInvoice}
-                                        className="max-[821px]:w-[208px] w-[246.4px] h-[40px] border border-slate-300 rounded-sm focus:border focus:border-[#0077b6] bg-[#ddebf7]"
+                                        className="max-[821px]:w-[208px] w-[246.4px] h-[40px] border border-slate-300 rounded-sm focus:border focus:border-[#0077b6] bg-[#fff2cc]"
                                       />
                                     </div>
                                     <div>*)</div>
                                   </div>
                                 </div>
+                              ))}
+                            </div>
+                            <div className="mb-3">
+                              <div className="w-[250px]">
+                                Periode Acuan Penagihan :
                               </div>
-                            ))}
-                          </div>
-                          <div className="flex items-center gap-2 mb-10 mt-10">
-                            <div className="w-[250px]">
-                              Apakah barang termasuk pajak?
-                            </div>
-                            <div>:</div>
-                            <div className="flex items-center gap-1 max-[821px]:w-[249.56px] w-[287.96px]">
-                              <div className="w-[24px]"></div>
-                              <div className="w-full ">
-                                <Select
-                                  value={isPajak}
-                                  onChange={onChangeIsPajak}
-                                  className="whitespace-nowrap"
-                                  options={options}
-                                  noOptionsMessage={() => "Data not found"}
-                                  styles={customeStyles}
-                                  required
-                                />
-                              </div>
-                              <div>*)</div>
-                            </div>
-                          </div>
-                          <div className="flex items-start gap-2 mb-3">
-                            <div className="w-[250px]">
-                              No seri faktur pajak
-                            </div>
-                            <div>:</div>
-                            <div className="flex items-center gap-1 ">
-                              <div className="w-[21.1px]"></div>
                               <div className="flex flex-col gap-1">
-                                {nomerSeriFakturPajak.map((input, i) => (
-                                  <div
-                                    key={i}
-                                    className="flex items-center gap-1"
-                                  >
-                                    <input
-                                      maxLength={19}
-                                      disabled={
-                                        isPajak.label === "Tidak" ? true : false
-                                      }
-                                      type={input.type}
-                                      name=""
-                                      id=""
-                                      value={input.value}
-                                      onChange={(e) =>
-                                        formatFakturPajak(e.target.value, i)
-                                      }
-                                      className={`max-[821px]:w-full w-[246.4px] h-[40px] border border-slate-300 rounded-sm focus:border focus:border-[#0077b6] bg-[#ddebf7] disabled:bg-gray-300`}
-                                    />
-                                    <div>{i === 0 ? "*)" : ""}</div>
-                                  </div>
-                                ))}
-                              </div>
-                            </div>
-                          </div>
-                          {isError && (
-                            <div className="mt-10 mb-3">
-                              <div className="w-fit flex gap-1 items-center text-[14px] bg-red-500 text-white py-3 px-5 ">
-                                <div>
-                                  <PiWarningCircleLight />
-                                </div>
-                                <div>Data masih belum lengkap</div>
-                              </div>
-                            </div>
-                          )}
-                        </>
-                      ) : (
-                        <>
-                          <div className="flex items-center gap-2 mb-3">
-                            <div className="w-[250px]">
-                              No Purchase Order (PO)
-                            </div>
-                            <div>:</div>
-                            <div className="flex items-center gap-1 ">
-                              <div>PO</div>
-                              <div>
-                                <input
-                                  maxLength={8}
-                                  type="text"
-                                  pattern="[0-9]*"
-                                  name=""
-                                  id=""
-                                  value={nomerPo}
-                                  onChange={(e) => onChangeNomerPo(e)}
-                                  className={`max-[821px]:w-full w-[246.4px] h-[40px] rounded-sm focus:border focus:border-[#0077b6] bg-[#fff2cc] ${
-                                    isError && nomerPo.trim().length === 0
-                                      ? "border-red-400"
-                                      : "border-slate-300"
-                                  } `}
-                                />
-                              </div>
-                              <div>
-                                {isError && nomerPo.trim().length === 0 ? (
-                                  <div className="text-red-500">
-                                    <PiWarningCircleLight />
-                                  </div>
-                                ) : (
-                                  "*)"
-                                )}
-                              </div>
-                            </div>
-                          </div>
-                          <div className="flex items-center gap-2 mb-3">
-                            <div className="w-[250px]">Tanggal PO</div>
-                            <div>:</div>
-                            <div className="flex items-center gap-1">
-                              <div className="w-[21.1px]"></div>
-                              <div>
-                                <LocalizationProvider
-                                  dateAdapter={AdapterDayjs}
-                                >
-                                  <DemoContainer components={["DatePicker"]}>
-                                    <DatePicker
-                                      className="w-full bg-[#fff2cc]"
-                                      value={tanggalPo}
-                                      onChange={onChangeTanggalPo}
-                                      slotProps={{
-                                        textField: { size: "small" },
-                                      }}
-                                    />
-                                  </DemoContainer>
-                                </LocalizationProvider>
-                              </div>
-                              <div>
-                                {isError && tanggalPo === undefined ? (
-                                  <div className="text-red-500">
-                                    <PiWarningCircleLight />
-                                  </div>
-                                ) : (
-                                  "*)"
-                                )}
-                              </div>
-                            </div>
-                          </div>
-
-                          <div className="flex items-center gap-2 mb-10">
-                            <div className="w-[250px]">Delivery Area</div>
-                            <div>:</div>
-                            <div className="flex items-center gap-1 max-[821px]:w-[249.56px] w-[287.96px]">
-                              <div className="w-[24px]"></div>
-                              <div className="w-full ">
-                                <Select
-                                  value={deliveryArea}
-                                  onChange={onChangeDeliveryArea}
-                                  className="whitespace-nowrap"
-                                  options={optionsDeliveryArea}
-                                  noOptionsMessage={() => "Data not found"}
-                                  styles={customeStyles}
-                                  required
-                                />
-                              </div>
-                              <div>
-                                {isError && isEmpty(deliveryArea) ? (
-                                  <div className="text-red-500">
-                                    <PiWarningCircleLight />
-                                  </div>
-                                ) : (
-                                  "*)"
-                                )}
-                              </div>
-                            </div>
-                          </div>
-                          <div className="mb-10">
-                            {nomerInvoice.map((item, i) => (
-                              <div key={i}>
-                                <div className="flex items-center gap-2 mb-3">
-                                  {i === 0 ? (
-                                    <div className="w-[250px]">No Invoice</div>
-                                  ) : (
-                                    <div className="w-[250px]">
-                                      No Invoice {i + 1}
-                                    </div>
-                                  )}
-
-                                  <div>:</div>
-                                  <div className="flex items-center gap-1 ">
-                                    <div className="w-[21.1px]"></div>
-                                    <div>
-                                      <input
-                                        maxLength={20}
-                                        type="text"
-                                        name=""
-                                        id={i}
-                                        value={item.value}
-                                        onChange={onChangeInvoice}
-                                        className="max-[821px]:w-full w-[246.4px] h-[40px] border border-slate-300 rounded-sm focus:border focus:border-[#0077b6] bg-[#fff2cc]"
-                                      />
-                                    </div>
-                                    <div>*)</div>
-                                  </div>
-                                </div>
-
-                                <div className="flex items-center gap-2 mb-3">
-                                  {i === 0 ? (
-                                    <div className="w-[250px]">
-                                      Tanggal Invoice
-                                    </div>
-                                  ) : (
-                                    <div className="w-[250px]">
-                                      Tanggal Invoice {i + 1}
-                                    </div>
-                                  )}
+                                <div className="ps-10 flex items-center gap-2">
+                                  <div className="w-[210px]">Dari Tanggal</div>
                                   <div>:</div>
                                   <div className="flex items-center gap-1">
-                                    <div className="w-[21.1px]"></div>
-                                    <div>
-                                      <LocalizationProvider
-                                        dateAdapter={AdapterDayjs}
+                                    <div className="w-[24px]"></div>
+                                    <LocalizationProvider
+                                      dateAdapter={AdapterDayjs}
+                                    >
+                                      <DemoContainer
+                                        components={["DatePicker"]}
                                       >
-                                        <DemoContainer
-                                          components={["DatePicker"]}
-                                        >
-                                          <DatePicker
-                                            className="w-full bg-[#fff2cc]"
-                                            id={i}
-                                            value={tanggalInvoice2[i].value}
-                                            onChange={(item) =>
-                                              onChangeTanggalInvoice2(item, i)
-                                            }
-                                            slotProps={{
-                                              textField: { size: "small" },
-                                            }}
-                                          />
-                                        </DemoContainer>
-                                      </LocalizationProvider>
-                                    </div>
+                                        <DatePicker
+                                          className="w-full bg-[#fff2cc]"
+                                          value={startDatePeriode}
+                                          onChange={(item) =>
+                                            setStartDatePeriode(item)
+                                          }
+                                          slotProps={{
+                                            textField: { size: "small" },
+                                          }}
+                                        />
+                                      </DemoContainer>
+                                    </LocalizationProvider>
+                                    <div>*)</div>
+                                  </div>
+                                </div>
+                                <div className="ps-10 flex items-center gap-2">
+                                  <div className="w-[210px]">
+                                    Sampai Tanggal
+                                  </div>
+                                  <div>:</div>
+                                  <div className="flex items-center gap-1">
+                                    <div className="w-[24px]"></div>
+                                    <LocalizationProvider
+                                      dateAdapter={AdapterDayjs}
+                                    >
+                                      <DemoContainer
+                                        components={["DatePicker"]}
+                                      >
+                                        <DatePicker
+                                          className="w-full bg-[#fff2cc]"
+                                          value={endDatePeriode}
+                                          onChange={(item) =>
+                                            setEndDatePeriode(item)
+                                          }
+                                          slotProps={{
+                                            textField: { size: "small" },
+                                          }}
+                                        />
+                                      </DemoContainer>
+                                    </LocalizationProvider>
                                     <div>*)</div>
                                   </div>
                                 </div>
                               </div>
-                            ))}
-                            <div
-                              onClick={addInput}
-                              className={`py-1 px-4 rounded-sm shadow-sm text-white bg-[#305496]  w-fit ${
-                                nomerInvoice.length === 4
-                                  ? "cursor-not-allowed"
-                                  : "cursor-pointer"
-                              } `}
-                            >
-                              Add row
                             </div>
-                          </div>
-
-                          <div className="mb-10">
-                            {nomerInvoice.map((item, i) => (
-                              <div
-                                key={i}
-                                className="flex items-center gap-2 mb-3"
-                              >
-                                {i === 0 ? (
-                                  <div className="w-[250px]">Nilai Invoice</div>
-                                ) : (
-                                  <div className="w-[250px]">
-                                    Nilai Invoice {i + 1}
-                                  </div>
-                                )}
-                                <div>:</div>
-                                <div className="flex items-center gap-1 ">
-                                  <div>Rp</div>
-                                  <div>
-                                    <input
-                                      id={i}
-                                      type="number"
-                                      min={0}
-                                      max={999999999999}
-                                      step={0.01}
-                                      onKeyDown={(evt) =>
-                                        (evt.key === "e" || evt.key === "-") &&
-                                        evt.preventDefault()
-                                      }
-                                      value={nilaiInvoice[i].value}
-                                      onChange={onChangeNilaiInvoice}
-                                      className="max-[821px]:w-[208px] w-[246.4px] h-[40px] border border-slate-300 rounded-sm focus:border focus:border-[#0077b6] bg-[#fff2cc]"
-                                    />
-                                  </div>
-                                  <div>*)</div>
-                                </div>
-                              </div>
-                            ))}
-                          </div>
-                          <div className="mb-3">
-                            <div className="w-[250px]">
-                              Periode Acuan Penagihan :
-                            </div>
-                            <div className="flex flex-col gap-1">
-                              <div className="ps-10 flex items-center gap-2">
-                                <div className="w-[210px]">Dari Tanggal</div>
-                                <div>:</div>
-                                <div className="flex items-center gap-1">
-                                  <div className="w-[24px]"></div>
-                                  <LocalizationProvider
-                                    dateAdapter={AdapterDayjs}
-                                  >
-                                    <DemoContainer components={["DatePicker"]}>
-                                      <DatePicker
-                                        className="w-full bg-[#fff2cc]"
-                                        value={startDatePeriode}
-                                        onChange={(item) =>
-                                          setStartDatePeriode(item)
-                                        }
-                                        slotProps={{
-                                          textField: { size: "small" },
-                                        }}
-                                      />
-                                    </DemoContainer>
-                                  </LocalizationProvider>
-                                  <div>*)</div>
-                                </div>
-                              </div>
-                              <div className="ps-10 flex items-center gap-2">
-                                <div className="w-[210px]">Sampai Tanggal</div>
-                                <div>:</div>
-                                <div className="flex items-center gap-1">
-                                  <div className="w-[24px]"></div>
-                                  <LocalizationProvider
-                                    dateAdapter={AdapterDayjs}
-                                  >
-                                    <DemoContainer components={["DatePicker"]}>
-                                      <DatePicker
-                                        className="w-full bg-[#fff2cc]"
-                                        value={endDatePeriode}
-                                        onChange={(item) =>
-                                          setEndDatePeriode(item)
-                                        }
-                                        slotProps={{
-                                          textField: { size: "small" },
-                                        }}
-                                      />
-                                    </DemoContainer>
-                                  </LocalizationProvider>
-                                  <div>*)</div>
-                                </div>
-                              </div>
-                            </div>
-                          </div>
-                          <div className="flex items-center gap-2 mb-10">
-                            <div className="w-[250px]">
-                              Apakah barang termasuk pajak?
-                            </div>
-                            <div>:</div>
-                            <div className="flex items-center gap-1 max-[821px]:w-[249.56px] w-[287.96px]">
-                              <div className="w-[24px]"></div>
-                              <div className="w-full ">
-                                <Select
-                                  value={isPajak}
-                                  onChange={onChangeIsPajak}
-                                  className="whitespace-nowrap"
-                                  options={options}
-                                  noOptionsMessage={() => "Data not found"}
-                                  styles={customeStyles}
-                                  required
-                                />
-                              </div>
-                              <div>*)</div>
-                            </div>
-                          </div>
-                          <div className="flex items-start gap-2 mb-3">
-                            <div className="w-[250px]">
-                              No seri faktur pajak
-                            </div>
-                            <div>:</div>
-                            <div className="flex items-center gap-1 ">
-                              <div className="w-[21.1px]"></div>
-                              <div className="flex flex-col gap-1">
-                                {nomerSeriFakturPajak.map((input, i) => (
-                                  <div
-                                    key={i}
-                                    className="flex items-center gap-1"
-                                  >
-                                    <input
-                                      maxLength={19}
-                                      disabled={
-                                        isPajak.label === "Tidak" ? true : false
-                                      }
-                                      type={input.type}
-                                      name=""
-                                      id=""
-                                      value={input.value}
-                                      onChange={(e) =>
-                                        formatFakturPajak(e.target.value, i)
-                                      }
-                                      className={`max-[821px]:w-full w-[246.4px] h-[40px] border border-slate-300 rounded-sm focus:border focus:border-[#0077b6] bg-[#fff2cc] disabled:bg-gray-300`}
-                                    />
-                                    <div>{i === 0 ? "*)" : ""}</div>
-                                  </div>
-                                ))}
-                              </div>
-                            </div>
-                          </div>
-                          {isError && (
-                            <div className="mt-10 mb-3">
-                              <div className="w-fit flex gap-1 items-center text-[14px] bg-red-500 text-white py-3 px-5 ">
-                                <div>
-                                  <PiWarningCircleLight />
-                                </div>
-                                <div>Data masih belum lengkap</div>
-                              </div>
-                            </div>
-                          )}
-                        </>
-                      )}
-                    </form>
-                  </div>
-                ) : (
-                  activeStep === 2 && (
-                    <div className="mt-20 ps-3">
-                      <form action="">
-                        {tipePenagihan.label === "Beli Putus" ? (
-                          <>
-                            <div className="flex items-center gap-3 mb-3">
-                              <div className="w-[350px]">Purchase Order</div>
-                              <div>:</div>
-                              <div className="flex items-center gap-1">
-                                <div>
-                                <label htmlFor="upload-purchaseorder" className="w-fit">
-                      <div className="w-fit flex gap-1 items-center bg-blue-400 py-2 px-5 text-white hover:bg-blue-200 rounded-md">
-                        <span><FaCloudUploadAlt /></span>
-                        <div>Upload</div>
-                      </div>
-                    </label>
-                                  <input
-                                    onChange={onChangePurchaseOrderFile}
-                                    type="file"
-                                    id="upload-purchaseorder"
-                                    accept=".jpg,.pdf"
-                                    className="hidden w-full h-[40px] border border-slate-300 rounded-sm focus:border focus:border-[#0077b6]  "
-                                  />
-                                </div>
-                                <div>*)</div>
-                              </div>
-                            </div>
-                            <div className="flex items-center gap-3 mb-3">
-                              <div className="w-[350px]">
-                                Delivery Order (DO) / Packing List (Surat Jalan)
+                            <div className="flex items-center gap-2 mb-10">
+                              <div className="w-[250px]">
+                                Apakah barang termasuk pajak?
                               </div>
                               <div>:</div>
-                              <div className="flex items-center gap-1">
-                                <div>
-                                <label htmlFor="upload-deliveryorder" className="w-fit">
-                      <div className="w-fit flex gap-1 items-center bg-blue-400 py-2 px-5 text-white hover:bg-blue-200 rounded-md">
-                        <span><FaCloudUploadAlt /></span>
-                        <div>Upload</div>
-                      </div>
-                    </label>
-                                  <input
-                                    onChange={onChangeDeliveryOrderFile}
-                                    type="file"
-                                    id="upload-deliveryorder"
-                                    accept="image/jpg,.pdf"
-                                    className="hidden w-full h-[40px] border border-slate-300 rounded-sm focus:border focus:border-[#0077b6]  "
-                                  />
-                                </div>
-                                <div>*)</div>
-                              </div>
-                            </div>
-                            <div className="flex items-center gap-3 mb-3">
-                              <div className="w-[350px]">
-                                Invoice (Faktur Penagihan)
-                              </div>
-                              <div>:</div>
-                              <div className="flex items-center gap-1">
-                                <div>
-                                <label htmlFor="upload-invoice" className="w-fit">
-                      <div className="w-fit flex gap-1 items-center bg-blue-400 py-2 px-5 text-white hover:bg-blue-200 rounded-md">
-                        <span><FaCloudUploadAlt /></span>
-                        <div>Upload</div>
-                      </div>
-                    </label>
-                                  <input
-                                    onChange={onChangeInvoiceFile}
-                                    type="file"
-                                    id="upload-invoice"
-                                    accept="image/jpg,.pdf"
-                                    className="hidden w-full h-[40px] border border-slate-300 rounded-sm focus:border focus:border-[#0077b6]  "
-                                  />
-                                </div>
-                                <div>*)</div>
-                              </div>
-                            </div>
-                            <div className="mb-10">
-                              {invoiceTambahan.map((item, i) => (
-                                <div key={i}>
-                                  <div className="flex items-center gap-3 mb-3">
-                                    {i === 0 ? (
-                                      <div className="w-[350px]">
-                                        Invoice Tambahan
-                                      </div>
-                                    ) : (
-                                      <div className="w-[350px]">
-                                        Invoice Tambahan {i + 1}
-                                      </div>
-                                    )}
-
-                                    <div>:</div>
-                                    <div className="flex items-center gap-1">
-                                      <div>
-                                      <label htmlFor={i} className="w-fit">
-                      <div className="w-fit flex gap-1 items-center bg-blue-400 py-2 px-5 text-white hover:bg-blue-200 rounded-md">
-                        <span><FaCloudUploadAlt /></span>
-                        <div>Upload</div>
-                      </div>
-                    </label>
-                                        <input
-                                          type="file"
-                                          id={i}
-                                          onChange={onChangeInvoiceTambahan}
-                                          accept="image/jpg,.pdf"
-                                          className="hidden w-full h-[40px] border border-slate-300 rounded-sm focus:border focus:border-[#0077b6]  "
-                                        />
-                                      </div>
-                                    </div>
-                                    <div></div>
-                                  </div>
-                                </div>
-                              ))}
-                              <div
-                                onClick={addInvoiceTambahan}
-                                className={`py-1 px-4 rounded-sm shadow-sm text-white bg-[#305496] w-fit ${
-                                  invoiceTambahan.length === 5
-                                    ? "cursor-not-allowed"
-                                    : "cursor-pointer"
-                                } `}
-                              >
-                                Add row
-                              </div>
-                            </div>
-                            <div className="flex items-center gap-3 mb-10">
-                              <div className="flex flex-col gap-1 w-[350px]">
-                                <div className="">Kwitansi</div>
-                                <div className="text-[10px] text-gray-500">
-                                  total penagihan diatas 5 juta diwajibkan
-                                  bermaterai
-                                </div>
-                              </div>
-
-                              <div>:</div>
-                              <div className="flex items-center gap-1">
-                                <div>
-                                <label htmlFor="upload-kwitansi" className="w-fit">
-                      <div className="w-fit flex gap-1 items-center bg-blue-400 py-2 px-5 text-white hover:bg-blue-200 rounded-md">
-                        <span><FaCloudUploadAlt /></span>
-                        <div>Upload</div>
-                      </div>
-                    </label>
-                                  <input
-                                    onChange={onChangeKwitansiFile}
-                                    type="file"
-                                    id="upload-kwitansi"
-                                    accept="image/jpg,.pdf"
-                                    className="hidden w-full h-[40px] border border-slate-300 rounded-sm focus:border focus:border-[#0077b6]  "
-                                  />
-                                </div>
-                                <div>*)</div>
-                              </div>
-                            </div>
-                            <div className="flex items-center gap-3 mb-3">
-                              <div className="w-[350px]">Faktur Pajak</div>
-                              <div>:</div>
-                              <div className="flex items-center gap-1">
-                                <div>
-                                <label htmlFor="upload-fakturpajak" className="w-fit">
-                      <div className="w-fit flex gap-1 items-center bg-blue-400 py-2 px-5 text-white hover:bg-blue-200 rounded-md">
-                        <span><FaCloudUploadAlt /></span>
-                        <div>Upload</div>
-                      </div>
-                    </label>
-                                  <input
-                                    onChange={onChangeFakturPajakFile}
-                                    type="file"
-                                    id="upload-fakturpajak"
-                                    accept="image/jpg,.pdf"
-                                    className="hidden w-full h-[40px] border border-slate-300 rounded-sm focus:border focus:border-[#0077b6]  "
-                                  />
-                                </div>
-                                <div>*)</div>
-                              </div>
-                            </div>
-                            <div className="mb-10">
-                              {fakturPajakTambahan.map((item, i) => (
-                                <div key={i}>
-                                  <div className="flex items-center gap-3 mb-3">
-                                    {i === 0 ? (
-                                      <div className="w-[350px]">
-                                        Faktur Pajak Tambahan
-                                      </div>
-                                    ) : (
-                                      <div className="w-[350px]">
-                                        Faktur Pajak Tambahan {i + 1}
-                                      </div>
-                                    )}
-
-                                    <div>:</div>
-                                    <div className="flex items-center gap-1">
-                                      <div>
-                                      <label htmlFor={i} className="w-fit">
-                      <div className="w-fit flex gap-1 items-center bg-blue-400 py-2 px-5 text-white hover:bg-blue-200 rounded-md">
-                        <span><FaCloudUploadAlt /></span>
-                        <div>Upload</div>
-                      </div>
-                    </label>
-                                        <input
-                                          type="file"
-                                          id={i}
-                                          onChange={onChangeFakturPajakTambahan}
-                                          accept="image/jpg,.pdf"
-                                          className="hidden w-full h-[40px] border border-slate-300 rounded-sm focus:border focus:border-[#0077b6]  "
-                                        />
-                                      </div>
-                                    </div>
-                                    <div></div>
-                                  </div>
-                                </div>
-                              ))}
-                              <div
-                                onClick={addFakturPajakFile}
-                                className={`py-1 px-4 rounded-sm shadow-sm text-white bg-[#305496] w-fit ${
-                                  fakturPajakTambahan.length === 5
-                                    ? "cursor-not-allowed"
-                                    : "cursor-pointer"
-                                } `}
-                              >
-                                Add row
-                              </div>
-                            </div>
-                            <div className="flex items-center gap-3 mb-20">
-                              <div className="w-[350px]">Receiving Note</div>
-                              <div>:</div>
-                              <div className="flex items-center gap-1">
-                                <div>
-                                <label htmlFor="upload-receivingnote" className="w-fit">
-                      <div className="w-fit flex gap-1 items-center bg-blue-400 py-2 px-5 text-white hover:bg-blue-200 rounded-md">
-                        <span><FaCloudUploadAlt /></span>
-                        <div>Upload</div>
-                      </div>
-                    </label>
-                                  <input
-                                    onChange={onChangeReceivingNoteFile}
-                                    type="file"
-                                    id="upload-receivingnote"
-                                    accept="image/jpg,.pdf"
-                                    className="hidden w-full h-[40px] border border-slate-300 rounded-sm focus:border focus:border-[#0077b6]  "
-                                  />
-                                </div>
-                                <div>*)</div>
-                              </div>
-                            </div>
-                            <div>
-                              <div className="italic">
-                                Dokumen asli (hardcopy) sudah di kirimkan ke PT
-                                Karya Prima Unggulan :
-                              </div>
-                              <div className="flex items-center gap-3 mb-3">
-                                <div className="w-[350px]">Tipe Pengiriman</div>
-                                <div>:</div>
-                                <div className="w-1/4 relative">
+                              <div className="flex items-center gap-1 max-[821px]:w-[249.56px] w-[287.96px]">
+                                <div className="w-[24px]"></div>
+                                <div className="w-full ">
                                   <Select
-                                    value={tipePengiriman}
-                                    onChange={onChangeTipePengiriman}
+                                    value={isPajak}
+                                    onChange={onChangeIsPajak}
                                     className="whitespace-nowrap"
-                                    options={optionsTipePengiriman}
+                                    options={options}
                                     noOptionsMessage={() => "Data not found"}
                                     styles={customeStyles}
                                     required
                                   />
-                                  <div className="absolute right-[-20px] top-0">
-                                    {isError && isEmpty(tipePengiriman) ? (
-                                      <div className="text-red-500">
-                                        <PiWarningCircleLight />
-                                      </div>
-                                    ) : (
-                                      "*)"
-                                    )}
-                                  </div>
+                                </div>
+                                <div>*)</div>
+                              </div>
+                            </div>
+                            <div className="flex items-start gap-2 mb-3">
+                              <div className="w-[250px]">
+                                No seri faktur pajak
+                              </div>
+                              <div>:</div>
+                              <div className="flex items-center gap-1 ">
+                                <div className="w-[21.1px]"></div>
+                                <div className="flex flex-col gap-1">
+                                  {nomerSeriFakturPajak.map((input, i) => (
+                                    <div
+                                      key={i}
+                                      className="flex items-center gap-1"
+                                    >
+                                      <input
+                                        maxLength={19}
+                                        disabled={
+                                          isPajak.label === "Tidak"
+                                            ? true
+                                            : false
+                                        }
+                                        type={input.type}
+                                        name=""
+                                        id=""
+                                        value={input.value}
+                                        onChange={(e) =>
+                                          formatFakturPajak(e.target.value, i)
+                                        }
+                                        className={`max-[821px]:w-full w-[246.4px] h-[40px] border border-slate-300 rounded-sm focus:border focus:border-[#0077b6] bg-[#fff2cc] disabled:bg-gray-300`}
+                                      />
+                                      <div>{i === 0 ? "*)" : ""}</div>
+                                    </div>
+                                  ))}
                                 </div>
                               </div>
-                              <div className="flex items-center gap-3 mb-3">
-                                <div className="w-[350px]">
-                                  Resi Bukti Pengiriman
-                                </div>
-                                <div>:</div>
-                                <div className="flex items-center gap-1">
+                            </div>
+                            {isError && (
+                              <div className="mt-10 mb-3">
+                                <div className="w-fit flex gap-1 items-center text-[14px] bg-red-500 text-white py-3 px-5 ">
                                   <div>
-                                  <label htmlFor="upload-resi" className="w-fit">
-                      <div className="w-fit flex gap-1 items-center bg-blue-400 py-2 px-5 text-white hover:bg-blue-200 rounded-md">
-                        <span><FaCloudUploadAlt /></span>
-                        <div>Upload</div>
-                      </div>
-                    </label>
-                                    <input
-                                      disabled={
-                                        tipePengiriman.value === 1
-                                          ? false
-                                          : true
-                                      }
-                                      type="file"
-                                      onChange={onChangeResiBuktiPengirimanFile}
-                                      id="upload-resi"
-                                      accept="image/jpg,.pdf"
-                                      className="hidden w-full h-[40px] border border-slate-300 rounded-sm focus:border focus:border-[#0077b6] disabled:bg-gray-300 disabled:cursor-not-allowed"
-                                    />
+                                    <PiWarningCircleLight />
                                   </div>
-                                  <div>*)</div>
+                                  <div>Data masih belum lengkap</div>
                                 </div>
                               </div>
-                              {isError && (
-                                <div className="mt-10 mb-3">
-                                  <div className="w-fit flex gap-1 items-center text-[14px] bg-red-500 text-white py-3 px-5 ">
-                                    <div>
-                                      <PiWarningCircleLight />
-                                    </div>
-                                    <div>Data masih belum lengkap</div>
-                                  </div>
-                                </div>
-                              )}
-                            </div>
-                          </>
-                        ) : (
-                          <>
-                            <div className="flex items-center gap-3 mb-3">
-                              <div className="w-[350px]">Purchase Order</div>
-                              <div>:</div>
-                              <div className="flex items-center gap-1">
-                                <div>
-                                <label htmlFor="upload-purchaseorder" className="w-fit">
-                      <div className="w-fit flex gap-1 items-center bg-[#fff2cc] py-2 px-5 hover:bg-yellow-100 rounded-md">
-                        <span><FaCloudUploadAlt /></span>
-                        <div>Upload</div>
-                      </div>
-                    </label>
-                                  <input
-                                    type="file"
-                                    id="upload-purchaseorder"
-                                    accept="image/jpg,.pdf"
-                                    onChange={onChangePurchaseOrderFile}
-                                    className="hidden w-full h-[40px] border border-slate-300 rounded-sm focus:border focus:border-[#0077b6]  "
-                                  />
-                                </div>
-                                <div>*)</div>
-                              </div>
-                            </div>
-                            <div className="flex items-center gap-3 mb-3">
-                              <div className="w-[350px]">
-                                Delivery Order (DO) / Packing List (Surat Jalan)
-                              </div>
-                              <div>:</div>
-                              <div className="flex items-center gap-1">
-                                <div>
-                                <label htmlFor="upload-deliveryorder" className="w-fit">
-                      <div className="w-fit flex gap-1 items-center bg-[#fff2cc] py-2 px-5 hover:bg-yellow-100 rounded-md">
-                        <span><FaCloudUploadAlt /></span>
-                        <div>Upload</div>
-                      </div>
-                    </label>
-                                  <input
-                                    type="file"
-                                    id="upload-deliveryorder"
-                                    accept="image/jpg,.pdf"
-                                    onChange={onChangeDeliveryOrderFile}
-                                    className="hidden w-full h-[40px] border border-slate-300 rounded-sm focus:border focus:border-[#0077b6]  "
-                                  />
-                                </div>
-                                <div>*)</div>
-                              </div>
-                            </div>
-                            <div className="flex items-center gap-3 mb-3">
-                              <div className="w-[350px]">
-                                Invoice (Faktur Penagihan)
-                              </div>
-                              <div>:</div>
-                              <div className="flex items-center gap-1">
-                                <div>
-                                <label htmlFor="upload-invoice" className="w-fit">
-                      <div className="w-fit flex gap-1 items-center bg-[#fff2cc] py-2 px-5 hover:bg-yellow-100 rounded-md">
-                        <span><FaCloudUploadAlt /></span>
-                        <div>Upload</div>
-                      </div>
-                    </label>
-                                  <input
-                                    type="file"
-                                    id="upload-invoice"
-                                    accept="image/jpg,.pdf"
-                                    onChange={onChangeInvoiceFile}
-                                    className="hidden w-full h-[40px] border border-slate-300 rounded-sm focus:border focus:border-[#0077b6]  "
-                                  />
-                                </div>
-                                <div>*)</div>
-                              </div>
-                            </div>
-                            <div className="mb-10">
-                              {invoiceTambahan.map((item, i) => (
-                                <div key={i}>
-                                  <div className="flex items-center gap-3 mb-3">
-                                    {i === 0 ? (
-                                      <div className="w-[350px]">
-                                        Invoice Tambahan
-                                      </div>
-                                    ) : (
-                                      <div className="w-[350px]">
-                                        Invoice Tambahan {i + 1}
-                                      </div>
-                                    )}
-
-                                    <div>:</div>
-                                    <div className="flex items-center gap-1">
-                                      <div>
-                                      <label htmlFor={i} className="w-fit">
-                      <div className="w-fit flex gap-1 items-center bg-[#fff2cc] py-2 px-5 hover:bg-yellow-100 rounded-md">
-                        <span><FaCloudUploadAlt /></span>
-                        <div>Upload</div>
-                      </div>
-                    </label>
-                                        <input
-                                          type="file"
-                                          id={i}
-                                          onChange={onChangeInvoiceTambahan}
-                                          accept="image/jpg,.pdf"
-                                          className="hidden w-full h-[40px] border border-slate-300 rounded-sm focus:border focus:border-[#0077b6]  "
-                                        />
-                                      </div>
-                                    </div>
-                                    <div></div>
-                                  </div>
-                                </div>
-                              ))}
-                              <div
-                                onClick={addInvoiceTambahan}
-                                className={`py-1 px-4 rounded-sm shadow-sm text-white bg-[#305496] w-fit ${
-                                  invoiceTambahan.length === 5
-                                    ? "cursor-not-allowed"
-                                    : "cursor-pointer"
-                                } `}
-                              >
-                                Add row
-                              </div>
-                            </div>
-                            <div className="flex items-center gap-3 mb-10">
-                              <div className="flex flex-col gap-1 w-[350px] ">
-                                <div>Kwitansi</div>
-                                <div className="text-[10px] text-gray-500">
-                                  total penagihan diatas 5 juta diwajibkan
-                                  bermaterai
-                                </div>
-                              </div>
-                              <div>:</div>
-                              <div className="flex items-center gap-1">
-                                <div>
-                                <label htmlFor="upload-kwitansi" className="w-fit">
-                      <div className="w-fit flex gap-1 items-center bg-[#fff2cc] py-2 px-5 hover:bg-yellow-100 rounded-md">
-                        <span><FaCloudUploadAlt /></span>
-                        <div>Upload</div>
-                      </div>
-                    </label>
-                                  <input
-                                    type="file"
-                                    id="upload-kwitansi"
-                                    accept="image/jpg,.pdf"
-                                    onChange={onChangeKwitansiFile}
-                                    className="hidden w-full h-[40px] border border-slate-300 rounded-sm focus:border focus:border-[#0077b6]  "
-                                  />
-                                </div>
-                                <div>*)</div>
-                              </div>
-                            </div>
-                            <div className="flex items-center gap-3 mb-3">
-                              <div className="w-[350px]">Faktur Pajak</div>
-                              <div>:</div>
-                              <div className="flex items-center gap-1">
-                                <div>
-                                <label htmlFor="upload-fakturpajak" className="w-fit">
-                      <div className="w-fit flex gap-1 items-center bg-[#fff2cc] py-2 px-5 hover:bg-yellow-100 rounded-md">
-                        <span><FaCloudUploadAlt /></span>
-                        <div>Upload</div>
-                      </div>
-                    </label>
-                                  <input
-                                    type="file"
-                                    id="upload-fakturpajak"
-                                    onChange={onChangeFakturPajakFile}
-                                    accept="image/jpg,.pdf"
-                                    className="hidden w-full h-[40px] border border-slate-300 rounded-sm focus:border focus:border-[#0077b6]  "
-                                  />
-                                </div>
-                                <div>*)</div>
-                              </div>
-                            </div>
-                            <div className="mb-10">
-                              {fakturPajakTambahan.map((item, i) => (
-                                <div key={i}>
-                                  <div className="flex items-center gap-3 mb-3">
-                                    {i === 0 ? (
-                                      <div className="w-[350px]">
-                                        Faktur Pajak Tambahan
-                                      </div>
-                                    ) : (
-                                      <div className="w-[350px]">
-                                        Faktur Pajak Tambahan {i + 1}
-                                      </div>
-                                    )}
-
-                                    <div>:</div>
-                                    <div className="flex items-center gap-1">
-                                      <div>
-                                      <label htmlFor={i} className="w-fit">
-                      <div className="w-fit flex gap-1 items-center bg-[#fff2cc] py-2 px-5 hover:bg-yellow-100 rounded-md">
-                        <span><FaCloudUploadAlt /></span>
-                        <div>Upload</div>
-                      </div>
-                    </label>
-                                        <input
-                                          type="file"
-                                          id={i}
-                                          onChange={onChangeFakturPajakTambahan}
-                                          accept="image/jpg,.pdf"
-                                          className="hidden w-full h-[40px] border border-slate-300 rounded-sm focus:border focus:border-[#0077b6]  "
-                                        />
-                                      </div>
-                                    </div>
-                                    <div></div>
-                                  </div>
-                                </div>
-                              ))}
-                              <div
-                                onClick={addFakturPajakFile}
-                                className={`py-1 px-4 rounded-sm shadow-sm text-white bg-[#305496] w-fit ${
-                                  fakturPajakTambahan.length === 5
-                                    ? "cursor-not-allowed"
-                                    : "cursor-pointer"
-                                } `}
-                              >
-                                Add row
-                              </div>
-                            </div>
-                            <div className="flex items-center gap-3 mb-20">
-                              <div className="w-[350px]">Scan Report Sales</div>
-                              <div>:</div>
-                              <div className="flex items-center gap-1">
-                                <div>
-                                <label htmlFor="upload-scanreportsales" className="w-fit">
-                      <div className="w-fit flex gap-1 items-center bg-[#fff2cc] py-2 px-5 hover:bg-yellow-100 rounded-md">
-                        <span><FaCloudUploadAlt /></span>
-                        <div>Upload</div>
-                      </div>
-                    </label>
-                                  <input
-                                    type="file"
-                                    id="upload-scanreportsales"
-                                    accept="image/jpg,.pdf"
-                                    onChange={onChangeScanReportSalesFile}
-                                    className="hidden w-full h-[40px] border border-slate-300 rounded-sm focus:border focus:border-[#0077b6]  "
-                                  />
-                                </div>
-                                <div>*)</div>
-                              </div>
-                            </div>
-                            <div>
-                              <div className="italic">
-                                Dokumen asli (hardcopy) sudah di kirimkan ke PT
-                                Karya Prima Unggulan :
-                              </div>
-                              <div className="flex items-center gap-3 mb-3">
-                                <div className="w-[350px]">Tipe Pengiriman</div>
-                                <div>:</div>
-                                <div className="w-1/4 relative">
-                                  <Select
-                                    value={tipePengiriman}
-                                    onChange={onChangeTipePengiriman}
-                                    className="whitespace-nowrap"
-                                    options={optionsTipePengiriman}
-                                    noOptionsMessage={() => "Data not found"}
-                                    styles={customeStyles}
-                                    required
-                                  />
-                                  <div className="absolute right-[-20px] top-0">
-                                    {isError && isEmpty(tipePengiriman) ? (
-                                      <div className="text-red-500">
-                                        <PiWarningCircleLight />
-                                      </div>
-                                    ) : (
-                                      "*)"
-                                    )}
-                                  </div>
-                                </div>
-                              </div>
-                              <div className="flex items-center gap-3 mb-3">
-                                <div className="w-[350px]">
-                                  Resi Bukti Pengiriman
-                                </div>
-                                <div>:</div>
-                                <div className="flex items-center gap-1">
-                                  <div>
-                                  <label htmlFor="upload-resi" className="w-fit">
-                      <div className="w-fit flex gap-1 items-center bg-[#fff2cc] py-2 px-5 hover:bg-yellow-100 rounded-md">
-                        <span><FaCloudUploadAlt /></span>
-                        <div>Upload</div>
-                      </div>
-                    </label>
-                                    <input
-                                      disabled={
-                                        tipePengiriman.value === 1
-                                          ? false
-                                          : true
-                                      }
-                                      type="file"
-                                      id="upload-resi"
-                                      accept="image/jpg,.pdf"
-                                      className="hidden w-full h-[40px] border border-slate-300 rounded-sm focus:border focus:border-[#0077b6] disabled:bg-gray-300 disabled:cursor-not-allowed"
-                                    />
-                                  </div>
-                                  <div>*)</div>
-                                </div>
-                              </div>
-                              {isError && (
-                                <div className="mt-10 mb-3">
-                                  <div className="w-fit flex gap-1 items-center text-[14px] bg-red-500 text-white py-3 px-5 ">
-                                    <div>
-                                      <PiWarningCircleLight />
-                                    </div>
-                                    <div>Data masih belum lengkap</div>
-                                  </div>
-                                </div>
-                              )}
-                            </div>
+                            )}
                           </>
                         )}
                       </form>
                     </div>
-                  )
-                )}
-
-                <div
-                  className={`flex mt-24  mb-5 ${
-                    activeStep !== 0 ? "justify-between" : "justify-end"
-                  } `}
-                >
-                  {activeStep === steps.length - 1 ? (
-                    <button
-                      onClick={
-                        tipePenagihan.value === 0 ? saveDraft : saveDraft2
-                      }
-                      className={`ms-2 border border-[#00b4d8] px-10 py-2 hover:bg-slate-200 ${
-                        activeStep === 0 ? "hidden" : "block"
-                      } `}
-                    >
-                      Save As Draft
-                    </button>
                   ) : (
-                    <button
-                      onClick={handleBack}
-                      className={`ms-2 border border-[#00b4d8] px-10 py-2 hover:bg-slate-200 ${
-                        activeStep === 0 ? "hidden" : "block"
-                      } `}
-                    >
-                      Back
-                    </button>
-                  )}
+                    activeStep === 2 && (
+                      <div className="mt-20 ps-3">
+                        <form action="">
+                          {tipePenagihan.label === "Beli Putus" ? (
+                            <>
+                              <div className="flex items-center gap-3 mb-3">
+                                <div className="w-[350px]">Purchase Order</div>
+                                <div>:</div>
+                                <div className="flex items-center gap-1">
+                                  <div>
+                                    
+                                    <label
+                                      htmlFor="upload-purchaseorder"
+                                      className="w-fit"
+                                    >
+                                      {purchaseOrderFile === null ? (
+                                        <div className="w-fit flex gap-1 items-center bg-blue-400 py-2 px-5 text-white hover:bg-blue-200 rounded-md">
+                                        <span>
+                                          <FaCloudUploadAlt />
+                                        </span>
+                                        <div>Upload</div>
+                                      </div>
+                                      ): (
+                                        <div className="w-fit flex gap-1 items-center bg-blue-400 py-2 px-5 text-white hover:bg-blue-200 rounded-md">
+                                        <span>
+                                          <FaCloudUploadAlt />
+                                        </span>
+                                        <div>1 File</div>
+                                      </div>
+                                      )}
+                                      
 
-                  {activeStep === steps.length - 1 ? (
-                    <button
-                      onClick={
-                        tipePenagihan.value === 0 ? handleNext : handleNext2
-                      }
-                      className={`bg-[#0077b6] text-white py-2 px-10 rounded-sm shadow-sm hover:bg-[#00b4d8]`}
-                    >
-                      Submit
-                    </button>
-                  ) : (
-                    <button
-                      onClick={
-                        tipePenagihan.value === 0 ? handleNext : handleNext2
-                      }
-                      className="bg-[#0077b6] text-white py-2 px-10 rounded-sm shadow-sm hover:bg-[#00b4d8]"
-                    >
-                      Next
-                    </button>
-                  )}
-                </div>
-              </>
-            )}
-          </div>
-        ) : (
-          <div>
-            <Stepper activeStep={activeStep} orientation="vertical">
-              {steps.map((item, index) => {
-                return (
-                  <Step key={index}>
-                    <StepLabel>{item}</StepLabel>
-                    <StepContent>
-                      {activeStep === 0 ? (
-                        <div className="mt-5">
-                          <form action="">
-                            <div className="flex flex-col gap-2">
-                              <div>
-                                <label htmlFor="">Penagihan</label>
+                                    </label>
+                                    <input
+                                      onChange={onChangePurchaseOrderFile}
+                                      type="file"
+                                      id="upload-purchaseorder"
+                                      accept=".jpg,.pdf"
+                                      className="hidden w-full h-[40px] border border-slate-300 rounded-sm focus:border focus:border-[#0077b6]  "
+                                    />
+                                  </div>
+
+                                  <div>*)</div>
+                                </div>
+                                
                               </div>
-                              <div>
-                                <Select
-                                  value={tipePenagihan}
-                                  onChange={onChangeTipePenagihan}
-                                  className="whitespace-nowrap"
-                                  options={optionsTipePenagihan}
-                                  noOptionsMessage={() => "Data not found"}
-                                  styles={customeStyles}
-                                  required
-                                />
+                              
+                              <div className="flex items-center gap-3 mb-3">
+                                <div className="w-[350px]">
+                                  Delivery Order (DO) / Packing List (Surat
+                                  Jalan)
+                                </div>
+                                <div>:</div>
+                                <div className="flex items-center gap-1">
+                                  <div>
+                                    <label
+                                      htmlFor="upload-deliveryorder"
+                                      className="w-fit"
+                                    >
+                                      {deliveryOrderFile === null ? (
+                                        <div className="w-fit flex gap-1 items-center bg-blue-400 py-2 px-5 text-white hover:bg-blue-200 rounded-md">
+                                        <span>
+                                          <FaCloudUploadAlt />
+                                        </span>
+                                        <div>Upload</div>
+                                      </div>
+                                      ): (
+                                        <div className="w-fit flex gap-1 items-center bg-blue-400 py-2 px-5 text-white hover:bg-blue-200 rounded-md">
+                                        <span>
+                                          <FaCloudUploadAlt />
+                                        </span>
+                                        <div>1 File</div>
+                                      </div>
+                                      )}
+                                    </label>
+                                    <input
+                                      onChange={onChangeDeliveryOrderFile}
+                                      type="file"
+                                      id="upload-deliveryorder"
+                                      accept=".jpg,.pdf"
+                                      className="hidden w-full h-[40px] border border-slate-300 rounded-sm focus:border focus:border-[#0077b6]  "
+                                    />
+                                  </div>
+                                  <div>*)</div>
+                                </div>
                               </div>
-                            </div>
-                          </form>
-
-                          <div className="flex max-[348px]:flex-col max-[348px]:gap-2 mt-24 justify-end">
-                            {screenSize > 348 ? (
-                              <>
-                                <button
-                                  onClick={handleNext}
-                                  className="bg-[#0077b6] text-white py-2 px-10 rounded-sm shadow-sm hover:bg-[#00b4d8]"
-                                >
-                                  {activeStep === steps.length - 1
-                                    ? "Finish"
-                                    : "Next"}
-                                </button>
-                              </>
-                            ) : (
-                              <>
-                                <button
-                                  onClick={handleNext}
-                                  className="bg-[#0077b6] text-white py-2 px-10 rounded-sm shadow-sm hover:bg-[#00b4d8]"
-                                >
-                                  {activeStep === steps.length - 1
-                                    ? "Finish"
-                                    : "Next"}
-                                </button>
-                              </>
-                            )}
-                          </div>
-                        </div>
-                      ) : activeStep === 1 ? (
-                        <div className="mt-5">
-                          <form action="">
-                            {tipePenagihan.label === "Beli Putus" ? (
-                              <>
-                                <div className="flex flex-col gap-2 mb-3">
-                                  <div className="flex">
+                              <div className="flex items-center gap-3 mb-3">
+                                <div className="w-[350px]">
+                                  Invoice (Faktur Penagihan)
+                                </div>
+                                <div>:</div>
+                                <div className="flex items-center gap-1">
+                                  <div>
                                     <label
-                                      htmlFor=""
-                                      className="flex gap-1 items-center"
+                                      htmlFor="upload-invoice"
+                                      className="w-fit"
                                     >
-                                      No Purchase Order{" "}
-                                      {isError &&
-                                      nomerPo.trim().length === 0 ? (
-                                        <span className="text-red-400">
-                                          <PiWarningCircleLight />
+                                      {invoiceFile === null ? (
+                                        <div className="w-fit flex gap-1 items-center bg-blue-400 py-2 px-5 text-white hover:bg-blue-200 rounded-md">
+                                        <span>
+                                          <FaCloudUploadAlt />
                                         </span>
-                                      ) : (
-                                        "*"
+                                        <div>Upload</div>
+                                      </div>
+                                      ): (
+                                        <div className="w-fit flex gap-1 items-center bg-blue-400 py-2 px-5 text-white hover:bg-blue-200 rounded-md">
+                                        <span>
+                                          <FaCloudUploadAlt />
+                                        </span>
+                                        <div>1 File</div>
+                                      </div>
                                       )}
                                     </label>
+                                    <input
+                                      onChange={onChangeInvoiceFile}
+                                      type="file"
+                                      id="upload-invoice"
+                                      accept=".jpg,.pdf"
+                                      className="hidden w-full h-[40px] border border-slate-300 rounded-sm focus:border focus:border-[#0077b6]  "
+                                    />
                                   </div>
-                                  <div className="w-full">
-                                    <div className="flex items-center gap-1">
-                                      <div>PO</div>
-                                      <input
-                                        maxLength={8}
-                                        type="text"
-                                        pattern="[0-9]*"
-                                        name=""
-                                        id=""
-                                        value={nomerPo}
-                                        onChange={(e) => onChangeNomerPo(e)}
-                                        className={`w-full h-[40px] rounded-sm focus:border focus:border-[#0077b6] bg-[#ddebf7] ${
-                                          isError && nomerPo.trim().length === 0
-                                            ? "border-red-400"
-                                            : "border-slate-300"
-                                        } `}
-                                      />
-                                    </div>
-                                  </div>
+                                  <div>*)</div>
                                 </div>
-                                <div className="flex flex-col gap-2 mb-3">
-                                  <div className="flex">
-                                    <label
-                                      htmlFor=""
-                                      className="flex gap-1 items-center"
-                                    >
-                                      Tanggal PO{" "}
-                                      {isError && tanggalPo === undefined ? (
-                                        <span className="text-red-400">
-                                          <PiWarningCircleLight />
-                                        </span>
-                                      ) : (
-                                        "*"
-                                      )}
-                                    </label>
-                                  </div>
-
-                                  <div className="w-full">
-                                    <div>
-                                      <LocalizationProvider
-                                        dateAdapter={AdapterDayjs}
-                                      >
-                                        <DemoContainer
-                                          components={["DatePicker"]}
-                                        >
-                                          <DatePicker
-                                            className="w-full bg-[#ddebf7]"
-                                            value={tanggalPo}
-                                            onChange={onChangeTanggalPo}
-                                            slotProps={{
-                                              textField: { size: "small" },
-                                            }}
-                                          />
-                                        </DemoContainer>
-                                      </LocalizationProvider>
-                                    </div>
-                                  </div>
-                                </div>
-                                <div className="flex flex-col gap-2 mb-3">
-                                  <div className="flex">
-                                    <label
-                                      htmlFor=""
-                                      className="flex gap-1 items-center"
-                                    >
-                                      No Delivery Order{" "}
-                                      {isError &&
-                                      nomerDo.trim().length === 0 ? (
-                                        <span className="text-red-400">
-                                          <PiWarningCircleLight />
-                                        </span>
-                                      ) : (
-                                        "*"
-                                      )}
-                                    </label>
-                                  </div>
-
-                                  <div className="w-full">
-                                    <div>
-                                      <input
-                                        maxLength={20}
-                                        type="text"
-                                        name=""
-                                        id=""
-                                        value={nomerDo}
-                                        onChange={(e) =>
-                                          setNomerDo(e.target.value)
-                                        }
-                                        className={`max-[821px]:w-full w-[246.4px] h-[40px] rounded-sm focus:border focus:border-[#0077b6] bg-[#ddebf7] ${
-                                          isError && nomerDo.trim().length === 0
-                                            ? "border-red-400"
-                                            : "border-slate-300"
-                                        } `}
-                                      />
-                                    </div>
-                                  </div>
-                                </div>
-                                <div className="flex flex-col gap-2 mb-10">
-                                  <div className="flex">
-                                    <label
-                                      htmlFor=""
-                                      className="flex gap-1 items-center"
-                                    >
-                                      Delivery Area{" "}
-                                      {isError && isEmpty(deliveryArea) ? (
-                                        <span className="text-red-400">
-                                          <PiWarningCircleLight />
-                                        </span>
-                                      ) : (
-                                        "*"
-                                      )}
-                                    </label>
-                                  </div>
-
-                                  <div className="w-full">
-                                    <div>
-                                      <Select
-                                        value={deliveryArea}
-                                        onChange={onChangeDeliveryArea}
-                                        className="whitespace-nowrap"
-                                        options={optionsDeliveryArea}
-                                        noOptionsMessage={() =>
-                                          "Data not found"
-                                        }
-                                        styles={customeStyles}
-                                        required
-                                      />
-                                    </div>
-                                  </div>
-                                </div>
-                                <div className="mb-10">
-                                  {nomerInvoice.map((item, i) => (
-                                    <div
-                                      className="flex flex-col gap-2 mb-3"
-                                      key={i}
-                                    >
+                              </div>
+                              <div className="mb-10">
+                                {invoiceTambahan.map((item, i) => (
+                                  <div key={i}>
+                                    <div className="flex items-center gap-3 mb-3">
                                       {i === 0 ? (
-                                        <div className="w-[250px]">
-                                          No Invoice *) :
+                                        <div className="w-[350px]">
+                                          Invoice Tambahan
                                         </div>
                                       ) : (
-                                        <div className="w-[250px]">
-                                          No Invoice {i + 1} *)
+                                        <div className="w-[350px]">
+                                          Invoice Tambahan {i + 1}
                                         </div>
                                       )}
-                                      <div className="fw-full">
+
+                                      <div>:</div>
+                                      <div className="flex items-center gap-1">
                                         <div>
+                                          <label htmlFor={i} className="w-fit">
+                                          {isEmpty(invoiceTambahan[i]) ? (
+                                        <div className="w-fit flex gap-1 items-center bg-blue-400 py-2 px-5 text-white hover:bg-blue-200 rounded-md">
+                                        <span>
+                                          <FaCloudUploadAlt />
+                                        </span>
+                                        <div>Upload</div>
+                                      </div>
+                                      ): (
+                                        <div className="w-fit flex gap-1 items-center bg-blue-400 py-2 px-5 text-white hover:bg-blue-200 rounded-md">
+                                        <span>
+                                          <FaCloudUploadAlt />
+                                        </span>
+                                        <div>1 File</div>
+                                      </div>
+                                      )}
+                                          </label>
                                           <input
-                                            maxLength={20}
-                                            type="text"
-                                            name=""
+                                            type="file"
                                             id={i}
-                                            value={item.value}
-                                            onChange={onChangeInvoice}
-                                            className="max-[821px]:w-full w-[246.4px] h-[40px] border border-slate-300 rounded-sm focus:border focus:border-[#0077b6] bg-[#ddebf7]"
+                                            onChange={onChangeInvoiceTambahan}
+                                            accept=".jpg,.pdf"
+                                            className="hidden w-full h-[40px] border border-slate-300 rounded-sm focus:border focus:border-[#0077b6]  "
                                           />
                                         </div>
                                       </div>
+                                      <div></div>
                                     </div>
-                                  ))}
-                                  <div
-                                    onClick={addInput}
-                                    className={`py-1 px-4 rounded-sm shadow-sm text-white bg-[#305496]  w-fit ${
-                                      nomerInvoice.length === 4
-                                        ? "cursor-not-allowed"
-                                        : "cursor-pointer"
-                                    } `}
-                                  >
-                                    Add row
+                                  </div>
+                                ))}
+                                <div
+                                  onClick={addInvoiceTambahan}
+                                  className={`py-1 px-4 rounded-sm shadow-sm text-white bg-[#305496] w-fit ${
+                                    invoiceTambahan.length === 5
+                                      ? "cursor-not-allowed"
+                                      : "cursor-pointer"
+                                  } `}
+                                >
+                                  Add row
+                                </div>
+                              </div>
+                              <div className="flex items-center gap-3 mb-10">
+                                <div className="flex flex-col gap-1 w-[350px]">
+                                  <div className="">Kwitansi</div>
+                                  <div className="text-[10px] text-gray-500">
+                                    total penagihan diatas 5 juta diwajibkan
+                                    bermaterai
                                   </div>
                                 </div>
 
-                                <div className="mb-10">
-                                  {nomerInvoice.map((item, i) => (
-                                    <div key={i}>
-                                      <div className="flex flex-col gap-2 mb-3">
+                                <div>:</div>
+                                <div className="flex items-center gap-1">
+                                  <div>
+                                    <label
+                                      htmlFor="upload-kwitansi"
+                                      className="w-fit"
+                                    >
+                                      {kwitansiFile === null ? (
+                                        <div className="w-fit flex gap-1 items-center bg-blue-400 py-2 px-5 text-white hover:bg-blue-200 rounded-md">
+                                        <span>
+                                          <FaCloudUploadAlt />
+                                        </span>
+                                        <div>Upload</div>
+                                      </div>
+                                      ): (
+                                        <div className="w-fit flex gap-1 items-center bg-blue-400 py-2 px-5 text-white hover:bg-blue-200 rounded-md">
+                                        <span>
+                                          <FaCloudUploadAlt />
+                                        </span>
+                                        <div>1 File</div>
+                                      </div>
+                                      )}
+                                    </label>
+                                    <input
+                                      onChange={onChangeKwitansiFile}
+                                      type="file"
+                                      id="upload-kwitansi"
+                                      accept=".jpg,.pdf"
+                                      className="hidden w-full h-[40px] border border-slate-300 rounded-sm focus:border focus:border-[#0077b6]  "
+                                    />
+                                  </div>
+                                  <div>*)</div>
+                                </div>
+                              </div>
+                              <div className="flex items-center gap-3 mb-3">
+                                <div className="w-[350px]">Faktur Pajak</div>
+                                <div>:</div>
+                                <div className="flex items-center gap-1">
+                                  <div>
+                                    <label
+                                      htmlFor="upload-fakturpajak"
+                                      className="w-fit"
+                                    >
+                                      {fakturPajakFile === null ? (
+                                        <div className="w-fit flex gap-1 items-center bg-blue-400 py-2 px-5 text-white hover:bg-blue-200 rounded-md">
+                                        <span>
+                                          <FaCloudUploadAlt />
+                                        </span>
+                                        <div>Upload</div>
+                                      </div>
+                                      ): (
+                                        <div className="w-fit flex gap-1 items-center bg-blue-400 py-2 px-5 text-white hover:bg-blue-200 rounded-md">
+                                        <span>
+                                          <FaCloudUploadAlt />
+                                        </span>
+                                        <div>1 File</div>
+                                      </div>
+                                      )}
+                                    </label>
+                                    <input
+                                      onChange={onChangeFakturPajakFile}
+                                      type="file"
+                                      id="upload-fakturpajak"
+                                      accept=".jpg,.pdf"
+                                      className="hidden w-full h-[40px] border border-slate-300 rounded-sm focus:border focus:border-[#0077b6]  "
+                                    />
+                                  </div>
+                                  <div>*)</div>
+                                </div>
+                              </div>
+                              <div className="mb-10">
+                                {fakturPajakTambahan.map((item, i) => (
+                                  <div key={i}>
+                                    <div className="flex items-center gap-3 mb-3">
+                                      {i === 0 ? (
+                                        <div className="w-[350px]">
+                                          Faktur Pajak Tambahan
+                                        </div>
+                                      ) : (
+                                        <div className="w-[350px]">
+                                          Faktur Pajak Tambahan {i + 1}
+                                        </div>
+                                      )}
+
+                                      <div>:</div>
+                                      <div className="flex items-center gap-1">
+                                        <div>
+                                          <label htmlFor={i} className="w-fit">
+                                          {isEmpty(fakturPajakTambahan[i]) ? (
+                                        <div className="w-fit flex gap-1 items-center bg-blue-400 py-2 px-5 text-white hover:bg-blue-200 rounded-md">
+                                        <span>
+                                          <FaCloudUploadAlt />
+                                        </span>
+                                        <div>Upload</div>
+                                      </div>
+                                      ): (
+                                        <div className="w-fit flex gap-1 items-center bg-blue-400 py-2 px-5 text-white hover:bg-blue-200 rounded-md">
+                                        <span>
+                                          <FaCloudUploadAlt />
+                                        </span>
+                                        <div>1 File</div>
+                                      </div>
+                                      )}
+                                          </label>
+                                          <input
+                                            type="file"
+                                            id={i}
+                                            onChange={
+                                              onChangeFakturPajakTambahan
+                                            }
+                                            accept=".jpg,.pdf"
+                                            className="hidden w-full h-[40px] border border-slate-300 rounded-sm focus:border focus:border-[#0077b6]  "
+                                          />
+                                        </div>
+                                      </div>
+                                      <div></div>
+                                    </div>
+                                  </div>
+                                ))}
+                                <div
+                                  onClick={addFakturPajakFile}
+                                  className={`py-1 px-4 rounded-sm shadow-sm text-white bg-[#305496] w-fit ${
+                                    fakturPajakTambahan.length === 5
+                                      ? "cursor-not-allowed"
+                                      : "cursor-pointer"
+                                  } `}
+                                >
+                                  Add row
+                                </div>
+                              </div>
+                              <div className="flex items-center gap-3 mb-20">
+                                <div className="w-[350px]">Receiving Note</div>
+                                <div>:</div>
+                                <div className="flex items-center gap-1">
+                                  <div>
+                                    <label
+                                      htmlFor="upload-receivingnote"
+                                      className="w-fit"
+                                    >
+                                      {receivingNoteFile === null ? (
+                                        <div className="w-fit flex gap-1 items-center bg-blue-400 py-2 px-5 text-white hover:bg-blue-200 rounded-md">
+                                        <span>
+                                          <FaCloudUploadAlt />
+                                        </span>
+                                        <div>Upload</div>
+                                      </div>
+                                      ): (
+                                        <div className="w-fit flex gap-1 items-center bg-blue-400 py-2 px-5 text-white hover:bg-blue-200 rounded-md">
+                                        <span>
+                                          <FaCloudUploadAlt />
+                                        </span>
+                                        <div>1 File</div>
+                                      </div>
+                                      )}
+                                    </label>
+                                    <input
+                                      onChange={onChangeReceivingNoteFile}
+                                      type="file"
+                                      id="upload-receivingnote"
+                                      accept=".jpg,.pdf"
+                                      className="hidden w-full h-[40px] border border-slate-300 rounded-sm focus:border focus:border-[#0077b6]  "
+                                    />
+                                  </div>
+                                  <div>*)</div>
+                                </div>
+                              </div>
+                              <div>
+                                <div className="italic">
+                                  Dokumen asli (hardcopy) sudah di kirimkan ke
+                                  PT Karya Prima Unggulan :
+                                </div>
+                                <div className="flex items-center gap-3 mb-3">
+                                  <div className="w-[350px]">
+                                    Tipe Pengiriman
+                                  </div>
+                                  <div>:</div>
+                                  <div className="w-1/4 relative">
+                                    <Select
+                                      value={tipePengiriman}
+                                      onChange={onChangeTipePengiriman}
+                                      className="whitespace-nowrap"
+                                      options={optionsTipePengiriman}
+                                      noOptionsMessage={() => "Data not found"}
+                                      styles={customeStyles}
+                                      required
+                                    />
+                                    <div className="absolute right-[-20px] top-0">
+                                      {isError && isEmpty(tipePengiriman) ? (
+                                        <div className="text-red-500">
+                                          <PiWarningCircleLight />
+                                        </div>
+                                      ) : (
+                                        "*)"
+                                      )}
+                                    </div>
+                                  </div>
+                                </div>
+                                <div className="flex items-center gap-3 mb-3">
+                                  <div className="w-[350px]">
+                                    Resi Bukti Pengiriman
+                                  </div>
+                                  <div>:</div>
+                                  <div className="flex items-center gap-1">
+                                    <div>
+                                      <label
+                                        htmlFor="upload-resi"
+                                        className="w-fit"
+                                      >
+                                        {resiFile === null ? (
+                                        <div className="w-fit flex gap-1 items-center bg-blue-400 py-2 px-5 text-white hover:bg-blue-200 rounded-md">
+                                        <span>
+                                          <FaCloudUploadAlt />
+                                        </span>
+                                        <div>Upload</div>
+                                      </div>
+                                      ): (
+                                        <div className="w-fit flex gap-1 items-center bg-blue-400 py-2 px-5 text-white hover:bg-blue-200 rounded-md">
+                                        <span>
+                                          <FaCloudUploadAlt />
+                                        </span>
+                                        <div>1 File</div>
+                                      </div>
+                                      )}
+                                      </label>
+                                      <input
+                                        disabled={
+                                          tipePengiriman.value === 1
+                                            ? false
+                                            : true
+                                        }
+                                        type="file"
+                                        onChange={
+                                          onChangeResiBuktiPengirimanFile
+                                        }
+                                        id="upload-resi"
+                                        accept=".jpg,.pdf"
+                                        className="hidden w-full h-[40px] border border-slate-300 rounded-sm focus:border focus:border-[#0077b6] disabled:bg-gray-300 disabled:cursor-not-allowed"
+                                      />
+                                    </div>
+                                    <div>*)</div>
+                                  </div>
+                                </div>
+                                {isError && (
+                                  <div className="mt-10 mb-3">
+                                    <div className="w-fit flex gap-1 items-center text-[14px] bg-red-500 text-white py-3 px-5 ">
+                                      <div>
+                                        <PiWarningCircleLight />
+                                      </div>
+                                      <div>Data masih belum lengkap</div>
+                                    </div>
+                                  </div>
+                                )}
+                              </div>
+                            </>
+                          ) : (
+                            <>
+                              <div className="flex items-center gap-3 mb-3">
+                                <div className="w-[350px]">Purchase Order</div>
+                                <div>:</div>
+                                <div className="flex items-center gap-1">
+                                  <div>
+                                    <label
+                                      htmlFor="upload-purchaseorder"
+                                      className="w-fit"
+                                    >
+                                      {purchaseOrderFile === null ? (
+                                        <div className="w-fit flex gap-1 items-center bg-[#fff2cc] py-2 px-5 hover:bg-yellow-100 rounded-md">
+                                        <span>
+                                          <FaCloudUploadAlt />
+                                        </span>
+                                        <div>Upload</div>
+                                      </div>
+                                      ): (
+                                        <div className="w-fit flex gap-1 items-center bg-[#fff2cc] py-2 px-5 hover:bg-yellow-100 rounded-md">
+                                        <span>
+                                          <FaCloudUploadAlt />
+                                        </span>
+                                        <div>1 File</div>
+                                      </div>
+                                      )}
+                                    </label>
+                                    <input
+                                      type="file"
+                                      id="upload-purchaseorder"
+                                      accept=".jpg,.pdf"
+                                      onChange={onChangePurchaseOrderFile}
+                                      className="hidden w-full h-[40px] border border-slate-300 rounded-sm focus:border focus:border-[#0077b6]  "
+                                    />
+                                  </div>
+                                  <div>*)</div>
+                                </div>
+                              </div>
+                              <div className="flex items-center gap-3 mb-3">
+                                <div className="w-[350px]">
+                                  Delivery Order (DO) / Packing List (Surat
+                                  Jalan)
+                                </div>
+                                <div>:</div>
+                                <div className="flex items-center gap-1">
+                                  <div>
+                                    <label
+                                      htmlFor="upload-deliveryorder"
+                                      className="w-fit"
+                                    >
+                                      {deliveryOrderFile === null ? (
+                                        <div className="w-fit flex gap-1 items-center bg-[#fff2cc] py-2 px-5 hover:bg-yellow-100 rounded-md">
+                                        <span>
+                                          <FaCloudUploadAlt />
+                                        </span>
+                                        <div>Upload</div>
+                                      </div>
+                                      ): (
+                                        <div className="w-fit flex gap-1 items-center bg-[#fff2cc] py-2 px-5 hover:bg-yellow-100 rounded-md">
+                                        <span>
+                                          <FaCloudUploadAlt />
+                                        </span>
+                                        <div>1 File</div>
+                                      </div>
+                                      )}
+                                    </label>
+                                    <input
+                                      type="file"
+                                      id="upload-deliveryorder"
+                                      accept=".jpg,.pdf"
+                                      onChange={onChangeDeliveryOrderFile}
+                                      className="hidden w-full h-[40px] border border-slate-300 rounded-sm focus:border focus:border-[#0077b6]  "
+                                    />
+                                  </div>
+                                  <div>*)</div>
+                                </div>
+                              </div>
+                              <div className="flex items-center gap-3 mb-3">
+                                <div className="w-[350px]">
+                                  Invoice (Faktur Penagihan)
+                                </div>
+                                <div>:</div>
+                                <div className="flex items-center gap-1">
+                                  <div>
+                                    <label
+                                      htmlFor="upload-invoice"
+                                      className="w-fit"
+                                    >
+                                      {invoiceFile === null ? (
+                                        <div className="w-fit flex gap-1 items-center bg-[#fff2cc] py-2 px-5 hover:bg-yellow-100 rounded-md">
+                                        <span>
+                                          <FaCloudUploadAlt />
+                                        </span>
+                                        <div>Upload</div>
+                                      </div>
+                                      ): (
+                                        <div className="w-fit flex gap-1 items-center bg-[#fff2cc] py-2 px-5 hover:bg-yellow-100 rounded-md">
+                                        <span>
+                                          <FaCloudUploadAlt />
+                                        </span>
+                                        <div>1 File</div>
+                                      </div>
+                                      )}
+                                    </label>
+                                    <input
+                                      type="file"
+                                      id="upload-invoice"
+                                      accept=".jpg,.pdf"
+                                      onChange={onChangeInvoiceFile}
+                                      className="hidden w-full h-[40px] border border-slate-300 rounded-sm focus:border focus:border-[#0077b6]  "
+                                    />
+                                  </div>
+                                  <div>*)</div>
+                                </div>
+                              </div>
+                              <div className="mb-10">
+                                {invoiceTambahan.map((item, i) => (
+                                  <div key={i}>
+                                    <div className="flex items-center gap-3 mb-3">
+                                      {i === 0 ? (
+                                        <div className="w-[350px]">
+                                          Invoice Tambahan
+                                        </div>
+                                      ) : (
+                                        <div className="w-[350px]">
+                                          Invoice Tambahan {i + 1}
+                                        </div>
+                                      )}
+
+                                      <div>:</div>
+                                      <div className="flex items-center gap-1">
+                                        <div>
+                                          <label htmlFor={i} className="w-fit">
+                                          {isEmpty(invoiceTambahan[i]) ? (
+                                        <div className="w-fit flex gap-1 items-center bg-[#fff2cc] py-2 px-5 hover:bg-yellow-100 rounded-md">
+                                        <span>
+                                          <FaCloudUploadAlt />
+                                        </span>
+                                        <div>Upload</div>
+                                      </div>
+                                      ): (
+                                        <div className="w-fit flex gap-1 items-center bg-[#fff2cc] py-2 px-5 hover:bg-yellow-100 rounded-md">
+                                        <span>
+                                          <FaCloudUploadAlt />
+                                        </span>
+                                        <div>1 File</div>
+                                      </div>
+                                      )}
+                                          </label>
+                                          <input
+                                            type="file"
+                                            id={i}
+                                            onChange={onChangeInvoiceTambahan}
+                                            accept=".jpg,.pdf"
+                                            className="hidden w-full h-[40px] border border-slate-300 rounded-sm focus:border focus:border-[#0077b6]  "
+                                          />
+                                        </div>
+                                      </div>
+                                      <div></div>
+                                    </div>
+                                  </div>
+                                ))}
+                                <div
+                                  onClick={addInvoiceTambahan}
+                                  className={`py-1 px-4 rounded-sm shadow-sm text-white bg-[#305496] w-fit ${
+                                    invoiceTambahan.length === 5
+                                      ? "cursor-not-allowed"
+                                      : "cursor-pointer"
+                                  } `}
+                                >
+                                  Add row
+                                </div>
+                              </div>
+                              <div className="flex items-center gap-3 mb-10">
+                                <div className="flex flex-col gap-1 w-[350px] ">
+                                  <div>Kwitansi</div>
+                                  <div className="text-[10px] text-gray-500">
+                                    total penagihan diatas 5 juta diwajibkan
+                                    bermaterai
+                                  </div>
+                                </div>
+                                <div>:</div>
+                                <div className="flex items-center gap-1">
+                                  <div>
+                                    <label
+                                      htmlFor="upload-kwitansi"
+                                      className="w-fit"
+                                    >
+                                      {kwitansiFile === null ? (
+                                        <div className="w-fit flex gap-1 items-center bg-[#fff2cc] py-2 px-5 hover:bg-yellow-100 rounded-md">
+                                        <span>
+                                          <FaCloudUploadAlt />
+                                        </span>
+                                        <div>Upload</div>
+                                      </div>
+                                      ): (
+                                        <div className="w-fit flex gap-1 items-center bg-[#fff2cc] py-2 px-5 hover:bg-yellow-100 rounded-md">
+                                        <span>
+                                          <FaCloudUploadAlt />
+                                        </span>
+                                        <div>1 File</div>
+                                      </div>
+                                      )}
+                                    </label>
+                                    <input
+                                      type="file"
+                                      id="upload-kwitansi"
+                                      accept=".jpg,.pdf"
+                                      onChange={onChangeKwitansiFile}
+                                      className="hidden w-full h-[40px] border border-slate-300 rounded-sm focus:border focus:border-[#0077b6]  "
+                                    />
+                                  </div>
+                                  <div>*)</div>
+                                </div>
+                              </div>
+                              <div className="flex items-center gap-3 mb-3">
+                                <div className="w-[350px]">Faktur Pajak</div>
+                                <div>:</div>
+                                <div className="flex items-center gap-1">
+                                  <div>
+                                    <label
+                                      htmlFor="upload-fakturpajak"
+                                      className="w-fit"
+                                    >
+                                      {fakturPajakFile === null ? (
+                                        <div className="w-fit flex gap-1 items-center bg-[#fff2cc] py-2 px-5 hover:bg-yellow-100 rounded-md">
+                                        <span>
+                                          <FaCloudUploadAlt />
+                                        </span>
+                                        <div>Upload</div>
+                                      </div>
+                                      ): (
+                                        <div className="w-fit flex gap-1 items-center bg-[#fff2cc] py-2 px-5 hover:bg-yellow-100 rounded-md">
+                                        <span>
+                                          <FaCloudUploadAlt />
+                                        </span>
+                                        <div>1 File</div>
+                                      </div>
+                                      )}
+                                    </label>
+                                    <input
+                                      type="file"
+                                      id="upload-fakturpajak"
+                                      onChange={onChangeFakturPajakFile}
+                                      accept=".jpg,.pdf"
+                                      className="hidden w-full h-[40px] border border-slate-300 rounded-sm focus:border focus:border-[#0077b6]  "
+                                    />
+                                  </div>
+                                  <div>*)</div>
+                                </div>
+                              </div>
+                              <div className="mb-10">
+                                {fakturPajakTambahan.map((item, i) => (
+                                  <div key={i}>
+                                    <div className="flex items-center gap-3 mb-3">
+                                      {i === 0 ? (
+                                        <div className="w-[350px]">
+                                          Faktur Pajak Tambahan
+                                        </div>
+                                      ) : (
+                                        <div className="w-[350px]">
+                                          Faktur Pajak Tambahan {i + 1}
+                                        </div>
+                                      )}
+
+                                      <div>:</div>
+                                      <div className="flex items-center gap-1">
+                                        <div>
+                                          <label htmlFor={i} className="w-fit">
+                                          {isEmpty(fakturPajakTambahan) ? (
+                                        <div className="w-fit flex gap-1 items-center bg-[#fff2cc] py-2 px-5 hover:bg-yellow-100 rounded-md">
+                                        <span>
+                                          <FaCloudUploadAlt />
+                                        </span>
+                                        <div>Upload</div>
+                                      </div>
+                                      ): (
+                                        <div className="w-fit flex gap-1 items-center bg-[#fff2cc] py-2 px-5 hover:bg-yellow-100 rounded-md">
+                                        <span>
+                                          <FaCloudUploadAlt />
+                                        </span>
+                                        <div>1 File</div>
+                                      </div>
+                                      )}
+                                          </label>
+                                          <input
+                                            type="file"
+                                            id={i}
+                                            onChange={
+                                              onChangeFakturPajakTambahan
+                                            }
+                                            accept=".jpg,.pdf"
+                                            className="hidden w-full h-[40px] border border-slate-300 rounded-sm focus:border focus:border-[#0077b6]  "
+                                          />
+                                        </div>
+                                      </div>
+                                      <div></div>
+                                    </div>
+                                  </div>
+                                ))}
+                                <div
+                                  onClick={addFakturPajakFile}
+                                  className={`py-1 px-4 rounded-sm shadow-sm text-white bg-[#305496] w-fit ${
+                                    fakturPajakTambahan.length === 5
+                                      ? "cursor-not-allowed"
+                                      : "cursor-pointer"
+                                  } `}
+                                >
+                                  Add row
+                                </div>
+                              </div>
+                              <div className="flex items-center gap-3 mb-20">
+                                <div className="w-[350px]">
+                                  Scan Report Sales
+                                </div>
+                                <div>:</div>
+                                <div className="flex items-center gap-1">
+                                  <div>
+                                    <label
+                                      htmlFor="upload-scanreportsales"
+                                      className="w-fit"
+                                    >
+                                      {scanReportSalesFile === null ? (
+                                        <div className="w-fit flex gap-1 items-center bg-[#fff2cc] py-2 px-5 hover:bg-yellow-100 rounded-md">
+                                        <span>
+                                          <FaCloudUploadAlt />
+                                        </span>
+                                        <div>Upload</div>
+                                      </div>
+                                      ): (
+                                        <div className="w-fit flex gap-1 items-center bg-[#fff2cc] py-2 px-5 hover:bg-yellow-100 rounded-md">
+                                        <span>
+                                          <FaCloudUploadAlt />
+                                        </span>
+                                        <div>1 File</div>
+                                      </div>
+                                      )}
+                                    </label>
+                                    <input
+                                      type="file"
+                                      id="upload-scanreportsales"
+                                      accept=".jpg,.pdf"
+                                      onChange={onChangeScanReportSalesFile}
+                                      className="hidden w-full h-[40px] border border-slate-300 rounded-sm focus:border focus:border-[#0077b6]  "
+                                    />
+                                  </div>
+                                  <div>*)</div>
+                                </div>
+                              </div>
+                              <div>
+                                <div className="italic">
+                                  Dokumen asli (hardcopy) sudah di kirimkan ke
+                                  PT Karya Prima Unggulan :
+                                </div>
+                                <div className="flex items-center gap-3 mb-3">
+                                  <div className="w-[350px]">
+                                    Tipe Pengiriman
+                                  </div>
+                                  <div>:</div>
+                                  <div className="w-1/4 relative">
+                                    <Select
+                                      value={tipePengiriman}
+                                      onChange={onChangeTipePengiriman}
+                                      className="whitespace-nowrap"
+                                      options={optionsTipePengiriman}
+                                      noOptionsMessage={() => "Data not found"}
+                                      styles={customeStyles}
+                                      required
+                                    />
+                                    <div className="absolute right-[-20px] top-0">
+                                      {isError && isEmpty(tipePengiriman) ? (
+                                        <div className="text-red-500">
+                                          <PiWarningCircleLight />
+                                        </div>
+                                      ) : (
+                                        "*)"
+                                      )}
+                                    </div>
+                                  </div>
+                                </div>
+                                <div className="flex items-center gap-3 mb-3">
+                                  <div className="w-[350px]">
+                                    Resi Bukti Pengiriman
+                                  </div>
+                                  <div>:</div>
+                                  <div className="flex items-center gap-1">
+                                    <div>
+                                      <label
+                                        htmlFor="upload-resi"
+                                        className="w-fit"
+                                      >
+                                        {resiFile === null ? (
+                                        <div className="w-fit flex gap-1 items-center bg-[#fff2cc] py-2 px-5 hover:bg-yellow-100 rounded-md">
+                                        <span>
+                                          <FaCloudUploadAlt />
+                                        </span>
+                                        <div>Upload</div>
+                                      </div>
+                                      ): (
+                                        <div className="w-fit flex gap-1 items-center bg-[#fff2cc] py-2 px-5 hover:bg-yellow-100 rounded-md">
+                                        <span>
+                                          <FaCloudUploadAlt />
+                                        </span>
+                                        <div>1 File</div>
+                                      </div>
+                                      )}
+                                      </label>
+                                      <input
+                                        disabled={
+                                          tipePengiriman.value === 1
+                                            ? false
+                                            : true
+                                        }
+                                        type="file"
+                                        id="upload-resi"
+                                        accept=".jpg,.pdf"
+                                        className="hidden w-full h-[40px] border border-slate-300 rounded-sm focus:border focus:border-[#0077b6] disabled:bg-gray-300 disabled:cursor-not-allowed"
+                                      />
+                                    </div>
+                                    <div>*)</div>
+                                  </div>
+                                </div>
+                                {isError && (
+                                  <div className="mt-10 mb-3">
+                                    <div className="w-fit flex gap-1 items-center text-[14px] bg-red-500 text-white py-3 px-5 ">
+                                      <div>
+                                        <PiWarningCircleLight />
+                                      </div>
+                                      <div>Data masih belum lengkap</div>
+                                    </div>
+                                  </div>
+                                )}
+                              </div>
+                            </>
+                          )}
+                        </form>
+                      </div>
+                    )
+                  )}
+
+                  <div
+                    className={`flex mt-24  mb-5 ${
+                      activeStep !== 0 ? "justify-between" : "justify-end"
+                    } `}
+                  >
+                    {activeStep === steps.length - 1 ? (
+                      <button
+                        onClick={
+                          tipePenagihan.value === "beli putus"
+                            ? saveDraft
+                            : saveDraft2
+                        }
+                        className={`ms-2 border border-[#00b4d8] px-10 py-2 hover:bg-slate-200 ${
+                          activeStep === 0 ? "hidden" : "block"
+                        } `}
+                      >
+                        Save As Draft
+                      </button>
+                    ) : (
+                      <button
+                        onClick={handleBack}
+                        className={`ms-2 border border-[#00b4d8] px-10 py-2 hover:bg-slate-200 ${
+                          activeStep === 0 ? "hidden" : "block"
+                        } `}
+                      >
+                        Back
+                      </button>
+                    )}
+
+                    {activeStep === steps.length - 1 ? (
+                      <button
+                        onClick={
+                          tipePenagihan.value === "beli putus"
+                            ? handleNext
+                            : handleNext2
+                        }
+                        className={`bg-[#0077b6] text-white py-2 px-10 rounded-sm shadow-sm hover:bg-[#00b4d8]`}
+                      >
+                        Submit
+                      </button>
+                    ) : (
+                      <button
+                        onClick={
+                          tipePenagihan.value === "beli putus"
+                            ? handleNext
+                            : handleNext2
+                        }
+                        className="bg-[#0077b6] text-white py-2 px-10 rounded-sm shadow-sm hover:bg-[#00b4d8]"
+                      >
+                        Next
+                      </button>
+                    )}
+                  </div>
+                </>
+              )}
+            </div>
+          ) : (
+            <div>
+              <Stepper activeStep={activeStep} orientation="vertical">
+                {steps.map((item, index) => {
+                  return (
+                    <Step key={index}>
+                      <StepLabel>{item}</StepLabel>
+                      <StepContent>
+                        {activeStep === 0 ? (
+                          <div className="mt-5">
+                            <form action="">
+                              <div className="flex flex-col gap-2">
+                                <div>
+                                  <label htmlFor="">Penagihan</label>
+                                </div>
+                                <div>
+                                  <Select
+                                    value={tipePenagihan}
+                                    onChange={onChangeTipePenagihan}
+                                    className="whitespace-nowrap"
+                                    options={optionsTipePenagihan}
+                                    noOptionsMessage={() => "Data not found"}
+                                    styles={customeStyles}
+                                    required
+                                  />
+                                </div>
+                              </div>
+                            </form>
+
+                            <div className="flex max-[348px]:flex-col max-[348px]:gap-2 mt-24 justify-end">
+                              {screenSize > 348 ? (
+                                <>
+                                  <button
+                                    onClick={handleNext}
+                                    className="bg-[#0077b6] text-white py-2 px-10 rounded-sm shadow-sm hover:bg-[#00b4d8]"
+                                  >
+                                    {activeStep === steps.length - 1
+                                      ? "Finish"
+                                      : "Next"}
+                                  </button>
+                                </>
+                              ) : (
+                                <>
+                                  <button
+                                    onClick={handleNext}
+                                    className="bg-[#0077b6] text-white py-2 px-10 rounded-sm shadow-sm hover:bg-[#00b4d8]"
+                                  >
+                                    {activeStep === steps.length - 1
+                                      ? "Finish"
+                                      : "Next"}
+                                  </button>
+                                </>
+                              )}
+                            </div>
+                          </div>
+                        ) : activeStep === 1 ? (
+                          <div className="mt-5">
+                            <form action="">
+                              {tipePenagihan.label === "Beli Putus" ? (
+                                <>
+                                  <div className="flex flex-col gap-2 mb-3">
+                                    <div className="flex">
+                                      <label
+                                        htmlFor=""
+                                        className="flex gap-1 items-center"
+                                      >
+                                        No Purchase Order{" "}
+                                        {isError &&
+                                        nomerPo.trim().length === 0 ? (
+                                          <span className="text-red-400">
+                                            <PiWarningCircleLight />
+                                          </span>
+                                        ) : (
+                                          "*"
+                                        )}
+                                      </label>
+                                    </div>
+                                    <div className="w-full">
+                                      <div className="flex items-center gap-1">
+                                        <div>PO</div>
+                                        <input
+                                          maxLength={8}
+                                          type="text"
+                                          pattern="[0-9]*"
+                                          name=""
+                                          id=""
+                                          value={nomerPo}
+                                          onChange={(e) => onChangeNomerPo(e)}
+                                          className={`w-full h-[40px] rounded-sm focus:border focus:border-[#0077b6] bg-[#ddebf7] ${
+                                            isError &&
+                                            nomerPo.trim().length === 0
+                                              ? "border-red-400"
+                                              : "border-slate-300"
+                                          } `}
+                                        />
+                                      </div>
+                                    </div>
+                                  </div>
+                                  <div className="flex flex-col gap-2 mb-3">
+                                    <div className="flex">
+                                      <label
+                                        htmlFor=""
+                                        className="flex gap-1 items-center"
+                                      >
+                                        Tanggal PO{" "}
+                                        {isError && tanggalPo === undefined ? (
+                                          <span className="text-red-400">
+                                            <PiWarningCircleLight />
+                                          </span>
+                                        ) : (
+                                          "*"
+                                        )}
+                                      </label>
+                                    </div>
+
+                                    <div className="w-full">
+                                      <div>
+                                        <LocalizationProvider
+                                          dateAdapter={AdapterDayjs}
+                                        >
+                                          <DemoContainer
+                                            components={["DatePicker"]}
+                                          >
+                                            <DatePicker
+                                              className="w-full bg-[#ddebf7]"
+                                              value={tanggalPo}
+                                              onChange={onChangeTanggalPo}
+                                              slotProps={{
+                                                textField: { size: "small" },
+                                              }}
+                                            />
+                                          </DemoContainer>
+                                        </LocalizationProvider>
+                                      </div>
+                                    </div>
+                                  </div>
+                                  <div className="flex flex-col gap-2 mb-3">
+                                    <div className="flex">
+                                      <label
+                                        htmlFor=""
+                                        className="flex gap-1 items-center"
+                                      >
+                                        No Delivery Order{" "}
+                                        {isError &&
+                                        nomerDo.trim().length === 0 ? (
+                                          <span className="text-red-400">
+                                            <PiWarningCircleLight />
+                                          </span>
+                                        ) : (
+                                          "*"
+                                        )}
+                                      </label>
+                                    </div>
+
+                                    <div className="w-full">
+                                      <div>
+                                        <input
+                                          maxLength={20}
+                                          type="text"
+                                          name=""
+                                          id=""
+                                          value={nomerDo}
+                                          onChange={(e) =>
+                                            setNomerDo(e.target.value)
+                                          }
+                                          className={`max-[821px]:w-full w-[246.4px] h-[40px] rounded-sm focus:border focus:border-[#0077b6] bg-[#ddebf7] ${
+                                            isError &&
+                                            nomerDo.trim().length === 0
+                                              ? "border-red-400"
+                                              : "border-slate-300"
+                                          } `}
+                                        />
+                                      </div>
+                                    </div>
+                                  </div>
+                                  <div className="flex flex-col gap-2 mb-10">
+                                    <div className="flex">
+                                      <label
+                                        htmlFor=""
+                                        className="flex gap-1 items-center"
+                                      >
+                                        Delivery Area{" "}
+                                        {isError && isEmpty(deliveryArea) ? (
+                                          <span className="text-red-400">
+                                            <PiWarningCircleLight />
+                                          </span>
+                                        ) : (
+                                          "*"
+                                        )}
+                                      </label>
+                                    </div>
+
+                                    <div className="w-full">
+                                      <div>
+                                        <Select
+                                          value={deliveryArea}
+                                          onChange={onChangeDeliveryArea}
+                                          className="whitespace-nowrap"
+                                          options={optionsDeliveryArea}
+                                          noOptionsMessage={() =>
+                                            "Data not found"
+                                          }
+                                          styles={customeStyles}
+                                          required
+                                        />
+                                      </div>
+                                    </div>
+                                  </div>
+                                  <div className="mb-10">
+                                    {nomerInvoice.map((item, i) => (
+                                      <div
+                                        className="flex flex-col gap-2 mb-3"
+                                        key={i}
+                                      >
                                         {i === 0 ? (
                                           <div className="w-[250px]">
-                                            Tanggal Invoice *) :
+                                            No Invoice *) :
                                           </div>
                                         ) : (
                                           <div className="w-[250px]">
-                                            Tanggal Invoice {i + 1} *)
+                                            No Invoice {i + 1} *)
                                           </div>
                                         )}
-
-                                        <div className="w-full">
+                                        <div className="fw-full">
                                           <div>
-                                            <LocalizationProvider
-                                              dateAdapter={AdapterDayjs}
-                                            >
-                                              <DemoContainer
-                                                components={["DatePicker"]}
-                                              >
-                                                <DatePicker
-                                                  className="w-full bg-[#ddebf7]"
-                                                  value={
-                                                    tanggalInvoice[i].value
-                                                  }
-                                                  onChange={(item) =>
-                                                    onChangeTanggalInvoice(
-                                                      item,
-                                                      i
-                                                    )
-                                                  }
-                                                  slotProps={{
-                                                    textField: {
-                                                      size: "small",
-                                                    },
-                                                  }}
-                                                />
-                                              </DemoContainer>
-                                            </LocalizationProvider>
+                                            <input
+                                              maxLength={20}
+                                              type="text"
+                                              name=""
+                                              id={i}
+                                              value={item.value}
+                                              onChange={onChangeInvoice}
+                                              className="max-[821px]:w-full w-[246.4px] h-[40px] border border-slate-300 rounded-sm focus:border focus:border-[#0077b6] bg-[#ddebf7]"
+                                            />
                                           </div>
                                         </div>
                                       </div>
-                                      <div className="flex flex-col gap-2 mb-3">
+                                    ))}
+                                    <div
+                                      onClick={addInput}
+                                      className={`py-1 px-4 rounded-sm shadow-sm text-white bg-[#305496]  w-fit ${
+                                        nomerInvoice.length === 4
+                                          ? "cursor-not-allowed"
+                                          : "cursor-pointer"
+                                      } `}
+                                    >
+                                      Add row
+                                    </div>
+                                  </div>
+
+                                  <div className="mb-10">
+                                    {nomerInvoice.map((item, i) => (
+                                      <div key={i}>
+                                        <div className="flex flex-col gap-2 mb-3">
+                                          {i === 0 ? (
+                                            <div className="w-[250px]">
+                                              Tanggal Invoice *) :
+                                            </div>
+                                          ) : (
+                                            <div className="w-[250px]">
+                                              Tanggal Invoice {i + 1} *)
+                                            </div>
+                                          )}
+
+                                          <div className="w-full">
+                                            <div>
+                                              <LocalizationProvider
+                                                dateAdapter={AdapterDayjs}
+                                              >
+                                                <DemoContainer
+                                                  components={["DatePicker"]}
+                                                >
+                                                  <DatePicker
+                                                    className="w-full bg-[#ddebf7]"
+                                                    value={
+                                                      tanggalInvoice[i].value
+                                                    }
+                                                    onChange={(item) =>
+                                                      onChangeTanggalInvoice(
+                                                        item,
+                                                        i
+                                                      )
+                                                    }
+                                                    slotProps={{
+                                                      textField: {
+                                                        size: "small",
+                                                      },
+                                                    }}
+                                                  />
+                                                </DemoContainer>
+                                              </LocalizationProvider>
+                                            </div>
+                                          </div>
+                                        </div>
+                                        <div className="flex flex-col gap-2 mb-3">
+                                          {i === 0 ? (
+                                            <div className="w-[250px]">
+                                              Nilai Invoice *) :
+                                            </div>
+                                          ) : (
+                                            <div className="w-[250px]">
+                                              Nilai Invoice {i + 1} *)
+                                            </div>
+                                          )}
+                                          <div className="fw-full">
+                                            <div>
+                                              <input
+                                                id={i}
+                                                type="number"
+                                                min={0}
+                                                max={999999999999}
+                                                step={0.01}
+                                                onKeyDown={(evt) =>
+                                                  (evt.key === "e" ||
+                                                    evt.key === "-") &&
+                                                  evt.preventDefault()
+                                                }
+                                                value={nilaiInvoice[i].value}
+                                                onChange={onChangeNilaiInvoice}
+                                                className="max-[821px]:w-full w-[246.4px] h-[40px] border border-slate-300 rounded-sm focus:border focus:border-[#0077b6] bg-[#ddebf7]"
+                                              />
+                                            </div>
+                                          </div>
+                                        </div>
+                                      </div>
+                                    ))}
+                                  </div>
+                                  <div className="flex flex-col gap-2 mb-3">
+                                    <div>
+                                      Apakah barang termasuk pajak? *) :{" "}
+                                    </div>
+
+                                    <div className="w-full">
+                                      <div>
+                                        <Select
+                                          value={isPajak}
+                                          onChange={onChangeIsPajak}
+                                          className="whitespace-nowrap"
+                                          options={options}
+                                          noOptionsMessage={() =>
+                                            "Data not found"
+                                          }
+                                          styles={customeStyles}
+                                          required
+                                        />
+                                      </div>
+                                    </div>
+                                  </div>
+                                  <div className="mb-3">
+                                    <div className="flex flex-col gap-2 mb-3">
+                                      <div className="w-[250px]">
+                                        No seri faktur pajak :
+                                      </div>
+
+                                      <div className="fw-full">
+                                        <div className="flex flex-col gap-2">
+                                          {nomerSeriFakturPajak.map(
+                                            (input, i) => (
+                                              <div
+                                                key={i}
+                                                className="flex items-center gap-1"
+                                              >
+                                                <input
+                                                  maxLength={19}
+                                                  disabled={
+                                                    isPajak.label === "Tidak"
+                                                      ? true
+                                                      : false
+                                                  }
+                                                  type={input.type}
+                                                  name=""
+                                                  id=""
+                                                  value={input.value}
+                                                  onChange={(e) =>
+                                                    formatFakturPajak(
+                                                      e.target.value,
+                                                      i
+                                                    )
+                                                  }
+                                                  className={`max-[821px]:w-full w-[246.4px] h-[40px] border border-slate-300 rounded-sm focus:border focus:border-[#0077b6] bg-[#ddebf7] disabled:bg-gray-300`}
+                                                />
+                                                <div>{i === 0 ? "*)" : ""}</div>
+                                              </div>
+                                            )
+                                          )}
+                                        </div>
+                                      </div>
+                                    </div>
+                                  </div>
+                                  {isError && (
+                                    <div className="mt-10 mb-3">
+                                      <div className="w-fit flex gap-1 items-center text-[14px] bg-red-500 text-white py-3 px-5 ">
+                                        <div>
+                                          <PiWarningCircleLight />
+                                        </div>
+                                        <div>Data masih belum lengkap</div>
+                                      </div>
+                                    </div>
+                                  )}
+                                </>
+                              ) : (
+                                <>
+                                  <div className="flex flex-col gap-2 mb-3">
+                                    <div className="flex">
+                                      <label
+                                        htmlFor=""
+                                        className="flex gap-1 items-center"
+                                      >
+                                        No Purchase Order{" "}
+                                        {isError &&
+                                        nomerPo.trim().length === 0 ? (
+                                          <span className="text-red-400">
+                                            <PiWarningCircleLight />
+                                          </span>
+                                        ) : (
+                                          "*"
+                                        )}
+                                      </label>
+                                    </div>
+                                    <div className="w-full">
+                                      <div className="flex items-center gap-1">
+                                        <div>PO</div>
+                                        <input
+                                          maxLength={8}
+                                          type="text"
+                                          pattern="[0-9]*"
+                                          name=""
+                                          id=""
+                                          value={nomerPo}
+                                          onChange={(e) => onChangeNomerPo(e)}
+                                          className={`w-full h-[40px] rounded-sm focus:border focus:border-[#0077b6] bg-[#fff2cc] ${
+                                            isError &&
+                                            nomerPo.trim().length === 0
+                                              ? "border-red-400"
+                                              : "border-slate-400"
+                                          } `}
+                                        />
+                                      </div>
+                                    </div>
+                                  </div>
+                                  <div className="flex flex-col gap-2 mb-3">
+                                    <div className="flex">
+                                      <label
+                                        htmlFor=""
+                                        className="flex gap-1 items-center"
+                                      >
+                                        Tanggal PO{" "}
+                                        {isError && tanggalPo === undefined ? (
+                                          <span className="text-red-400">
+                                            <PiWarningCircleLight />
+                                          </span>
+                                        ) : (
+                                          "*"
+                                        )}
+                                      </label>
+                                    </div>
+
+                                    <div className="w-full">
+                                      <div>
+                                        <LocalizationProvider
+                                          dateAdapter={AdapterDayjs}
+                                        >
+                                          <DemoContainer
+                                            components={["DatePicker"]}
+                                          >
+                                            <DatePicker
+                                              className="w-full bg-[#fff2cc]"
+                                              value={tanggalPo}
+                                              onChange={onChangeTanggalPo}
+                                              slotProps={{
+                                                textField: { size: "small" },
+                                              }}
+                                            />
+                                          </DemoContainer>
+                                        </LocalizationProvider>
+                                      </div>
+                                    </div>
+                                  </div>
+
+                                  <div className="flex flex-col gap-2 mb-10">
+                                    <div className="flex">
+                                      <label
+                                        htmlFor=""
+                                        className="flex gap-1 items-center"
+                                      >
+                                        Delivery Area{" "}
+                                        {isError && isEmpty(deliveryArea) ? (
+                                          <span className="text-red-400">
+                                            <PiWarningCircleLight />
+                                          </span>
+                                        ) : (
+                                          "*"
+                                        )}
+                                      </label>
+                                    </div>
+
+                                    <div className="w-full">
+                                      <div>
+                                        <Select
+                                          value={deliveryArea}
+                                          onChange={onChangeDeliveryArea}
+                                          className="whitespace-nowrap"
+                                          options={optionsDeliveryArea}
+                                          noOptionsMessage={() =>
+                                            "Data not found"
+                                          }
+                                          styles={customeStyles}
+                                          required
+                                        />
+                                      </div>
+                                    </div>
+                                  </div>
+                                  <div className="mb-3">
+                                    {nomerInvoice.map((item, i) => (
+                                      <div key={i}>
+                                        <div
+                                          className="flex flex-col gap-2 mb-3"
+                                          key={i}
+                                        >
+                                          {i === 0 ? (
+                                            <div className="">
+                                              No Invoice *) :
+                                            </div>
+                                          ) : (
+                                            <div className="">
+                                              No Invoice {i + 1} *)
+                                            </div>
+                                          )}
+                                          <div className="fw-full">
+                                            <div>
+                                              <input
+                                                maxLength={20}
+                                                type="text"
+                                                name=""
+                                                id={i}
+                                                value={item.value}
+                                                onChange={onChangeInvoice}
+                                                className="max-[821px]:w-full w-[246.4px] h-[40px] border border-slate-300 rounded-sm focus:border focus:border-[#0077b6] bg-[#fff2cc]"
+                                              />
+                                            </div>
+                                          </div>
+                                        </div>
+
+                                        <div className="flex flex-col gap-2 mb-3">
+                                          {i === 0 ? (
+                                            <div className="">
+                                              Tanggal Invoice *) :
+                                            </div>
+                                          ) : (
+                                            <div className="">
+                                              Tanggal Invoice {i + 1} *)
+                                            </div>
+                                          )}
+
+                                          <div className="w-full">
+                                            <div>
+                                              <LocalizationProvider
+                                                dateAdapter={AdapterDayjs}
+                                              >
+                                                <DemoContainer
+                                                  components={["DatePicker"]}
+                                                >
+                                                  <DatePicker
+                                                    className="w-full bg-[#fff2cc]"
+                                                    value={
+                                                      tanggalInvoice2[i].value
+                                                    }
+                                                    onChange={(item) =>
+                                                      onChangeTanggalInvoice2(
+                                                        item,
+                                                        i
+                                                      )
+                                                    }
+                                                    slotProps={{
+                                                      textField: {
+                                                        size: "small",
+                                                      },
+                                                    }}
+                                                  />
+                                                </DemoContainer>
+                                              </LocalizationProvider>
+                                            </div>
+                                          </div>
+                                        </div>
+                                      </div>
+                                    ))}
+                                    <div
+                                      onClick={addInput}
+                                      className={`py-1 px-4 rounded-sm shadow-sm text-white bg-[#305496]  w-fit ${
+                                        nomerInvoice.length === 4
+                                          ? "cursor-not-allowed"
+                                          : "cursor-pointer"
+                                      } `}
+                                    >
+                                      Add row
+                                    </div>
+                                  </div>
+
+                                  <div className="mb-10 mt-10">
+                                    {nomerInvoice.map((item, i) => (
+                                      <div
+                                        className="flex flex-col gap-2 mb-3"
+                                        key={i}
+                                      >
                                         {i === 0 ? (
                                           <div className="w-[250px]">
                                             Nilai Invoice *) :
@@ -2918,766 +3674,76 @@ const Penagihan = () => {
                                               }
                                               value={nilaiInvoice[i].value}
                                               onChange={onChangeNilaiInvoice}
-                                              className="max-[821px]:w-full w-[246.4px] h-[40px] border border-slate-300 rounded-sm focus:border focus:border-[#0077b6] bg-[#ddebf7]"
-                                            />
-                                          </div>
-                                        </div>
-                                      </div>
-                                    </div>
-                                  ))}
-                                </div>
-                                <div className="flex flex-col gap-2 mb-3">
-                                  <div>Apakah barang termasuk pajak? *) : </div>
-
-                                  <div className="w-full">
-                                    <div>
-                                      <Select
-                                        value={isPajak}
-                                        onChange={onChangeIsPajak}
-                                        className="whitespace-nowrap"
-                                        options={options}
-                                        noOptionsMessage={() =>
-                                          "Data not found"
-                                        }
-                                        styles={customeStyles}
-                                        required
-                                      />
-                                    </div>
-                                  </div>
-                                </div>
-                                <div className="mb-3">
-                                  <div className="flex flex-col gap-2 mb-3">
-                                    <div className="w-[250px]">
-                                      No seri faktur pajak :
-                                    </div>
-
-                                    <div className="fw-full">
-                                      <div className="flex flex-col gap-2">
-                                        {nomerSeriFakturPajak.map(
-                                          (input, i) => (
-                                            <div
-                                              key={i}
-                                              className="flex items-center gap-1"
-                                            >
-                                              <input
-                                                maxLength={19}
-                                                disabled={
-                                                  isPajak.label === "Tidak"
-                                                    ? true
-                                                    : false
-                                                }
-                                                type={input.type}
-                                                name=""
-                                                id=""
-                                                value={input.value}
-                                                onChange={(e) =>
-                                                  formatFakturPajak(
-                                                    e.target.value,
-                                                    i
-                                                  )
-                                                }
-                                                className={`max-[821px]:w-full w-[246.4px] h-[40px] border border-slate-300 rounded-sm focus:border focus:border-[#0077b6] bg-[#ddebf7] disabled:bg-gray-300`}
-                                              />
-                                              <div>{i === 0 ? "*)" : ""}</div>
-                                            </div>
-                                          )
-                                        )}
-                                      </div>
-                                    </div>
-                                  </div>
-                                </div>
-                                {isError && (
-                                  <div className="mt-10 mb-3">
-                                    <div className="w-fit flex gap-1 items-center text-[14px] bg-red-500 text-white py-3 px-5 ">
-                                      <div>
-                                        <PiWarningCircleLight />
-                                      </div>
-                                      <div>Data masih belum lengkap</div>
-                                    </div>
-                                  </div>
-                                )}
-                              </>
-                            ) : (
-                              <>
-                                <div className="flex flex-col gap-2 mb-3">
-                                  <div className="flex">
-                                    <label
-                                      htmlFor=""
-                                      className="flex gap-1 items-center"
-                                    >
-                                      No Purchase Order{" "}
-                                      {isError &&
-                                      nomerPo.trim().length === 0 ? (
-                                        <span className="text-red-400">
-                                          <PiWarningCircleLight />
-                                        </span>
-                                      ) : (
-                                        "*"
-                                      )}
-                                    </label>
-                                  </div>
-                                  <div className="w-full">
-                                    <div className="flex items-center gap-1">
-                                      <div>PO</div>
-                                      <input
-                                        maxLength={8}
-                                        type="text"
-                                        pattern="[0-9]*"
-                                        name=""
-                                        id=""
-                                        value={nomerPo}
-                                        onChange={(e) => onChangeNomerPo(e)}
-                                        className={`w-full h-[40px] rounded-sm focus:border focus:border-[#0077b6] bg-[#fff2cc] ${
-                                          isError && nomerPo.trim().length === 0
-                                            ? "border-red-400"
-                                            : "border-slate-400"
-                                        } `}
-                                      />
-                                    </div>
-                                  </div>
-                                </div>
-                                <div className="flex flex-col gap-2 mb-3">
-                                  <div className="flex">
-                                    <label
-                                      htmlFor=""
-                                      className="flex gap-1 items-center"
-                                    >
-                                      Tanggal PO{" "}
-                                      {isError && tanggalPo === undefined ? (
-                                        <span className="text-red-400">
-                                          <PiWarningCircleLight />
-                                        </span>
-                                      ) : (
-                                        "*"
-                                      )}
-                                    </label>
-                                  </div>
-
-                                  <div className="w-full">
-                                    <div>
-                                      <LocalizationProvider
-                                        dateAdapter={AdapterDayjs}
-                                      >
-                                        <DemoContainer
-                                          components={["DatePicker"]}
-                                        >
-                                          <DatePicker
-                                            className="w-full bg-[#fff2cc]"
-                                            value={tanggalPo}
-                                            onChange={onChangeTanggalPo}
-                                            slotProps={{
-                                              textField: { size: "small" },
-                                            }}
-                                          />
-                                        </DemoContainer>
-                                      </LocalizationProvider>
-                                    </div>
-                                  </div>
-                                </div>
-
-                                <div className="flex flex-col gap-2 mb-10">
-                                  <div className="flex">
-                                    <label
-                                      htmlFor=""
-                                      className="flex gap-1 items-center"
-                                    >
-                                      Delivery Area{" "}
-                                      {isError && isEmpty(deliveryArea) ? (
-                                        <span className="text-red-400">
-                                          <PiWarningCircleLight />
-                                        </span>
-                                      ) : (
-                                        "*"
-                                      )}
-                                    </label>
-                                  </div>
-
-                                  <div className="w-full">
-                                    <div>
-                                      <Select
-                                        value={deliveryArea}
-                                        onChange={onChangeDeliveryArea}
-                                        className="whitespace-nowrap"
-                                        options={optionsDeliveryArea}
-                                        noOptionsMessage={() =>
-                                          "Data not found"
-                                        }
-                                        styles={customeStyles}
-                                        required
-                                      />
-                                    </div>
-                                  </div>
-                                </div>
-                                <div className="mb-3">
-                                  {nomerInvoice.map((item, i) => (
-                                    <div key={i}>
-                                      <div
-                                        className="flex flex-col gap-2 mb-3"
-                                        key={i}
-                                      >
-                                        {i === 0 ? (
-                                          <div className="">
-                                            No Invoice *) :
-                                          </div>
-                                        ) : (
-                                          <div className="">
-                                            No Invoice {i + 1} *)
-                                          </div>
-                                        )}
-                                        <div className="fw-full">
-                                          <div>
-                                            <input
-                                              maxLength={20}
-                                              type="text"
-                                              name=""
-                                              id={i}
-                                              value={item.value}
-                                              onChange={onChangeInvoice}
                                               className="max-[821px]:w-full w-[246.4px] h-[40px] border border-slate-300 rounded-sm focus:border focus:border-[#0077b6] bg-[#fff2cc]"
                                             />
                                           </div>
                                         </div>
                                       </div>
-
-                                      <div className="flex flex-col gap-2 mb-3">
-                                        {i === 0 ? (
-                                          <div className="">
-                                            Tanggal Invoice *) :
-                                          </div>
-                                        ) : (
-                                          <div className="">
-                                            Tanggal Invoice {i + 1} *)
-                                          </div>
-                                        )}
-
-                                        <div className="w-full">
-                                          <div>
-                                            <LocalizationProvider
-                                              dateAdapter={AdapterDayjs}
-                                            >
-                                              <DemoContainer
-                                                components={["DatePicker"]}
-                                              >
-                                                <DatePicker
-                                                  className="w-full bg-[#fff2cc]"
-                                                  value={
-                                                    tanggalInvoice2[i].value
-                                                  }
-                                                  onChange={(item) =>
-                                                    onChangeTanggalInvoice2(
-                                                      item,
-                                                      i
-                                                    )
-                                                  }
-                                                  slotProps={{
-                                                    textField: {
-                                                      size: "small",
-                                                    },
-                                                  }}
-                                                />
-                                              </DemoContainer>
-                                            </LocalizationProvider>
-                                          </div>
-                                        </div>
-                                      </div>
-                                    </div>
-                                  ))}
-                                  <div
-                                    onClick={addInput}
-                                    className={`py-1 px-4 rounded-sm shadow-sm text-white bg-[#305496]  w-fit ${
-                                      nomerInvoice.length === 4
-                                        ? "cursor-not-allowed"
-                                        : "cursor-pointer"
-                                    } `}
-                                  >
-                                    Add row
-                                  </div>
-                                </div>
-
-                                <div className="mb-10 mt-10">
-                                  {nomerInvoice.map((item, i) => (
-                                    <div
-                                      className="flex flex-col gap-2 mb-3"
-                                      key={i}
-                                    >
-                                      {i === 0 ? (
-                                        <div className="w-[250px]">
-                                          Nilai Invoice *) :
-                                        </div>
-                                      ) : (
-                                        <div className="w-[250px]">
-                                          Nilai Invoice {i + 1} *)
-                                        </div>
-                                      )}
-                                      <div className="fw-full">
-                                        <div>
-                                          <input
-                                            id={i}
-                                            type="number"
-                                            min={0}
-                                            max={999999999999}
-                                            step={0.01}
-                                            onKeyDown={(evt) =>
-                                              (evt.key === "e" ||
-                                                evt.key === "-") &&
-                                              evt.preventDefault()
-                                            }
-                                            value={nilaiInvoice[i].value}
-                                            onChange={onChangeNilaiInvoice}
-                                            className="max-[821px]:w-full w-[246.4px] h-[40px] border border-slate-300 rounded-sm focus:border focus:border-[#0077b6] bg-[#fff2cc]"
-                                          />
-                                        </div>
-                                      </div>
-                                    </div>
-                                  ))}
-                                </div>
-                                <div className="mb-3">
-                                  <div className="w-[250px]">
-                                    Periode Acuan Penagihan :
-                                  </div>
-                                  <div className="ps-5 flex flex-col gap-1 mt-2">
-                                    <div>Dari tanggal *)</div>
-                                    <div>
-                                      <LocalizationProvider
-                                        dateAdapter={AdapterDayjs}
-                                      >
-                                        <DemoContainer
-                                          components={["DatePicker"]}
-                                        >
-                                          <DatePicker
-                                            className="w-full bg-[#fff2cc]"
-                                            value={startDatePeriode}
-                                            onChange={(item) =>
-                                              setStartDatePeriode(item)
-                                            }
-                                            slotProps={{
-                                              textField: { size: "small" },
-                                            }}
-                                          />
-                                        </DemoContainer>
-                                      </LocalizationProvider>
-                                    </div>
-                                  </div>
-                                  <div className="ps-5 flex flex-col gap-1 mt-2">
-                                    <div>Sampai tanggal *)</div>
-                                    <div>
-                                      <LocalizationProvider
-                                        dateAdapter={AdapterDayjs}
-                                      >
-                                        <DemoContainer
-                                          components={["DatePicker"]}
-                                        >
-                                          <DatePicker
-                                            className="w-full bg-[#fff2cc]"
-                                            value={endDatePeriode}
-                                            onChange={(item) =>
-                                              setEndDatePeriode(item)
-                                            }
-                                            slotProps={{
-                                              textField: { size: "small" },
-                                            }}
-                                          />
-                                        </DemoContainer>
-                                      </LocalizationProvider>
-                                    </div>
-                                  </div>
-                                </div>
-                                <div className="flex flex-col gap-2 mb-3">
-                                  <div>Apakah barang termasuk pajak? *) : </div>
-
-                                  <div className="w-full">
-                                    <div>
-                                      <Select
-                                        value={isPajak}
-                                        onChange={onChangeIsPajak}
-                                        className="whitespace-nowrap"
-                                        options={options}
-                                        noOptionsMessage={() =>
-                                          "Data not found"
-                                        }
-                                        styles={customeStyles}
-                                        required
-                                      />
-                                    </div>
-                                  </div>
-                                </div>
-                                <div className="mb-3">
-                                  <div className="flex flex-col gap-2 mb-3">
-                                    <div className="w-[250px]">
-                                      No seri faktur pajak :
-                                    </div>
-
-                                    <div className="fw-full">
-                                      <div className="flex flex-col gap-2">
-                                        {nomerSeriFakturPajak.map(
-                                          (input, i) => (
-                                            <div
-                                              key={i}
-                                              className="flex items-center gap-1"
-                                            >
-                                              <input
-                                                maxLength={19}
-                                                disabled={
-                                                  isPajak.label === "Tidak"
-                                                    ? true
-                                                    : false
-                                                }
-                                                type={input.type}
-                                                name=""
-                                                id=""
-                                                value={input.value}
-                                                onChange={(e) =>
-                                                  formatFakturPajak(
-                                                    e.target.value,
-                                                    i
-                                                  )
-                                                }
-                                                className={`max-[821px]:w-full w-[246.4px] h-[40px] border border-slate-300 rounded-sm focus:border focus:border-[#0077b6] bg-[#fff2cc] disabled:bg-gray-300`}
-                                              />
-                                              <div>{i === 0 ? "*)" : ""}</div>
-                                            </div>
-                                          )
-                                        )}
-                                      </div>
-                                    </div>
-                                  </div>
-                                </div>
-                                {isError && (
-                                  <div className="mt-10 mb-3">
-                                    <div className="w-fit flex gap-1 items-center text-[14px] bg-red-500 text-white py-3 px-5 ">
-                                      <div>
-                                        <PiWarningCircleLight />
-                                      </div>
-                                      <div>Data masih belum lengkap</div>
-                                    </div>
-                                  </div>
-                                )}
-                              </>
-                            )}
-                          </form>
-                          <div className="flex max-[348px]:flex-col max-[348px]:gap-2 mt-24 justify-between">
-                            {screenSize > 348 ? (
-                              <>
-                                {activeStep === steps.length - 1 ? (
-                                  <button
-                                    disabled={activeStep === 0}
-                                    onClick={
-                                      tipePenagihan.value === 0
-                                        ? saveDraft
-                                        : saveDraft2
-                                    }
-                                    className={`ms-2 border border-[#00b4d8] px-10 py-2 hover:bg-slate-200 ${
-                                      activeStep === 0 && "cursor-not-allowed"
-                                    } `}
-                                  >
-                                    Save as draft
-                                  </button>
-                                ) : (
-                                  <button
-                                    disabled={activeStep === 0}
-                                    onClick={handleBack}
-                                    className={`ms-2 border border-[#00b4d8] px-10 py-2 hover:bg-slate-200 ${
-                                      activeStep === 0 && "cursor-not-allowed"
-                                    } `}
-                                  >
-                                    Back
-                                  </button>
-                                )}
-
-                                <button
-                                  onClick={
-                                    tipePenagihan.value === 0
-                                      ? handleNext
-                                      : handleNext2
-                                  }
-                                  className="bg-[#0077b6] text-white py-2 px-10 rounded-sm shadow-sm hover:bg-[#00b4d8]"
-                                >
-                                  {activeStep === steps.length - 1
-                                    ? "Submit"
-                                    : "Next"}
-                                </button>
-                              </>
-                            ) : (
-                              <>
-                                {activeStep === steps.length - 1 ? (
-                                  <button
-                                    disabled={activeStep === 0}
-                                    onClick={
-                                      tipePenagihan.value === 0
-                                        ? saveDraft
-                                        : saveDraft2
-                                    }
-                                    className={`border border-[#00b4d8] px-10 py-2 hover:bg-slate-200 ${
-                                      activeStep === 0 && "cursor-not-allowed"
-                                    } `}
-                                  >
-                                    Save as draft
-                                  </button>
-                                ) : (
-                                  <button
-                                    disabled={activeStep === 0}
-                                    onClick={handleBack}
-                                    className={`border border-[#00b4d8] px-10 py-2 hover:bg-slate-200 ${
-                                      activeStep === 0 && "cursor-not-allowed"
-                                    } `}
-                                  >
-                                    Back
-                                  </button>
-                                )}
-
-                                <button
-                                  onClick={
-                                    tipePenagihan.value === 0
-                                      ? handleNext
-                                      : handleNext2
-                                  }
-                                  className="bg-[#0077b6] text-white py-2 px-10 rounded-sm shadow-sm hover:bg-[#00b4d8]"
-                                >
-                                  {activeStep === steps.length - 1
-                                    ? "Finish"
-                                    : "Next"}
-                                </button>
-                              </>
-                            )}
-                          </div>
-                        </div>
-                      ) : (
-                        activeStep === 2 && (
-                          <div className="mt-5">
-                            <form action="">
-                              {tipePenagihan.label === "Beli Putus" ? (
-                                <>
-                                  <div className="flex flex-col gap-3 mb-3">
-                                    <div className="w-[350px]">
-                                      Purchase Order *) :
-                                    </div>
-
-                                    <div>
-                                    <label htmlFor="upload-purchaseorder" className="w-fit">
-                      <div className="w-fit flex gap-1 items-center bg-blue-400 py-2 px-5 text-white hover:bg-blue-200 rounded-md">
-                        <span><FaCloudUploadAlt /></span>
-                        <div>Upload</div>
-                      </div>
-                    </label>
-                                      <input
-                                        type="file"
-                                        id="upload-purchaseorder"
-                                        accept="image/jpg,.pdf"
-                                        onChange={onChangePurchaseOrderFile}
-                                        className="hidden w-full h-[40px] border border-slate-300 rounded-sm focus:border focus:border-[#0077b6]  "
-                                      />
-                                    </div>
-                                  </div>
-                                  <div className="flex flex-col gap-3 mb-3">
-                                    <div className="">
-                                      Delivery Order (DO) / Packing List (Surat
-                                      Jalan) *) :
-                                    </div>
-
-                                    <div>
-                                    <label htmlFor="upload-deliveryorder" className="w-fit">
-                      <div className="w-fit flex gap-1 items-center bg-blue-400 py-2 px-5 text-white hover:bg-blue-200 rounded-md">
-                        <span><FaCloudUploadAlt /></span>
-                        <div>Upload</div>
-                      </div>
-                    </label>
-                                      <input
-                                        type="file"
-                                        id="upload-deliveryorder"
-                                        accept="image/jpg,.pdf"
-                                        onChange={onChangeDeliveryOrderFile}
-                                        className="hidden w-full h-[40px] border border-slate-300 rounded-sm focus:border focus:border-[#0077b6]  "
-                                      />
-                                    </div>
-                                  </div>
-                                  <div className="flex flex-col gap-3 mb-3">
-                                    <div className="">
-                                      Invoice (Faktur penagihan) *) :
-                                    </div>
-
-                                    <div>
-                                    <label htmlFor="upload-invoice" className="w-fit">
-                      <div className="w-fit flex gap-1 items-center bg-blue-400 py-2 px-5 text-white hover:bg-blue-200 rounded-md">
-                        <span><FaCloudUploadAlt /></span>
-                        <div>Upload</div>
-                      </div>
-                    </label>
-                                      <input
-                                        type="file"
-                                        id="upload-invoice"
-                                        onChange={onChangeInvoiceFile}
-                                        accept="image/jpg,.pdf"
-                                        className="hidden w-full h-[40px] border border-slate-300 rounded-sm focus:border focus:border-[#0077b6]  "
-                                      />
-                                    </div>
-                                  </div>
-                                  <div className="mb-10">
-                                    {invoiceTambahan.map((item, i) => (
-                                      <div key={i}>
-                                        <div className="flex flex-col gap-3 mb-3">
-                                          {i === 0 ? (
-                                            <div>Invoice Tambahan :</div>
-                                          ) : (
-                                            <div>
-                                              Invoice Tambahan : {i + 1}
-                                            </div>
-                                          )}
-
-                                          <div>
-                                          <label htmlFor={i} className="w-fit">
-                      <div className="w-fit flex gap-1 items-center bg-blue-400 py-2 px-5 text-white hover:bg-blue-200 rounded-md">
-                        <span><FaCloudUploadAlt /></span>
-                        <div>Upload</div>
-                      </div>
-                    </label>
-                                            <input
-                                              type="file"
-                                              id={i}
-                                              onChange={onChangeInvoiceTambahan}
-                                              accept="image/jpg,.pdf"
-                                              className="hidden w-full h-[40px] border border-slate-300 rounded-sm focus:border focus:border-[#0077b6] "
-                                            />
-                                          </div>
-                                        </div>
-                                      </div>
                                     ))}
-                                    <div
-                                      onClick={addInvoiceTambahan}
-                                      className={` flex justify-end ${
-                                        invoiceTambahan.length === 5
-                                          ? "cursor-not-allowed"
-                                          : "cursor-pointer"
-                                      } `}
-                                    >
-                                      <div className="py-1 px-4 rounded-sm shadow-sm text-white bg-[#305496]">
-                                        Add row
+                                  </div>
+                                  <div className="mb-3">
+                                    <div className="w-[250px]">
+                                      Periode Acuan Penagihan :
+                                    </div>
+                                    <div className="ps-5 flex flex-col gap-1 mt-2">
+                                      <div>Dari tanggal *)</div>
+                                      <div>
+                                        <LocalizationProvider
+                                          dateAdapter={AdapterDayjs}
+                                        >
+                                          <DemoContainer
+                                            components={["DatePicker"]}
+                                          >
+                                            <DatePicker
+                                              className="w-full bg-[#fff2cc]"
+                                              value={startDatePeriode}
+                                              onChange={(item) =>
+                                                setStartDatePeriode(item)
+                                              }
+                                              slotProps={{
+                                                textField: { size: "small" },
+                                              }}
+                                            />
+                                          </DemoContainer>
+                                        </LocalizationProvider>
+                                      </div>
+                                    </div>
+                                    <div className="ps-5 flex flex-col gap-1 mt-2">
+                                      <div>Sampai tanggal *)</div>
+                                      <div>
+                                        <LocalizationProvider
+                                          dateAdapter={AdapterDayjs}
+                                        >
+                                          <DemoContainer
+                                            components={["DatePicker"]}
+                                          >
+                                            <DatePicker
+                                              className="w-full bg-[#fff2cc]"
+                                              value={endDatePeriode}
+                                              onChange={(item) =>
+                                                setEndDatePeriode(item)
+                                              }
+                                              slotProps={{
+                                                textField: { size: "small" },
+                                              }}
+                                            />
+                                          </DemoContainer>
+                                        </LocalizationProvider>
                                       </div>
                                     </div>
                                   </div>
-                                  <div className="flex flex-col gap-3 mb-10">
-                                    <div className="flex flex-col gap-1">
-                                      <div className="w-[350px]">
-                                        Kwitansi *)
-                                      </div>
-                                      <div className="text-[10px] text-gray-500">
-                                        total penagihan diatas 5 juta diwajibkan
-                                        bermaterai
-                                      </div>
+                                  <div className="flex flex-col gap-2 mb-3">
+                                    <div>
+                                      Apakah barang termasuk pajak? *) :{" "}
                                     </div>
 
                                     <div className="w-full">
-                                    <label htmlFor="upload-kwitansi" className="w-fit">
-                      <div className="w-fit flex gap-1 items-center bg-blue-400 py-2 px-5 text-white hover:bg-blue-200 rounded-md">
-                        <span><FaCloudUploadAlt /></span>
-                        <div>Upload</div>
-                      </div>
-                    </label>
-                                      <input
-                                        type="file"
-                                        id="upload-kwitansi"
-                                        accept="image/jpg,.pdf"
-                                        onChange={onChangeKwitansiFile}
-                                        className="hidden w-full h-[40px] border border-slate-300 rounded-sm focus:border focus:border-[#0077b6]  "
-                                      />
-                                    </div>
-                                  </div>
-                                  <div className="flex flex-col gap-3 mb-3">
-                                    <div>Faktur Pajak *)</div>
-
-                                    <div>
-                                    <label htmlFor="upload-fakturpajak" className="w-fit">
-                      <div className="w-fit flex gap-1 items-center bg-blue-400 py-2 px-5 text-white hover:bg-blue-200 rounded-md">
-                        <span><FaCloudUploadAlt /></span>
-                        <div>Upload</div>
-                      </div>
-                    </label>
-                                      <input
-                                        type="file"
-                                        id="upload-fakturpajak"
-                                        accept="image/jpg,.pdf"
-                                        onChange={onChangeFakturPajakFile}
-                                        className="hidden w-full h-[40px] border border-slate-300 rounded-sm focus:border focus:border-[#0077b6]  "
-                                      />
-                                    </div>
-                                  </div>
-                                  <div className="mb-10">
-                                    {fakturPajakTambahan.map((item, i) => (
-                                      <div key={i}>
-                                        <div className="flex flex-col gap-3 mb-3">
-                                          {i === 0 ? (
-                                            <div>Faktur Pajak Tambahan</div>
-                                          ) : (
-                                            <div>
-                                              Faktur Pajak Tambahan {i + 1}
-                                            </div>
-                                          )}
-
-                                          <div>
-                                          <label htmlFor={i} className="w-fit">
-                      <div className="w-fit flex gap-1 items-center bg-blue-400 py-2 px-5 text-white hover:bg-blue-200 rounded-md">
-                        <span><FaCloudUploadAlt /></span>
-                        <div>Upload</div>
-                      </div>
-                    </label>
-                                            <input
-                                              type="file"
-                                              id={i}
-                                              onChange={
-                                                onChangeFakturPajakTambahan
-                                              }
-                                              accept="image/jpg,.pdf"
-                                              className="hidden w-full h-[40px] border border-slate-300 rounded-sm focus:border focus:border-[#0077b6]  "
-                                            />
-                                          </div>
-                                        </div>
-                                      </div>
-                                    ))}
-                                    <div
-                                      onClick={addFakturPajakFile}
-                                      className={` flex justify-end ${
-                                        invoiceTambahan.length === 5
-                                          ? "cursor-not-allowed"
-                                          : "cursor-pointer"
-                                      } `}
-                                    >
-                                      <div className="py-1 px-4 rounded-sm shadow-sm text-white bg-[#305496]">
-                                        Add row
-                                      </div>
-                                    </div>
-                                  </div>
-                                  <div className="flex flex-col gap-3 mb-20">
-                                    <div>Receiving Note *) :</div>
-
-                                    <div>
-                                    <label htmlFor="upload-receivingnote" className="w-fit">
-                      <div className="w-fit flex gap-1 items-center bg-blue-400 py-2 px-5 text-white hover:bg-blue-200 rounded-md">
-                        <span><FaCloudUploadAlt /></span>
-                        <div>Upload</div>
-                      </div>
-                    </label>
-                                      <input
-                                        type="file"
-                                        id="upload-receivingnote"
-                                        accept="image/jpg,.pdf"
-                                        onChange={onChangeReceivingNoteFile}
-                                        className="hidden w-full h-[40px] border border-slate-300 rounded-sm focus:border focus:border-[#0077b6]  "
-                                      />
-                                    </div>
-                                  </div>
-                                  <div>
-                                    <div className="italic">
-                                      Dokumen asli (hardcopy) sudah di kirimkan
-                                      ke PT Karya Prima Unggulan :
-                                    </div>
-                                    <div className="flex flex-col gap-3 mb-3">
-                                      <div>Tipe Pengiriman *) :</div>
-
-                                      <div className="w-full">
+                                      <div>
                                         <Select
-                                          value={tipePengiriman}
-                                          onChange={onChangeTipePengiriman}
+                                          value={isPajak}
+                                          onChange={onChangeIsPajak}
                                           className="whitespace-nowrap"
-                                          options={optionsTipePengiriman}
+                                          options={options}
                                           noOptionsMessage={() =>
                                             "Data not found"
                                           }
@@ -3686,333 +3752,69 @@ const Penagihan = () => {
                                         />
                                       </div>
                                     </div>
-                                    <div className="flex flex-col gap-3 mb-3">
-                                      <div>Resi Bukti Pengiriman *) :</div>
-
-                                      <div>
-                                      <label htmlFor="upload-resi" className="w-fit">
-                      <div className="w-fit flex gap-1 items-center bg-blue-400 py-2 px-5 text-white hover:bg-blue-200 rounded-md">
-                        <span><FaCloudUploadAlt /></span>
-                        <div>Upload</div>
-                      </div>
-                    </label>
-                                        <input
-                                          disabled={
-                                            tipePengiriman.value === 1
-                                              ? false
-                                              : true
-                                          }
-                                          type="file"
-                                          id="upload-resi"
-                                          accept="image/jpg,.pdf"
-                                          onChange={
-                                            onChangeResiBuktiPengirimanFile
-                                          }
-                                          className="hidden w-full h-[40px] border border-slate-300 rounded-sm focus:border focus:border-[#0077b6] disabled:bg-gray-300 disabled:cursor-not-allowed"
-                                        />
+                                  </div>
+                                  <div className="mb-3">
+                                    <div className="flex flex-col gap-2 mb-3">
+                                      <div className="w-[250px]">
+                                        No seri faktur pajak :
                                       </div>
-                                    </div>
-                                    {isError && (
-                                      <div className="mt-10 mb-3">
-                                        <div className="w-fit flex gap-1 items-center text-[14px] bg-red-500 text-white py-3 px-5 ">
-                                          <div>
-                                            <PiWarningCircleLight />
-                                          </div>
-                                          <div>Data masih belum lengkap</div>
-                                        </div>
-                                      </div>
-                                    )}
-                                  </div>
-                                </>
-                              ) : (
-                                <>
-                                  <div className="flex flex-col gap-3 mb-3">
-                                    <div>Purchase Order *) :</div>
 
-                                    <div>
-                                    <label htmlFor="upload-purchaseorder" className="w-fit">
-                      <div className="w-fit flex gap-1 items-center bg-[#fff2cc] py-2 px-5 hover:bg-yellow-100 rounded-md">
-                        <span><FaCloudUploadAlt /></span>
-                        <div>Upload</div>
-                      </div>
-                    </label>
-                                      <input
-                                        type="file"
-                                        id="upload-purchaseorder"
-                                        accept="image/jpg,.pdf"
-                                        onChange={onChangePurchaseOrderFile}
-                                        className="hidden w-full h-[40px] border border-slate-300 rounded-sm focus:border focus:border-[#0077b6]  "
-                                      />
-                                    </div>
-                                  </div>
-                                  <div className="flex flex-col gap-3 mb-3">
-                                    <div>
-                                      Delivery Order (DO) / Packing List (Surat
-                                      Jalan) *) :
-                                    </div>
-
-                                    <div>
-                                    <label htmlFor="upload-deliveryorder" className="w-fit">
-                      <div className="w-fit flex gap-1 items-center bg-[#fff2cc] py-2 px-5 hover:bg-yellow-100 rounded-md">
-                        <span><FaCloudUploadAlt /></span>
-                        <div>Upload</div>
-                      </div>
-                    </label>
-                                      <input
-                                        type="file"
-                                        id="upload-deliveryorder"
-                                        accept="image/jpg,.pdf"
-                                        onChange={onChangeDeliveryOrderFile}
-                                        className="hidden w-full h-[40px] border border-slate-300 rounded-sm focus:border focus:border-[#0077b6]  "
-                                      />
-                                    </div>
-                                  </div>
-                                  <div className="flex flex-col gap-3 mb-3">
-                                    <div>Invoice (Faktur Penagihan) *) :</div>
-
-                                    <div>
-                                    <label htmlFor="upload-invoice" className="w-fit">
-                      <div className="w-fit flex gap-1 items-center bg-[#fff2cc] py-2 px-5 hover:bg-yellow-100 rounded-md">
-                        <span><FaCloudUploadAlt /></span>
-                        <div>Upload</div>
-                      </div>
-                    </label>
-                                      <input
-                                        type="file"
-                                        id="upload-invoice"
-                                        accept="image/jpg,.pdf"
-                                        onChange={onChangeInvoiceFile}
-                                        className="hidden w-full h-[40px] border border-slate-300 rounded-sm focus:border focus:border-[#0077b6]  "
-                                      />
-                                    </div>
-                                  </div>
-                                  <div className="mb-10">
-                                    {invoiceTambahan.map((item, i) => (
-                                      <div key={i}>
-                                        <div className="flex flex-col gap-3 mb-3">
-                                          {i === 0 ? (
-                                            <div>Invoice Tambahan</div>
-                                          ) : (
-                                            <div>Invoice Tambahan {i + 1}</div>
+                                      <div className="fw-full">
+                                        <div className="flex flex-col gap-2">
+                                          {nomerSeriFakturPajak.map(
+                                            (input, i) => (
+                                              <div
+                                                key={i}
+                                                className="flex items-center gap-1"
+                                              >
+                                                <input
+                                                  maxLength={19}
+                                                  disabled={
+                                                    isPajak.label === "Tidak"
+                                                      ? true
+                                                      : false
+                                                  }
+                                                  type={input.type}
+                                                  name=""
+                                                  id=""
+                                                  value={input.value}
+                                                  onChange={(e) =>
+                                                    formatFakturPajak(
+                                                      e.target.value,
+                                                      i
+                                                    )
+                                                  }
+                                                  className={`max-[821px]:w-full w-[246.4px] h-[40px] border border-slate-300 rounded-sm focus:border focus:border-[#0077b6] bg-[#fff2cc] disabled:bg-gray-300`}
+                                                />
+                                                <div>{i === 0 ? "*)" : ""}</div>
+                                              </div>
+                                            )
                                           )}
-
-                                          <div>
-                                          <label htmlFor={i} className="w-fit">
-                      <div className="w-fit flex gap-1 items-center bg-[#fff2cc] py-2 px-5 hover:bg-yellow-100 rounded-md">
-                        <span><FaCloudUploadAlt /></span>
-                        <div>Upload</div>
-                      </div>
-                    </label>
-                                            <input
-                                              type="file"
-                                              id={i}
-                                              onChange={onChangeInvoiceTambahan}
-                                              accept="image/jpg,.pdf"
-                                              className="hidden w-full h-[40px] border border-slate-300 rounded-sm focus:border focus:border-[#0077b6]  "
-                                            />
-                                          </div>
                                         </div>
                                       </div>
-                                    ))}
-                                    <div
-                                      onClick={addInvoiceTambahan}
-                                      className={`flex justify-end ${
-                                        invoiceTambahan.length === 5
-                                          ? "cursor-not-allowed"
-                                          : "cursor-pointer"
-                                      } `}
-                                    >
-                                      <div className="py-1 px-4 rounded-sm shadow-sm text-white bg-[#305496]">
-                                        Add row
-                                      </div>
                                     </div>
                                   </div>
-                                  <div className="flex flex-col gap-3 mb-10">
-                                    <div className="flex flex-col gap-1">
-                                      <div className="w-[350px]">
-                                        Kwitansi *)
-                                      </div>
-                                      <div className="text-[10px] text-gray-500">
-                                        total penagihan diatas 5 juta diwajibkan
-                                        bermaterai
-                                      </div>
-                                    </div>
-
-                                    <div>
-                                    <label htmlFor="upload-kwitansi" className="w-fit">
-                      <div className="w-fit flex gap-1 items-center bg-[#fff2cc] py-2 px-5 hover:bg-yellow-100 rounded-md">
-                        <span><FaCloudUploadAlt /></span>
-                        <div>Upload</div>
-                      </div>
-                    </label>
-                                      <input
-                                        type="file"
-                                        id="upload-kwitansi"
-                                        accept="image/jpg,.pdf"
-                                        onChange={onChangeKwitansiFile}
-                                        className="hidden w-full h-[40px] border border-slate-300 rounded-sm focus:border focus:border-[#0077b6]  "
-                                      />
-                                    </div>
-                                  </div>
-                                  <div className="flex flex-col gap-3 mb-3">
-                                    <div>Faktur Pajak *) :</div>
-
-                                    <div>
-                                    <label htmlFor="upload-fakturpajak" className="w-fit">
-                      <div className="w-fit flex gap-1 items-center bg-[#fff2cc] py-2 px-5 hover:bg-yellow-100 rounded-md">
-                        <span><FaCloudUploadAlt /></span>
-                        <div>Upload</div>
-                      </div>
-                    </label>
-                                      <input
-                                        type="file"
-                                        id="upload-fakturpajak"
-                                        accept="image/jpg,.pdf"
-                                        onChange={onChangeFakturPajakFile}
-                                        className="hidden w-full h-[40px] border border-slate-300 rounded-sm focus:border focus:border-[#0077b6]  "
-                                      />
-                                    </div>
-                                  </div>
-                                  <div className="mb-10">
-                                    {fakturPajakTambahan.map((item, i) => (
-                                      <div key={i}>
-                                        <div className="flex flex-col gap-3 mb-3">
-                                          {i === 0 ? (
-                                            <div className="w-[350px]">
-                                              Faktur Pajak Tambahan
-                                            </div>
-                                          ) : (
-                                            <div className="w-[350px]">
-                                              Faktur Pajak Tambahan {i + 1}
-                                            </div>
-                                          )}
-
-                                          <div>
-                                          <label htmlFor={i} className="w-fit">
-                      <div className="w-fit flex gap-1 items-center bg-[#fff2cc] py-2 px-5 hover:bg-yellow-100 rounded-md">
-                        <span><FaCloudUploadAlt /></span>
-                        <div>Upload</div>
-                      </div>
-                    </label>
-                                            <input
-                                              type="file"
-                                              id={i}
-                                              onChange={
-                                                onChangeFakturPajakTambahan
-                                              }
-                                              accept="image/jpg,.pdf"
-                                              className="hidden w-full h-[40px] border border-slate-300 rounded-sm focus:border focus:border-[#0077b6]  "
-                                            />
-                                          </div>
+                                  {isError && (
+                                    <div className="mt-10 mb-3">
+                                      <div className="w-fit flex gap-1 items-center text-[14px] bg-red-500 text-white py-3 px-5 ">
+                                        <div>
+                                          <PiWarningCircleLight />
                                         </div>
-                                      </div>
-                                    ))}
-                                    <div
-                                      onClick={addFakturPajakFile}
-                                      className={`flex justify-end ${
-                                        fakturPajakTambahan.length === 5
-                                          ? "cursor-not-allowed"
-                                          : "cursor-pointer"
-                                      } `}
-                                    >
-                                      <div className="py-1 px-4 rounded-sm shadow-sm text-white bg-[#305496]">
-                                        Add row
+                                        <div>Data masih belum lengkap</div>
                                       </div>
                                     </div>
-                                  </div>
-                                  <div className="flex flex-col gap-3 mb-20">
-                                    <div>Scan Report Sales *) :</div>
-
-                                    <div>
-                                    <label htmlFor="upload-scanreportsales" className="w-fit">
-                      <div className="w-fit flex gap-1 items-center bg-[#fff2cc] py-2 px-5 hover:bg-yellow-100 rounded-md">
-                        <span><FaCloudUploadAlt /></span>
-                        <div>Upload</div>
-                      </div>
-                    </label>
-                                      <input
-                                        type="file"
-                                        id="upload-scanreportsales"
-                                        accept="image/jpg,.pdf"
-                                        onChange={onChangeScanReportSalesFile}
-                                        className="hidden w-full h-[40px] border border-slate-300 rounded-sm focus:border focus:border-[#0077b6]  "
-                                      />
-                                    </div>
-                                  </div>
-                                  <div>
-                                    <div className="italic">
-                                      Dokumen asli (hardcopy) sudah di kirimkan
-                                      ke PT Karya Prima Unggulan :
-                                    </div>
-                                    <div className="flex flex-col gap-3 mb-3">
-                                      <div className="w-[350px]">
-                                        Tipe Pengiriman *) :
-                                      </div>
-
-                                      <div className="w-full">
-                                        <Select
-                                          value={tipePengiriman}
-                                          onChange={onChangeTipePengiriman}
-                                          className="whitespace-nowrap"
-                                          options={optionsTipePengiriman}
-                                          noOptionsMessage={() =>
-                                            "Data not found"
-                                          }
-                                          styles={customeStyles}
-                                          required
-                                        />
-                                      </div>
-                                    </div>
-                                    <div className="flex flex-col gap-3 mb-3">
-                                      <div className="w-[350px]">
-                                        Resi Bukti Pengiriman *) :
-                                      </div>
-
-                                      <div>
-                                      <label htmlFor="upload-resi" className="w-fit">
-                      <div className="w-fit flex gap-1 items-center bg-[#fff2cc] py-2 px-5 hover:bg-yellow-100 rounded-md">
-                        <span><FaCloudUploadAlt /></span>
-                        <div>Upload</div>
-                      </div>
-                    </label>
-                                        <input
-                                          disabled={
-                                            tipePengiriman.value === 1
-                                              ? false
-                                              : true
-                                          }
-                                          type="file"
-                                          id="upload-resi"
-                                          onChange={
-                                            onChangeResiBuktiPengirimanFile
-                                          }
-                                          accept="image/jpg,.pdf"
-                                          className="hidden w-full h-[40px] border border-slate-300 rounded-sm focus:border focus:border-[#0077b6] disabled:bg-gray-300 disabled:cursor-not-allowed"
-                                        />
-                                      </div>
-                                    </div>
-                                    {isError && (
-                                      <div className="mt-10 mb-3">
-                                        <div className="w-fit flex gap-1 items-center text-[14px] bg-red-500 text-white py-3 px-5 ">
-                                          <div>
-                                            <PiWarningCircleLight />
-                                          </div>
-                                          <div>Data masih belum lengkap</div>
-                                        </div>
-                                      </div>
-                                    )}
-                                  </div>
+                                  )}
                                 </>
                               )}
                             </form>
-                            <div className="flex max-[432px]:flex-col max-[432px]:gap-2 mt-24 mb-5 justify-between">
-                              {screenSize > 431 ? (
+                            <div className="flex max-[348px]:flex-col max-[348px]:gap-2 mt-24 justify-between">
+                              {screenSize > 348 ? (
                                 <>
                                   {activeStep === steps.length - 1 ? (
                                     <button
                                       disabled={activeStep === 0}
                                       onClick={
-                                        tipePenagihan.value === 0
+                                        tipePenagihan.value === "beli putus"
                                           ? saveDraft
                                           : saveDraft2
                                       }
@@ -4036,7 +3838,7 @@ const Penagihan = () => {
 
                                   <button
                                     onClick={
-                                      tipePenagihan.value === 0
+                                      tipePenagihan.value === "beli putus"
                                         ? handleNext
                                         : handleNext2
                                     }
@@ -4053,7 +3855,7 @@ const Penagihan = () => {
                                     <button
                                       disabled={activeStep === 0}
                                       onClick={
-                                        tipePenagihan.value === 0
+                                        tipePenagihan.value === "beli putus"
                                           ? saveDraft
                                           : saveDraft2
                                       }
@@ -4077,7 +3879,7 @@ const Penagihan = () => {
 
                                   <button
                                     onClick={
-                                      tipePenagihan.value === 0
+                                      tipePenagihan.value === "beli putus"
                                         ? handleNext
                                         : handleNext2
                                     }
@@ -4091,29 +3893,958 @@ const Penagihan = () => {
                               )}
                             </div>
                           </div>
-                        )
-                      )}
-                    </StepContent>
-                  </Step>
-                );
-              })}
-            </Stepper>
-            {activeStep === steps.length && (
-              <>
-                <Typography sx={{ mt: 2, mb: 1 }}>
-                  All steps completed - you&apos;re finished
-                </Typography>
-                <Box sx={{ display: "flex", flexDirection: "row", pt: 2 }}>
-                  <Box sx={{ flex: "1 1 auto" }} />
-                  <Button onClick={handleReset}>Reset</Button>
-                </Box>
-              </>
-            )}
-          </div>
-        )}
-      </div>
+                        ) : (
+                          activeStep === 2 && (
+                            <div className="mt-5">
+                              <form action="">
+                                {tipePenagihan.label === "Beli Putus" ? (
+                                  <>
+                                    <div className="flex flex-col gap-3 mb-3">
+                                      <div className="w-[350px]">
+                                        Purchase Order *) :
+                                      </div>
+
+                                      <div>
+                                        <label
+                                          htmlFor="upload-purchaseorder"
+                                          className="w-fit"
+                                        >
+                                          {purchaseOrderFile === null ? (
+                                        <div className="w-fit flex gap-1 items-center bg-blue-400 py-2 px-5 text-white hover:bg-blue-200 rounded-md">
+                                        <span>
+                                          <FaCloudUploadAlt />
+                                        </span>
+                                        <div>Upload</div>
+                                      </div>
+                                      ): (
+                                        <div className="w-fit flex gap-1 items-center bg-blue-400 py-2 px-5 text-white hover:bg-blue-200 rounded-md">
+                                        <span>
+                                          <FaCloudUploadAlt />
+                                        </span>
+                                        <div>1 File</div>
+                                      </div>
+                                      )}
+                                        </label>
+                                        <input
+                                          type="file"
+                                          id="upload-purchaseorder"
+                                          accept=".jpg,.pdf"
+                                          onChange={onChangePurchaseOrderFile}
+                                          className="hidden w-full h-[40px] border border-slate-300 rounded-sm focus:border focus:border-[#0077b6]  "
+                                        />
+                                      </div>
+                                    </div>
+                                    <div className="flex flex-col gap-3 mb-3">
+                                      <div className="">
+                                        Delivery Order (DO) / Packing List
+                                        (Surat Jalan) *) :
+                                      </div>
+
+                                      <div>
+                                        <label
+                                          htmlFor="upload-deliveryorder"
+                                          className="w-fit"
+                                        >
+                                          {deliveryOrderFile === null ? (
+                                        <div className="w-fit flex gap-1 items-center bg-blue-400 py-2 px-5 text-white hover:bg-blue-200 rounded-md">
+                                        <span>
+                                          <FaCloudUploadAlt />
+                                        </span>
+                                        <div>Upload</div>
+                                      </div>
+                                      ): (
+                                        <div className="w-fit flex gap-1 items-center bg-blue-400 py-2 px-5 text-white hover:bg-blue-200 rounded-md">
+                                        <span>
+                                          <FaCloudUploadAlt />
+                                        </span>
+                                        <div>1 File</div>
+                                      </div>
+                                      )}
+                                        </label>
+                                        <input
+                                          type="file"
+                                          id="upload-deliveryorder"
+                                          accept=".jpg,.pdf"
+                                          onChange={onChangeDeliveryOrderFile}
+                                          className="hidden w-full h-[40px] border border-slate-300 rounded-sm focus:border focus:border-[#0077b6]  "
+                                        />
+                                      </div>
+                                    </div>
+                                    <div className="flex flex-col gap-3 mb-3">
+                                      <div className="">
+                                        Invoice (Faktur penagihan) *) :
+                                      </div>
+
+                                      <div>
+                                        <label
+                                          htmlFor="upload-invoice"
+                                          className="w-fit"
+                                        >
+                                          {invoiceFile === null ? (
+                                        <div className="w-fit flex gap-1 items-center bg-blue-400 py-2 px-5 text-white hover:bg-blue-200 rounded-md">
+                                        <span>
+                                          <FaCloudUploadAlt />
+                                        </span>
+                                        <div>Upload</div>
+                                      </div>
+                                      ): (
+                                        <div className="w-fit flex gap-1 items-center bg-blue-400 py-2 px-5 text-white hover:bg-blue-200 rounded-md">
+                                        <span>
+                                          <FaCloudUploadAlt />
+                                        </span>
+                                        <div>1 File</div>
+                                      </div>
+                                      )}
+                                        </label>
+                                        <input
+                                          type="file"
+                                          id="upload-invoice"
+                                          onChange={onChangeInvoiceFile}
+                                          accept=".jpg,.pdf"
+                                          className="hidden w-full h-[40px] border border-slate-300 rounded-sm focus:border focus:border-[#0077b6]  "
+                                        />
+                                      </div>
+                                    </div>
+                                    <div className="mb-10">
+                                      {invoiceTambahan.map((item, i) => (
+                                        <div key={i}>
+                                          <div className="flex flex-col gap-3 mb-3">
+                                            {i === 0 ? (
+                                              <div>Invoice Tambahan :</div>
+                                            ) : (
+                                              <div>
+                                                Invoice Tambahan : {i + 1}
+                                              </div>
+                                            )}
+
+                                            <div>
+                                              <label
+                                                htmlFor={i}
+                                                className="w-fit"
+                                              >
+                                                {isEmpty(invoiceTambahan[i]) ? (
+                                        <div className="w-fit flex gap-1 items-center bg-blue-400 py-2 px-5 text-white hover:bg-blue-200 rounded-md">
+                                        <span>
+                                          <FaCloudUploadAlt />
+                                        </span>
+                                        <div>Upload</div>
+                                      </div>
+                                      ): (
+                                        <div className="w-fit flex gap-1 items-center bg-blue-400 py-2 px-5 text-white hover:bg-blue-200 rounded-md">
+                                        <span>
+                                          <FaCloudUploadAlt />
+                                        </span>
+                                        <div>1 File</div>
+                                      </div>
+                                      )}
+                                              </label>
+                                              <input
+                                                type="file"
+                                                id={i}
+                                                onChange={
+                                                  onChangeInvoiceTambahan
+                                                }
+                                                accept=".jpg,.pdf"
+                                                className="hidden w-full h-[40px] border border-slate-300 rounded-sm focus:border focus:border-[#0077b6] "
+                                              />
+                                            </div>
+                                          </div>
+                                        </div>
+                                      ))}
+                                      <div
+                                        onClick={addInvoiceTambahan}
+                                        className={` flex justify-end ${
+                                          invoiceTambahan.length === 5
+                                            ? "cursor-not-allowed"
+                                            : "cursor-pointer"
+                                        } `}
+                                      >
+                                        <div className="py-1 px-4 rounded-sm shadow-sm text-white bg-[#305496]">
+                                          Add row
+                                        </div>
+                                      </div>
+                                    </div>
+                                    <div className="flex flex-col gap-3 mb-10">
+                                      <div className="flex flex-col gap-1">
+                                        <div className="w-[350px]">
+                                          Kwitansi *)
+                                        </div>
+                                        <div className="text-[10px] text-gray-500">
+                                          total penagihan diatas 5 juta
+                                          diwajibkan bermaterai
+                                        </div>
+                                      </div>
+
+                                      <div className="w-full">
+                                        <label
+                                          htmlFor="upload-kwitansi"
+                                          className="w-fit"
+                                        >
+                                          {kwitansiFile === null ? (
+                                        <div className="w-fit flex gap-1 items-center bg-blue-400 py-2 px-5 text-white hover:bg-blue-200 rounded-md">
+                                        <span>
+                                          <FaCloudUploadAlt />
+                                        </span>
+                                        <div>Upload</div>
+                                      </div>
+                                      ): (
+                                        <div className="w-fit flex gap-1 items-center bg-blue-400 py-2 px-5 text-white hover:bg-blue-200 rounded-md">
+                                        <span>
+                                          <FaCloudUploadAlt />
+                                        </span>
+                                        <div>1 File</div>
+                                      </div>
+                                      )}
+                                        </label>
+                                        <input
+                                          type="file"
+                                          id="upload-kwitansi"
+                                          accept=".jpg,.pdf"
+                                          onChange={onChangeKwitansiFile}
+                                          className="hidden w-full h-[40px] border border-slate-300 rounded-sm focus:border focus:border-[#0077b6]  "
+                                        />
+                                      </div>
+                                    </div>
+                                    <div className="flex flex-col gap-3 mb-3">
+                                      <div>Faktur Pajak *)</div>
+
+                                      <div>
+                                        <label
+                                          htmlFor="upload-fakturpajak"
+                                          className="w-fit"
+                                        >
+                                          {fakturPajakFile === null ? (
+                                        <div className="w-fit flex gap-1 items-center bg-blue-400 py-2 px-5 text-white hover:bg-blue-200 rounded-md">
+                                        <span>
+                                          <FaCloudUploadAlt />
+                                        </span>
+                                        <div>Upload</div>
+                                      </div>
+                                      ): (
+                                        <div className="w-fit flex gap-1 items-center bg-blue-400 py-2 px-5 text-white hover:bg-blue-200 rounded-md">
+                                        <span>
+                                          <FaCloudUploadAlt />
+                                        </span>
+                                        <div>1 File</div>
+                                      </div>
+                                      )}
+                                        </label>
+                                        <input
+                                          type="file"
+                                          id="upload-fakturpajak"
+                                          accept=".jpg,.pdf"
+                                          onChange={onChangeFakturPajakFile}
+                                          className="hidden w-full h-[40px] border border-slate-300 rounded-sm focus:border focus:border-[#0077b6]  "
+                                        />
+                                      </div>
+                                    </div>
+                                    <div className="mb-10">
+                                      {fakturPajakTambahan.map((item, i) => (
+                                        <div key={i}>
+                                          <div className="flex flex-col gap-3 mb-3">
+                                            {i === 0 ? (
+                                              <div>Faktur Pajak Tambahan</div>
+                                            ) : (
+                                              <div>
+                                                Faktur Pajak Tambahan {i + 1}
+                                              </div>
+                                            )}
+
+                                            <div>
+                                              <label
+                                                htmlFor={i}
+                                                className="w-fit"
+                                              >
+                                                {isEmpty(fakturPajakTambahan[i]) ? (
+                                        <div className="w-fit flex gap-1 items-center bg-blue-400 py-2 px-5 text-white hover:bg-blue-200 rounded-md">
+                                        <span>
+                                          <FaCloudUploadAlt />
+                                        </span>
+                                        <div>Upload</div>
+                                      </div>
+                                      ): (
+                                        <div className="w-fit flex gap-1 items-center bg-blue-400 py-2 px-5 text-white hover:bg-blue-200 rounded-md">
+                                        <span>
+                                          <FaCloudUploadAlt />
+                                        </span>
+                                        <div>1 File</div>
+                                      </div>
+                                      )}
+                                              </label>
+                                              <input
+                                                type="file"
+                                                id={i}
+                                                onChange={
+                                                  onChangeFakturPajakTambahan
+                                                }
+                                                accept=".jpg,.pdf"
+                                                className="hidden w-full h-[40px] border border-slate-300 rounded-sm focus:border focus:border-[#0077b6]  "
+                                              />
+                                            </div>
+                                          </div>
+                                        </div>
+                                      ))}
+                                      <div
+                                        onClick={addFakturPajakFile}
+                                        className={` flex justify-end ${
+                                          invoiceTambahan.length === 5
+                                            ? "cursor-not-allowed"
+                                            : "cursor-pointer"
+                                        } `}
+                                      >
+                                        <div className="py-1 px-4 rounded-sm shadow-sm text-white bg-[#305496]">
+                                          Add row
+                                        </div>
+                                      </div>
+                                    </div>
+                                    <div className="flex flex-col gap-3 mb-20">
+                                      <div>Receiving Note *) :</div>
+
+                                      <div>
+                                        <label
+                                          htmlFor="upload-receivingnote"
+                                          className="w-fit"
+                                        >
+                                          {receivingNoteFile === null ? (
+                                        <div className="w-fit flex gap-1 items-center bg-blue-400 py-2 px-5 text-white hover:bg-blue-200 rounded-md">
+                                        <span>
+                                          <FaCloudUploadAlt />
+                                        </span>
+                                        <div>Upload</div>
+                                      </div>
+                                      ): (
+                                        <div className="w-fit flex gap-1 items-center bg-blue-400 py-2 px-5 text-white hover:bg-blue-200 rounded-md">
+                                        <span>
+                                          <FaCloudUploadAlt />
+                                        </span>
+                                        <div>1 File</div>
+                                      </div>
+                                      )}
+                                        </label>
+                                        <input
+                                          type="file"
+                                          id="upload-receivingnote"
+                                          accept=".jpg,.pdf"
+                                          onChange={onChangeReceivingNoteFile}
+                                          className="hidden w-full h-[40px] border border-slate-300 rounded-sm focus:border focus:border-[#0077b6]  "
+                                        />
+                                      </div>
+                                    </div>
+                                    <div>
+                                      <div className="italic">
+                                        Dokumen asli (hardcopy) sudah di
+                                        kirimkan ke PT Karya Prima Unggulan :
+                                      </div>
+                                      <div className="flex flex-col gap-3 mb-3">
+                                        <div>Tipe Pengiriman *) :</div>
+
+                                        <div className="w-full">
+                                          <Select
+                                            value={tipePengiriman}
+                                            onChange={onChangeTipePengiriman}
+                                            className="whitespace-nowrap"
+                                            options={optionsTipePengiriman}
+                                            noOptionsMessage={() =>
+                                              "Data not found"
+                                            }
+                                            styles={customeStyles}
+                                            required
+                                          />
+                                        </div>
+                                      </div>
+                                      <div className="flex flex-col gap-3 mb-3">
+                                        <div>Resi Bukti Pengiriman *) :</div>
+
+                                        <div>
+                                          <label
+                                            htmlFor="upload-resi"
+                                            className="w-fit"
+                                          >
+                                            {resiFile === null ? (
+                                        <div className="w-fit flex gap-1 items-center bg-blue-400 py-2 px-5 text-white hover:bg-blue-200 rounded-md">
+                                        <span>
+                                          <FaCloudUploadAlt />
+                                        </span>
+                                        <div>Upload</div>
+                                      </div>
+                                      ): (
+                                        <div className="w-fit flex gap-1 items-center bg-blue-400 py-2 px-5 text-white hover:bg-blue-200 rounded-md">
+                                        <span>
+                                          <FaCloudUploadAlt />
+                                        </span>
+                                        <div>1 File</div>
+                                      </div>
+                                      )}
+                                          </label>
+                                          <input
+                                            disabled={
+                                              tipePengiriman.value === 1
+                                                ? false
+                                                : true
+                                            }
+                                            type="file"
+                                            id="upload-resi"
+                                            accept=".jpg,.pdf"
+                                            onChange={
+                                              onChangeResiBuktiPengirimanFile
+                                            }
+                                            className="hidden w-full h-[40px] border border-slate-300 rounded-sm focus:border focus:border-[#0077b6] disabled:bg-gray-300 disabled:cursor-not-allowed"
+                                          />
+                                        </div>
+                                      </div>
+                                      {isError && (
+                                        <div className="mt-10 mb-3">
+                                          <div className="w-fit flex gap-1 items-center text-[14px] bg-red-500 text-white py-3 px-5 ">
+                                            <div>
+                                              <PiWarningCircleLight />
+                                            </div>
+                                            <div>Data masih belum lengkap</div>
+                                          </div>
+                                        </div>
+                                      )}
+                                    </div>
+                                  </>
+                                ) : (
+                                  <>
+                                    <div className="flex flex-col gap-3 mb-3">
+                                      <div>Purchase Order *) :</div>
+
+                                      <div>
+                                        <label
+                                          htmlFor="upload-purchaseorder"
+                                          className="w-fit"
+                                        >
+                                          {purchaseOrderFile === null ? (
+                                        <div className="w-fit flex gap-1 items-center bg-[#fff2cc] py-2 px-5 hover:bg-yellow-100 rounded-md">
+                                        <span>
+                                          <FaCloudUploadAlt />
+                                        </span>
+                                        <div>Upload</div>
+                                      </div>
+                                      ): (
+                                        <div className="w-fit flex gap-1 items-center bg-[#fff2cc] py-2 px-5 hover:bg-yellow-100 rounded-md">
+                                        <span>
+                                          <FaCloudUploadAlt />
+                                        </span>
+                                        <div>1 File</div>
+                                      </div>
+                                      )}
+                                        </label>
+                                        <input
+                                          type="file"
+                                          id="upload-purchaseorder"
+                                          accept=".jpg,.pdf"
+                                          onChange={onChangePurchaseOrderFile}
+                                          className="hidden w-full h-[40px] border border-slate-300 rounded-sm focus:border focus:border-[#0077b6]  "
+                                        />
+                                      </div>
+                                    </div>
+                                    <div className="flex flex-col gap-3 mb-3">
+                                      <div>
+                                        Delivery Order (DO) / Packing List
+                                        (Surat Jalan) *) :
+                                      </div>
+
+                                      <div>
+                                        <label
+                                          htmlFor="upload-deliveryorder"
+                                          className="w-fit"
+                                        >
+                                          {deliveryOrderFile === null ? (
+                                        <div className="w-fit flex gap-1 items-center bg-[#fff2cc] py-2 px-5 hover:bg-yellow-100 rounded-md">
+                                        <span>
+                                          <FaCloudUploadAlt />
+                                        </span>
+                                        <div>Upload</div>
+                                      </div>
+                                      ): (
+                                        <div className="w-fit flex gap-1 items-center bg-[#fff2cc] py-2 px-5 hover:bg-yellow-100 rounded-md">
+                                        <span>
+                                          <FaCloudUploadAlt />
+                                        </span>
+                                        <div>1 File</div>
+                                      </div>
+                                      )}
+                                        </label>
+                                        <input
+                                          type="file"
+                                          id="upload-deliveryorder"
+                                          accept=".jpg,.pdf"
+                                          onChange={onChangeDeliveryOrderFile}
+                                          className="hidden w-full h-[40px] border border-slate-300 rounded-sm focus:border focus:border-[#0077b6]  "
+                                        />
+                                      </div>
+                                    </div>
+                                    <div className="flex flex-col gap-3 mb-3">
+                                      <div>Invoice (Faktur Penagihan) *) :</div>
+
+                                      <div>
+                                        <label
+                                          htmlFor="upload-invoice"
+                                          className="w-fit"
+                                        >
+                                          {invoiceFile === null ? (
+                                        <div className="w-fit flex gap-1 items-center bg-[#fff2cc] py-2 px-5 hover:bg-yellow-100 rounded-md">
+                                        <span>
+                                          <FaCloudUploadAlt />
+                                        </span>
+                                        <div>Upload</div>
+                                      </div>
+                                      ): (
+                                        <div className="w-fit flex gap-1 items-center bg-[#fff2cc] py-2 px-5 hover:bg-yellow-100 rounded-md">
+                                        <span>
+                                          <FaCloudUploadAlt />
+                                        </span>
+                                        <div>1 File</div>
+                                      </div>
+                                      )}
+                                        </label>
+                                        <input
+                                          type="file"
+                                          id="upload-invoice"
+                                          accept=".jpg,.pdf"
+                                          onChange={onChangeInvoiceFile}
+                                          className="hidden w-full h-[40px] border border-slate-300 rounded-sm focus:border focus:border-[#0077b6]  "
+                                        />
+                                      </div>
+                                    </div>
+                                    <div className="mb-10">
+                                      {invoiceTambahan.map((item, i) => (
+                                        <div key={i}>
+                                          <div className="flex flex-col gap-3 mb-3">
+                                            {i === 0 ? (
+                                              <div>Invoice Tambahan</div>
+                                            ) : (
+                                              <div>
+                                                Invoice Tambahan {i + 1}
+                                              </div>
+                                            )}
+
+                                            <div>
+                                              <label
+                                                htmlFor={i}
+                                                className="w-fit"
+                                              >
+                                                {isEmpty(invoiceTambahan[i]) ? (
+                                        <div className="w-fit flex gap-1 items-center bg-[#fff2cc] py-2 px-5 hover:bg-yellow-100 rounded-md">
+                                        <span>
+                                          <FaCloudUploadAlt />
+                                        </span>
+                                        <div>Upload</div>
+                                      </div>
+                                      ): (
+                                        <div className="w-fit flex gap-1 items-center bg-[#fff2cc] py-2 px-5 hover:bg-yellow-100 rounded-md">
+                                        <span>
+                                          <FaCloudUploadAlt />
+                                        </span>
+                                        <div>1 File</div>
+                                      </div>
+                                      )}
+                                              </label>
+                                              <input
+                                                type="file"
+                                                id={i}
+                                                onChange={
+                                                  onChangeInvoiceTambahan
+                                                }
+                                                accept=".jpg,.pdf"
+                                                className="hidden w-full h-[40px] border border-slate-300 rounded-sm focus:border focus:border-[#0077b6]  "
+                                              />
+                                            </div>
+                                          </div>
+                                        </div>
+                                      ))}
+                                      <div
+                                        onClick={addInvoiceTambahan}
+                                        className={`flex justify-end ${
+                                          invoiceTambahan.length === 5
+                                            ? "cursor-not-allowed"
+                                            : "cursor-pointer"
+                                        } `}
+                                      >
+                                        <div className="py-1 px-4 rounded-sm shadow-sm text-white bg-[#305496]">
+                                          Add row
+                                        </div>
+                                      </div>
+                                    </div>
+                                    <div className="flex flex-col gap-3 mb-10">
+                                      <div className="flex flex-col gap-1">
+                                        <div className="w-[350px]">
+                                          Kwitansi *)
+                                        </div>
+                                        <div className="text-[10px] text-gray-500">
+                                          total penagihan diatas 5 juta
+                                          diwajibkan bermaterai
+                                        </div>
+                                      </div>
+
+                                      <div>
+                                        <label
+                                          htmlFor="upload-kwitansi"
+                                          className="w-fit"
+                                        >
+                                          {kwitansiFile === null ? (
+                                        <div className="w-fit flex gap-1 items-center bg-[#fff2cc] py-2 px-5 hover:bg-yellow-100 rounded-md">
+                                        <span>
+                                          <FaCloudUploadAlt />
+                                        </span>
+                                        <div>Upload</div>
+                                      </div>
+                                      ): (
+                                        <div className="w-fit flex gap-1 items-center bg-[#fff2cc] py-2 px-5 hover:bg-yellow-100 rounded-md">
+                                        <span>
+                                          <FaCloudUploadAlt />
+                                        </span>
+                                        <div>1 File</div>
+                                      </div>
+                                      )}
+                                        </label>
+                                        <input
+                                          type="file"
+                                          id="upload-kwitansi"
+                                          accept=".jpg,.pdf"
+                                          onChange={onChangeKwitansiFile}
+                                          className="hidden w-full h-[40px] border border-slate-300 rounded-sm focus:border focus:border-[#0077b6]  "
+                                        />
+                                      </div>
+                                    </div>
+                                    <div className="flex flex-col gap-3 mb-3">
+                                      <div>Faktur Pajak *) :</div>
+
+                                      <div>
+                                        <label
+                                          htmlFor="upload-fakturpajak"
+                                          className="w-fit"
+                                        >
+                                          {fakturPajakFile === null ? (
+                                        <div className="w-fit flex gap-1 items-center bg-[#fff2cc] py-2 px-5 hover:bg-yellow-100 rounded-md">
+                                        <span>
+                                          <FaCloudUploadAlt />
+                                        </span>
+                                        <div>Upload</div>
+                                      </div>
+                                      ): (
+                                        <div className="w-fit flex gap-1 items-center bg-[#fff2cc] py-2 px-5 hover:bg-yellow-100 rounded-md">
+                                        <span>
+                                          <FaCloudUploadAlt />
+                                        </span>
+                                        <div>1 File</div>
+                                      </div>
+                                      )}
+                                        </label>
+                                        <input
+                                          type="file"
+                                          id="upload-fakturpajak"
+                                          accept=".jpg,.pdf"
+                                          onChange={onChangeFakturPajakFile}
+                                          className="hidden w-full h-[40px] border border-slate-300 rounded-sm focus:border focus:border-[#0077b6]  "
+                                        />
+                                      </div>
+                                    </div>
+                                    <div className="mb-10">
+                                      {fakturPajakTambahan.map((item, i) => (
+                                        <div key={i}>
+                                          <div className="flex flex-col gap-3 mb-3">
+                                            {i === 0 ? (
+                                              <div className="w-[350px]">
+                                                Faktur Pajak Tambahan
+                                              </div>
+                                            ) : (
+                                              <div className="w-[350px]">
+                                                Faktur Pajak Tambahan {i + 1}
+                                              </div>
+                                            )}
+
+                                            <div>
+                                              <label
+                                                htmlFor={i}
+                                                className="w-fit"
+                                              >
+                                                {isEmpty(fakturPajakTambahan[i]) ? (
+                                        <div className="w-fit flex gap-1 items-center bg-[#fff2cc] py-2 px-5 hover:bg-yellow-100 rounded-md">
+                                        <span>
+                                          <FaCloudUploadAlt />
+                                        </span>
+                                        <div>Upload</div>
+                                      </div>
+                                      ): (
+                                        <div className="w-fit flex gap-1 items-center bg-[#fff2cc] py-2 px-5 hover:bg-yellow-100 rounded-md">
+                                        <span>
+                                          <FaCloudUploadAlt />
+                                        </span>
+                                        <div>1 File</div>
+                                      </div>
+                                      )}
+                                              </label>
+                                              <input
+                                                type="file"
+                                                id={i}
+                                                onChange={
+                                                  onChangeFakturPajakTambahan
+                                                }
+                                                accept=".jpg,.pdf"
+                                                className="hidden w-full h-[40px] border border-slate-300 rounded-sm focus:border focus:border-[#0077b6]  "
+                                              />
+                                            </div>
+                                          </div>
+                                        </div>
+                                      ))}
+                                      <div
+                                        onClick={addFakturPajakFile}
+                                        className={`flex justify-end ${
+                                          fakturPajakTambahan.length === 5
+                                            ? "cursor-not-allowed"
+                                            : "cursor-pointer"
+                                        } `}
+                                      >
+                                        <div className="py-1 px-4 rounded-sm shadow-sm text-white bg-[#305496]">
+                                          Add row
+                                        </div>
+                                      </div>
+                                    </div>
+                                    <div className="flex flex-col gap-3 mb-20">
+                                      <div>Scan Report Sales *) :</div>
+
+                                      <div>
+                                        <label
+                                          htmlFor="upload-scanreportsales"
+                                          className="w-fit"
+                                        >
+                                          {scanReportSalesFile === null ? (
+                                        <div className="w-fit flex gap-1 items-center bg-[#fff2cc] py-2 px-5 hover:bg-yellow-100 rounded-md">
+                                        <span>
+                                          <FaCloudUploadAlt />
+                                        </span>
+                                        <div>Upload</div>
+                                      </div>
+                                      ): (
+                                        <div className="w-fit flex gap-1 items-center bg-[#fff2cc] py-2 px-5 hover:bg-yellow-100 rounded-md">
+                                        <span>
+                                          <FaCloudUploadAlt />
+                                        </span>
+                                        <div>1 File</div>
+                                      </div>
+                                      )}
+                                        </label>
+                                        <input
+                                          type="file"
+                                          id="upload-scanreportsales"
+                                          accept=".jpg,.pdf"
+                                          onChange={onChangeScanReportSalesFile}
+                                          className="hidden w-full h-[40px] border border-slate-300 rounded-sm focus:border focus:border-[#0077b6]  "
+                                        />
+                                      </div>
+                                    </div>
+                                    <div>
+                                      <div className="italic">
+                                        Dokumen asli (hardcopy) sudah di
+                                        kirimkan ke PT Karya Prima Unggulan :
+                                      </div>
+                                      <div className="flex flex-col gap-3 mb-3">
+                                        <div className="w-[350px]">
+                                          Tipe Pengiriman *) :
+                                        </div>
+
+                                        <div className="w-full">
+                                          <Select
+                                            value={tipePengiriman}
+                                            onChange={onChangeTipePengiriman}
+                                            className="whitespace-nowrap"
+                                            options={optionsTipePengiriman}
+                                            noOptionsMessage={() =>
+                                              "Data not found"
+                                            }
+                                            styles={customeStyles}
+                                            required
+                                          />
+                                        </div>
+                                      </div>
+                                      <div className="flex flex-col gap-3 mb-3">
+                                        <div className="w-[350px]">
+                                          Resi Bukti Pengiriman *) :
+                                        </div>
+
+                                        <div>
+                                          <label
+                                            htmlFor="upload-resi"
+                                            className="w-fit"
+                                          >
+                                            {resiFile === null ? (
+                                        <div className="w-fit flex gap-1 items-center bg-[#fff2cc] py-2 px-5 hover:bg-yellow-100 rounded-md">
+                                        <span>
+                                          <FaCloudUploadAlt />
+                                        </span>
+                                        <div>Upload</div>
+                                      </div>
+                                      ): (
+                                        <div className="w-fit flex gap-1 items-center bg-[#fff2cc] py-2 px-5 hover:bg-yellow-100 rounded-md">
+                                        <span>
+                                          <FaCloudUploadAlt />
+                                        </span>
+                                        <div>1 File</div>
+                                      </div>
+                                      )}
+                                          </label>
+                                          <input
+                                            disabled={
+                                              tipePengiriman.value === 1
+                                                ? false
+                                                : true
+                                            }
+                                            type="file"
+                                            id="upload-resi"
+                                            onChange={
+                                              onChangeResiBuktiPengirimanFile
+                                            }
+                                            accept=".jpg,.pdf"
+                                            className="hidden w-full h-[40px] border border-slate-300 rounded-sm focus:border focus:border-[#0077b6] disabled:bg-gray-300 disabled:cursor-not-allowed"
+                                          />
+                                        </div>
+                                      </div>
+                                      {isError && (
+                                        <div className="mt-10 mb-3">
+                                          <div className="w-fit flex gap-1 items-center text-[14px] bg-red-500 text-white py-3 px-5 ">
+                                            <div>
+                                              <PiWarningCircleLight />
+                                            </div>
+                                            <div>Data masih belum lengkap</div>
+                                          </div>
+                                        </div>
+                                      )}
+                                    </div>
+                                  </>
+                                )}
+                              </form>
+                              <div className="flex max-[432px]:flex-col max-[432px]:gap-2 mt-24 mb-5 justify-between">
+                                {screenSize > 431 ? (
+                                  <>
+                                    {activeStep === steps.length - 1 ? (
+                                      <button
+                                        disabled={activeStep === 0}
+                                        onClick={
+                                          tipePenagihan.value === "beli putus"
+                                            ? saveDraft
+                                            : saveDraft2
+                                        }
+                                        className={`ms-2 border border-[#00b4d8] px-10 py-2 hover:bg-slate-200 ${
+                                          activeStep === 0 &&
+                                          "cursor-not-allowed"
+                                        } `}
+                                      >
+                                        Save as draft
+                                      </button>
+                                    ) : (
+                                      <button
+                                        disabled={activeStep === 0}
+                                        onClick={handleBack}
+                                        className={`ms-2 border border-[#00b4d8] px-10 py-2 hover:bg-slate-200 ${
+                                          activeStep === 0 &&
+                                          "cursor-not-allowed"
+                                        } `}
+                                      >
+                                        Back
+                                      </button>
+                                    )}
+
+                                    <button
+                                      onClick={
+                                        tipePenagihan.value === "beli putus"
+                                          ? handleNext
+                                          : handleNext2
+                                      }
+                                      className="bg-[#0077b6] text-white py-2 px-10 rounded-sm shadow-sm hover:bg-[#00b4d8]"
+                                    >
+                                      {activeStep === steps.length - 1
+                                        ? "Submit"
+                                        : "Next"}
+                                    </button>
+                                  </>
+                                ) : (
+                                  <>
+                                    {activeStep === steps.length - 1 ? (
+                                      <button
+                                        disabled={activeStep === 0}
+                                        onClick={
+                                          tipePenagihan.value === "beli putus"
+                                            ? saveDraft
+                                            : saveDraft2
+                                        }
+                                        className={`border border-[#00b4d8] px-10 py-2 hover:bg-slate-200 ${
+                                          activeStep === 0 &&
+                                          "cursor-not-allowed"
+                                        } `}
+                                      >
+                                        Save as draft
+                                      </button>
+                                    ) : (
+                                      <button
+                                        disabled={activeStep === 0}
+                                        onClick={handleBack}
+                                        className={`border border-[#00b4d8] px-10 py-2 hover:bg-slate-200 ${
+                                          activeStep === 0 &&
+                                          "cursor-not-allowed"
+                                        } `}
+                                      >
+                                        Back
+                                      </button>
+                                    )}
+
+                                    <button
+                                      onClick={
+                                        tipePenagihan.value === "beli putus"
+                                          ? handleNext
+                                          : handleNext2
+                                      }
+                                      className="bg-[#0077b6] text-white py-2 px-10 rounded-sm shadow-sm hover:bg-[#00b4d8]"
+                                    >
+                                      {activeStep === steps.length - 1
+                                        ? "Finish"
+                                        : "Next"}
+                                    </button>
+                                  </>
+                                )}
+                              </div>
+                            </div>
+                          )
+                        )}
+                      </StepContent>
+                    </Step>
+                  );
+                })}
+              </Stepper>
+              {activeStep === steps.length && (
+                <>
+                  <Typography sx={{ mt: 2, mb: 1 }}>
+                    All steps completed - you&apos;re finished
+                  </Typography>
+                  <Box sx={{ display: "flex", flexDirection: "row", pt: 2 }}>
+                    <Box sx={{ flex: "1 1 auto" }} />
+                    <Button onClick={handleReset}>Reset</Button>
+                  </Box>
+                </>
+              )}
+            </div>
+          )}
+        </div>
+      ) : (
+        <div
+          className={`flex justify-center items-center flex-col max-h-screen ${
+            screenSize < 768 ? "px-5 pt-72" : "px-10"
+          } pt-52 font-roboto `}
+        >
+          {" "}
+          <div><img className="w-52 h-52" src={require('../../../assets/images/warning.png')} alt="" /></div>
+          <div>
+            Anda tidak dapat membuat penagihan jika vendor anda belum active!
+          </div>{" "}
+        </div>
+      )}
+
       <Backdrop
-        sx={{ color: "#fff", zIndex: (theme) => theme.zIndex.drawer + 9999999999 }}
+        sx={{
+          color: "#fff",
+          zIndex: (theme) => theme.zIndex.drawer + 9999999999,
+        }}
         open={openBackdrop}
       >
         <CircularProgress color="inherit" />

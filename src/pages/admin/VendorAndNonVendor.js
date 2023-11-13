@@ -56,12 +56,12 @@ const VendorAndNonVendor = () => {
           screenSize < 768 ? "px-5 pt-20" : "px-10 pt-10"
         } font-roboto `}
       >
-        <div className="mb-20">Vendor & Non Vendor</div>
+        <div className="mb-20 max-[349px]:mb-5">Vendor & Non Vendor</div>
         <div className="mb-5 w-[70%] max-[638px]:w-full">
           <div className="mb-5 text-slate-400">Parameter Pencarian</div>
           <div>
             <form action="">
-              <div className="flex gap-5 items-center mb-5">
+              <div className="flex max-[349px]:flex-col gap-5 items-center mb-5">
                 <div className="flex flex-col  gap-1  mb-3 w-full ">
                   <div className="whitespace-nowrap flex">
                     <label
@@ -101,7 +101,7 @@ const VendorAndNonVendor = () => {
                   </div>
                 </div>
               </div>
-              <div className="flex gap-5 items-center">
+              <div className="flex max-[349px]:flex-col gap-5 items-center">
                 <div className="flex flex-col  gap-1  mb-3 w-full ">
                   <div className="whitespace-nowrap flex">
                     <label

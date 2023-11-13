@@ -120,7 +120,7 @@ const Login = () => {
 
             <button
               type="submit"
-              className="bg-[#0077b6] py-3 text-white rounded-sm shadow-sm "
+              className="bg-[#0077b6] py-3 text-white rounded-md shadow-sm "
               onClick={(e) => onSubmitLogin(e)}
             >
               LOGIN

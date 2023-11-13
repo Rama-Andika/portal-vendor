@@ -93,10 +93,6 @@ nav div:first-child {
   background-color: transparent;
 }
 
-.table-monitoring tbody tr:nth-child(odd) {
-  background-color: rgb(243 244 246 / var(--tw-bg-opacity));
-}
-
 .css-79ws1d-MuiModal-root {
   z-index: 11000 !important;
 }

@@ -5,8 +5,10 @@ import { AdapterDayjs } from "@mui/x-date-pickers/AdapterDayjs";
 import { DemoContainer } from "@mui/x-date-pickers/internals/demo";
 import { useEffect, useState } from "react";
 import dayjs from "dayjs";
-import { Pagination } from "@mui/material";
+import { Backdrop, CircularProgress, Pagination } from "@mui/material";
 import { RiFileExcel2Line } from "react-icons/ri";
+import Api from "../../api";
+import titleCase from "../../components/functions/TitleCase";
 
 
 
@@ -15,13 +17,16 @@ const ListingPenagihan = () => {
   const [startDate, setStartDate] = useState();
   const [endDate, setEndDate] = useState();
   const [page, setPage] = useState(1);
+  const [openBackdrop, setOpenBackdrop] = useState(false)
+  const [totalInvoice, setTotalInvoice] = useState([])
+  const [listPenagihan, setListPenagihan] = useState([])
 
-  const array = [1, 2, 3, 4];
 
   useEffect(() => {
     window.scrollTo(0, 0);
     setStartDate(dayjs(new Date()));
     setEndDate(dayjs(new Date()));
+    fetchData()
 
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, []);
@@ -38,6 +43,29 @@ const ListingPenagihan = () => {
   const onChangePagination = (e, value) => {
     setPage(value);
   };
+
+  const fetchData = async (query) => {
+    setOpenBackdrop(true);
+    await Api.get(
+      `/penagihan`
+    ).then((response) => {
+      setOpenBackdrop(false);
+      // eslint-disable-next-line array-callback-return
+      response.data.map((data, index) => {
+        var total = 0;
+        data.nilai_invoices.map((nilai) => (total += nilai));
+        setTotalInvoice((prev) => {
+          return [...prev, total];
+        });
+      });
+
+      setListPenagihan(response.data);
+    });
+  };
+
+  const onSearch = (e) => {
+    e.preventDefault()
+  }
 
   return (
     <AdminWhSmith>
@@ -114,7 +142,7 @@ const ListingPenagihan = () => {
               </div>
 
               <div className="flex justify-end mt-2">
-                <button className="py-1 max-[415px]:w-full px-10 rounded-sm shadow-sm bg-[#0077b6] text-white">
+                <button onClick={(e) => onSearch(e)} className="py-1 max-[415px]:w-full px-10 rounded-sm shadow-sm bg-[#0077b6] text-white">
                   Search
                 </button>
               </div>
@@ -135,18 +163,18 @@ const ListingPenagihan = () => {
               </tr>
             </thead>
             <tbody>
-              {array.map((item, index) => (
+              {listPenagihan.map((item, index) => (
                 <tr
                   key={index}
                   className="text-center whitespace-nowrap hover:bg-slate-100 border bg-white"
                 >
-                  <td className="p-5 border">PT xx</td>
-                  <td className="p-5 border">12/09/23</td>
-                  <td className="p-5 border">FR/mm/yy/00000</td>
-                  <td className="p-5 border">Rp. 100.000,00</td>
-                  <td className="p-5 border">Waiting for Approval</td>
-                  <td className="p-5 border">12/09/23 00:00:00</td>
-                  <td className="p-5 border">Komang</td>
+                  <td className="p-5 border">{item.vendor.nama}</td>
+                  <td className="p-5 border">{item.created_at}</td>
+                  <td className="p-5 border"></td>
+                  <td className="p-5 border">Rp. {totalInvoice[index]}</td>
+                  <td className="p-5 border">{titleCase(item.status, "_")}</td>
+                  <td className="p-5 border">{dayjs(item.updated_at).format('DD/MM/YYYY HH:mm:ss')}</td>
+                  <td className="p-5 border"></td>
                 </tr>
               ))}
             </tbody>
@@ -173,6 +201,15 @@ const ListingPenagihan = () => {
 
         
       </div>
+      <Backdrop
+        sx={{
+          color: "#fff",
+          zIndex: (theme) => theme.zIndex.drawer + 9999999999,
+        }}
+        open={openBackdrop}
+      >
+        <CircularProgress color="inherit" />
+      </Backdrop>
     </AdminWhSmith>
   );
 };

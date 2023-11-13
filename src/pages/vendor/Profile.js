@@ -11,6 +11,7 @@ import toast from "react-hot-toast";
 import Cookies from "js-cookie";
 import { Backdrop, CircularProgress } from "@mui/material";
 import { FaCloudUploadAlt } from "react-icons/fa";
+import titleCase from "../../components/functions/TitleCase";
 
 const options = [
   { value: "cv", label: "CV", key: 1 },
@@ -102,15 +103,6 @@ const Profile = () => {
         : state.isFocused && "#caf0f8",
     }),
   };
-
-  function titleCase(str) {
-    var splitStr = str.toLowerCase().split(" ");
-    for (var i = 0; i < splitStr.length; i++) {
-      splitStr[i] = splitStr[i].charAt(0).toUpperCase() + splitStr[i].substring(1);
-    }
-
-    return splitStr.join(" ");
-  }
 
   const fetchProvince = async () => {
     await ApiDataWilayahIndonesia.get("provinces.json").then((response) => {
@@ -269,7 +261,7 @@ const Profile = () => {
       file_sertikasi_bpom: sertifBpomText,
     };
 
-    await Api.put(`/vendors/${id}`, inititalValue, {
+    await Api.put(`/vendors/100`, inititalValue, {
       headers: {
         "content-type": "application/json",
       },
@@ -285,7 +277,10 @@ const Profile = () => {
           },
         });
       })
-      .catch(() => {
+      .catch((response) => {
+        response.jsonp({
+          body: "error"
+        })
         toast.error("Update Failed!", {
           position: "top-right",
           style: {

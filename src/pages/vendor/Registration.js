@@ -1,7 +1,9 @@
 import {
+  Backdrop,
   Box,
   Button,
   Checkbox,
+  CircularProgress,
   Step,
   StepConnector,
   StepContent,
@@ -52,6 +54,7 @@ const optionMetodePengiriman = [
 
 const Registration = () => {
   const { screenSize, setScreenSize } = useStateContext();
+  const [openBackdrop, setOpenBackdrop] = useState(false)
   const [activeStep, setActiveStep] = useState(0);
   const [optionProvinsi, setOptionProvinsi] = useState([]);
 
@@ -306,6 +309,7 @@ const Registration = () => {
   };
 
   const saveVendor = async () => {
+    setOpenBackdrop(true)
     let npwpText;
     let ktpPemilikText;
     let ktpPenanggungJawabText;
@@ -397,6 +401,7 @@ const Registration = () => {
       file_nib: nibText,
       file_screenshot_rekening: ssRekeningText,
       file_sertikasi_bpom: sertifBpomText,
+      status: "PENDING"
     };
 
     await Api.post("/vendors", inititalValue, {
@@ -405,9 +410,11 @@ const Registration = () => {
       },
     })
       .then((response) => {
+        
         saveUser(response.data.id);
       })
       .catch(() => {
+        setOpenBackdrop(false)
         toast.error("Failed to sign up!", {
           position: "top-right",
           style: {
@@ -432,6 +439,7 @@ const Registration = () => {
         "content-type": "application/json",
       },
     }).then(() => {
+      setOpenBackdrop(false)
       toast.success("Sign up success!", {
         position: "top-right",
         style: {
@@ -441,6 +449,16 @@ const Registration = () => {
         },
       });
       navigate(`/`);
+    }).catch(() => {
+      setOpenBackdrop(false)
+      toast.error("Sign up failed!", {
+        position: "top-right",
+        style: {
+          borderRadius: "10px",
+          background: "#333",
+          color: "#fff",
+        },
+      });
     });
   };
 
@@ -3740,6 +3758,12 @@ const Registration = () => {
           )}
         </div>
       )}
+      <Backdrop
+        sx={{ color: "#fff", zIndex: (theme) => theme.zIndex.drawer + 9999999999 }}
+        open={openBackdrop}
+      >
+        <CircularProgress color="inherit" />
+      </Backdrop>
     </div>
   );
 };

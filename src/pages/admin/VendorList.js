@@ -1,21 +1,21 @@
-import { Backdrop, Fade, Modal, Pagination, Tooltip } from "@mui/material";
+import { Backdrop, CircularProgress, Fade, Modal, Pagination } from "@mui/material";
 import { useStateContext } from "../../contexts/ContextProvider";
 import AdminWhSmith from "../../layouts/AdminWhSmith";
-import { MdDeleteOutline } from "react-icons/md";
-import { GoPencil } from "react-icons/go";
 
 import { useEffect, useState } from "react";
+import Api from "../../api";
 
 const VendorList = () => {
   const { screenSize } = useStateContext();
   const [page, setPage] = useState(1);
   const [open, setOpen] = useState(false);
   const [term, setTerm] = useState("");
+  const [openBackdrop, setOpenBackdrop] = useState(false)
 
-  const handleOpen = () => setOpen(true);
+  const [listVendor, setListVendor] = useState([])
+
+  //const handleOpen = () => setOpen(true);
   const handleClose = () => setOpen(false);
-
-  const array = [1, 2, 3, 4];
 
   const onChangePagination = (e, value) => {
     setPage(value);
@@ -25,13 +25,22 @@ const VendorList = () => {
     e.target.validity.valid ? setTerm(e.target.value) : setTerm("");
   };
 
+  const fetchData = async () => {
+    setOpenBackdrop(true)
+    await Api.get('/vendors?status=ACTIVE').then((response) => {
+      setOpenBackdrop(false)
+      setListVendor(response.data)
+    })
+  }
+
   useEffect(() => {
     window.scrollTo(0, 0);
+    fetchData()
   }, []);
 
-  const onClickEdit = (index) => {
-    handleOpen();
-  };
+  // const onClickEdit = (index) => {
+  //   handleOpen();
+  // };
   return (
     <AdminWhSmith>
       <div
@@ -136,7 +145,7 @@ const VendorList = () => {
           <table className="w-full table-monitoring">
             <thead>
               <tr className="text-center whitespace-nowrap border-2 bg-[#eaf4f4]">
-                <td className="p-5 border">Action</td>
+               
                 <td className="p-5 border">No</td>
                 <td className="p-5 border">Supplier Name</td>
                 <td className="p-5 border">Supplier Code</td>
@@ -147,38 +156,21 @@ const VendorList = () => {
               </tr>
             </thead>
             <tbody>
-              {array.map((item, index) => (
+              {listVendor.map((item, index) => (
                 <tr
                   key={index}
                   className="text-center whitespace-nowrap hover:bg-slate-100 border bg-white"
                 >
-                  <td className="p-5 border">
-                    <div className="flex gap-2 items-center justify-center">
-                      <Tooltip title="edit" arrow placement="left">
-                        <div
-                          className="cursor-pointer hover:scale-[1.1] text-orange-500"
-                          onClick={() => onClickEdit(index)}
-                        >
-                          <GoPencil />
-                        </div>
-                      </Tooltip>
-
-                      <Tooltip title="delete" arrow placement="right">
-                        <div className="cursor-pointer hover:scale-[1.1] text-red-600">
-                          <MdDeleteOutline />
-                        </div>
-                      </Tooltip>
-                    </div>
-                  </td>
+                  
                   <td className="p-5 border">{index + 1}</td>
                   <td className="text-left p-5 border">
-                    PT MANDIRI TRI MAKMUR
+                    {item.nama}
                   </td>
-                  <td className="p-5 border">1001</td>
-                  <td className="p-5 border">123456</td>
-                  <td className="p-5 border">Active</td>
-                  <td className="p-5 border">✔</td>
-                  <td className="p-5 border">ramaandika31@gmail.com</td>
+                  <td className="p-5 border"></td>
+                  <td className="p-5 border">{item.term_pembayaran}</td>
+                  <td className="p-5 border">{item.status}</td>
+                  <td className="p-5 border">{item.no_wa_purchase_order}</td>
+                  <td className="p-5 border">{item.email_korespondensi}</td>
                 </tr>
               ))}
             </tbody>
@@ -258,6 +250,15 @@ const VendorList = () => {
           </Modal>
         </div>
       </div>
+      <Backdrop
+        sx={{
+          color: "#fff",
+          zIndex: (theme) => theme.zIndex.drawer + 9999999999,
+        }}
+        open={openBackdrop}
+      >
+        <CircularProgress color="inherit" />
+      </Backdrop>
     </AdminWhSmith>
   );
 };
