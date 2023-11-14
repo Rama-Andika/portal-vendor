@@ -211,9 +211,18 @@ const Penagihan = () => {
         deliveryOrderFile !== null &&
         invoiceFile !== null &&
         kwitansiFile !== null &&
-        fakturPajakFile !== null &&
         receivingNoteFile !== null
       ) {
+        if(vendors.status_pajak === "PKP"){
+          if(fakturPajakFile !== null){
+            setIsError(false);
+          }else{
+            return setIsError(true)
+          }
+        }else{
+          setIsError(false)
+        }
+
         if (tipePengiriman.value === 1) {
           if (resiFile !== null) {
             setIsError(false);
@@ -290,10 +299,19 @@ const Penagihan = () => {
         deliveryOrderFile !== null &&
         invoiceFile !== null &&
         kwitansiFile !== null &&
-        fakturPajakFile !== null &&
         scanReportSalesFile !== null
       ) {
         console.log("correct");
+        if(vendors.status_pajak === "PKP"){
+          if(fakturPajakFile !== null){
+            setIsError(false);
+          }else{
+            return setIsError(true)
+          }
+        }else{
+          setIsError(false)
+        }
+
         if (tipePengiriman.value === 1) {
           if (resiFile !== null) {
             setIsError(false);
@@ -683,9 +701,21 @@ const Penagihan = () => {
       deliveryOrderFile !== null &&
       invoiceFile !== null &&
       kwitansiFile !== null &&
-      fakturPajakFile !== null &&
       receivingNoteFile !== null
     ) {
+      if(vendors.status_pajak === "PKP"){
+        if(fakturPajakFile !== null){
+          setIsError(false);
+          isSave = true;
+        }else{
+         setIsError(true)
+         isSave = false
+        }
+      }else{
+        setIsError(false)
+        isSave = true
+      }
+
       if (tipePengiriman.value === 1) {
         if (resiFile !== null) {
           setIsError(false);
@@ -871,9 +901,21 @@ const Penagihan = () => {
       deliveryOrderFile !== null &&
       invoiceFile !== null &&
       kwitansiFile !== null &&
-      fakturPajakFile !== null &&
       scanReportSalesFile !== null
     ) {
+      if(vendors.status_pajak === "PKP"){
+        if(fakturPajakFile !== null){
+          setIsError(false);
+          isSave = true;
+        }else{
+         setIsError(true)
+         isSave = false
+        }
+      }else{
+        setIsError(false)
+        isSave = true
+      }
+      
       if (tipePengiriman.value === 1) {
         if (resiFile !== null) {
           setIsError(false);
@@ -1443,9 +1485,18 @@ const Penagihan = () => {
                         {tipePenagihan.label === "Beli Putus" ? (
                           <>
                             <div className="flex items-center gap-2 mb-3">
+                              <div className="flex flex-col gap-1">
                               <div className="w-[250px]">
                                 No Purchase Order (PO)
                               </div>
+                              <div className="flex gap-1 items-center text-[12px]">
+                          <div>
+                            <PiWarningCircleLight />
+                          </div>
+                          <div>Harus 8 digit</div>
+                        </div>
+                              </div>
+                              
                               <div>:</div>
                               <div className="flex items-center gap-1 ">
                                 <div>PO</div>
@@ -1709,8 +1760,16 @@ const Penagihan = () => {
                               </div>
                             </div>
                             <div className="flex items-start gap-2 mb-3">
+                            <div className="flex flex-col gap-1">
                               <div className="w-[250px]">
-                                No seri faktur pajak
+                                No Seri Faktur Pajak
+                              </div>
+                              <div className="flex gap-1 items-center text-[12px]">
+                          <div>
+                            <PiWarningCircleLight />
+                          </div>
+                          <div>Harus 16 digit</div>
+                        </div>
                               </div>
                               <div>:</div>
                               <div className="flex items-center gap-1 ">
@@ -1757,8 +1816,16 @@ const Penagihan = () => {
                         ) : (
                           <>
                             <div className="flex items-center gap-2 mb-3">
+                            <div className="flex flex-col gap-1">
                               <div className="w-[250px]">
                                 No Purchase Order (PO)
+                              </div>
+                              <div className="flex gap-1 items-center text-[12px]">
+                          <div>
+                            <PiWarningCircleLight />
+                          </div>
+                          <div>Harus 8 digit</div>
+                        </div>
                               </div>
                               <div>:</div>
                               <div className="flex items-center gap-1 ">
@@ -2056,8 +2123,16 @@ const Penagihan = () => {
                               </div>
                             </div>
                             <div className="flex items-start gap-2 mb-3">
+                            <div className="flex flex-col gap-1">
                               <div className="w-[250px]">
-                                No seri faktur pajak
+                                No Seri Faktur Pajak
+                              </div>
+                              <div className="flex gap-1 items-center text-[12px]">
+                          <div>
+                            <PiWarningCircleLight />
+                          </div>
+                          <div>Harus 16 digit</div>
+                        </div>
                               </div>
                               <div>:</div>
                               <div className="flex items-center gap-1 ">
@@ -2330,7 +2405,9 @@ const Penagihan = () => {
                                   <div>*)</div>
                                 </div>
                               </div>
-                              <div className="flex items-center gap-3 mb-3">
+                              {vendors.status_pajak === "PKP" && (
+                                <>
+                                <div className="flex items-center gap-3 mb-3">
                                 <div className="w-[350px]">Faktur Pajak</div>
                                 <div>:</div>
                                 <div className="flex items-center gap-1">
@@ -2426,6 +2503,9 @@ const Penagihan = () => {
                                   Add row
                                 </div>
                               </div>
+                                </>
+                              )}
+                              
                               <div className="flex items-center gap-3 mb-20">
                                 <div className="w-[350px]">Receiving Note</div>
                                 <div>:</div>
@@ -2535,7 +2615,9 @@ const Penagihan = () => {
                                         className="hidden w-full h-[40px] border border-slate-300 rounded-sm focus:border focus:border-[#0077b6] disabled:bg-gray-300 disabled:cursor-not-allowed"
                                       />
                                     </div>
-                                    <div>*)</div>
+                                    {tipePengiriman.value === 1 && (
+                                      <div>*)</div>
+                                    )}
                                   </div>
                                 </div>
                                 {isError && (
@@ -2765,7 +2847,9 @@ const Penagihan = () => {
                                   <div>*)</div>
                                 </div>
                               </div>
-                              <div className="flex items-center gap-3 mb-3">
+                              {vendors.status_pajak === "PKP" && (
+                                <>
+                                <div className="flex items-center gap-3 mb-3">
                                 <div className="w-[350px]">Faktur Pajak</div>
                                 <div>:</div>
                                 <div className="flex items-center gap-1">
@@ -2819,7 +2903,7 @@ const Penagihan = () => {
                                       <div className="flex items-center gap-1">
                                         <div>
                                           <label htmlFor={i} className="w-fit">
-                                          {isEmpty(fakturPajakTambahan) ? (
+                                          {isEmpty(fakturPajakTambahan[i]) ? (
                                         <div className="w-fit flex gap-1 items-center bg-[#fff2cc] py-2 px-5 hover:bg-yellow-100 rounded-md">
                                         <span>
                                           <FaCloudUploadAlt />
@@ -2861,6 +2945,9 @@ const Penagihan = () => {
                                   Add row
                                 </div>
                               </div>
+                                </>
+                              )}
+                              
                               <div className="flex items-center gap-3 mb-20">
                                 <div className="w-[350px]">
                                   Scan Report Sales
@@ -2969,7 +3056,10 @@ const Penagihan = () => {
                                         className="hidden w-full h-[40px] border border-slate-300 rounded-sm focus:border focus:border-[#0077b6] disabled:bg-gray-300 disabled:cursor-not-allowed"
                                       />
                                     </div>
-                                    <div>*)</div>
+                                    {tipePengiriman.value === 1 && (
+                                      <div>*)</div>
+                                    )}
+                                    
                                   </div>
                                 </div>
                                 {isError && (
@@ -3107,7 +3197,7 @@ const Penagihan = () => {
                               {tipePenagihan.label === "Beli Putus" ? (
                                 <>
                                   <div className="flex flex-col gap-2 mb-3">
-                                    <div className="flex">
+                                    <div className="flex flex-col gap-1">
                                       <label
                                         htmlFor=""
                                         className="flex gap-1 items-center"
@@ -3122,6 +3212,12 @@ const Penagihan = () => {
                                           "*"
                                         )}
                                       </label>
+                                      <div className="flex gap-1 items-center text-[12px]">
+                          <div>
+                            <PiWarningCircleLight />
+                          </div>
+                          <div>Harus 8 digit</div>
+                        </div>
                                     </div>
                                     <div className="w-full">
                                       <div className="flex items-center gap-1">
@@ -3396,9 +3492,17 @@ const Penagihan = () => {
                                   </div>
                                   <div className="mb-3">
                                     <div className="flex flex-col gap-2 mb-3">
-                                      <div className="w-[250px]">
-                                        No seri faktur pajak :
-                                      </div>
+                                    <div className="flex flex-col gap-1">
+                              <div className="w-[250px]">
+                                No Seri Faktur Pajak
+                              </div>
+                              <div className="flex gap-1 items-center text-[12px]">
+                          <div>
+                            <PiWarningCircleLight />
+                          </div>
+                          <div>Harus 16 digit</div>
+                        </div>
+                              </div>
 
                                       <div className="fw-full">
                                         <div className="flex flex-col gap-2">
@@ -3449,7 +3553,7 @@ const Penagihan = () => {
                               ) : (
                                 <>
                                   <div className="flex flex-col gap-2 mb-3">
-                                    <div className="flex">
+                                  <div className="flex flex-col gap-1">
                                       <label
                                         htmlFor=""
                                         className="flex gap-1 items-center"
@@ -3464,6 +3568,12 @@ const Penagihan = () => {
                                           "*"
                                         )}
                                       </label>
+                                      <div className="flex gap-1 items-center text-[12px]">
+                          <div>
+                            <PiWarningCircleLight />
+                          </div>
+                          <div>Harus 8 digit</div>
+                        </div>
                                     </div>
                                     <div className="w-full">
                                       <div className="flex items-center gap-1">
@@ -3755,9 +3865,17 @@ const Penagihan = () => {
                                   </div>
                                   <div className="mb-3">
                                     <div className="flex flex-col gap-2 mb-3">
-                                      <div className="w-[250px]">
-                                        No seri faktur pajak :
-                                      </div>
+                                    <div className="flex flex-col gap-1">
+                              <div className="w-[250px]">
+                                No Seri Faktur Pajak
+                              </div>
+                              <div className="flex gap-1 items-center text-[12px]">
+                          <div>
+                            <PiWarningCircleLight />
+                          </div>
+                          <div>Harus 16 digit</div>
+                        </div>
+                              </div>
 
                                       <div className="fw-full">
                                         <div className="flex flex-col gap-2">
@@ -4105,7 +4223,9 @@ const Penagihan = () => {
                                         />
                                       </div>
                                     </div>
-                                    <div className="flex flex-col gap-3 mb-3">
+                                    {vendors.status_pajak === "PKP" && (
+<>
+<div className="flex flex-col gap-3 mb-3">
                                       <div>Faktur Pajak *)</div>
 
                                       <div>
@@ -4197,6 +4317,9 @@ const Penagihan = () => {
                                         </div>
                                       </div>
                                     </div>
+</>
+                                    )}
+                                    
                                     <div className="flex flex-col gap-3 mb-20">
                                       <div>Receiving Note *) :</div>
 
@@ -4253,7 +4376,7 @@ const Penagihan = () => {
                                         </div>
                                       </div>
                                       <div className="flex flex-col gap-3 mb-3">
-                                        <div>Resi Bukti Pengiriman *) :</div>
+                                        <div>Resi Bukti Pengiriman {tipePengiriman.value === 1 ? "*)" : ""} :</div>
 
                                         <div>
                                           <label
@@ -4508,7 +4631,9 @@ const Penagihan = () => {
                                         />
                                       </div>
                                     </div>
-                                    <div className="flex flex-col gap-3 mb-3">
+                                    {vendors.status_pajak === "PKP" && (
+                                      <>  
+ <div className="flex flex-col gap-3 mb-3">
                                       <div>Faktur Pajak *) :</div>
 
                                       <div>
@@ -4602,6 +4727,9 @@ const Penagihan = () => {
                                         </div>
                                       </div>
                                     </div>
+                                      </>
+                                    )}
+                                   
                                     <div className="flex flex-col gap-3 mb-20">
                                       <div>Scan Report Sales *) :</div>
 
@@ -4660,9 +4788,7 @@ const Penagihan = () => {
                                         </div>
                                       </div>
                                       <div className="flex flex-col gap-3 mb-3">
-                                        <div className="w-[350px]">
-                                          Resi Bukti Pengiriman *) :
-                                        </div>
+                                      <div>Resi Bukti Pengiriman {tipePengiriman.value === 1 ? "*)" : ""} :</div>
 
                                         <div>
                                           <label

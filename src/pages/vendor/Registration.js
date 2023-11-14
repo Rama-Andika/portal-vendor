@@ -71,11 +71,7 @@ const Registration = () => {
   const [kodePos, setKodePos] = useState("");
   const [tipePembelian, setTipePembelian] = useState({});
   const [npwp, setNpwp] = useState("");
-  const [statusPajak, setStatusPajak] = useState({
-    value: "PKP",
-    label: "Perusahaan Kena Pajak (PKP)",
-    key: "01",
-  });
+  const [statusPajak, setStatusPajak] = useState({ value: "NPKP", label: "Non Perusahaan Kena Pajak (NPKP)", key: 2 });
   const [website, setWebsite] = useState("");
   const [namaPemilikPerusahaan, setNamaPemilikPerusahaan] = useState("");
   const [namaPenanggungJawab, setNamaPenanggungJawab] = useState("");

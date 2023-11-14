@@ -4,6 +4,7 @@ import AdminWhSmith from "../../layouts/AdminWhSmith";
 
 import { useEffect, useState } from "react";
 import Api from "../../api";
+import titleCase from "../../components/functions/TitleCase";
 
 const VendorList = () => {
   const { screenSize } = useStateContext();
@@ -168,7 +169,7 @@ const VendorList = () => {
                   </td>
                   <td className="p-5 border"></td>
                   <td className="p-5 border">{item.term_pembayaran}</td>
-                  <td className="p-5 border">{item.status}</td>
+                  <td className="p-5 border">{titleCase(item.provinsi)}</td>
                   <td className="p-5 border">{item.no_wa_purchase_order}</td>
                   <td className="p-5 border">{item.email_korespondensi}</td>
                 </tr>
