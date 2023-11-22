@@ -797,7 +797,7 @@ const Penagihan = () => {
       
 
       const inititalValue = {
-        vendor: vendors,
+        vendor_id: location.state.vendor_id,
         no_request: nomerRequest,
         tipe_penagihan: tipePenagihan.value,
         tipe_pengiriman: tipePengiriman.value,
@@ -910,7 +910,7 @@ const Penagihan = () => {
     if (isSave) {
 
       const inititalValue = {
-        vendor: vendors,
+        vendor_id: location.state.vendor_id,
         no_request: nomerRequest,
         tipe_penagihan: tipePenagihan.value,
         tipe_pengiriman: tipePengiriman.value,
@@ -1361,7 +1361,7 @@ const Penagihan = () => {
                                       className="max-[821px]:w-full w-[246.4px] h-[40px] border border-slate-300 rounded-sm focus:border focus:border-[#0077b6] bg-[#ddebf7]"
                                     />
                                   </div>
-                                  <div>*)</div>
+                                  <div>{i === 0 && '*)'}</div>
                                 </div>
                               </div>
                             ))}
@@ -1413,7 +1413,7 @@ const Penagihan = () => {
                                         </DemoContainer>
                                       </LocalizationProvider>
                                     </div>
-                                    <div>*)</div>
+                                    <div>{i === 0 && '*)'}</div>
                                   </div>
                                 </div>
                                 <div className="flex items-center gap-2 mb-3">
@@ -1446,7 +1446,7 @@ const Penagihan = () => {
                                         className="max-[821px]:w-[208px] w-[246.4px] h-[40px] border border-slate-300 rounded-sm focus:border focus:border-[#0077b6] bg-[#ddebf7]"
                                       />
                                     </div>
-                                    <div>*)</div>
+                                    <div>{i === 0 && '*)'}</div>
                                   </div>
                                 </div>
                               </div>
@@ -1655,7 +1655,7 @@ const Penagihan = () => {
                                         className="max-[821px]:w-full w-[246.4px] h-[40px] border border-slate-300 rounded-sm focus:border focus:border-[#0077b6] bg-[#fff2cc]"
                                       />
                                     </div>
-                                    <div>*)</div>
+                                    <div>{i === 0 && '*)'}</div>
                                   </div>
                                 </div>
 
@@ -1693,7 +1693,7 @@ const Penagihan = () => {
                                         </DemoContainer>
                                       </LocalizationProvider>
                                     </div>
-                                    <div>*)</div>
+                                    <div>{i === 0 && '*)'}</div>
                                   </div>
                                 </div>
                               </div>
@@ -1742,7 +1742,7 @@ const Penagihan = () => {
                                       className="max-[821px]:w-[208px] w-[246.4px] h-[40px] border border-slate-300 rounded-sm focus:border focus:border-[#0077b6] bg-[#fff2cc]"
                                     />
                                   </div>
-                                  <div>*)</div>
+                                  <div>{i === 0 && '*)'}</div>
                                 </div>
                               </div>
                             ))}
@@ -1885,7 +1885,14 @@ const Penagihan = () => {
                         {tipePenagihan.label === "Beli Putus" ? (
                           <>
                             <div className="flex items-center gap-3 mb-3">
-                              <div className="w-[350px]">Purchase Order</div>
+                            <div className="flex flex-col gap-1">
+                                  <div className="w-[350px]">
+                                    Purchase Order
+                                  </div>
+                                  <div className="text-[10px] text-gray-500">
+                                    Max size 2 mb
+                                  </div>
+                                </div>
                               <div>:</div>
                               <div className="flex items-center gap-1">
                                 <div>
@@ -1918,9 +1925,15 @@ const Penagihan = () => {
                               </div>
                             </div>
                             <div className="flex items-center gap-3 mb-3">
-                              <div className="w-[350px]">
+                            <div className="flex flex-col gap-1">
+                            <div className="w-[350px]">
                                 Delivery Order (DO) / Packing List (Surat Jalan)
                               </div>
+                                  <div className="text-[10px] text-gray-500">
+                                    Max size 2 mb
+                                  </div>
+                                </div>
+                              
                               <div>:</div>
                               <div className="flex items-center gap-1">
                                 <div>
@@ -1953,9 +1966,14 @@ const Penagihan = () => {
                               </div>
                             </div>
                             <div className="flex items-center gap-3 mb-3">
-                              <div className="w-[350px]">
-                                Invoice (Faktur Penagihan)
-                              </div>
+                            <div className="flex flex-col gap-1">
+                                  <div className="w-[350px]">
+                                    Invoice (Faktur Penagihan)
+                                  </div>
+                                  <div className="text-[10px] text-gray-500">
+                                    Max size 2 mb
+                                  </div>
+                                </div>
                               <div>:</div>
                               <div className="flex items-center gap-1">
                                 <div>
@@ -1991,7 +2009,8 @@ const Penagihan = () => {
                               {invoiceTambahan.map((item, i) => (
                                 <div key={i}>
                                   <div className="flex items-center gap-3 mb-3">
-                                    {i === 0 ? (
+                                  <div className="flex flex-col gap-1">
+                                  {i === 0 ? (
                                       <div className="w-[350px]">
                                         Invoice Tambahan
                                       </div>
@@ -2000,6 +2019,11 @@ const Penagihan = () => {
                                         Invoice Tambahan {i + 1}
                                       </div>
                                     )}
+                                  <div className="text-[10px] text-gray-500">
+                                    Max size 2 mb
+                                  </div>
+                                </div>
+                                    
 
                                     <div>:</div>
                                     <div className="flex items-center gap-1">
@@ -2049,6 +2073,9 @@ const Penagihan = () => {
                               <div className="flex flex-col gap-1 w-[350px]">
                                 <div className="">Kwitansi</div>
                                 <div className="text-[10px] text-gray-500">
+                                    Max size 2 mb
+                                  </div>
+                                <div className="text-[10px] text-gray-500">
                                   total penagihan diatas 5 juta diwajibkan
                                   bermaterai
                                 </div>
@@ -2088,7 +2115,14 @@ const Penagihan = () => {
                             {vendors.status_pajak === "PKP" && (
                               <>
 <div className="flex items-center gap-3 mb-3">
-                              <div className="w-[350px]">Faktur Pajak</div>
+<div className="flex flex-col gap-1">
+                                  <div className="w-[350px]">
+                                    Faktur Pajak
+                                  </div>
+                                  <div className="text-[10px] text-gray-500">
+                                    Max size 2 mb
+                                  </div>
+                                </div>
                               <div>:</div>
                               <div className="flex items-center gap-1">
                                 <div>
@@ -2124,7 +2158,8 @@ const Penagihan = () => {
                               {fakturPajakTambahan.map((item, i) => (
                                 <div key={i}>
                                   <div className="flex items-center gap-3 mb-3">
-                                    {i === 0 ? (
+                                  <div className="flex flex-col gap-1">
+                                  {i === 0 ? (
                                       <div className="w-[350px]">
                                         Faktur Pajak Tambahan
                                       </div>
@@ -2133,6 +2168,11 @@ const Penagihan = () => {
                                         Faktur Pajak Tambahan {i + 1}
                                       </div>
                                     )}
+                                  <div className="text-[10px] text-gray-500">
+                                    Max size 2 mb
+                                  </div>
+                                </div>
+                                    
 
                                     <div>:</div>
                                     <div className="flex items-center gap-1">
@@ -2182,7 +2222,14 @@ const Penagihan = () => {
                             )}
                             
                             <div className="flex items-center gap-3 mb-20">
-                              <div className="w-[350px]">Receiving Note</div>
+                            <div className="flex flex-col gap-1">
+                                  <div className="w-[350px]">
+                                    Receiving Note
+                                  </div>
+                                  <div className="text-[10px] text-gray-500">
+                                    Max size 2 mb
+                                  </div>
+                                </div>
                               <div>:</div>
                               <div className="flex items-center gap-1">
                                 <div>
@@ -2244,8 +2291,13 @@ const Penagihan = () => {
                                 </div>
                               </div>
                               <div className="flex items-center gap-3 mb-3">
-                                <div className="w-[350px]">
-                                  Resi Bukti Pengiriman
+                              <div className="flex flex-col gap-1">
+                                  <div className="w-[350px]">
+                                    Resi Bukti Pengiriman
+                                  </div>
+                                  <div className="text-[10px] text-gray-500">
+                                    Max size 2 mb
+                                  </div>
                                 </div>
                                 <div>:</div>
                                 <div className="flex items-center gap-1">
@@ -2280,7 +2332,9 @@ const Penagihan = () => {
                                       className="hidden w-full h-[40px] border border-slate-300 rounded-sm focus:border focus:border-[#0077b6] disabled:bg-gray-300 disabled:cursor-not-allowed"
                                     />
                                   </div>
-                                  <div>*)</div>
+                                  {tipePengiriman.value === 1 && (
+                                      <div>*)</div>
+                                    )}
                                 </div>
                               </div>
                               {isError && (
@@ -2298,7 +2352,14 @@ const Penagihan = () => {
                         ) : (
                           <>
                             <div className="flex items-center gap-3 mb-3">
-                              <div className="w-[350px]">Purchase Order</div>
+                            <div className="flex flex-col gap-1">
+                                  <div className="w-[350px]">
+                                    Purchase Order
+                                  </div>
+                                  <div className="text-[10px] text-gray-500">
+                                    Max size 2 mb
+                                  </div>
+                                </div>
                               <div>:</div>
                               <div className="flex items-center gap-1">
                                 <div>
@@ -2330,9 +2391,15 @@ const Penagihan = () => {
                               </div>
                             </div>
                             <div className="flex items-center gap-3 mb-3">
-                              <div className="w-[350px]">
+                            <div className="flex flex-col gap-1">
+                            <div className="w-[350px]">
                                 Delivery Order (DO) / Packing List (Surat Jalan)
                               </div>
+                                  <div className="text-[10px] text-gray-500">
+                                    Max size 2 mb
+                                  </div>
+                                </div>
+                              
                               <div>:</div>
                               <div className="flex items-center gap-1">
                                 <div>
@@ -2363,9 +2430,14 @@ const Penagihan = () => {
                               </div>
                             </div>
                             <div className="flex items-center gap-3 mb-3">
-                              <div className="w-[350px]">
-                                Invoice (Faktur Penagihan)
-                              </div>
+                            <div className="flex flex-col gap-1">
+                                  <div className="w-[350px]">
+                                    Invoice (Faktur Penagihan)
+                                  </div>
+                                  <div className="text-[10px] text-gray-500">
+                                    Max size 2 mb
+                                  </div>
+                                </div>
                               <div>:</div>
                               <div className="flex items-center gap-1">
                                 <div>
@@ -2399,7 +2471,8 @@ const Penagihan = () => {
                               {invoiceTambahan.map((item, i) => (
                                 <div key={i}>
                                   <div className="flex items-center gap-3 mb-3">
-                                    {i === 0 ? (
+                                  <div className="flex flex-col gap-1">
+                                  {i === 0 ? (
                                       <div className="w-[350px]">
                                         Invoice Tambahan
                                       </div>
@@ -2408,6 +2481,11 @@ const Penagihan = () => {
                                         Invoice Tambahan {i + 1}
                                       </div>
                                     )}
+                                  <div className="text-[10px] text-gray-500">
+                                    Max size 2 mb
+                                  </div>
+                                </div>
+                                    
 
                                     <div>:</div>
                                     <div className="flex items-center gap-1">
@@ -2452,8 +2530,12 @@ const Penagihan = () => {
                               </div>
                             </div>
                             <div className="flex items-center gap-3 mb-10">
+                              
                               <div className="flex flex-col gap-1 w-[350px] ">
                                 <div>Kwitansi</div>
+                                <div className="text-[10px] text-gray-500">
+                                    Max size 2 mb
+                                  </div>
                                 <div className="text-[10px] text-gray-500">
                                   total penagihan diatas 5 juta diwajibkan
                                   bermaterai
@@ -2491,7 +2573,14 @@ const Penagihan = () => {
                             {vendors.status_pajak === "PKP" && (
                               <>
 <div className="flex items-center gap-3 mb-3">
-                              <div className="w-[350px]">Faktur Pajak</div>
+<div className="flex flex-col gap-1">
+                                  <div className="w-[350px]">
+                                    Faktur Pajak
+                                  </div>
+                                  <div className="text-[10px] text-gray-500">
+                                    Max size 2 mb
+                                  </div>
+                                </div>
                               <div>:</div>
                               <div className="flex items-center gap-1">
                                 <div>
@@ -2525,7 +2614,8 @@ const Penagihan = () => {
                               {fakturPajakTambahan.map((item, i) => (
                                 <div key={i}>
                                   <div className="flex items-center gap-3 mb-3">
-                                    {i === 0 ? (
+                                  <div className="flex flex-col gap-1">
+                                  {i === 0 ? (
                                       <div className="w-[350px]">
                                         Faktur Pajak Tambahan
                                       </div>
@@ -2534,6 +2624,11 @@ const Penagihan = () => {
                                         Faktur Pajak Tambahan {i + 1}
                                       </div>
                                     )}
+                                  <div className="text-[10px] text-gray-500">
+                                    Max size 2 mb
+                                  </div>
+                                </div>
+                                    
 
                                     <div>:</div>
                                     <div className="flex items-center gap-1">
@@ -2581,7 +2676,14 @@ const Penagihan = () => {
                             )}
                             
                             <div className="flex items-center gap-3 mb-20">
-                              <div className="w-[350px]">Scan Report Sales</div>
+                            <div className="flex flex-col gap-1">
+                                  <div className="w-[350px]">
+                                    Scan Report Sales
+                                  </div>
+                                  <div className="text-[10px] text-gray-500">
+                                    Max size 2 mb
+                                  </div>
+                                </div>
                               <div>:</div>
                               <div className="flex items-center gap-1">
                                 <div>
@@ -2674,7 +2776,9 @@ const Penagihan = () => {
                                       className="hidden w-full h-[40px] border border-slate-300 rounded-sm focus:border focus:border-[#0077b6] disabled:bg-gray-300 disabled:cursor-not-allowed"
                                     />
                                   </div>
-                                  <div>*)</div>
+                                  {tipePengiriman.value === 1 && (
+                                      <div>*)</div>
+                                    )}
                                 </div>
                               </div>
                               {isError && (
@@ -2969,7 +3073,7 @@ const Penagihan = () => {
                                         </div>
                                       ) : (
                                         <div className="w-[250px]">
-                                          No Invoice {i + 1} *)
+                                          No Invoice {i + 1} 
                                         </div>
                                       )}
                                       <div className="fw-full">
@@ -3009,7 +3113,7 @@ const Penagihan = () => {
                                           </div>
                                         ) : (
                                           <div className="w-[250px]">
-                                            Tanggal Invoice {i + 1} *)
+                                            Tanggal Invoice {i + 1} 
                                           </div>
                                         )}
 
@@ -3050,7 +3154,7 @@ const Penagihan = () => {
                                           </div>
                                         ) : (
                                           <div className="w-[250px]">
-                                            Nilai Invoice {i + 1} *)
+                                            Nilai Invoice {i + 1} 
                                           </div>
                                         )}
                                         <div className="fw-full">
@@ -3285,7 +3389,7 @@ const Penagihan = () => {
                                           </div>
                                         ) : (
                                           <div className="">
-                                            No Invoice {i + 1} *)
+                                            No Invoice {i + 1} 
                                           </div>
                                         )}
                                         <div className="fw-full">
@@ -3310,7 +3414,7 @@ const Penagihan = () => {
                                           </div>
                                         ) : (
                                           <div className="">
-                                            Tanggal Invoice {i + 1} *)
+                                            Tanggal Invoice {i + 1} 
                                           </div>
                                         )}
 
@@ -3370,7 +3474,7 @@ const Penagihan = () => {
                                         </div>
                                       ) : (
                                         <div className="w-[250px]">
-                                          Nilai Invoice {i + 1} *)
+                                          Nilai Invoice {i + 1} 
                                         </div>
                                       )}
                                       <div className="fw-full">
@@ -3620,9 +3724,14 @@ const Penagihan = () => {
                               {tipePenagihan.label === "Beli Putus" ? (
                                 <>
                                   <div className="flex flex-col gap-3 mb-3">
-                                    <div className="w-[350px]">
-                                      Purchase Order *) :
-                                    </div>
+                                  <div className="flex flex-col gap-1">
+                                        <div className="w-[350px]">
+                                          Purchase Order *) :
+                                        </div>
+                                        <div className="text-[10px] text-gray-500">
+                                          Max size 2 mb
+                                        </div>
+                                      </div>
 
                                     <div>
                                     <label htmlFor="upload-purchaseorder" className="w-fit">
@@ -3652,10 +3761,16 @@ const Penagihan = () => {
                                     </div>
                                   </div>
                                   <div className="flex flex-col gap-3 mb-3">
-                                    <div className="">
+                                  <div className="flex flex-col gap-1">
+                                  <div className="">
                                       Delivery Order (DO) / Packing List (Surat
                                       Jalan) *) :
                                     </div>
+                                        <div className="text-[10px] text-gray-500">
+                                          Max size 2 mb
+                                        </div>
+                                      </div>
+                                    
 
                                     <div>
                                     <label htmlFor="upload-deliveryorder" className="w-fit">
@@ -3685,9 +3800,14 @@ const Penagihan = () => {
                                     </div>
                                   </div>
                                   <div className="flex flex-col gap-3 mb-3">
-                                    <div className="">
-                                      Invoice (Faktur penagihan) *) :
+                                  <div className="flex flex-col gap-1">
+                                  <div className="">
+                                      Invoice (Faktur Penagihan) *) :
                                     </div>
+                                        <div className="text-[10px] text-gray-500">
+                                          Max size 2 mb
+                                        </div>
+                                      </div>
 
                                     <div>
                                     <label htmlFor="upload-invoice" className="w-fit">
@@ -3720,13 +3840,19 @@ const Penagihan = () => {
                                     {invoiceTambahan.map((item, i) => (
                                       <div key={i}>
                                         <div className="flex flex-col gap-3 mb-3">
-                                          {i === 0 ? (
+                                        <div className="flex flex-col gap-1">
+                                        {i === 0 ? (
                                             <div>Invoice Tambahan :</div>
                                           ) : (
                                             <div>
                                               Invoice Tambahan : {i + 1}
                                             </div>
                                           )}
+                                        <div className="text-[10px] text-gray-500">
+                                          Max size 2 mb
+                                        </div>
+                                      </div>
+                                          
 
                                           <div>
                                           <label htmlFor={i} className="w-fit">
@@ -3776,6 +3902,9 @@ const Penagihan = () => {
                                         Kwitansi *)
                                       </div>
                                       <div className="text-[10px] text-gray-500">
+                                          Max size 2 mb
+                                        </div>
+                                      <div className="text-[10px] text-gray-500">
                                         total penagihan diatas 5 juta diwajibkan
                                         bermaterai
                                       </div>
@@ -3811,7 +3940,14 @@ const Penagihan = () => {
                                   {vendors.status_pajak === "PKP" && (
                                     <>
 <div className="flex flex-col gap-3 mb-3">
-                                    <div>Faktur Pajak *)</div>
+<div className="flex flex-col gap-1">
+                                  <div className="">
+                                      Faktur Pajak *) :
+                                    </div>
+                                        <div className="text-[10px] text-gray-500">
+                                          Max size 2 mb
+                                        </div>
+                                      </div>
 
                                     <div>
                                     <label htmlFor="upload-fakturpajak" className="w-fit">
@@ -3844,13 +3980,19 @@ const Penagihan = () => {
                                     {fakturPajakTambahan.map((item, i) => (
                                       <div key={i}>
                                         <div className="flex flex-col gap-3 mb-3">
-                                          {i === 0 ? (
+                                        <div className="flex flex-col gap-1">
+                                        {i === 0 ? (
                                             <div>Faktur Pajak Tambahan</div>
                                           ) : (
                                             <div>
                                               Faktur Pajak Tambahan {i + 1}
                                             </div>
                                           )}
+                                        <div className="text-[10px] text-gray-500">
+                                          Max size 2 mb
+                                        </div>
+                                      </div>
+                                          
 
                                           <div>
                                           <label htmlFor={i} className="w-fit">
@@ -3900,7 +4042,14 @@ const Penagihan = () => {
                                   )}
                                   
                                   <div className="flex flex-col gap-3 mb-20">
-                                    <div>Receiving Note *) :</div>
+                                  <div className="flex flex-col gap-1">
+                                  <div className="">
+                                      Receiving Note *) :
+                                    </div>
+                                        <div className="text-[10px] text-gray-500">
+                                          Max size 2 mb
+                                        </div>
+                                      </div>
 
                                     <div>
                                     <label htmlFor="upload-receivingnote" className="w-fit">
@@ -3952,7 +4101,18 @@ const Penagihan = () => {
                                       </div>
                                     </div>
                                     <div className="flex flex-col gap-3 mb-3">
-                                      <div>Resi Bukti Pengiriman *) :</div>
+                                    <div className="flex flex-col gap-1">
+                                    <div>
+                                            Resi Bukti Pengiriman{" "}
+                                            {tipePengiriman.value === 1
+                                              ? "*)"
+                                              : ""}{" "}
+                                            :
+                                          </div>
+                                        <div className="text-[10px] text-gray-500">
+                                          Max size 2 mb
+                                        </div>
+                                      </div>
 
                                       <div>
                                       <label htmlFor="upload-resi" className="w-fit">
@@ -4003,7 +4163,14 @@ const Penagihan = () => {
                               ) : (
                                 <>
                                   <div className="flex flex-col gap-3 mb-3">
-                                    <div>Purchase Order *) :</div>
+                                  <div className="flex flex-col gap-1">
+                                  <div className="">
+                                     Purchase Order *) :
+                                    </div>
+                                        <div className="text-[10px] text-gray-500">
+                                          Max size 2 mb
+                                        </div>
+                                      </div>
 
                                     <div>
                                     <label htmlFor="upload-purchaseorder" className="w-fit">
@@ -4032,10 +4199,15 @@ const Penagihan = () => {
                                     </div>
                                   </div>
                                   <div className="flex flex-col gap-3 mb-3">
-                                    <div>
+                                  <div className="flex flex-col gap-1">
+                                  <div className="">
                                       Delivery Order (DO) / Packing List (Surat
                                       Jalan) *) :
                                     </div>
+                                        <div className="text-[10px] text-gray-500">
+                                          Max size 2 mb
+                                        </div>
+                                      </div>
 
                                     <div>
                                     <label htmlFor="upload-deliveryorder" className="w-fit">
@@ -4063,7 +4235,14 @@ const Penagihan = () => {
                                     </div>
                                   </div>
                                   <div className="flex flex-col gap-3 mb-3">
-                                    <div>Invoice (Faktur Penagihan) *) :</div>
+                                  <div className="flex flex-col gap-1">
+                                  <div className="">
+                                      Invoice (Faktur Penagihan) *) :
+                                    </div>
+                                        <div className="text-[10px] text-gray-500">
+                                          Max size 2 mb
+                                        </div>
+                                      </div>
 
                                     <div>
                                     <label htmlFor="upload-invoice" className="w-fit">
@@ -4094,11 +4273,17 @@ const Penagihan = () => {
                                     {invoiceTambahan.map((item, i) => (
                                       <div key={i}>
                                         <div className="flex flex-col gap-3 mb-3">
-                                          {i === 0 ? (
+                                        <div className="flex flex-col gap-1">
+                                        {i === 0 ? (
                                             <div>Invoice Tambahan</div>
                                           ) : (
                                             <div>Invoice Tambahan {i + 1}</div>
                                           )}
+                                        <div className="text-[10px] text-gray-500">
+                                          Max size 2 mb
+                                        </div>
+                                      </div>
+                                          
 
                                           <div>
                                           <label htmlFor={i} className="w-fit">
@@ -4142,8 +4327,13 @@ const Penagihan = () => {
                                   </div>
                                   <div className="flex flex-col gap-3 mb-10">
                                     <div className="flex flex-col gap-1">
-                                      <div className="w-[350px]">
-                                        Kwitansi *)
+                                    <div className="flex flex-col gap-1">
+                                  <div className="">
+                                      Kwitansi *) :
+                                    </div>
+                                        <div className="text-[10px] text-gray-500">
+                                          Max size 2 mb
+                                        </div>
                                       </div>
                                       <div className="text-[10px] text-gray-500">
                                         total penagihan diatas 5 juta diwajibkan
@@ -4179,7 +4369,14 @@ const Penagihan = () => {
                                   {vendors.status_pajak === "PKP" && (
                                     <>
 <div className="flex flex-col gap-3 mb-3">
-                                    <div>Faktur Pajak *) :</div>
+<div className="flex flex-col gap-1">
+                                  <div className="">
+                                      Faktur Pajak *) :
+                                    </div>
+                                        <div className="text-[10px] text-gray-500">
+                                          Max size 2 mb
+                                        </div>
+                                      </div>
 
                                     <div>
                                     <label htmlFor="upload-fakturpajak" className="w-fit">
@@ -4210,7 +4407,8 @@ const Penagihan = () => {
                                     {fakturPajakTambahan.map((item, i) => (
                                       <div key={i}>
                                         <div className="flex flex-col gap-3 mb-3">
-                                          {i === 0 ? (
+                                        <div className="flex flex-col gap-1">
+                                        {i === 0 ? (
                                             <div className="w-[350px]">
                                               Faktur Pajak Tambahan
                                             </div>
@@ -4219,6 +4417,11 @@ const Penagihan = () => {
                                               Faktur Pajak Tambahan {i + 1}
                                             </div>
                                           )}
+                                        <div className="text-[10px] text-gray-500">
+                                          Max size 2 mb
+                                        </div>
+                                      </div>
+                                          
 
                                           <div>
                                           <label htmlFor={i} className="w-fit">
@@ -4266,7 +4469,14 @@ const Penagihan = () => {
                                   )}
                                   
                                   <div className="flex flex-col gap-3 mb-20">
-                                    <div>Scan Report Sales *) :</div>
+                                  <div className="flex flex-col gap-1">
+                                  <div className="">
+                                      Scan Report Sales *) :
+                                    </div>
+                                        <div className="text-[10px] text-gray-500">
+                                          Max size 2 mb
+                                        </div>
+                                      </div>
 
                                     <div>
                                     <label htmlFor="upload-scanreportsales" className="w-fit">
@@ -4318,8 +4528,17 @@ const Penagihan = () => {
                                       </div>
                                     </div>
                                     <div className="flex flex-col gap-3 mb-3">
-                                      <div className="w-[350px]">
-                                        Resi Bukti Pengiriman *) :
+                                    <div className="flex flex-col gap-1">
+                                    <div>
+                                            Resi Bukti Pengiriman{" "}
+                                            {tipePengiriman.value === 1
+                                              ? "*)"
+                                              : ""}{" "}
+                                            :
+                                          </div>
+                                        <div className="text-[10px] text-gray-500">
+                                          Max size 2 mb
+                                        </div>
                                       </div>
 
                                       <div>

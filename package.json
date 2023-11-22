@@ -4,6 +4,7 @@
   "homepage": "http://192.46.230.24/",
   "private": true,
   "dependencies": {
+    "@bytescale/upload-widget-react": "^4.12.0",
     "@emotion/react": "^11.11.1",
     "@emotion/styled": "^11.11.0",
     "@mui/material": "^5.14.1",

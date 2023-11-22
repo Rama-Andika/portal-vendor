@@ -482,6 +482,10 @@ const VendorRegistrationList = () => {
                         {titleCase(vendorDetail.nama_penanggung_jawab)}
                       </div>
                     </div>
+
+                    <div className="mt-5 rounded-sm py-2 px-5 text-white bg-[#217346] w-fit cursor-pointer">
+                    Download
+                  </div>
                   </div>
 
                   <div

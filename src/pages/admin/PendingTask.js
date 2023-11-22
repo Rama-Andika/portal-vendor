@@ -18,6 +18,8 @@ import Api from "../../api";
 import titleCase from "../../components/functions/TitleCase";
 import isEmpty from "../../components/functions/CheckEmptyObject";
 import toast from "react-hot-toast";
+import accountingNumber from "../../components/functions/AccountingNumber";
+
 
 const options = [
   { value: "APPROVED", label: "APPROVED", key: 0 },
@@ -70,6 +72,7 @@ const PendingTask = () => {
   }, []);
 
   const onChangeStartDate = (value) => {
+    console.log(value);
     setStartDate(value);
   };
 
@@ -96,18 +99,16 @@ const PendingTask = () => {
 
   const fetchData = async (query) => {
     setOpenBackdrop(true);
-    await Api.get(
-      `/penagihan?status=waiting_for_approval${
-        query !== undefined ? query : ""
-      }`
-    ).then((response) => {
+    await Api.get(`penagihan`, {
+      status: "waiting_for_approval",
+    }).then((response) => {
       setOpenBackdrop(false);
       // eslint-disable-next-line array-callback-return
       response.data.map((data, index) => {
         var total = 0;
         data.nilai_invoices.map((nilai) => (total += nilai));
         setTotalInvoice((prev) => {
-          return [...prev, total];
+          return [...prev, total.toFixed(2)];
         });
       });
 
@@ -188,6 +189,7 @@ const PendingTask = () => {
 
   return (
     <AdminWhSmith>
+      {console.log("total " + totalInvoice[0])}
       <div
         className={`${
           screenSize < 768 ? "px-5 pt-20" : "px-10 pt-10"
@@ -340,14 +342,16 @@ const PendingTask = () => {
                   key={index}
                   className="text-center whitespace-nowrap hover:bg-slate-100 border bg-white"
                 >
-                  <td className="p-5 border">{item.vendor.nama}</td>
+                  <td className="p-5 border"></td>
                   <td className="p-5 border"></td>
                   <td className="p-5 border">
                     {dayjs(item.created_at).format("DD/MM/YYYY")}
                   </td>
 
                   <td className="p-5 border"></td>
-                  <td className="p-5 border">Rp. {totalInvoice[index]}</td>
+                  <td className="p-5 border">
+                    Rp. {accountingNumber(totalInvoice[index])}
+                  </td>
 
                   <td
                     onClick={() => onClikOpen(item)}
@@ -411,9 +415,7 @@ const PendingTask = () => {
                       <div className="max-[549px]:hidden min-[550px]:block">
                         :
                       </div>
-                      <div className="w-[240px] whitespace-nowrap overflow-ellipsis overflow-hidden">
-                        {penagihanDetail.vendor.nama}
-                      </div>
+                      <div className="w-[240px] whitespace-nowrap overflow-ellipsis overflow-hidden"></div>
                     </div>
                     <div className="flex max-[549px]:flex-col max-[549px]:items-start items-center gap-2">
                       <div className="w-[270px] whitespace-nowrap font-bold">
@@ -495,7 +497,7 @@ const PendingTask = () => {
                       <div className="flex flex-col gap-1">
                         {penagihanDetail.tanggal_invoices.map((tanggal) => (
                           <div className="w-[240px] whitespace-nowrap overflow-ellipsis overflow-hidden">
-                            {dayjs(tanggal).format('DD/MM/YYYY')}
+                            {dayjs(tanggal).format("DD/MM/YYYY")}
                           </div>
                         ))}
                       </div>

@@ -30,6 +30,7 @@ import Api from "../../../api";
 import toast from "react-hot-toast";
 import Cookies from "js-cookie";
 import { FaCloudUploadAlt } from "react-icons/fa";
+import { UploadDropzone } from "@bytescale/upload-widget-react";
 
 const optionsTipePenagihan = [
   { value: "beli_putus", label: "Beli Putus", key: 0 },
@@ -50,6 +51,26 @@ const optionsTipePengiriman = [
   { value: 1, label: "Kurir", key: 1 },
   { value: 2, label: "Diantar langsung ke office PT KPU", key: 2 },
 ];
+
+const optionsUpload = {
+
+  apiKey: "public_kW15bnV5Mp5Z1cv95X3eofJC2Ekx", // This is your API key.
+
+  maxFileCount: 1,
+
+  showFinishButton: true, // Note: You must use 'onUpdate' if you set 'showFinishButton: false' (default).
+
+  styles: {
+
+    colors: {
+
+      primary: "#377dff"
+
+    }
+
+  }
+
+};
 const Penagihan = () => {
   const inputArr = [
     {
@@ -145,10 +166,12 @@ const Penagihan = () => {
   const vendorId = Cookies.get("vendor_id");
   const [vendors, setVendors] = useState({});
 
+  
+
   const fetchvendor = async () => {
-    setOpenBackdrop(true)
+    setOpenBackdrop(true);
     await Api.get(`/vendors/${vendorId}`).then((response) => {
-      setOpenBackdrop(false)
+      setOpenBackdrop(false);
       setVendors(response.data);
     });
   };
@@ -213,14 +236,14 @@ const Penagihan = () => {
         kwitansiFile !== null &&
         receivingNoteFile !== null
       ) {
-        if(vendors.status_pajak === "PKP"){
-          if(fakturPajakFile !== null){
+        if (vendors.status_pajak === "PKP") {
+          if (fakturPajakFile !== null) {
             setIsError(false);
-          }else{
-            return setIsError(true)
+          } else {
+            return setIsError(true);
           }
-        }else{
-          setIsError(false)
+        } else {
+          setIsError(false);
         }
 
         if (tipePengiriman.value === 1) {
@@ -302,14 +325,14 @@ const Penagihan = () => {
         scanReportSalesFile !== null
       ) {
         console.log("correct");
-        if(vendors.status_pajak === "PKP"){
-          if(fakturPajakFile !== null){
+        if (vendors.status_pajak === "PKP") {
+          if (fakturPajakFile !== null) {
             setIsError(false);
-          }else{
-            return setIsError(true)
+          } else {
+            return setIsError(true);
           }
-        }else{
-          setIsError(false)
+        } else {
+          setIsError(false);
         }
 
         if (tipePengiriman.value === 1) {
@@ -577,7 +600,7 @@ const Penagihan = () => {
   const addInvoiceTambahan = () => {
     if (invoiceTambahan.length < 5) {
       setInvoiceTambahan((s) => {
-        return [...s, { }];
+        return [...s, {}];
       });
     }
   };
@@ -703,17 +726,17 @@ const Penagihan = () => {
       kwitansiFile !== null &&
       receivingNoteFile !== null
     ) {
-      if(vendors.status_pajak === "PKP"){
-        if(fakturPajakFile !== null){
+      if (vendors.status_pajak === "PKP") {
+        if (fakturPajakFile !== null) {
           setIsError(false);
           isSave = true;
-        }else{
-         setIsError(true)
-         isSave = false
+        } else {
+          setIsError(true);
+          isSave = false;
         }
-      }else{
-        setIsError(false)
-        isSave = true
+      } else {
+        setIsError(false);
+        isSave = true;
       }
 
       if (tipePengiriman.value === 1) {
@@ -790,7 +813,7 @@ const Penagihan = () => {
 
       if (id === 0) {
         const inititalValue = {
-          vendor: vendors,
+          vendor_id: vendorId,
           no_request: noRequest,
           tipe_penagihan: tipePenagihan.value,
           tipe_pengiriman: tipePengiriman.value,
@@ -840,7 +863,7 @@ const Penagihan = () => {
           });
       } else {
         const inititalValue = {
-          vendor: vendors,
+          vendor_id: vendorId,
           no_request: noRequest,
           tipe_penagihan: tipePenagihan.value,
           tipe_pengiriman: tipePengiriman.value,
@@ -903,19 +926,19 @@ const Penagihan = () => {
       kwitansiFile !== null &&
       scanReportSalesFile !== null
     ) {
-      if(vendors.status_pajak === "PKP"){
-        if(fakturPajakFile !== null){
+      if (vendors.status_pajak === "PKP") {
+        if (fakturPajakFile !== null) {
           setIsError(false);
           isSave = true;
-        }else{
-         setIsError(true)
-         isSave = false
+        } else {
+          setIsError(true);
+          isSave = false;
         }
-      }else{
-        setIsError(false)
-        isSave = true
+      } else {
+        setIsError(false);
+        isSave = true;
       }
-      
+
       if (tipePengiriman.value === 1) {
         if (resiFile !== null) {
           setIsError(false);
@@ -990,7 +1013,7 @@ const Penagihan = () => {
 
       if (id === 0) {
         const inititalValue = {
-          vendor: vendors,
+          vendor_id: vendorId,
           no_request: noRequest,
           tipe_penagihan: tipePenagihan.value,
           tipe_pengiriman: tipePengiriman.value,
@@ -1041,7 +1064,7 @@ const Penagihan = () => {
           });
       } else {
         const inititalValue = {
-          vendor: vendors,
+          vendor_id: vendorId,
           no_request: noRequest,
           tipe_penagihan: tipePenagihan.value,
           tipe_pengiriman: tipePengiriman.value,
@@ -1152,7 +1175,7 @@ const Penagihan = () => {
 
     if (id !== 0) {
       const inititalValue = {
-        vendor: vendors,
+        vendor_id: vendorId,
         no_request: nomerRequest,
         tipe_penagihan: tipePenagihan.value,
         tipe_pengiriman: tipePengiriman.value,
@@ -1203,7 +1226,7 @@ const Penagihan = () => {
         });
     } else {
       const inititalValue = {
-        vendor: vendors,
+        vendor_id: vendorId,
         no_request: noRequest,
         tipe_penagihan: tipePenagihan.value,
         tipe_pengiriman: tipePengiriman.value,
@@ -1312,7 +1335,7 @@ const Penagihan = () => {
 
     if (id !== 0) {
       const inititalValue = {
-        vendor: vendors,
+        vendor_id: vendorId,
         no_request: nomerRequest,
         tipe_penagihan: tipePenagihan.value,
         tipe_pengiriman: tipePengiriman.value,
@@ -1364,7 +1387,7 @@ const Penagihan = () => {
         });
     } else {
       const inititalValue = {
-        vendor: vendors,
+        vendor_id: vendorId,
         no_request: noRequest,
         tipe_penagihan: tipePenagihan.value,
         tipe_pengiriman: tipePengiriman.value,
@@ -1486,17 +1509,17 @@ const Penagihan = () => {
                           <>
                             <div className="flex items-center gap-2 mb-3">
                               <div className="flex flex-col gap-1">
-                              <div className="w-[250px]">
-                                No Purchase Order (PO)
+                                <div className="w-[250px]">
+                                  No Purchase Order (PO)
+                                </div>
+                                <div className="flex gap-1 items-center text-[12px]">
+                                  <div>
+                                    <PiWarningCircleLight />
+                                  </div>
+                                  <div>Harus 8 digit</div>
+                                </div>
                               </div>
-                              <div className="flex gap-1 items-center text-[12px]">
-                          <div>
-                            <PiWarningCircleLight />
-                          </div>
-                          <div>Harus 8 digit</div>
-                        </div>
-                              </div>
-                              
+
                               <div>:</div>
                               <div className="flex items-center gap-1 ">
                                 <div>PO</div>
@@ -1647,7 +1670,7 @@ const Penagihan = () => {
                                         className="max-[821px]:w-full w-[246.4px] h-[40px] border border-slate-300 rounded-sm focus:border focus:border-[#0077b6] bg-[#ddebf7]"
                                       />
                                     </div>
-                                    <div>*)</div>
+                                    <div>{i === 0 && "*)"}</div>
                                   </div>
                                 </div>
                               ))}
@@ -1699,7 +1722,7 @@ const Penagihan = () => {
                                           </DemoContainer>
                                         </LocalizationProvider>
                                       </div>
-                                      <div>*)</div>
+                                      <div>{i === 0 && "*)"}</div>
                                     </div>
                                   </div>
                                   <div className="flex items-center gap-2 mb-3">
@@ -1732,7 +1755,7 @@ const Penagihan = () => {
                                           className="max-[821px]:w-[208px] w-[246.4px] h-[40px] border border-slate-300 rounded-sm focus:border focus:border-[#0077b6] bg-[#ddebf7]"
                                         />
                                       </div>
-                                      <div>*)</div>
+                                      <div>{i === 0 && "*)"}</div>
                                     </div>
                                   </div>
                                 </div>
@@ -1760,16 +1783,16 @@ const Penagihan = () => {
                               </div>
                             </div>
                             <div className="flex items-start gap-2 mb-3">
-                            <div className="flex flex-col gap-1">
-                              <div className="w-[250px]">
-                                No Seri Faktur Pajak
-                              </div>
-                              <div className="flex gap-1 items-center text-[12px]">
-                          <div>
-                            <PiWarningCircleLight />
-                          </div>
-                          <div>Harus 16 digit</div>
-                        </div>
+                              <div className="flex flex-col gap-1">
+                                <div className="w-[250px]">
+                                  No Seri Faktur Pajak
+                                </div>
+                                <div className="flex gap-1 items-center text-[12px]">
+                                  <div>
+                                    <PiWarningCircleLight />
+                                  </div>
+                                  <div>Harus 16 digit</div>
+                                </div>
                               </div>
                               <div>:</div>
                               <div className="flex items-center gap-1 ">
@@ -1816,16 +1839,16 @@ const Penagihan = () => {
                         ) : (
                           <>
                             <div className="flex items-center gap-2 mb-3">
-                            <div className="flex flex-col gap-1">
-                              <div className="w-[250px]">
-                                No Purchase Order (PO)
-                              </div>
-                              <div className="flex gap-1 items-center text-[12px]">
-                          <div>
-                            <PiWarningCircleLight />
-                          </div>
-                          <div>Harus 8 digit</div>
-                        </div>
+                              <div className="flex flex-col gap-1">
+                                <div className="w-[250px]">
+                                  No Purchase Order (PO)
+                                </div>
+                                <div className="flex gap-1 items-center text-[12px]">
+                                  <div>
+                                    <PiWarningCircleLight />
+                                  </div>
+                                  <div>Harus 8 digit</div>
+                                </div>
                               </div>
                               <div>:</div>
                               <div className="flex items-center gap-1 ">
@@ -1945,7 +1968,7 @@ const Penagihan = () => {
                                           className="max-[821px]:w-full w-[246.4px] h-[40px] border border-slate-300 rounded-sm focus:border focus:border-[#0077b6] bg-[#fff2cc]"
                                         />
                                       </div>
-                                      <div>*)</div>
+                                      <div>{i === 0 && "*)"}</div>
                                     </div>
                                   </div>
 
@@ -1983,7 +2006,7 @@ const Penagihan = () => {
                                           </DemoContainer>
                                         </LocalizationProvider>
                                       </div>
-                                      <div>*)</div>
+                                      <div>{i === 0 && "*)"}</div>
                                     </div>
                                   </div>
                                 </div>
@@ -2035,7 +2058,7 @@ const Penagihan = () => {
                                         className="max-[821px]:w-[208px] w-[246.4px] h-[40px] border border-slate-300 rounded-sm focus:border focus:border-[#0077b6] bg-[#fff2cc]"
                                       />
                                     </div>
-                                    <div>*)</div>
+                                    <div>{i === 0 && "*)"}</div>
                                   </div>
                                 </div>
                               ))}
@@ -2123,16 +2146,16 @@ const Penagihan = () => {
                               </div>
                             </div>
                             <div className="flex items-start gap-2 mb-3">
-                            <div className="flex flex-col gap-1">
-                              <div className="w-[250px]">
-                                No Seri Faktur Pajak
-                              </div>
-                              <div className="flex gap-1 items-center text-[12px]">
-                          <div>
-                            <PiWarningCircleLight />
-                          </div>
-                          <div>Harus 16 digit</div>
-                        </div>
+                              <div className="flex flex-col gap-1">
+                                <div className="w-[250px]">
+                                  No Seri Faktur Pajak
+                                </div>
+                                <div className="flex gap-1 items-center text-[12px]">
+                                  <div>
+                                    <PiWarningCircleLight />
+                                  </div>
+                                  <div>Harus 16 digit</div>
+                                </div>
                               </div>
                               <div>:</div>
                               <div className="flex items-center gap-1 ">
@@ -2186,32 +2209,37 @@ const Penagihan = () => {
                           {tipePenagihan.label === "Beli Putus" ? (
                             <>
                               <div className="flex items-center gap-3 mb-3">
-                                <div className="w-[350px]">Purchase Order</div>
+                                <div className="flex flex-col gap-1">
+                                  <div className="w-[350px]">
+                                    Purchase Order
+                                  </div>
+                                  <div className="text-[10px] text-gray-500">
+                                    Max size 2 mb
+                                  </div>
+                                </div>
+
                                 <div>:</div>
                                 <div className="flex items-center gap-1">
                                   <div>
-                                    
                                     <label
                                       htmlFor="upload-purchaseorder"
                                       className="w-fit"
                                     >
                                       {purchaseOrderFile === null ? (
                                         <div className="w-fit flex gap-1 items-center bg-blue-400 py-2 px-5 text-white hover:bg-blue-200 rounded-md">
-                                        <span>
-                                          <FaCloudUploadAlt />
-                                        </span>
-                                        <div>Upload</div>
-                                      </div>
-                                      ): (
+                                          <span>
+                                            <FaCloudUploadAlt />
+                                          </span>
+                                          <div>Upload</div>
+                                        </div>
+                                      ) : (
                                         <div className="w-fit flex gap-1 items-center bg-blue-400 py-2 px-5 text-white hover:bg-blue-200 rounded-md">
-                                        <span>
-                                          <FaCloudUploadAlt />
-                                        </span>
-                                        <div>1 File</div>
-                                      </div>
+                                          <span>
+                                            <FaCloudUploadAlt />
+                                          </span>
+                                          <div>1 File</div>
+                                        </div>
                                       )}
-                                      
-
                                     </label>
                                     <input
                                       onChange={onChangePurchaseOrderFile}
@@ -2224,14 +2252,19 @@ const Penagihan = () => {
 
                                   <div>*)</div>
                                 </div>
-                                
                               </div>
-                              
+
                               <div className="flex items-center gap-3 mb-3">
-                                <div className="w-[350px]">
-                                  Delivery Order (DO) / Packing List (Surat
-                                  Jalan)
+                                <div className="flex flex-col gap-1">
+                                  <div className="w-[350px]">
+                                    Delivery Order (DO) / Packing List (Surat
+                                    Jalan)
+                                  </div>
+                                  <div className="text-[10px] text-gray-500">
+                                    Max size 2 mb
+                                  </div>
                                 </div>
+
                                 <div>:</div>
                                 <div className="flex items-center gap-1">
                                   <div>
@@ -2241,18 +2274,18 @@ const Penagihan = () => {
                                     >
                                       {deliveryOrderFile === null ? (
                                         <div className="w-fit flex gap-1 items-center bg-blue-400 py-2 px-5 text-white hover:bg-blue-200 rounded-md">
-                                        <span>
-                                          <FaCloudUploadAlt />
-                                        </span>
-                                        <div>Upload</div>
-                                      </div>
-                                      ): (
+                                          <span>
+                                            <FaCloudUploadAlt />
+                                          </span>
+                                          <div>Upload</div>
+                                        </div>
+                                      ) : (
                                         <div className="w-fit flex gap-1 items-center bg-blue-400 py-2 px-5 text-white hover:bg-blue-200 rounded-md">
-                                        <span>
-                                          <FaCloudUploadAlt />
-                                        </span>
-                                        <div>1 File</div>
-                                      </div>
+                                          <span>
+                                            <FaCloudUploadAlt />
+                                          </span>
+                                          <div>1 File</div>
+                                        </div>
                                       )}
                                     </label>
                                     <input
@@ -2267,8 +2300,13 @@ const Penagihan = () => {
                                 </div>
                               </div>
                               <div className="flex items-center gap-3 mb-3">
-                                <div className="w-[350px]">
-                                  Invoice (Faktur Penagihan)
+                                <div className="flex flex-col gap-1">
+                                  <div className="w-[350px]">
+                                    Invoice (Faktur Penagihan)
+                                  </div>
+                                  <div className="text-[10px] text-gray-500">
+                                    Max size 2 mb
+                                  </div>
                                 </div>
                                 <div>:</div>
                                 <div className="flex items-center gap-1">
@@ -2279,18 +2317,18 @@ const Penagihan = () => {
                                     >
                                       {invoiceFile === null ? (
                                         <div className="w-fit flex gap-1 items-center bg-blue-400 py-2 px-5 text-white hover:bg-blue-200 rounded-md">
-                                        <span>
-                                          <FaCloudUploadAlt />
-                                        </span>
-                                        <div>Upload</div>
-                                      </div>
-                                      ): (
+                                          <span>
+                                            <FaCloudUploadAlt />
+                                          </span>
+                                          <div>Upload</div>
+                                        </div>
+                                      ) : (
                                         <div className="w-fit flex gap-1 items-center bg-blue-400 py-2 px-5 text-white hover:bg-blue-200 rounded-md">
-                                        <span>
-                                          <FaCloudUploadAlt />
-                                        </span>
-                                        <div>1 File</div>
-                                      </div>
+                                          <span>
+                                            <FaCloudUploadAlt />
+                                          </span>
+                                          <div>1 File</div>
+                                        </div>
                                       )}
                                     </label>
                                     <input
@@ -2308,35 +2346,40 @@ const Penagihan = () => {
                                 {invoiceTambahan.map((item, i) => (
                                   <div key={i}>
                                     <div className="flex items-center gap-3 mb-3">
-                                      {i === 0 ? (
-                                        <div className="w-[350px]">
-                                          Invoice Tambahan
+                                      <div className="flex flex-col gap-1">
+                                        {i === 0 ? (
+                                          <div className="w-[350px]">
+                                            Invoice Tambahan
+                                          </div>
+                                        ) : (
+                                          <div className="w-[350px]">
+                                            Invoice Tambahan {i + 1}
+                                          </div>
+                                        )}
+                                        <div className="text-[10px] text-gray-500">
+                                          Max size 2 mb
                                         </div>
-                                      ) : (
-                                        <div className="w-[350px]">
-                                          Invoice Tambahan {i + 1}
-                                        </div>
-                                      )}
+                                      </div>
 
                                       <div>:</div>
                                       <div className="flex items-center gap-1">
                                         <div>
                                           <label htmlFor={i} className="w-fit">
-                                          {isEmpty(invoiceTambahan[i]) ? (
-                                        <div className="w-fit flex gap-1 items-center bg-blue-400 py-2 px-5 text-white hover:bg-blue-200 rounded-md">
-                                        <span>
-                                          <FaCloudUploadAlt />
-                                        </span>
-                                        <div>Upload</div>
-                                      </div>
-                                      ): (
-                                        <div className="w-fit flex gap-1 items-center bg-blue-400 py-2 px-5 text-white hover:bg-blue-200 rounded-md">
-                                        <span>
-                                          <FaCloudUploadAlt />
-                                        </span>
-                                        <div>1 File</div>
-                                      </div>
-                                      )}
+                                            {isEmpty(invoiceTambahan[i]) ? (
+                                              <div className="w-fit flex gap-1 items-center bg-blue-400 py-2 px-5 text-white hover:bg-blue-200 rounded-md">
+                                                <span>
+                                                  <FaCloudUploadAlt />
+                                                </span>
+                                                <div>Upload</div>
+                                              </div>
+                                            ) : (
+                                              <div className="w-fit flex gap-1 items-center bg-blue-400 py-2 px-5 text-white hover:bg-blue-200 rounded-md">
+                                                <span>
+                                                  <FaCloudUploadAlt />
+                                                </span>
+                                                <div>1 File</div>
+                                              </div>
+                                            )}
                                           </label>
                                           <input
                                             type="file"
@@ -2366,6 +2409,9 @@ const Penagihan = () => {
                                 <div className="flex flex-col gap-1 w-[350px]">
                                   <div className="">Kwitansi</div>
                                   <div className="text-[10px] text-gray-500">
+                                    Max size 2 mb
+                                  </div>
+                                  <div className="text-[10px] text-gray-500">
                                     total penagihan diatas 5 juta diwajibkan
                                     bermaterai
                                   </div>
@@ -2380,18 +2426,18 @@ const Penagihan = () => {
                                     >
                                       {kwitansiFile === null ? (
                                         <div className="w-fit flex gap-1 items-center bg-blue-400 py-2 px-5 text-white hover:bg-blue-200 rounded-md">
-                                        <span>
-                                          <FaCloudUploadAlt />
-                                        </span>
-                                        <div>Upload</div>
-                                      </div>
-                                      ): (
+                                          <span>
+                                            <FaCloudUploadAlt />
+                                          </span>
+                                          <div>Upload</div>
+                                        </div>
+                                      ) : (
                                         <div className="w-fit flex gap-1 items-center bg-blue-400 py-2 px-5 text-white hover:bg-blue-200 rounded-md">
-                                        <span>
-                                          <FaCloudUploadAlt />
-                                        </span>
-                                        <div>1 File</div>
-                                      </div>
+                                          <span>
+                                            <FaCloudUploadAlt />
+                                          </span>
+                                          <div>1 File</div>
+                                        </div>
                                       )}
                                     </label>
                                     <input
@@ -2407,107 +2453,131 @@ const Penagihan = () => {
                               </div>
                               {vendors.status_pajak === "PKP" && (
                                 <>
-                                <div className="flex items-center gap-3 mb-3">
-                                <div className="w-[350px]">Faktur Pajak</div>
-                                <div>:</div>
-                                <div className="flex items-center gap-1">
-                                  <div>
-                                    <label
-                                      htmlFor="upload-fakturpajak"
-                                      className="w-fit"
-                                    >
-                                      {fakturPajakFile === null ? (
-                                        <div className="w-fit flex gap-1 items-center bg-blue-400 py-2 px-5 text-white hover:bg-blue-200 rounded-md">
-                                        <span>
-                                          <FaCloudUploadAlt />
-                                        </span>
-                                        <div>Upload</div>
+                                  <div className="flex items-center gap-3 mb-3">
+                                    <div className="flex flex-col gap-1">
+                                      <div className="w-[350px]">
+                                        Faktur Pajak
                                       </div>
-                                      ): (
-                                        <div className="w-fit flex gap-1 items-center bg-blue-400 py-2 px-5 text-white hover:bg-blue-200 rounded-md">
-                                        <span>
-                                          <FaCloudUploadAlt />
-                                        </span>
-                                        <div>1 File</div>
+                                      <div className="text-[10px] text-gray-500">
+                                        Max size 2 mb
                                       </div>
-                                      )}
-                                    </label>
-                                    <input
-                                      onChange={onChangeFakturPajakFile}
-                                      type="file"
-                                      id="upload-fakturpajak"
-                                      accept=".jpg,.pdf"
-                                      className="hidden w-full h-[40px] border border-slate-300 rounded-sm focus:border focus:border-[#0077b6]  "
-                                    />
-                                  </div>
-                                  <div>*)</div>
-                                </div>
-                              </div>
-                              <div className="mb-10">
-                                {fakturPajakTambahan.map((item, i) => (
-                                  <div key={i}>
-                                    <div className="flex items-center gap-3 mb-3">
-                                      {i === 0 ? (
-                                        <div className="w-[350px]">
-                                          Faktur Pajak Tambahan
-                                        </div>
-                                      ) : (
-                                        <div className="w-[350px]">
-                                          Faktur Pajak Tambahan {i + 1}
-                                        </div>
-                                      )}
-
-                                      <div>:</div>
-                                      <div className="flex items-center gap-1">
-                                        <div>
-                                          <label htmlFor={i} className="w-fit">
-                                          {isEmpty(fakturPajakTambahan[i]) ? (
-                                        <div className="w-fit flex gap-1 items-center bg-blue-400 py-2 px-5 text-white hover:bg-blue-200 rounded-md">
-                                        <span>
-                                          <FaCloudUploadAlt />
-                                        </span>
-                                        <div>Upload</div>
+                                    </div>
+                                    <div>:</div>
+                                    <div className="flex items-center gap-1">
+                                      <div>
+                                        <label
+                                          htmlFor="upload-fakturpajak"
+                                          className="w-fit"
+                                        >
+                                          {fakturPajakFile === null ? (
+                                            <div className="w-fit flex gap-1 items-center bg-blue-400 py-2 px-5 text-white hover:bg-blue-200 rounded-md">
+                                              <span>
+                                                <FaCloudUploadAlt />
+                                              </span>
+                                              <div>Upload</div>
+                                            </div>
+                                          ) : (
+                                            <div className="w-fit flex gap-1 items-center bg-blue-400 py-2 px-5 text-white hover:bg-blue-200 rounded-md">
+                                              <span>
+                                                <FaCloudUploadAlt />
+                                              </span>
+                                              <div>1 File</div>
+                                            </div>
+                                          )}
+                                        </label>
+                                        <input
+                                          onChange={onChangeFakturPajakFile}
+                                          type="file"
+                                          id="upload-fakturpajak"
+                                          accept=".jpg,.pdf"
+                                          className="hidden w-full h-[40px] border border-slate-300 rounded-sm focus:border focus:border-[#0077b6]  "
+                                        />
                                       </div>
-                                      ): (
-                                        <div className="w-fit flex gap-1 items-center bg-blue-400 py-2 px-5 text-white hover:bg-blue-200 rounded-md">
-                                        <span>
-                                          <FaCloudUploadAlt />
-                                        </span>
-                                        <div>1 File</div>
-                                      </div>
-                                      )}
-                                          </label>
-                                          <input
-                                            type="file"
-                                            id={i}
-                                            onChange={
-                                              onChangeFakturPajakTambahan
-                                            }
-                                            accept=".jpg,.pdf"
-                                            className="hidden w-full h-[40px] border border-slate-300 rounded-sm focus:border focus:border-[#0077b6]  "
-                                          />
-                                        </div>
-                                      </div>
-                                      <div></div>
+                                      <div>*)</div>
                                     </div>
                                   </div>
-                                ))}
-                                <div
-                                  onClick={addFakturPajakFile}
-                                  className={`py-1 px-4 rounded-sm shadow-sm text-white bg-[#305496] w-fit ${
-                                    fakturPajakTambahan.length === 5
-                                      ? "cursor-not-allowed"
-                                      : "cursor-pointer"
-                                  } `}
-                                >
-                                  Add row
-                                </div>
-                              </div>
+                                  <div className="mb-10">
+                                    {fakturPajakTambahan.map((item, i) => (
+                                      <div key={i}>
+                                        <div className="flex items-center gap-3 mb-3">
+                                          <div className="flex flex-col gap-1">
+                                            {i === 0 ? (
+                                              <div className="w-[350px]">
+                                                Faktur Pajak Tambahan
+                                              </div>
+                                            ) : (
+                                              <div className="w-[350px]">
+                                                Faktur Pajak Tambahan {i + 1}
+                                              </div>
+                                            )}
+                                            <div className="text-[10px] text-gray-500">
+                                              Max size 2 mb
+                                            </div>
+                                          </div>
+
+                                          <div>:</div>
+                                          <div className="flex items-center gap-1">
+                                            <div>
+                                              <label
+                                                htmlFor={i}
+                                                className="w-fit"
+                                              >
+                                                {isEmpty(
+                                                  fakturPajakTambahan[i]
+                                                ) ? (
+                                                  <div className="w-fit flex gap-1 items-center bg-blue-400 py-2 px-5 text-white hover:bg-blue-200 rounded-md">
+                                                    <span>
+                                                      <FaCloudUploadAlt />
+                                                    </span>
+                                                    <div>Upload</div>
+                                                  </div>
+                                                ) : (
+                                                  <div className="w-fit flex gap-1 items-center bg-blue-400 py-2 px-5 text-white hover:bg-blue-200 rounded-md">
+                                                    <span>
+                                                      <FaCloudUploadAlt />
+                                                    </span>
+                                                    <div>1 File</div>
+                                                  </div>
+                                                )}
+                                              </label>
+                                              <input
+                                                type="file"
+                                                id={i}
+                                                onChange={
+                                                  onChangeFakturPajakTambahan
+                                                }
+                                                accept=".jpg,.pdf"
+                                                className="hidden w-full h-[40px] border border-slate-300 rounded-sm focus:border focus:border-[#0077b6]  "
+                                              />
+                                            </div>
+                                          </div>
+                                          <div></div>
+                                        </div>
+                                      </div>
+                                    ))}
+                                    <div
+                                      onClick={addFakturPajakFile}
+                                      className={`py-1 px-4 rounded-sm shadow-sm text-white bg-[#305496] w-fit ${
+                                        fakturPajakTambahan.length === 5
+                                          ? "cursor-not-allowed"
+                                          : "cursor-pointer"
+                                      } `}
+                                    >
+                                      Add row
+                                    </div>
+                                  </div>
                                 </>
                               )}
-                              
+
                               <div className="flex items-center gap-3 mb-20">
-                                <div className="w-[350px]">Receiving Note</div>
+                                <div className="flex flex-col gap-1">
+                                  <div className="w-[350px]">
+                                    Receiving Note
+                                  </div>
+                                  <div className="text-[10px] text-gray-500">
+                                    Max size 2 mb
+                                  </div>
+                                </div>
                                 <div>:</div>
                                 <div className="flex items-center gap-1">
                                   <div>
@@ -2517,18 +2587,18 @@ const Penagihan = () => {
                                     >
                                       {receivingNoteFile === null ? (
                                         <div className="w-fit flex gap-1 items-center bg-blue-400 py-2 px-5 text-white hover:bg-blue-200 rounded-md">
-                                        <span>
-                                          <FaCloudUploadAlt />
-                                        </span>
-                                        <div>Upload</div>
-                                      </div>
-                                      ): (
+                                          <span>
+                                            <FaCloudUploadAlt />
+                                          </span>
+                                          <div>Upload</div>
+                                        </div>
+                                      ) : (
                                         <div className="w-fit flex gap-1 items-center bg-blue-400 py-2 px-5 text-white hover:bg-blue-200 rounded-md">
-                                        <span>
-                                          <FaCloudUploadAlt />
-                                        </span>
-                                        <div>1 File</div>
-                                      </div>
+                                          <span>
+                                            <FaCloudUploadAlt />
+                                          </span>
+                                          <div>1 File</div>
+                                        </div>
                                       )}
                                     </label>
                                     <input
@@ -2574,8 +2644,13 @@ const Penagihan = () => {
                                   </div>
                                 </div>
                                 <div className="flex items-center gap-3 mb-3">
-                                  <div className="w-[350px]">
-                                    Resi Bukti Pengiriman
+                                  <div className="flex flex-col gap-1">
+                                    <div className="w-[350px]">
+                                      Resi Bukti Pengiriman
+                                    </div>
+                                    <div className="text-[10px] text-gray-500">
+                                      Max size 2 mb
+                                    </div>
                                   </div>
                                   <div>:</div>
                                   <div className="flex items-center gap-1">
@@ -2585,20 +2660,20 @@ const Penagihan = () => {
                                         className="w-fit"
                                       >
                                         {resiFile === null ? (
-                                        <div className="w-fit flex gap-1 items-center bg-blue-400 py-2 px-5 text-white hover:bg-blue-200 rounded-md">
-                                        <span>
-                                          <FaCloudUploadAlt />
-                                        </span>
-                                        <div>Upload</div>
-                                      </div>
-                                      ): (
-                                        <div className="w-fit flex gap-1 items-center bg-blue-400 py-2 px-5 text-white hover:bg-blue-200 rounded-md">
-                                        <span>
-                                          <FaCloudUploadAlt />
-                                        </span>
-                                        <div>1 File</div>
-                                      </div>
-                                      )}
+                                          <div className="w-fit flex gap-1 items-center bg-blue-400 py-2 px-5 text-white hover:bg-blue-200 rounded-md">
+                                            <span>
+                                              <FaCloudUploadAlt />
+                                            </span>
+                                            <div>Upload</div>
+                                          </div>
+                                        ) : (
+                                          <div className="w-fit flex gap-1 items-center bg-blue-400 py-2 px-5 text-white hover:bg-blue-200 rounded-md">
+                                            <span>
+                                              <FaCloudUploadAlt />
+                                            </span>
+                                            <div>1 File</div>
+                                          </div>
+                                        )}
                                       </label>
                                       <input
                                         disabled={
@@ -2635,7 +2710,14 @@ const Penagihan = () => {
                           ) : (
                             <>
                               <div className="flex items-center gap-3 mb-3">
-                                <div className="w-[350px]">Purchase Order</div>
+                                <div className="flex flex-col gap-1">
+                                  <div className="w-[350px]">
+                                    Purchase Order
+                                  </div>
+                                  <div className="text-[10px] text-gray-500">
+                                    Max size 2 mb
+                                  </div>
+                                </div>
                                 <div>:</div>
                                 <div className="flex items-center gap-1">
                                   <div>
@@ -2645,18 +2727,18 @@ const Penagihan = () => {
                                     >
                                       {purchaseOrderFile === null ? (
                                         <div className="w-fit flex gap-1 items-center bg-[#fff2cc] py-2 px-5 hover:bg-yellow-100 rounded-md">
-                                        <span>
-                                          <FaCloudUploadAlt />
-                                        </span>
-                                        <div>Upload</div>
-                                      </div>
-                                      ): (
+                                          <span>
+                                            <FaCloudUploadAlt />
+                                          </span>
+                                          <div>Upload</div>
+                                        </div>
+                                      ) : (
                                         <div className="w-fit flex gap-1 items-center bg-[#fff2cc] py-2 px-5 hover:bg-yellow-100 rounded-md">
-                                        <span>
-                                          <FaCloudUploadAlt />
-                                        </span>
-                                        <div>1 File</div>
-                                      </div>
+                                          <span>
+                                            <FaCloudUploadAlt />
+                                          </span>
+                                          <div>1 File</div>
+                                        </div>
                                       )}
                                     </label>
                                     <input
@@ -2671,10 +2753,16 @@ const Penagihan = () => {
                                 </div>
                               </div>
                               <div className="flex items-center gap-3 mb-3">
-                                <div className="w-[350px]">
-                                  Delivery Order (DO) / Packing List (Surat
-                                  Jalan)
+                                <div className="flex flex-col gap-1">
+                                  <div className="w-[350px]">
+                                    Delivery Order (DO) / Packing List (Surat
+                                    Jalan)
+                                  </div>
+                                  <div className="text-[10px] text-gray-500">
+                                    Max size 2 mb
+                                  </div>
                                 </div>
+
                                 <div>:</div>
                                 <div className="flex items-center gap-1">
                                   <div>
@@ -2684,18 +2772,18 @@ const Penagihan = () => {
                                     >
                                       {deliveryOrderFile === null ? (
                                         <div className="w-fit flex gap-1 items-center bg-[#fff2cc] py-2 px-5 hover:bg-yellow-100 rounded-md">
-                                        <span>
-                                          <FaCloudUploadAlt />
-                                        </span>
-                                        <div>Upload</div>
-                                      </div>
-                                      ): (
+                                          <span>
+                                            <FaCloudUploadAlt />
+                                          </span>
+                                          <div>Upload</div>
+                                        </div>
+                                      ) : (
                                         <div className="w-fit flex gap-1 items-center bg-[#fff2cc] py-2 px-5 hover:bg-yellow-100 rounded-md">
-                                        <span>
-                                          <FaCloudUploadAlt />
-                                        </span>
-                                        <div>1 File</div>
-                                      </div>
+                                          <span>
+                                            <FaCloudUploadAlt />
+                                          </span>
+                                          <div>1 File</div>
+                                        </div>
                                       )}
                                     </label>
                                     <input
@@ -2710,8 +2798,13 @@ const Penagihan = () => {
                                 </div>
                               </div>
                               <div className="flex items-center gap-3 mb-3">
-                                <div className="w-[350px]">
-                                  Invoice (Faktur Penagihan)
+                                <div className="flex flex-col gap-1">
+                                  <div className="w-[350px]">
+                                    Invoice (Faktur Penagihan)
+                                  </div>
+                                  <div className="text-[10px] text-gray-500">
+                                    Max size 2 mb
+                                  </div>
                                 </div>
                                 <div>:</div>
                                 <div className="flex items-center gap-1">
@@ -2722,18 +2815,18 @@ const Penagihan = () => {
                                     >
                                       {invoiceFile === null ? (
                                         <div className="w-fit flex gap-1 items-center bg-[#fff2cc] py-2 px-5 hover:bg-yellow-100 rounded-md">
-                                        <span>
-                                          <FaCloudUploadAlt />
-                                        </span>
-                                        <div>Upload</div>
-                                      </div>
-                                      ): (
+                                          <span>
+                                            <FaCloudUploadAlt />
+                                          </span>
+                                          <div>Upload</div>
+                                        </div>
+                                      ) : (
                                         <div className="w-fit flex gap-1 items-center bg-[#fff2cc] py-2 px-5 hover:bg-yellow-100 rounded-md">
-                                        <span>
-                                          <FaCloudUploadAlt />
-                                        </span>
-                                        <div>1 File</div>
-                                      </div>
+                                          <span>
+                                            <FaCloudUploadAlt />
+                                          </span>
+                                          <div>1 File</div>
+                                        </div>
                                       )}
                                     </label>
                                     <input
@@ -2751,35 +2844,41 @@ const Penagihan = () => {
                                 {invoiceTambahan.map((item, i) => (
                                   <div key={i}>
                                     <div className="flex items-center gap-3 mb-3">
-                                      {i === 0 ? (
-                                        <div className="w-[350px]">
-                                          Invoice Tambahan
+                                      <div className="flex flex-col gap-1">
+                                        {i === 0 ? (
+                                          <div className="w-[350px]">
+                                            Invoice Tambahan
+                                          </div>
+                                        ) : (
+                                          <div className="w-[350px]">
+                                            Invoice Tambahan {i + 1}
+                                          </div>
+                                        )}
+
+                                        <div className="text-[10px] text-gray-500">
+                                          Max size 2 mb
                                         </div>
-                                      ) : (
-                                        <div className="w-[350px]">
-                                          Invoice Tambahan {i + 1}
-                                        </div>
-                                      )}
+                                      </div>
 
                                       <div>:</div>
                                       <div className="flex items-center gap-1">
                                         <div>
                                           <label htmlFor={i} className="w-fit">
-                                          {isEmpty(invoiceTambahan[i]) ? (
-                                        <div className="w-fit flex gap-1 items-center bg-[#fff2cc] py-2 px-5 hover:bg-yellow-100 rounded-md">
-                                        <span>
-                                          <FaCloudUploadAlt />
-                                        </span>
-                                        <div>Upload</div>
-                                      </div>
-                                      ): (
-                                        <div className="w-fit flex gap-1 items-center bg-[#fff2cc] py-2 px-5 hover:bg-yellow-100 rounded-md">
-                                        <span>
-                                          <FaCloudUploadAlt />
-                                        </span>
-                                        <div>1 File</div>
-                                      </div>
-                                      )}
+                                            {isEmpty(invoiceTambahan[i]) ? (
+                                              <div className="w-fit flex gap-1 items-center bg-[#fff2cc] py-2 px-5 hover:bg-yellow-100 rounded-md">
+                                                <span>
+                                                  <FaCloudUploadAlt />
+                                                </span>
+                                                <div>Upload</div>
+                                              </div>
+                                            ) : (
+                                              <div className="w-fit flex gap-1 items-center bg-[#fff2cc] py-2 px-5 hover:bg-yellow-100 rounded-md">
+                                                <span>
+                                                  <FaCloudUploadAlt />
+                                                </span>
+                                                <div>1 File</div>
+                                              </div>
+                                            )}
                                           </label>
                                           <input
                                             type="file"
@@ -2809,6 +2908,9 @@ const Penagihan = () => {
                                 <div className="flex flex-col gap-1 w-[350px] ">
                                   <div>Kwitansi</div>
                                   <div className="text-[10px] text-gray-500">
+                                    Max size 2 mb
+                                  </div>
+                                  <div className="text-[10px] text-gray-500">
                                     total penagihan diatas 5 juta diwajibkan
                                     bermaterai
                                   </div>
@@ -2822,18 +2924,18 @@ const Penagihan = () => {
                                     >
                                       {kwitansiFile === null ? (
                                         <div className="w-fit flex gap-1 items-center bg-[#fff2cc] py-2 px-5 hover:bg-yellow-100 rounded-md">
-                                        <span>
-                                          <FaCloudUploadAlt />
-                                        </span>
-                                        <div>Upload</div>
-                                      </div>
-                                      ): (
+                                          <span>
+                                            <FaCloudUploadAlt />
+                                          </span>
+                                          <div>Upload</div>
+                                        </div>
+                                      ) : (
                                         <div className="w-fit flex gap-1 items-center bg-[#fff2cc] py-2 px-5 hover:bg-yellow-100 rounded-md">
-                                        <span>
-                                          <FaCloudUploadAlt />
-                                        </span>
-                                        <div>1 File</div>
-                                      </div>
+                                          <span>
+                                            <FaCloudUploadAlt />
+                                          </span>
+                                          <div>1 File</div>
+                                        </div>
                                       )}
                                     </label>
                                     <input
@@ -2849,108 +2951,130 @@ const Penagihan = () => {
                               </div>
                               {vendors.status_pajak === "PKP" && (
                                 <>
-                                <div className="flex items-center gap-3 mb-3">
-                                <div className="w-[350px]">Faktur Pajak</div>
-                                <div>:</div>
-                                <div className="flex items-center gap-1">
-                                  <div>
-                                    <label
-                                      htmlFor="upload-fakturpajak"
-                                      className="w-fit"
-                                    >
-                                      {fakturPajakFile === null ? (
-                                        <div className="w-fit flex gap-1 items-center bg-[#fff2cc] py-2 px-5 hover:bg-yellow-100 rounded-md">
-                                        <span>
-                                          <FaCloudUploadAlt />
-                                        </span>
-                                        <div>Upload</div>
+                                  <div className="flex items-center gap-3 mb-3">
+                                    <div className="flex flex-col gap-1">
+                                      <div className="w-[350px]">
+                                        Faktur Pajak
                                       </div>
-                                      ): (
-                                        <div className="w-fit flex gap-1 items-center bg-[#fff2cc] py-2 px-5 hover:bg-yellow-100 rounded-md">
-                                        <span>
-                                          <FaCloudUploadAlt />
-                                        </span>
-                                        <div>1 File</div>
+                                      <div className="text-[10px] text-gray-500">
+                                        Max size 2 mb
                                       </div>
-                                      )}
-                                    </label>
-                                    <input
-                                      type="file"
-                                      id="upload-fakturpajak"
-                                      onChange={onChangeFakturPajakFile}
-                                      accept=".jpg,.pdf"
-                                      className="hidden w-full h-[40px] border border-slate-300 rounded-sm focus:border focus:border-[#0077b6]  "
-                                    />
-                                  </div>
-                                  <div>*)</div>
-                                </div>
-                              </div>
-                              <div className="mb-10">
-                                {fakturPajakTambahan.map((item, i) => (
-                                  <div key={i}>
-                                    <div className="flex items-center gap-3 mb-3">
-                                      {i === 0 ? (
-                                        <div className="w-[350px]">
-                                          Faktur Pajak Tambahan
-                                        </div>
-                                      ) : (
-                                        <div className="w-[350px]">
-                                          Faktur Pajak Tambahan {i + 1}
-                                        </div>
-                                      )}
-
-                                      <div>:</div>
-                                      <div className="flex items-center gap-1">
-                                        <div>
-                                          <label htmlFor={i} className="w-fit">
-                                          {isEmpty(fakturPajakTambahan[i]) ? (
-                                        <div className="w-fit flex gap-1 items-center bg-[#fff2cc] py-2 px-5 hover:bg-yellow-100 rounded-md">
-                                        <span>
-                                          <FaCloudUploadAlt />
-                                        </span>
-                                        <div>Upload</div>
+                                    </div>
+                                    <div>:</div>
+                                    <div className="flex items-center gap-1">
+                                      <div>
+                                        <label
+                                          htmlFor="upload-fakturpajak"
+                                          className="w-fit"
+                                        >
+                                          {fakturPajakFile === null ? (
+                                            <div className="w-fit flex gap-1 items-center bg-[#fff2cc] py-2 px-5 hover:bg-yellow-100 rounded-md">
+                                              <span>
+                                                <FaCloudUploadAlt />
+                                              </span>
+                                              <div>Upload</div>
+                                            </div>
+                                          ) : (
+                                            <div className="w-fit flex gap-1 items-center bg-[#fff2cc] py-2 px-5 hover:bg-yellow-100 rounded-md">
+                                              <span>
+                                                <FaCloudUploadAlt />
+                                              </span>
+                                              <div>1 File</div>
+                                            </div>
+                                          )}
+                                        </label>
+                                        <input
+                                          type="file"
+                                          id="upload-fakturpajak"
+                                          onChange={onChangeFakturPajakFile}
+                                          accept=".jpg,.pdf"
+                                          className="hidden w-full h-[40px] border border-slate-300 rounded-sm focus:border focus:border-[#0077b6]  "
+                                        />
                                       </div>
-                                      ): (
-                                        <div className="w-fit flex gap-1 items-center bg-[#fff2cc] py-2 px-5 hover:bg-yellow-100 rounded-md">
-                                        <span>
-                                          <FaCloudUploadAlt />
-                                        </span>
-                                        <div>1 File</div>
-                                      </div>
-                                      )}
-                                          </label>
-                                          <input
-                                            type="file"
-                                            id={i}
-                                            onChange={
-                                              onChangeFakturPajakTambahan
-                                            }
-                                            accept=".jpg,.pdf"
-                                            className="hidden w-full h-[40px] border border-slate-300 rounded-sm focus:border focus:border-[#0077b6]  "
-                                          />
-                                        </div>
-                                      </div>
-                                      <div></div>
+                                      <div>*)</div>
                                     </div>
                                   </div>
-                                ))}
-                                <div
-                                  onClick={addFakturPajakFile}
-                                  className={`py-1 px-4 rounded-sm shadow-sm text-white bg-[#305496] w-fit ${
-                                    fakturPajakTambahan.length === 5
-                                      ? "cursor-not-allowed"
-                                      : "cursor-pointer"
-                                  } `}
-                                >
-                                  Add row
-                                </div>
-                              </div>
+                                  <div className="mb-10">
+                                    {fakturPajakTambahan.map((item, i) => (
+                                      <div key={i}>
+                                        <div className="flex items-center gap-3 mb-3">
+                                          <div className="flex flex-col gap-1">
+                                            {i === 0 ? (
+                                              <div className="w-[350px]">
+                                                Faktur Pajak Tambahan
+                                              </div>
+                                            ) : (
+                                              <div className="w-[350px]">
+                                                Faktur Pajak Tambahan {i + 1}
+                                              </div>
+                                            )}
+                                            <div className="text-[10px] text-gray-500">
+                                              Max size 2 mb
+                                            </div>
+                                          </div>
+
+                                          <div>:</div>
+                                          <div className="flex items-center gap-1">
+                                            <div>
+                                              <label
+                                                htmlFor={i}
+                                                className="w-fit"
+                                              >
+                                                {isEmpty(
+                                                  fakturPajakTambahan[i]
+                                                ) ? (
+                                                  <div className="w-fit flex gap-1 items-center bg-[#fff2cc] py-2 px-5 hover:bg-yellow-100 rounded-md">
+                                                    <span>
+                                                      <FaCloudUploadAlt />
+                                                    </span>
+                                                    <div>Upload</div>
+                                                  </div>
+                                                ) : (
+                                                  <div className="w-fit flex gap-1 items-center bg-[#fff2cc] py-2 px-5 hover:bg-yellow-100 rounded-md">
+                                                    <span>
+                                                      <FaCloudUploadAlt />
+                                                    </span>
+                                                    <div>1 File</div>
+                                                  </div>
+                                                )}
+                                              </label>
+                                              <input
+                                                type="file"
+                                                id={i}
+                                                onChange={
+                                                  onChangeFakturPajakTambahan
+                                                }
+                                                accept=".jpg,.pdf"
+                                                className="hidden w-full h-[40px] border border-slate-300 rounded-sm focus:border focus:border-[#0077b6]  "
+                                              />
+                                            </div>
+                                          </div>
+                                          <div></div>
+                                        </div>
+                                      </div>
+                                    ))}
+                                    <div
+                                      onClick={addFakturPajakFile}
+                                      className={`py-1 px-4 rounded-sm shadow-sm text-white bg-[#305496] w-fit ${
+                                        fakturPajakTambahan.length === 5
+                                          ? "cursor-not-allowed"
+                                          : "cursor-pointer"
+                                      } `}
+                                    >
+                                      Add row
+                                    </div>
+                                  </div>
                                 </>
                               )}
-                              
+
                               <div className="flex items-center gap-3 mb-20">
-                                <div className="w-[350px]">
-                                  Scan Report Sales
+                                <div className="flex flex-col gap-1">
+                                  <div className="w-[350px]">
+                                    Scan Report Sales
+                                  </div>
+                                  <div className="text-[10px] text-gray-500">
+                                    Max size 2 mb
+                                  </div>
                                 </div>
                                 <div>:</div>
                                 <div className="flex items-center gap-1">
@@ -2961,18 +3085,18 @@ const Penagihan = () => {
                                     >
                                       {scanReportSalesFile === null ? (
                                         <div className="w-fit flex gap-1 items-center bg-[#fff2cc] py-2 px-5 hover:bg-yellow-100 rounded-md">
-                                        <span>
-                                          <FaCloudUploadAlt />
-                                        </span>
-                                        <div>Upload</div>
-                                      </div>
-                                      ): (
+                                          <span>
+                                            <FaCloudUploadAlt />
+                                          </span>
+                                          <div>Upload</div>
+                                        </div>
+                                      ) : (
                                         <div className="w-fit flex gap-1 items-center bg-[#fff2cc] py-2 px-5 hover:bg-yellow-100 rounded-md">
-                                        <span>
-                                          <FaCloudUploadAlt />
-                                        </span>
-                                        <div>1 File</div>
-                                      </div>
+                                          <span>
+                                            <FaCloudUploadAlt />
+                                          </span>
+                                          <div>1 File</div>
+                                        </div>
                                       )}
                                     </label>
                                     <input
@@ -3018,8 +3142,13 @@ const Penagihan = () => {
                                   </div>
                                 </div>
                                 <div className="flex items-center gap-3 mb-3">
-                                  <div className="w-[350px]">
-                                    Resi Bukti Pengiriman
+                                  <div className="flex flex-col gap-1">
+                                    <div className="w-[350px]">
+                                      Resi Bukti Pengiriman
+                                    </div>
+                                    <div className="text-[10px] text-gray-500">
+                                      Max size 2 mb
+                                    </div>
                                   </div>
                                   <div>:</div>
                                   <div className="flex items-center gap-1">
@@ -3029,20 +3158,20 @@ const Penagihan = () => {
                                         className="w-fit"
                                       >
                                         {resiFile === null ? (
-                                        <div className="w-fit flex gap-1 items-center bg-[#fff2cc] py-2 px-5 hover:bg-yellow-100 rounded-md">
-                                        <span>
-                                          <FaCloudUploadAlt />
-                                        </span>
-                                        <div>Upload</div>
-                                      </div>
-                                      ): (
-                                        <div className="w-fit flex gap-1 items-center bg-[#fff2cc] py-2 px-5 hover:bg-yellow-100 rounded-md">
-                                        <span>
-                                          <FaCloudUploadAlt />
-                                        </span>
-                                        <div>1 File</div>
-                                      </div>
-                                      )}
+                                          <div className="w-fit flex gap-1 items-center bg-[#fff2cc] py-2 px-5 hover:bg-yellow-100 rounded-md">
+                                            <span>
+                                              <FaCloudUploadAlt />
+                                            </span>
+                                            <div>Upload</div>
+                                          </div>
+                                        ) : (
+                                          <div className="w-fit flex gap-1 items-center bg-[#fff2cc] py-2 px-5 hover:bg-yellow-100 rounded-md">
+                                            <span>
+                                              <FaCloudUploadAlt />
+                                            </span>
+                                            <div>1 File</div>
+                                          </div>
+                                        )}
                                       </label>
                                       <input
                                         disabled={
@@ -3059,7 +3188,6 @@ const Penagihan = () => {
                                     {tipePengiriman.value === 1 && (
                                       <div>*)</div>
                                     )}
-                                    
                                   </div>
                                 </div>
                                 {isError && (
@@ -3213,11 +3341,11 @@ const Penagihan = () => {
                                         )}
                                       </label>
                                       <div className="flex gap-1 items-center text-[12px]">
-                          <div>
-                            <PiWarningCircleLight />
-                          </div>
-                          <div>Harus 8 digit</div>
-                        </div>
+                                        <div>
+                                          <PiWarningCircleLight />
+                                        </div>
+                                        <div>Harus 8 digit</div>
+                                      </div>
                                     </div>
                                     <div className="w-full">
                                       <div className="flex items-center gap-1">
@@ -3362,7 +3490,7 @@ const Penagihan = () => {
                                           </div>
                                         ) : (
                                           <div className="w-[250px]">
-                                            No Invoice {i + 1} *)
+                                            No Invoice {i + 1}
                                           </div>
                                         )}
                                         <div className="fw-full">
@@ -3402,7 +3530,7 @@ const Penagihan = () => {
                                             </div>
                                           ) : (
                                             <div className="w-[250px]">
-                                              Tanggal Invoice {i + 1} *)
+                                              Tanggal Invoice {i + 1}
                                             </div>
                                           )}
 
@@ -3443,7 +3571,7 @@ const Penagihan = () => {
                                             </div>
                                           ) : (
                                             <div className="w-[250px]">
-                                              Nilai Invoice {i + 1} *)
+                                              Nilai Invoice {i + 1}
                                             </div>
                                           )}
                                           <div className="fw-full">
@@ -3492,17 +3620,17 @@ const Penagihan = () => {
                                   </div>
                                   <div className="mb-3">
                                     <div className="flex flex-col gap-2 mb-3">
-                                    <div className="flex flex-col gap-1">
-                              <div className="w-[250px]">
-                                No Seri Faktur Pajak
-                              </div>
-                              <div className="flex gap-1 items-center text-[12px]">
-                          <div>
-                            <PiWarningCircleLight />
-                          </div>
-                          <div>Harus 16 digit</div>
-                        </div>
-                              </div>
+                                      <div className="flex flex-col gap-1">
+                                        <div className="w-[250px]">
+                                          No Seri Faktur Pajak
+                                        </div>
+                                        <div className="flex gap-1 items-center text-[12px]">
+                                          <div>
+                                            <PiWarningCircleLight />
+                                          </div>
+                                          <div>Harus 16 digit</div>
+                                        </div>
+                                      </div>
 
                                       <div className="fw-full">
                                         <div className="flex flex-col gap-2">
@@ -3553,7 +3681,7 @@ const Penagihan = () => {
                               ) : (
                                 <>
                                   <div className="flex flex-col gap-2 mb-3">
-                                  <div className="flex flex-col gap-1">
+                                    <div className="flex flex-col gap-1">
                                       <label
                                         htmlFor=""
                                         className="flex gap-1 items-center"
@@ -3569,11 +3697,11 @@ const Penagihan = () => {
                                         )}
                                       </label>
                                       <div className="flex gap-1 items-center text-[12px]">
-                          <div>
-                            <PiWarningCircleLight />
-                          </div>
-                          <div>Harus 8 digit</div>
-                        </div>
+                                        <div>
+                                          <PiWarningCircleLight />
+                                        </div>
+                                        <div>Harus 8 digit</div>
+                                      </div>
                                     </div>
                                     <div className="w-full">
                                       <div className="flex items-center gap-1">
@@ -3681,7 +3809,7 @@ const Penagihan = () => {
                                             </div>
                                           ) : (
                                             <div className="">
-                                              No Invoice {i + 1} *)
+                                              No Invoice {i + 1}
                                             </div>
                                           )}
                                           <div className="fw-full">
@@ -3706,7 +3834,7 @@ const Penagihan = () => {
                                             </div>
                                           ) : (
                                             <div className="">
-                                              Tanggal Invoice {i + 1} *)
+                                              Tanggal Invoice {i + 1}
                                             </div>
                                           )}
 
@@ -3766,7 +3894,7 @@ const Penagihan = () => {
                                           </div>
                                         ) : (
                                           <div className="w-[250px]">
-                                            Nilai Invoice {i + 1} *)
+                                            Nilai Invoice {i + 1}
                                           </div>
                                         )}
                                         <div className="fw-full">
@@ -3865,17 +3993,17 @@ const Penagihan = () => {
                                   </div>
                                   <div className="mb-3">
                                     <div className="flex flex-col gap-2 mb-3">
-                                    <div className="flex flex-col gap-1">
-                              <div className="w-[250px]">
-                                No Seri Faktur Pajak
-                              </div>
-                              <div className="flex gap-1 items-center text-[12px]">
-                          <div>
-                            <PiWarningCircleLight />
-                          </div>
-                          <div>Harus 16 digit</div>
-                        </div>
-                              </div>
+                                      <div className="flex flex-col gap-1">
+                                        <div className="w-[250px]">
+                                          No Seri Faktur Pajak
+                                        </div>
+                                        <div className="flex gap-1 items-center text-[12px]">
+                                          <div>
+                                            <PiWarningCircleLight />
+                                          </div>
+                                          <div>Harus 16 digit</div>
+                                        </div>
+                                      </div>
 
                                       <div className="fw-full">
                                         <div className="flex flex-col gap-2">
@@ -4018,8 +4146,13 @@ const Penagihan = () => {
                                 {tipePenagihan.label === "Beli Putus" ? (
                                   <>
                                     <div className="flex flex-col gap-3 mb-3">
-                                      <div className="w-[350px]">
-                                        Purchase Order *) :
+                                      <div className="flex flex-col gap-1">
+                                        <div className="w-[350px]">
+                                          Purchase Order *) :
+                                        </div>
+                                        <div className="text-[10px] text-gray-500">
+                                          Max size 2 mb
+                                        </div>
                                       </div>
 
                                       <div>
@@ -4028,20 +4161,20 @@ const Penagihan = () => {
                                           className="w-fit"
                                         >
                                           {purchaseOrderFile === null ? (
-                                        <div className="w-fit flex gap-1 items-center bg-blue-400 py-2 px-5 text-white hover:bg-blue-200 rounded-md">
-                                        <span>
-                                          <FaCloudUploadAlt />
-                                        </span>
-                                        <div>Upload</div>
-                                      </div>
-                                      ): (
-                                        <div className="w-fit flex gap-1 items-center bg-blue-400 py-2 px-5 text-white hover:bg-blue-200 rounded-md">
-                                        <span>
-                                          <FaCloudUploadAlt />
-                                        </span>
-                                        <div>1 File</div>
-                                      </div>
-                                      )}
+                                            <div className="w-fit flex gap-1 items-center bg-blue-400 py-2 px-5 text-white hover:bg-blue-200 rounded-md">
+                                              <span>
+                                                <FaCloudUploadAlt />
+                                              </span>
+                                              <div>Upload</div>
+                                            </div>
+                                          ) : (
+                                            <div className="w-fit flex gap-1 items-center bg-blue-400 py-2 px-5 text-white hover:bg-blue-200 rounded-md">
+                                              <span>
+                                                <FaCloudUploadAlt />
+                                              </span>
+                                              <div>1 File</div>
+                                            </div>
+                                          )}
                                         </label>
                                         <input
                                           type="file"
@@ -4053,9 +4186,14 @@ const Penagihan = () => {
                                       </div>
                                     </div>
                                     <div className="flex flex-col gap-3 mb-3">
-                                      <div className="">
-                                        Delivery Order (DO) / Packing List
-                                        (Surat Jalan) *) :
+                                      <div className="flex flex-col gap-1">
+                                        <div className="">
+                                          Delivery Order (DO) / Packing List
+                                          (Surat Jalan) *) :
+                                        </div>
+                                        <div className="text-[10px] text-gray-500">
+                                          Max size 2 mb
+                                        </div>
                                       </div>
 
                                       <div>
@@ -4064,20 +4202,20 @@ const Penagihan = () => {
                                           className="w-fit"
                                         >
                                           {deliveryOrderFile === null ? (
-                                        <div className="w-fit flex gap-1 items-center bg-blue-400 py-2 px-5 text-white hover:bg-blue-200 rounded-md">
-                                        <span>
-                                          <FaCloudUploadAlt />
-                                        </span>
-                                        <div>Upload</div>
-                                      </div>
-                                      ): (
-                                        <div className="w-fit flex gap-1 items-center bg-blue-400 py-2 px-5 text-white hover:bg-blue-200 rounded-md">
-                                        <span>
-                                          <FaCloudUploadAlt />
-                                        </span>
-                                        <div>1 File</div>
-                                      </div>
-                                      )}
+                                            <div className="w-fit flex gap-1 items-center bg-blue-400 py-2 px-5 text-white hover:bg-blue-200 rounded-md">
+                                              <span>
+                                                <FaCloudUploadAlt />
+                                              </span>
+                                              <div>Upload</div>
+                                            </div>
+                                          ) : (
+                                            <div className="w-fit flex gap-1 items-center bg-blue-400 py-2 px-5 text-white hover:bg-blue-200 rounded-md">
+                                              <span>
+                                                <FaCloudUploadAlt />
+                                              </span>
+                                              <div>1 File</div>
+                                            </div>
+                                          )}
                                         </label>
                                         <input
                                           type="file"
@@ -4089,8 +4227,13 @@ const Penagihan = () => {
                                       </div>
                                     </div>
                                     <div className="flex flex-col gap-3 mb-3">
-                                      <div className="">
-                                        Invoice (Faktur penagihan) *) :
+                                      <div className="flex flex-col gap-1">
+                                        <div className="w-[350px]">
+                                          Invoice (Faktur Penagihan) *) :
+                                        </div>
+                                        <div className="text-[10px] text-gray-500">
+                                          Max size 2 mb
+                                        </div>
                                       </div>
 
                                       <div>
@@ -4099,20 +4242,20 @@ const Penagihan = () => {
                                           className="w-fit"
                                         >
                                           {invoiceFile === null ? (
-                                        <div className="w-fit flex gap-1 items-center bg-blue-400 py-2 px-5 text-white hover:bg-blue-200 rounded-md">
-                                        <span>
-                                          <FaCloudUploadAlt />
-                                        </span>
-                                        <div>Upload</div>
-                                      </div>
-                                      ): (
-                                        <div className="w-fit flex gap-1 items-center bg-blue-400 py-2 px-5 text-white hover:bg-blue-200 rounded-md">
-                                        <span>
-                                          <FaCloudUploadAlt />
-                                        </span>
-                                        <div>1 File</div>
-                                      </div>
-                                      )}
+                                            <div className="w-fit flex gap-1 items-center bg-blue-400 py-2 px-5 text-white hover:bg-blue-200 rounded-md">
+                                              <span>
+                                                <FaCloudUploadAlt />
+                                              </span>
+                                              <div>Upload</div>
+                                            </div>
+                                          ) : (
+                                            <div className="w-fit flex gap-1 items-center bg-blue-400 py-2 px-5 text-white hover:bg-blue-200 rounded-md">
+                                              <span>
+                                                <FaCloudUploadAlt />
+                                              </span>
+                                              <div>1 File</div>
+                                            </div>
+                                          )}
                                         </label>
                                         <input
                                           type="file"
@@ -4127,13 +4270,18 @@ const Penagihan = () => {
                                       {invoiceTambahan.map((item, i) => (
                                         <div key={i}>
                                           <div className="flex flex-col gap-3 mb-3">
-                                            {i === 0 ? (
-                                              <div>Invoice Tambahan :</div>
-                                            ) : (
-                                              <div>
-                                                Invoice Tambahan : {i + 1}
+                                            <div className="flex flex-col gap-1">
+                                              {i === 0 ? (
+                                                <div>Invoice Tambahan :</div>
+                                              ) : (
+                                                <div>
+                                                  Invoice Tambahan : {i + 1}
+                                                </div>
+                                              )}
+                                              <div className="text-[10px] text-gray-500">
+                                                Max size 2 mb
                                               </div>
-                                            )}
+                                            </div>
 
                                             <div>
                                               <label
@@ -4141,20 +4289,20 @@ const Penagihan = () => {
                                                 className="w-fit"
                                               >
                                                 {isEmpty(invoiceTambahan[i]) ? (
-                                        <div className="w-fit flex gap-1 items-center bg-blue-400 py-2 px-5 text-white hover:bg-blue-200 rounded-md">
-                                        <span>
-                                          <FaCloudUploadAlt />
-                                        </span>
-                                        <div>Upload</div>
-                                      </div>
-                                      ): (
-                                        <div className="w-fit flex gap-1 items-center bg-blue-400 py-2 px-5 text-white hover:bg-blue-200 rounded-md">
-                                        <span>
-                                          <FaCloudUploadAlt />
-                                        </span>
-                                        <div>1 File</div>
-                                      </div>
-                                      )}
+                                                  <div className="w-fit flex gap-1 items-center bg-blue-400 py-2 px-5 text-white hover:bg-blue-200 rounded-md">
+                                                    <span>
+                                                      <FaCloudUploadAlt />
+                                                    </span>
+                                                    <div>Upload</div>
+                                                  </div>
+                                                ) : (
+                                                  <div className="w-fit flex gap-1 items-center bg-blue-400 py-2 px-5 text-white hover:bg-blue-200 rounded-md">
+                                                    <span>
+                                                      <FaCloudUploadAlt />
+                                                    </span>
+                                                    <div>1 File</div>
+                                                  </div>
+                                                )}
                                               </label>
                                               <input
                                                 type="file"
@@ -4184,8 +4332,13 @@ const Penagihan = () => {
                                     </div>
                                     <div className="flex flex-col gap-3 mb-10">
                                       <div className="flex flex-col gap-1">
-                                        <div className="w-[350px]">
-                                          Kwitansi *)
+                                        <div className="flex flex-col gap-1">
+                                          <div className="w-[350px]">
+                                            Kwitansi *) :
+                                          </div>
+                                          <div className="text-[10px] text-gray-500">
+                                            Max size 2 mb
+                                          </div>
                                         </div>
                                         <div className="text-[10px] text-gray-500">
                                           total penagihan diatas 5 juta
@@ -4199,20 +4352,20 @@ const Penagihan = () => {
                                           className="w-fit"
                                         >
                                           {kwitansiFile === null ? (
-                                        <div className="w-fit flex gap-1 items-center bg-blue-400 py-2 px-5 text-white hover:bg-blue-200 rounded-md">
-                                        <span>
-                                          <FaCloudUploadAlt />
-                                        </span>
-                                        <div>Upload</div>
-                                      </div>
-                                      ): (
-                                        <div className="w-fit flex gap-1 items-center bg-blue-400 py-2 px-5 text-white hover:bg-blue-200 rounded-md">
-                                        <span>
-                                          <FaCloudUploadAlt />
-                                        </span>
-                                        <div>1 File</div>
-                                      </div>
-                                      )}
+                                            <div className="w-fit flex gap-1 items-center bg-blue-400 py-2 px-5 text-white hover:bg-blue-200 rounded-md">
+                                              <span>
+                                                <FaCloudUploadAlt />
+                                              </span>
+                                              <div>Upload</div>
+                                            </div>
+                                          ) : (
+                                            <div className="w-fit flex gap-1 items-center bg-blue-400 py-2 px-5 text-white hover:bg-blue-200 rounded-md">
+                                              <span>
+                                                <FaCloudUploadAlt />
+                                              </span>
+                                              <div>1 File</div>
+                                            </div>
+                                          )}
                                         </label>
                                         <input
                                           type="file"
@@ -4224,104 +4377,130 @@ const Penagihan = () => {
                                       </div>
                                     </div>
                                     {vendors.status_pajak === "PKP" && (
-<>
-<div className="flex flex-col gap-3 mb-3">
-                                      <div>Faktur Pajak *)</div>
+                                      <>
+                                        <div className="flex flex-col gap-3 mb-3">
+                                          <div className="flex flex-col gap-1">
+                                            <div className="w-[350px]">
+                                              Faktur Pajak *) :
+                                            </div>
+                                            <div className="text-[10px] text-gray-500">
+                                              Max size 2 mb
+                                            </div>
+                                          </div>
 
-                                      <div>
-                                        <label
-                                          htmlFor="upload-fakturpajak"
-                                          className="w-fit"
-                                        >
-                                          {fakturPajakFile === null ? (
-                                        <div className="w-fit flex gap-1 items-center bg-blue-400 py-2 px-5 text-white hover:bg-blue-200 rounded-md">
-                                        <span>
-                                          <FaCloudUploadAlt />
-                                        </span>
-                                        <div>Upload</div>
-                                      </div>
-                                      ): (
-                                        <div className="w-fit flex gap-1 items-center bg-blue-400 py-2 px-5 text-white hover:bg-blue-200 rounded-md">
-                                        <span>
-                                          <FaCloudUploadAlt />
-                                        </span>
-                                        <div>1 File</div>
-                                      </div>
-                                      )}
-                                        </label>
-                                        <input
-                                          type="file"
-                                          id="upload-fakturpajak"
-                                          accept=".jpg,.pdf"
-                                          onChange={onChangeFakturPajakFile}
-                                          className="hidden w-full h-[40px] border border-slate-300 rounded-sm focus:border focus:border-[#0077b6]  "
-                                        />
-                                      </div>
-                                    </div>
-                                    <div className="mb-10">
-                                      {fakturPajakTambahan.map((item, i) => (
-                                        <div key={i}>
-                                          <div className="flex flex-col gap-3 mb-3">
-                                            {i === 0 ? (
-                                              <div>Faktur Pajak Tambahan</div>
-                                            ) : (
-                                              <div>
-                                                Faktur Pajak Tambahan {i + 1}
+                                          <div>
+                                            <label
+                                              htmlFor="upload-fakturpajak"
+                                              className="w-fit"
+                                            >
+                                              {fakturPajakFile === null ? (
+                                                <div className="w-fit flex gap-1 items-center bg-blue-400 py-2 px-5 text-white hover:bg-blue-200 rounded-md">
+                                                  <span>
+                                                    <FaCloudUploadAlt />
+                                                  </span>
+                                                  <div>Upload</div>
+                                                </div>
+                                              ) : (
+                                                <div className="w-fit flex gap-1 items-center bg-blue-400 py-2 px-5 text-white hover:bg-blue-200 rounded-md">
+                                                  <span>
+                                                    <FaCloudUploadAlt />
+                                                  </span>
+                                                  <div>1 File</div>
+                                                </div>
+                                              )}
+                                            </label>
+                                            <input
+                                              type="file"
+                                              id="upload-fakturpajak"
+                                              accept=".jpg,.pdf"
+                                              onChange={onChangeFakturPajakFile}
+                                              className="hidden w-full h-[40px] border border-slate-300 rounded-sm focus:border focus:border-[#0077b6]  "
+                                            />
+                                          </div>
+                                        </div>
+                                        <div className="mb-10">
+                                          {fakturPajakTambahan.map(
+                                            (item, i) => (
+                                              <div key={i}>
+                                                <div className="flex flex-col gap-3 mb-3">
+                                                  <div className="flex flex-col gap-1">
+                                                    {i === 0 ? (
+                                                      <div>
+                                                        Faktur Pajak Tambahan
+                                                      </div>
+                                                    ) : (
+                                                      <div>
+                                                        Faktur Pajak Tambahan{" "}
+                                                        {i + 1}
+                                                      </div>
+                                                    )}
+                                                    <div className="text-[10px] text-gray-500">
+                                                      Max size 2 mb
+                                                    </div>
+                                                  </div>
+
+                                                  <div>
+                                                    <label
+                                                      htmlFor={i}
+                                                      className="w-fit"
+                                                    >
+                                                      {isEmpty(
+                                                        fakturPajakTambahan[i]
+                                                      ) ? (
+                                                        <div className="w-fit flex gap-1 items-center bg-blue-400 py-2 px-5 text-white hover:bg-blue-200 rounded-md">
+                                                          <span>
+                                                            <FaCloudUploadAlt />
+                                                          </span>
+                                                          <div>Upload</div>
+                                                        </div>
+                                                      ) : (
+                                                        <div className="w-fit flex gap-1 items-center bg-blue-400 py-2 px-5 text-white hover:bg-blue-200 rounded-md">
+                                                          <span>
+                                                            <FaCloudUploadAlt />
+                                                          </span>
+                                                          <div>1 File</div>
+                                                        </div>
+                                                      )}
+                                                    </label>
+                                                    <input
+                                                      type="file"
+                                                      id={i}
+                                                      onChange={
+                                                        onChangeFakturPajakTambahan
+                                                      }
+                                                      accept=".jpg,.pdf"
+                                                      className="hidden w-full h-[40px] border border-slate-300 rounded-sm focus:border focus:border-[#0077b6]  "
+                                                    />
+                                                  </div>
+                                                </div>
                                               </div>
-                                            )}
-
-                                            <div>
-                                              <label
-                                                htmlFor={i}
-                                                className="w-fit"
-                                              >
-                                                {isEmpty(fakturPajakTambahan[i]) ? (
-                                        <div className="w-fit flex gap-1 items-center bg-blue-400 py-2 px-5 text-white hover:bg-blue-200 rounded-md">
-                                        <span>
-                                          <FaCloudUploadAlt />
-                                        </span>
-                                        <div>Upload</div>
-                                      </div>
-                                      ): (
-                                        <div className="w-fit flex gap-1 items-center bg-blue-400 py-2 px-5 text-white hover:bg-blue-200 rounded-md">
-                                        <span>
-                                          <FaCloudUploadAlt />
-                                        </span>
-                                        <div>1 File</div>
-                                      </div>
-                                      )}
-                                              </label>
-                                              <input
-                                                type="file"
-                                                id={i}
-                                                onChange={
-                                                  onChangeFakturPajakTambahan
-                                                }
-                                                accept=".jpg,.pdf"
-                                                className="hidden w-full h-[40px] border border-slate-300 rounded-sm focus:border focus:border-[#0077b6]  "
-                                              />
+                                            )
+                                          )}
+                                          <div
+                                            onClick={addFakturPajakFile}
+                                            className={` flex justify-end ${
+                                              invoiceTambahan.length === 5
+                                                ? "cursor-not-allowed"
+                                                : "cursor-pointer"
+                                            } `}
+                                          >
+                                            <div className="py-1 px-4 rounded-sm shadow-sm text-white bg-[#305496]">
+                                              Add row
                                             </div>
                                           </div>
                                         </div>
-                                      ))}
-                                      <div
-                                        onClick={addFakturPajakFile}
-                                        className={` flex justify-end ${
-                                          invoiceTambahan.length === 5
-                                            ? "cursor-not-allowed"
-                                            : "cursor-pointer"
-                                        } `}
-                                      >
-                                        <div className="py-1 px-4 rounded-sm shadow-sm text-white bg-[#305496]">
-                                          Add row
+                                      </>
+                                    )}
+
+                                    <div className="flex flex-col gap-3 mb-20">
+                                      <div className="flex flex-col gap-1">
+                                        <div className="w-[350px]">
+                                          Receiving Note *) :
+                                        </div>
+                                        <div className="text-[10px] text-gray-500">
+                                          Max size 2 mb
                                         </div>
                                       </div>
-                                    </div>
-</>
-                                    )}
-                                    
-                                    <div className="flex flex-col gap-3 mb-20">
-                                      <div>Receiving Note *) :</div>
 
                                       <div>
                                         <label
@@ -4329,20 +4508,20 @@ const Penagihan = () => {
                                           className="w-fit"
                                         >
                                           {receivingNoteFile === null ? (
-                                        <div className="w-fit flex gap-1 items-center bg-blue-400 py-2 px-5 text-white hover:bg-blue-200 rounded-md">
-                                        <span>
-                                          <FaCloudUploadAlt />
-                                        </span>
-                                        <div>Upload</div>
-                                      </div>
-                                      ): (
-                                        <div className="w-fit flex gap-1 items-center bg-blue-400 py-2 px-5 text-white hover:bg-blue-200 rounded-md">
-                                        <span>
-                                          <FaCloudUploadAlt />
-                                        </span>
-                                        <div>1 File</div>
-                                      </div>
-                                      )}
+                                            <div className="w-fit flex gap-1 items-center bg-blue-400 py-2 px-5 text-white hover:bg-blue-200 rounded-md">
+                                              <span>
+                                                <FaCloudUploadAlt />
+                                              </span>
+                                              <div>Upload</div>
+                                            </div>
+                                          ) : (
+                                            <div className="w-fit flex gap-1 items-center bg-blue-400 py-2 px-5 text-white hover:bg-blue-200 rounded-md">
+                                              <span>
+                                                <FaCloudUploadAlt />
+                                              </span>
+                                              <div>1 File</div>
+                                            </div>
+                                          )}
                                         </label>
                                         <input
                                           type="file"
@@ -4376,7 +4555,18 @@ const Penagihan = () => {
                                         </div>
                                       </div>
                                       <div className="flex flex-col gap-3 mb-3">
-                                        <div>Resi Bukti Pengiriman {tipePengiriman.value === 1 ? "*)" : ""} :</div>
+                                        <div className="flex flex-col gap-1">
+                                          <div>
+                                            Resi Bukti Pengiriman{" "}
+                                            {tipePengiriman.value === 1
+                                              ? "*)"
+                                              : ""}{" "}
+                                            :
+                                          </div>
+                                          <div className="text-[10px] text-gray-500">
+                                            Max size 2 mb
+                                          </div>
+                                        </div>
 
                                         <div>
                                           <label
@@ -4384,20 +4574,20 @@ const Penagihan = () => {
                                             className="w-fit"
                                           >
                                             {resiFile === null ? (
-                                        <div className="w-fit flex gap-1 items-center bg-blue-400 py-2 px-5 text-white hover:bg-blue-200 rounded-md">
-                                        <span>
-                                          <FaCloudUploadAlt />
-                                        </span>
-                                        <div>Upload</div>
-                                      </div>
-                                      ): (
-                                        <div className="w-fit flex gap-1 items-center bg-blue-400 py-2 px-5 text-white hover:bg-blue-200 rounded-md">
-                                        <span>
-                                          <FaCloudUploadAlt />
-                                        </span>
-                                        <div>1 File</div>
-                                      </div>
-                                      )}
+                                              <div className="w-fit flex gap-1 items-center bg-blue-400 py-2 px-5 text-white hover:bg-blue-200 rounded-md">
+                                                <span>
+                                                  <FaCloudUploadAlt />
+                                                </span>
+                                                <div>Upload</div>
+                                              </div>
+                                            ) : (
+                                              <div className="w-fit flex gap-1 items-center bg-blue-400 py-2 px-5 text-white hover:bg-blue-200 rounded-md">
+                                                <span>
+                                                  <FaCloudUploadAlt />
+                                                </span>
+                                                <div>1 File</div>
+                                              </div>
+                                            )}
                                           </label>
                                           <input
                                             disabled={
@@ -4430,7 +4620,14 @@ const Penagihan = () => {
                                 ) : (
                                   <>
                                     <div className="flex flex-col gap-3 mb-3">
-                                      <div>Purchase Order *) :</div>
+                                      <div className="flex flex-col gap-1">
+                                        <div className="w-[350px]">
+                                          Purchase Order *)
+                                        </div>
+                                        <div className="text-[10px] text-gray-500">
+                                          Max size 2 mb
+                                        </div>
+                                      </div>
 
                                       <div>
                                         <label
@@ -4438,20 +4635,20 @@ const Penagihan = () => {
                                           className="w-fit"
                                         >
                                           {purchaseOrderFile === null ? (
-                                        <div className="w-fit flex gap-1 items-center bg-[#fff2cc] py-2 px-5 hover:bg-yellow-100 rounded-md">
-                                        <span>
-                                          <FaCloudUploadAlt />
-                                        </span>
-                                        <div>Upload</div>
-                                      </div>
-                                      ): (
-                                        <div className="w-fit flex gap-1 items-center bg-[#fff2cc] py-2 px-5 hover:bg-yellow-100 rounded-md">
-                                        <span>
-                                          <FaCloudUploadAlt />
-                                        </span>
-                                        <div>1 File</div>
-                                      </div>
-                                      )}
+                                            <div className="w-fit flex gap-1 items-center bg-[#fff2cc] py-2 px-5 hover:bg-yellow-100 rounded-md">
+                                              <span>
+                                                <FaCloudUploadAlt />
+                                              </span>
+                                              <div>Upload</div>
+                                            </div>
+                                          ) : (
+                                            <div className="w-fit flex gap-1 items-center bg-[#fff2cc] py-2 px-5 hover:bg-yellow-100 rounded-md">
+                                              <span>
+                                                <FaCloudUploadAlt />
+                                              </span>
+                                              <div>1 File</div>
+                                            </div>
+                                          )}
                                         </label>
                                         <input
                                           type="file"
@@ -4463,9 +4660,14 @@ const Penagihan = () => {
                                       </div>
                                     </div>
                                     <div className="flex flex-col gap-3 mb-3">
-                                      <div>
-                                        Delivery Order (DO) / Packing List
-                                        (Surat Jalan) *) :
+                                      <div className="flex flex-col gap-1">
+                                        <div>
+                                          Delivery Order (DO) / Packing List
+                                          (Surat Jalan) *) :
+                                        </div>
+                                        <div className="text-[10px] text-gray-500">
+                                          Max size 2 mb
+                                        </div>
                                       </div>
 
                                       <div>
@@ -4474,20 +4676,20 @@ const Penagihan = () => {
                                           className="w-fit"
                                         >
                                           {deliveryOrderFile === null ? (
-                                        <div className="w-fit flex gap-1 items-center bg-[#fff2cc] py-2 px-5 hover:bg-yellow-100 rounded-md">
-                                        <span>
-                                          <FaCloudUploadAlt />
-                                        </span>
-                                        <div>Upload</div>
-                                      </div>
-                                      ): (
-                                        <div className="w-fit flex gap-1 items-center bg-[#fff2cc] py-2 px-5 hover:bg-yellow-100 rounded-md">
-                                        <span>
-                                          <FaCloudUploadAlt />
-                                        </span>
-                                        <div>1 File</div>
-                                      </div>
-                                      )}
+                                            <div className="w-fit flex gap-1 items-center bg-[#fff2cc] py-2 px-5 hover:bg-yellow-100 rounded-md">
+                                              <span>
+                                                <FaCloudUploadAlt />
+                                              </span>
+                                              <div>Upload</div>
+                                            </div>
+                                          ) : (
+                                            <div className="w-fit flex gap-1 items-center bg-[#fff2cc] py-2 px-5 hover:bg-yellow-100 rounded-md">
+                                              <span>
+                                                <FaCloudUploadAlt />
+                                              </span>
+                                              <div>1 File</div>
+                                            </div>
+                                          )}
                                         </label>
                                         <input
                                           type="file"
@@ -4499,7 +4701,14 @@ const Penagihan = () => {
                                       </div>
                                     </div>
                                     <div className="flex flex-col gap-3 mb-3">
-                                      <div>Invoice (Faktur Penagihan) *) :</div>
+                                      <div className="flex flex-col gap-1">
+                                        <div className="w-[350px]">
+                                          Invoice (Faktur Penagihan) *)
+                                        </div>
+                                        <div className="text-[10px] text-gray-500">
+                                          Max size 2 mb
+                                        </div>
+                                      </div>
 
                                       <div>
                                         <label
@@ -4507,20 +4716,20 @@ const Penagihan = () => {
                                           className="w-fit"
                                         >
                                           {invoiceFile === null ? (
-                                        <div className="w-fit flex gap-1 items-center bg-[#fff2cc] py-2 px-5 hover:bg-yellow-100 rounded-md">
-                                        <span>
-                                          <FaCloudUploadAlt />
-                                        </span>
-                                        <div>Upload</div>
-                                      </div>
-                                      ): (
-                                        <div className="w-fit flex gap-1 items-center bg-[#fff2cc] py-2 px-5 hover:bg-yellow-100 rounded-md">
-                                        <span>
-                                          <FaCloudUploadAlt />
-                                        </span>
-                                        <div>1 File</div>
-                                      </div>
-                                      )}
+                                            <div className="w-fit flex gap-1 items-center bg-[#fff2cc] py-2 px-5 hover:bg-yellow-100 rounded-md">
+                                              <span>
+                                                <FaCloudUploadAlt />
+                                              </span>
+                                              <div>Upload</div>
+                                            </div>
+                                          ) : (
+                                            <div className="w-fit flex gap-1 items-center bg-[#fff2cc] py-2 px-5 hover:bg-yellow-100 rounded-md">
+                                              <span>
+                                                <FaCloudUploadAlt />
+                                              </span>
+                                              <div>1 File</div>
+                                            </div>
+                                          )}
                                         </label>
                                         <input
                                           type="file"
@@ -4535,13 +4744,18 @@ const Penagihan = () => {
                                       {invoiceTambahan.map((item, i) => (
                                         <div key={i}>
                                           <div className="flex flex-col gap-3 mb-3">
-                                            {i === 0 ? (
-                                              <div>Invoice Tambahan</div>
-                                            ) : (
-                                              <div>
-                                                Invoice Tambahan {i + 1}
+                                            <div className="flex flex-col gap-1">
+                                              {i === 0 ? (
+                                                <div>Invoice Tambahan</div>
+                                              ) : (
+                                                <div>
+                                                  Invoice Tambahan {i + 1}
+                                                </div>
+                                              )}
+                                              <div className="text-[10px] text-gray-500">
+                                                Max size 2 mb
                                               </div>
-                                            )}
+                                            </div>
 
                                             <div>
                                               <label
@@ -4549,20 +4763,20 @@ const Penagihan = () => {
                                                 className="w-fit"
                                               >
                                                 {isEmpty(invoiceTambahan[i]) ? (
-                                        <div className="w-fit flex gap-1 items-center bg-[#fff2cc] py-2 px-5 hover:bg-yellow-100 rounded-md">
-                                        <span>
-                                          <FaCloudUploadAlt />
-                                        </span>
-                                        <div>Upload</div>
-                                      </div>
-                                      ): (
-                                        <div className="w-fit flex gap-1 items-center bg-[#fff2cc] py-2 px-5 hover:bg-yellow-100 rounded-md">
-                                        <span>
-                                          <FaCloudUploadAlt />
-                                        </span>
-                                        <div>1 File</div>
-                                      </div>
-                                      )}
+                                                  <div className="w-fit flex gap-1 items-center bg-[#fff2cc] py-2 px-5 hover:bg-yellow-100 rounded-md">
+                                                    <span>
+                                                      <FaCloudUploadAlt />
+                                                    </span>
+                                                    <div>Upload</div>
+                                                  </div>
+                                                ) : (
+                                                  <div className="w-fit flex gap-1 items-center bg-[#fff2cc] py-2 px-5 hover:bg-yellow-100 rounded-md">
+                                                    <span>
+                                                      <FaCloudUploadAlt />
+                                                    </span>
+                                                    <div>1 File</div>
+                                                  </div>
+                                                )}
                                               </label>
                                               <input
                                                 type="file"
@@ -4592,8 +4806,13 @@ const Penagihan = () => {
                                     </div>
                                     <div className="flex flex-col gap-3 mb-10">
                                       <div className="flex flex-col gap-1">
-                                        <div className="w-[350px]">
-                                          Kwitansi *)
+                                        <div className="flex flex-col gap-1">
+                                          <div className="w-[350px]">
+                                            Kwitansi *)
+                                          </div>
+                                          <div className="text-[10px] text-gray-500">
+                                            Max size 2 mb
+                                          </div>
                                         </div>
                                         <div className="text-[10px] text-gray-500">
                                           total penagihan diatas 5 juta
@@ -4607,20 +4826,20 @@ const Penagihan = () => {
                                           className="w-fit"
                                         >
                                           {kwitansiFile === null ? (
-                                        <div className="w-fit flex gap-1 items-center bg-[#fff2cc] py-2 px-5 hover:bg-yellow-100 rounded-md">
-                                        <span>
-                                          <FaCloudUploadAlt />
-                                        </span>
-                                        <div>Upload</div>
-                                      </div>
-                                      ): (
-                                        <div className="w-fit flex gap-1 items-center bg-[#fff2cc] py-2 px-5 hover:bg-yellow-100 rounded-md">
-                                        <span>
-                                          <FaCloudUploadAlt />
-                                        </span>
-                                        <div>1 File</div>
-                                      </div>
-                                      )}
+                                            <div className="w-fit flex gap-1 items-center bg-[#fff2cc] py-2 px-5 hover:bg-yellow-100 rounded-md">
+                                              <span>
+                                                <FaCloudUploadAlt />
+                                              </span>
+                                              <div>Upload</div>
+                                            </div>
+                                          ) : (
+                                            <div className="w-fit flex gap-1 items-center bg-[#fff2cc] py-2 px-5 hover:bg-yellow-100 rounded-md">
+                                              <span>
+                                                <FaCloudUploadAlt />
+                                              </span>
+                                              <div>1 File</div>
+                                            </div>
+                                          )}
                                         </label>
                                         <input
                                           type="file"
@@ -4632,106 +4851,130 @@ const Penagihan = () => {
                                       </div>
                                     </div>
                                     {vendors.status_pajak === "PKP" && (
-                                      <>  
- <div className="flex flex-col gap-3 mb-3">
-                                      <div>Faktur Pajak *) :</div>
+                                      <>
+                                        <div className="flex flex-col gap-3 mb-3">
+                                          <div className="flex flex-col gap-1">
+                                            <div className="w-[350px]">
+                                              Faktur Pajak *)
+                                            </div>
+                                            <div className="text-[10px] text-gray-500">
+                                              Max size 2 mb
+                                            </div>
+                                          </div>
 
-                                      <div>
-                                        <label
-                                          htmlFor="upload-fakturpajak"
-                                          className="w-fit"
-                                        >
-                                          {fakturPajakFile === null ? (
-                                        <div className="w-fit flex gap-1 items-center bg-[#fff2cc] py-2 px-5 hover:bg-yellow-100 rounded-md">
-                                        <span>
-                                          <FaCloudUploadAlt />
-                                        </span>
-                                        <div>Upload</div>
-                                      </div>
-                                      ): (
-                                        <div className="w-fit flex gap-1 items-center bg-[#fff2cc] py-2 px-5 hover:bg-yellow-100 rounded-md">
-                                        <span>
-                                          <FaCloudUploadAlt />
-                                        </span>
-                                        <div>1 File</div>
-                                      </div>
-                                      )}
-                                        </label>
-                                        <input
-                                          type="file"
-                                          id="upload-fakturpajak"
-                                          accept=".jpg,.pdf"
-                                          onChange={onChangeFakturPajakFile}
-                                          className="hidden w-full h-[40px] border border-slate-300 rounded-sm focus:border focus:border-[#0077b6]  "
-                                        />
-                                      </div>
-                                    </div>
-                                    <div className="mb-10">
-                                      {fakturPajakTambahan.map((item, i) => (
-                                        <div key={i}>
-                                          <div className="flex flex-col gap-3 mb-3">
-                                            {i === 0 ? (
-                                              <div className="w-[350px]">
-                                                Faktur Pajak Tambahan
-                                              </div>
-                                            ) : (
-                                              <div className="w-[350px]">
-                                                Faktur Pajak Tambahan {i + 1}
-                                              </div>
-                                            )}
+                                          <div>
+                                            <label
+                                              htmlFor="upload-fakturpajak"
+                                              className="w-fit"
+                                            >
+                                              {fakturPajakFile === null ? (
+                                                <div className="w-fit flex gap-1 items-center bg-[#fff2cc] py-2 px-5 hover:bg-yellow-100 rounded-md">
+                                                  <span>
+                                                    <FaCloudUploadAlt />
+                                                  </span>
+                                                  <div>Upload</div>
+                                                </div>
+                                              ) : (
+                                                <div className="w-fit flex gap-1 items-center bg-[#fff2cc] py-2 px-5 hover:bg-yellow-100 rounded-md">
+                                                  <span>
+                                                    <FaCloudUploadAlt />
+                                                  </span>
+                                                  <div>1 File</div>
+                                                </div>
+                                              )}
+                                            </label>
+                                            <input
+                                              type="file"
+                                              id="upload-fakturpajak"
+                                              accept=".jpg,.pdf"
+                                              onChange={onChangeFakturPajakFile}
+                                              className="hidden w-full h-[40px] border border-slate-300 rounded-sm focus:border focus:border-[#0077b6]  "
+                                            />
+                                          </div>
+                                        </div>
+                                        <div className="mb-10">
+                                          {fakturPajakTambahan.map(
+                                            (item, i) => (
+                                              <div key={i}>
+                                                <div className="flex flex-col gap-3 mb-3">
+                                                  <div className="flex flex-col gap-1">
+                                                    {i === 0 ? (
+                                                      <div className="w-[350px]">
+                                                        Faktur Pajak Tambahan
+                                                      </div>
+                                                    ) : (
+                                                      <div className="w-[350px]">
+                                                        Faktur Pajak Tambahan{" "}
+                                                        {i + 1}
+                                                      </div>
+                                                    )}
+                                                    <div className="text-[10px] text-gray-500">
+                                                      Max size 2 mb
+                                                    </div>
+                                                  </div>
 
-                                            <div>
-                                              <label
-                                                htmlFor={i}
-                                                className="w-fit"
-                                              >
-                                                {isEmpty(fakturPajakTambahan[i]) ? (
-                                        <div className="w-fit flex gap-1 items-center bg-[#fff2cc] py-2 px-5 hover:bg-yellow-100 rounded-md">
-                                        <span>
-                                          <FaCloudUploadAlt />
-                                        </span>
-                                        <div>Upload</div>
-                                      </div>
-                                      ): (
-                                        <div className="w-fit flex gap-1 items-center bg-[#fff2cc] py-2 px-5 hover:bg-yellow-100 rounded-md">
-                                        <span>
-                                          <FaCloudUploadAlt />
-                                        </span>
-                                        <div>1 File</div>
-                                      </div>
-                                      )}
-                                              </label>
-                                              <input
-                                                type="file"
-                                                id={i}
-                                                onChange={
-                                                  onChangeFakturPajakTambahan
-                                                }
-                                                accept=".jpg,.pdf"
-                                                className="hidden w-full h-[40px] border border-slate-300 rounded-sm focus:border focus:border-[#0077b6]  "
-                                              />
+                                                  <div>
+                                                    <label
+                                                      htmlFor={i}
+                                                      className="w-fit"
+                                                    >
+                                                      {isEmpty(
+                                                        fakturPajakTambahan[i]
+                                                      ) ? (
+                                                        <div className="w-fit flex gap-1 items-center bg-[#fff2cc] py-2 px-5 hover:bg-yellow-100 rounded-md">
+                                                          <span>
+                                                            <FaCloudUploadAlt />
+                                                          </span>
+                                                          <div>Upload</div>
+                                                        </div>
+                                                      ) : (
+                                                        <div className="w-fit flex gap-1 items-center bg-[#fff2cc] py-2 px-5 hover:bg-yellow-100 rounded-md">
+                                                          <span>
+                                                            <FaCloudUploadAlt />
+                                                          </span>
+                                                          <div>1 File</div>
+                                                        </div>
+                                                      )}
+                                                    </label>
+                                                    <input
+                                                      type="file"
+                                                      id={i}
+                                                      onChange={
+                                                        onChangeFakturPajakTambahan
+                                                      }
+                                                      accept=".jpg,.pdf"
+                                                      className="hidden w-full h-[40px] border border-slate-300 rounded-sm focus:border focus:border-[#0077b6]  "
+                                                    />
+                                                  </div>
+                                                </div>
+                                              </div>
+                                            )
+                                          )}
+                                          <div
+                                            onClick={addFakturPajakFile}
+                                            className={`flex justify-end ${
+                                              fakturPajakTambahan.length === 5
+                                                ? "cursor-not-allowed"
+                                                : "cursor-pointer"
+                                            } `}
+                                          >
+                                            <div className="py-1 px-4 rounded-sm shadow-sm text-white bg-[#305496]">
+                                              Add row
                                             </div>
                                           </div>
                                         </div>
-                                      ))}
-                                      <div
-                                        onClick={addFakturPajakFile}
-                                        className={`flex justify-end ${
-                                          fakturPajakTambahan.length === 5
-                                            ? "cursor-not-allowed"
-                                            : "cursor-pointer"
-                                        } `}
-                                      >
-                                        <div className="py-1 px-4 rounded-sm shadow-sm text-white bg-[#305496]">
-                                          Add row
-                                        </div>
-                                      </div>
-                                    </div>
                                       </>
                                     )}
-                                   
+
                                     <div className="flex flex-col gap-3 mb-20">
-                                      <div>Scan Report Sales *) :</div>
+                                      <div className="flex flex-col gap-1">
+                                        <div className="w-[350px]">
+                                          Scan Report Sales *)
+                                        </div>
+                                        <div className="text-[10px] text-gray-500">
+                                          Max size 2 mb
+                                        </div>
+                                      </div>
 
                                       <div>
                                         <label
@@ -4739,20 +4982,20 @@ const Penagihan = () => {
                                           className="w-fit"
                                         >
                                           {scanReportSalesFile === null ? (
-                                        <div className="w-fit flex gap-1 items-center bg-[#fff2cc] py-2 px-5 hover:bg-yellow-100 rounded-md">
-                                        <span>
-                                          <FaCloudUploadAlt />
-                                        </span>
-                                        <div>Upload</div>
-                                      </div>
-                                      ): (
-                                        <div className="w-fit flex gap-1 items-center bg-[#fff2cc] py-2 px-5 hover:bg-yellow-100 rounded-md">
-                                        <span>
-                                          <FaCloudUploadAlt />
-                                        </span>
-                                        <div>1 File</div>
-                                      </div>
-                                      )}
+                                            <div className="w-fit flex gap-1 items-center bg-[#fff2cc] py-2 px-5 hover:bg-yellow-100 rounded-md">
+                                              <span>
+                                                <FaCloudUploadAlt />
+                                              </span>
+                                              <div>Upload</div>
+                                            </div>
+                                          ) : (
+                                            <div className="w-fit flex gap-1 items-center bg-[#fff2cc] py-2 px-5 hover:bg-yellow-100 rounded-md">
+                                              <span>
+                                                <FaCloudUploadAlt />
+                                              </span>
+                                              <div>1 File</div>
+                                            </div>
+                                          )}
                                         </label>
                                         <input
                                           type="file"
@@ -4788,7 +5031,18 @@ const Penagihan = () => {
                                         </div>
                                       </div>
                                       <div className="flex flex-col gap-3 mb-3">
-                                      <div>Resi Bukti Pengiriman {tipePengiriman.value === 1 ? "*)" : ""} :</div>
+                                        <div className="flex flex-col gap-1">
+                                          <div>
+                                            Resi Bukti Pengiriman{" "}
+                                            {tipePengiriman.value === 1
+                                              ? "*)"
+                                              : ""}{" "}
+                                            :
+                                          </div>
+                                          <div className="text-[10px] text-gray-500">
+                                            Max size 2 mb
+                                          </div>
+                                        </div>
 
                                         <div>
                                           <label
@@ -4796,20 +5050,20 @@ const Penagihan = () => {
                                             className="w-fit"
                                           >
                                             {resiFile === null ? (
-                                        <div className="w-fit flex gap-1 items-center bg-[#fff2cc] py-2 px-5 hover:bg-yellow-100 rounded-md">
-                                        <span>
-                                          <FaCloudUploadAlt />
-                                        </span>
-                                        <div>Upload</div>
-                                      </div>
-                                      ): (
-                                        <div className="w-fit flex gap-1 items-center bg-[#fff2cc] py-2 px-5 hover:bg-yellow-100 rounded-md">
-                                        <span>
-                                          <FaCloudUploadAlt />
-                                        </span>
-                                        <div>1 File</div>
-                                      </div>
-                                      )}
+                                              <div className="w-fit flex gap-1 items-center bg-[#fff2cc] py-2 px-5 hover:bg-yellow-100 rounded-md">
+                                                <span>
+                                                  <FaCloudUploadAlt />
+                                                </span>
+                                                <div>Upload</div>
+                                              </div>
+                                            ) : (
+                                              <div className="w-fit flex gap-1 items-center bg-[#fff2cc] py-2 px-5 hover:bg-yellow-100 rounded-md">
+                                                <span>
+                                                  <FaCloudUploadAlt />
+                                                </span>
+                                                <div>1 File</div>
+                                              </div>
+                                            )}
                                           </label>
                                           <input
                                             disabled={
@@ -4959,7 +5213,13 @@ const Penagihan = () => {
           } pt-52 font-roboto `}
         >
           {" "}
-          <div><img className="w-52 h-52" src={require('../../../assets/images/warning.png')} alt="" /></div>
+          <div>
+            <img
+              className="w-52 h-52"
+              src={require("../../../assets/images/warning.png")}
+              alt=""
+            />
+          </div>
           <div>
             Anda tidak dapat membuat penagihan jika vendor anda belum active!
           </div>{" "}

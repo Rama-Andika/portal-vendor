@@ -28,9 +28,9 @@ const VendorList = () => {
 
   const fetchData = async () => {
     setOpenBackdrop(true)
-    await Api.get('/vendors?status=ACTIVE').then((response) => {
+    await Api.get('portal-vendor/list/vendors', {status: "ACTIVE"}).then((response) => {
       setOpenBackdrop(false)
-      setListVendor(response.data)
+      setListVendor(response.data.data)
     })
   }
 

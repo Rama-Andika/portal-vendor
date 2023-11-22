@@ -26,6 +26,7 @@ import { Link, useNavigate } from "react-router-dom";
 import isEmpty from "../../components/functions/CheckEmptyObject";
 import toast from "react-hot-toast";
 import Api from "../../api";
+import { FaEye, FaEyeSlash } from "react-icons/fa";
 
 const steps = ["Company Profile", "Contact Person", "Payment", "Document"];
 const options = [
@@ -65,6 +66,7 @@ const Registration = () => {
   const [tipePerusahaan, setTipePerusahaan] = useState({});
   const [tipePerusahaanText, setTipePerusahaanText] = useState("");
   const [namaPerusahaan, setNamaPerusahaan] = useState("");
+  const [kode, setKode] = useState("");
   const [alamat, setAlamat] = useState("");
   const [provinsi, setProvinsi] = useState({});
   const [kota, setKota] = useState("");
@@ -107,6 +109,7 @@ const Registration = () => {
   const [sertifBpomFile, setSertifBpomFile] = useState(null);
 
   const [isError, setIsError] = useState(false);
+  const [showPassword, setShowPassword] = useState(false)
   const navigate = useNavigate();
 
   const handleNext = () => {
@@ -115,7 +118,8 @@ const Registration = () => {
         username.trim().length > 0 &&
         email.trim().length > 0 &&
         password.trim().length > 0 &&
-        namaPerusahaan !== "" &&
+        kode.trim().length > 0 &&
+        namaPerusahaan.trim().length &&
         alamat.trim().length > 0 &&
         !isEmpty(provinsi) &&
         kota.trim().length > 0 &&
@@ -357,57 +361,61 @@ const Registration = () => {
     }
 
     const inititalValue = {
-      nama: namaPerusahaan,
-      tipe_perusahaan: tipePerusahaan.value,
-      tipe_perusahaan_lainnya: tipePerusahaanText,
-      alamat: alamat,
-      provinsi: provinsi.value,
-      kota: kota,
-      kode_pos: kodePos,
-      tipe_pembelian: tipePembelian.value,
-      status_pajak: statusPajak.value,
-      npwp: npwp,
-      website: website,
-      nama_pemilik: namaPemilikPerusahaan,
-      nama_penanggung_jawab: namaPenanggungJawab,
-      jabatan_penanggung_jawab: jabatanPenanggungJawab,
-      no_telp_kantor: noTelpKantor,
-      no_wa_purchase_order: whatsappPO,
-      email_korespondensi: emailKorespondensiPo,
-      nama_kontak: namaKontak,
-      jabatan_kontak: jabatan,
-      no_wa_keuangan: whatsappKeuangan,
-      email_korespondensi_keuangan: emailKorespondensiKeuangan,
-      nama_kontak_keuangan: namaKontakKeuangan,
-      jabatan_keuangan: jabatanKeuangan,
-      term_pembayaran: termPembayaran,
-      bank: bank,
-      no_rekening_bank: nomorRekening,
-      nama_rekening_bank: namaRekening,
-      kantor_cabang_bank: kantorCabangBank,
-      metode_pengiriman: metodePengiriman.value,
-      rebate: rebate,
-      marketing_fee: marketingFee,
-      listing_fee: listingFee,
-      promotion_found: promotionFund,
-      file_npwp: npwpText,
-      file_ktp_pemilik: ktpPemilikText,
-      file_ktp_penanggung_jawab: ktpPenanggungJawabText,
-      file_spkp: spkpText,
-      file_nib: nibText,
-      file_screenshot_rekening: ssRekeningText,
-      file_sertikasi_bpom: sertifBpomText,
-      status: "PENDING"
+      "nama": namaPerusahaan.trim(),
+      "kode": kode.trim(),
+      "tipe_perusahaan": tipePerusahaan.value,
+      "tipe_perusahaan_lainnya": tipePerusahaanText.trim(),
+      "alamat": alamat.trim(),
+      "provinsi": provinsi.value,
+      "kota": kota.trim(),
+      "kode_pos": kodePos.trim(),
+      "tipe_pembelian": tipePembelian.value,
+      "status_pajak": statusPajak.value,
+      "npwp": npwp.trim(),
+      "website": website.trim(),
+      "nama_pemilik": namaPemilikPerusahaan.trim(),
+      "nama_penanggung_jawab": namaPenanggungJawab.trim(),
+      "jabatan_penanggung_jawab": jabatanPenanggungJawab.trim(),
+      "no_telp_kantor": noTelpKantor.trim(),
+      "no_wa_purchase_order": whatsappPO.trim(),
+      "email_korespondensi": emailKorespondensiPo.trim(),
+      "nama_kontak": namaKontak.trim(),
+      "jabatan_kontak": jabatan.trim(),
+      "no_wa_keuangan": whatsappKeuangan.trim(),
+      "email_korespondensi_keuangan": emailKorespondensiKeuangan.trim(),
+      "nama_kontak_keuangan": namaKontakKeuangan.trim(),
+      "jabatan_keuangan": jabatanKeuangan.trim(),
+      "term_pembayaran": termPembayaran.trim(),
+      "bank": bank.trim(),
+      "no_rekening_bank": nomorRekening.trim(),
+      "nama_rekening_bank": namaRekening.trim(),
+      "kantor_cabang_bank": kantorCabangBank.trim(),
+      "metode_pengiriman": metodePengiriman.value,
+      "rebate": rebate.trim(),
+      "marketing_fee": marketingFee.trim(),
+      "listing_fee": listingFee.trim(),
+      "promotion_found": promotionFund.trim(),
+      "file_npwp": npwpText,
+      "file_ktp_pemilik": ktpPemilikText,
+      "file_ktp_penanggung_jawab": ktpPenanggungJawabText,
+      "file_spkp": spkpText,
+      "file_nib": nibText,
+      "file_screenshot_rekening": ssRekeningText,
+      "file_sertikasi_bpom": sertifBpomText,
+      "status": "PENDING"
     };
 
-    await Api.post("/vendors", inititalValue, {
+    //const json = JSON.stringify(inititalValue)
+
+    await Api.post('/vendors', inititalValue, {
       headers: {
-        "content-type": "application/json",
+        'content-type': 'application/json',
+        "accept" : "application/json"
       },
     })
       .then((response) => {
         
-        saveUser(response.data.id);
+        saveUser(response.data.data);
       })
       .catch(() => {
         setOpenBackdrop(false)
@@ -424,9 +432,9 @@ const Registration = () => {
 
   const saveUser = async (id) => {
     const inititalValue = {
-      email: email,
-      username: username,
-      password: password,
+      email: email.trim(),
+      username: username.trim(),
+      password: password.trim(),
       vendor_id: id,
     };
 
@@ -702,6 +710,9 @@ const Registration = () => {
                         <input
                           value={username}
                           onChange={(e) => setUsername(e.target.value)}
+                          onKeyDown={(evt) =>
+                            evt.key === " " && evt.preventDefault()
+                          }
                           type="text"
                           name=""
                           id=""
@@ -733,6 +744,9 @@ const Registration = () => {
                         <input
                           value={email}
                           onChange={(e) => setEmail(e.target.value)}
+                          onKeyDown={(evt) =>
+                            evt.key === " " && evt.preventDefault()
+                          }
                           type="email"
                           name=""
                           id=""
@@ -760,11 +774,14 @@ const Registration = () => {
                         </label>
                         <div>:</div>
                       </div>
-                      <div className="w-1/2 relative">
+                      <div className="w-1/2 relative flex gap-1 items-center">
                         <input
                           value={password}
                           onChange={(e) => setPassword(e.target.value)}
-                          type="password"
+                          onKeyDown={(evt) =>
+                            evt.key === " " && evt.preventDefault()
+                          }
+                          type={`${showPassword ? 'text' : 'password'}`}
                           name=""
                           id=""
                           className={`w-full h-[36px] rounded-sm focus:border focus:border-[#0077b6] ${
@@ -773,6 +790,7 @@ const Registration = () => {
                               : "border-slate-300"
                           } `}
                         />
+                        <div onClick={()=>setShowPassword((prev)=> !prev)} className="cursor-pointer">{showPassword ? <FaEyeSlash /> : <FaEye /> } </div>
                         <div className="absolute right-[-20px] top-0">
                           {isError && password.trim().length === 0 ? (
                             <div className="text-red-500">
@@ -864,6 +882,37 @@ const Registration = () => {
                         />
                         <div className="absolute right-[-20px] top-0">
                           {isError && namaPerusahaan.trim().length === 0 ? (
+                            <div className="text-red-500">
+                              <PiWarningCircleLight />
+                            </div>
+                          ) : (
+                            "*)"
+                          )}
+                        </div>
+                      </div>
+                    </div>
+                    <div className="flex gap-2 items-center mb-3">
+                      <div className="whitespace-nowrap flex">
+                        <label htmlFor="" className="w-36">
+                          Kode
+                        </label>
+                        <div>:</div>
+                      </div>
+                      <div className="w-1/2 relative">
+                        <input
+                          value={kode}
+                          onChange={(e) => setKode(e.target.value)}
+                          type="text"
+                          name=""
+                          id=""
+                          className={`w-full h-[36px] rounded-sm focus:border focus:border-[#0077b6] ${
+                            isError && kode.trim().length === 0
+                              ? "border-red-400"
+                              : "border-slate-300"
+                          } `}
+                        />
+                        <div className="absolute right-[-20px] top-0">
+                          {isError && kode.trim().length === 0 ? (
                             <div className="text-red-500">
                               <PiWarningCircleLight />
                             </div>
@@ -2206,6 +2255,9 @@ const Registration = () => {
                             <div className="whitespace-nowrap">
                               <input
                                 value={username}
+                                onKeyDown={(evt) =>
+                                  evt.key === " " && evt.preventDefault()
+                                }
                                 onChange={(e) => setUsername(e.target.value)}
                                 type="text"
                                 name=""
@@ -2238,6 +2290,9 @@ const Registration = () => {
                               <input
                                 value={email}
                                 onChange={(e) => setEmail(e.target.value)}
+                                onKeyDown={(evt) =>
+                                  evt.key === " " && evt.preventDefault()
+                                }
                                 type="email"
                                 name=""
                                 id=""
@@ -2265,11 +2320,14 @@ const Registration = () => {
                                 )}
                               </label>
                             </div>
-                            <div className="whitespace-nowrap">
+                            <div className="whitespace-nowrap flex gap-1 items-center">
                               <input
                                 value={password}
                                 onChange={(e) => setPassword(e.target.value)}
-                                type="password"
+                                onKeyDown={(evt) =>
+                                  evt.key === " " && evt.preventDefault()
+                                }
+                                type={`${showPassword ? 'text' : 'password'}`}
                                 name=""
                                 id=""
                                 className={`w-full h-[36px] rounded-sm focus:border focus:border-[#0077b6] ${
@@ -2278,6 +2336,7 @@ const Registration = () => {
                                     : "border-slate-300"
                                 } `}
                               />
+                              <div onClick={()=>setShowPassword((prev)=> !prev)} className="cursor-pointer">{showPassword ? <FaEyeSlash /> : <FaEye /> } </div>
                             </div>
                           </div>
                           <div className="flex flex-col gap-2 mb-3">
@@ -2354,6 +2413,40 @@ const Registration = () => {
                                 id=""
                                 className={`w-full h-[36px] rounded-sm focus:border focus:border-[#0077b6] ${
                                   isError && namaPerusahaan.trim().length === 0
+                                    ? "border-red-400"
+                                    : "border-x-slate-300"
+                                } `}
+                              />
+                            </div>
+                          </div>
+                          <div className="flex flex-col gap-2 mb-3">
+                            <div className="whitespace-nowrap flex">
+                              <label
+                                htmlFor=""
+                                className="w-36 flex gap-1 items-center"
+                              >
+                                Kode{" "}
+                                {isError &&
+                                kode.trim().length === 0 ? (
+                                  <span className="text-red-400">
+                                    <PiWarningCircleLight />
+                                  </span>
+                                ) : (
+                                  "*"
+                                )}
+                              </label>
+                            </div>
+                            <div className="whitespace-nowrap">
+                              <input
+                                value={kode}
+                                onChange={(e) =>
+                                  setKode(e.target.value)
+                                }
+                                type="text"
+                                name=""
+                                id=""
+                                className={`w-full h-[36px] rounded-sm focus:border focus:border-[#0077b6] ${
+                                  isError && kode.trim().length === 0
                                     ? "border-red-400"
                                     : "border-x-slate-300"
                                 } `}

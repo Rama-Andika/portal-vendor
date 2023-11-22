@@ -12,6 +12,7 @@ import Cookies from "js-cookie";
 import { Backdrop, CircularProgress } from "@mui/material";
 import { FaCloudUploadAlt } from "react-icons/fa";
 import titleCase from "../../components/functions/TitleCase";
+import { useLocation } from "react-router-dom";
 
 const options = [
   { value: "cv", label: "CV", key: 1 },
@@ -44,6 +45,7 @@ const Profile = () => {
   const [tipePerusahaan, setTipePerusahaan] = useState({});
   const [tipePerusahaanText, setTipePerusahaanText] = useState("");
   const [namaPerusahaan, setNamaPerusahaan] = useState("");
+  const [kode, setKode] = useState("");
   const [alamat, setAlamat] = useState("");
   const [provinsi, setProvinsi] = useState({});
   const [kota, setKota] = useState("");
@@ -85,6 +87,8 @@ const Profile = () => {
   const [sertifBpomFile, setSertifBpomFile] = useState(null);
 
   const id = Cookies.get("vendor_id");
+  const location = useLocation();
+  console.log(location.state.vendor_id)
 
   const company_section = useRef();
   const [openBackdrop, setOpenBackdrop] = useState(false)
@@ -121,7 +125,7 @@ const Profile = () => {
 
   const fetchVendor = async () => {
     setOpenBackdrop(true)
-    await Api.get(`/vendors/${id}`).then((response) => {
+    await Api.get(`/vendors/${location.state.vendor_id}`).then((response) => {
       const data = response.data;
       setNamaPerusahaan(data.nama)
       setTipePerusahaan({value: data.tipe_perusahaan, label: titleCase(data.tipe_perusahaan)})
@@ -135,8 +139,7 @@ const Profile = () => {
         setStatusPajak({value: data.status_pajak, label: "Perusahaan Kena Pajak (PKP)"})
       }else{
         setStatusPajak({value: data.status_pajak, label: "Non Perusahaan Kena Pajak (NPKP)"})
-      }
-      
+      }     
       setNpwp(data.npwp)
       setWebsite(data.website)
       setNamaPemilikPerusahaan(data.nama_pemilik)
@@ -161,7 +164,6 @@ const Profile = () => {
       setMarketingFee(data.merketing_fee)
       setListingFee(data.listingFee)
       setPromotionFund(data.promotion_found)
-
       setOpenBackdrop(false)
     });
   };
@@ -219,39 +221,40 @@ const Profile = () => {
     }
 
     const inititalValue = {
-      nama: namaPerusahaan,
+      nama: namaPerusahaan.trim(),
+      kode: kode.trim(),
       tipe_perusahaan: tipePerusahaan.value,
-      tipe_perusahaan_lainnya: tipePerusahaanText,
-      alamat: alamat,
+      tipe_perusahaan_lainnya: tipePerusahaanText.trim(),
+      alamat: alamat.trim(),
       provinsi: provinsi.value,
-      kota: kota,
-      kode_pos: kodePos,
+      kota: kota.trim(),
+      kode_pos: kodePos.trim(),
       tipe_pembelian: tipePembelian.value,
       status_pajak: statusPajak.value,
-      npwp: npwp,
-      website: website,
-      nama_pemilik: namaPemilikPerusahaan,
-      nama_penanggung_jawab: namaPenanggungJawab,
-      jabatan_penanggung_jawab: jabatanPenanggungJawab,
-      no_telp_kantor: noTelpKantor,
-      no_wa_purchase_order: whatsappPO,
-      email_korespondensi: emailKorespondensiPo,
-      nama_kontak: namaKontak,
-      jabatan_kontak: jabatan,
-      no_wa_keuangan: whatsappKeuangan,
-      email_korespondensi_keuangan: emailKorespondensiKeuangan,
-      nama_kontak_keuangan: namaKontakKeuangan,
-      jabatan_keuangan: jabatanKeuangan,
-      term_pembayaran: termPembayaran,
-      bank: bank,
-      no_rekening_bank: nomorRekening,
-      nama_rekening_bank: namaRekening,
-      kantor_cabang_bank: kantorCabangBank,
+      npwp: npwp.trim(),
+      website: website.trim(),
+      nama_pemilik: namaPemilikPerusahaan.trim(),
+      nama_penanggung_jawab: namaPenanggungJawab.trim(),
+      jabatan_penanggung_jawab: jabatanPenanggungJawab.trim(),
+      no_telp_kantor: noTelpKantor.trim(),
+      no_wa_purchase_order: whatsappPO.trim(),
+      email_korespondensi: emailKorespondensiPo.trim(),
+      nama_kontak: namaKontak.trim(),
+      jabatan_kontak: jabatan.trim(),
+      no_wa_keuangan: whatsappKeuangan.trim(),
+      email_korespondensi_keuangan: emailKorespondensiKeuangan.trim(),
+      nama_kontak_keuangan: namaKontakKeuangan.trim(),
+      jabatan_keuangan: jabatanKeuangan.trim(),
+      term_pembayaran: termPembayaran.trim(),
+      bank: bank.trim(),
+      no_rekening_bank: nomorRekening.trim(),
+      nama_rekening_bank: namaRekening.trim(),
+      kantor_cabang_bank: kantorCabangBank.trim(),
       metode_pengiriman: metodePengiriman.value,
-      rebate: rebate,
-      marketing_fee: marketingFee,
-      listing_fee: listingFee,
-      promotion_found: promotionFund,
+      rebate: rebate.trim(),
+      marketing_fee: marketingFee.trim(),
+      listing_fee: listingFee.trim(),
+      promotion_found: promotionFund.trim(),
       file_npwp: npwpText,
       file_ktp_pemilik: ktpPemilikText,
       file_ktp_penanggung_jawab: ktpPenanggungJawabText,
@@ -259,9 +262,10 @@ const Profile = () => {
       file_nib: nibText,
       file_screenshot_rekening: ssRekeningText,
       file_sertikasi_bpom: sertifBpomText,
+      status: "PENDING"
     };
 
-    await Api.put(`/vendors/100`, inititalValue, {
+    await Api.put(`/vendors/${location.state.vendor_id}`, inititalValue, {
       headers: {
         "content-type": "application/json",
       },
@@ -467,6 +471,26 @@ const Profile = () => {
                               />
                             </div>
                           </div>
+                          <div className="flex gap-2 items-center mb-3 w-full">
+                            <div className="whitespace-nowrap flex">
+                              <label htmlFor="" className="w-72">
+                                Kode
+                              </label>
+                              <div>:</div>
+                            </div>
+                            <div className="w-full relative">
+                              <input
+                                value={kode}
+                                onChange={(e) =>
+                                  setKode(e.target.value)
+                                }
+                                type="text"
+                                name=""
+                                id=""
+                                className="w-full h-[36px] border border-slate-300 rounded-sm focus:border focus:border-[#0077b6]  "
+                              />
+                            </div>
+                          </div>
                         </>
                       ) : (
                         <>
@@ -514,6 +538,25 @@ const Profile = () => {
                                 value={namaPerusahaan}
                                 onChange={(e) =>
                                   setNamaPerusahaan(e.target.value)
+                                }
+                                type="text"
+                                name=""
+                                id=""
+                                className="w-full h-[36px] border border-slate-300 rounded-sm focus:border focus:border-[#0077b6]  "
+                              />
+                            </div>
+                          </div>
+                          <div className="flex flex-col gap-2 mb-3 w-full">
+                            <div className="whitespace-nowrap flex">
+                              <label htmlFor="" className="w-72">
+                                Kode
+                              </label>
+                            </div>
+                            <div className="w-full relative">
+                              <input
+                                value={kode}
+                                onChange={(e) =>
+                                  setKode(e.target.value)
                                 }
                                 type="text"
                                 name=""

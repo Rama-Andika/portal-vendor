@@ -5,56 +5,64 @@ import toast from "react-hot-toast";
 import { useState } from "react";
 import { useEffect } from "react";
 import Cookies from "js-cookie";
+import generateString from "../components/functions/GenerateRandomString";
+import { FaEye, FaEyeSlash } from "react-icons/fa";
+import { CircularProgress } from "@mui/material";
 
 const Login = () => {
   const navigate = useNavigate();
   const [username, setUsername] = useState("");
   const [password, setPassword] = useState("");
 
-  const [users, setUsers] = useState([]);
+  const [showPassword, setShowPassword] = useState(false);
+  const [loading, setLoading] = useState(false)
+
   const unsplashimg = {
     src: "https://source.unsplash.com/1600x900/?random",
     alt: "random unsplash image",
   };
 
-  const fetchUser = async () => {
-    await Api.get("/users").then((response) => setUsers(response.data));
-  };
-
-  const onSubmitLogin = (e) => {
+  const onSubmitLogin = async (e) => {
+    setLoading(true)
     e.preventDefault();
-    // eslint-disable-next-line array-callback-return
-    const login = users.filter(
-      (user) => user.username === username && user.password === password
-    );
-    if (login.length > 0) {
-      toast.success("Login Success", {
-        position: "top-right",
-        style: {
-          borderRadius: "10px",
-          background: "#333",
-          color: "#fff",
-        },
-      });
-      Cookies.set("token", "grgr464464646hthth56557")
-      Cookies.set("vendor_id", login[0].vendor_id)
-      navigate(`/vendor/profile`);
-    } else {
-      toast.error("Login Failed!", {
-        position: "top-right",
-        style: {
-          borderRadius: "10px",
-          background: "#333",
-          color: "#fff",
-        },
-      });
-    }
+    await Api.get("/users").then((response) => {
+      // eslint-disable-next-line array-callback-return
+      const login = response.data.filter(
+        (user) => user.username === username && user.password === password
+      );
+      if (login.length > 0) {
+        toast.success("Login Success", {
+          position: "top-right",
+          style: {
+            borderRadius: "10px",
+            background: "#333",
+            color: "#fff",
+          },
+        });
+        Cookies.set("token", generateString(10));
+        Cookies.set("vendor_id", login[0].vendor_id);
+        console.log(login[0].vendor_id);
+        navigate(`/vendor/profile`, {
+          state: { vendor_id: login[0].vendor_id },
+        });
+        setLoading(false)
+      } else {
+        toast.error("Login Failed!", {
+          position: "top-right",
+          style: {
+            borderRadius: "10px",
+            background: "#333",
+            color: "#fff",
+          },
+        });
+        setLoading(false)
+      }
+    });
   };
 
   useEffect(() => {
-    fetchUser();
-    Cookies.remove("token")
-    Cookies.remove("vendor_id")
+    Cookies.remove("token");
+    Cookies.remove("vendor_id");
   }, []);
 
   return (
@@ -83,26 +91,42 @@ const Login = () => {
                 value={username}
                 required
                 type="text"
+                onKeyDown={(evt) => evt.key === " " && evt.preventDefault()}
                 onChange={(e) => setUsername(e.target.value)}
               />
             </div>
             <div>
               <div className="mb-2 block">
-                <Label htmlFor="password1" value="Your password" />
+                <Label htmlFor="password1" value="Password" />
               </div>
-              <TextInput
-                id="password1"
-                required
-                type="password"
-                value={password}
-                onChange={(e) => setPassword(e.target.value)}
-              />
+              <div className="flex gap-1 items-center">
+                <TextInput
+                  id="password1"
+                  className="w-[95%]"
+                  required
+                  type={`${showPassword ? "text" : "password"}`}
+                  value={password}
+                  onChange={(e) => setPassword(e.target.value)}
+                />
+                <div
+                  onClick={() => setShowPassword((prev) => !prev)}
+                  className="cursor-pointer"
+                >
+                  {showPassword ? <FaEyeSlash /> : <FaEye />}{" "}
+                </div>
+              </div>
             </div>
             <div className="flex flex-col gap-2">
-              <div className="flex items-center gap-2">
-                <Checkbox id="remember" />
-                <Label htmlFor="remember">Remember me</Label>
+              <div className="flex justify-between items-center">
+                <div className="flex items-center gap-2">
+                  <Checkbox id="remember" />
+                  <Label htmlFor="remember">Remember me</Label>
+                </div>
+                <div className="text-[12px] text-slate-400 cursor-pointer hover:text-blue-400 hover:underline">
+                  Lupa Password?
+                </div>
               </div>
+
               <Link to="/wh-smith">
                 <div className="text-[12px] text-slate-400 cursor-pointer hover:text-blue-400 hover:underline">
                   Login sebagai WH Smith
@@ -120,10 +144,16 @@ const Login = () => {
 
             <button
               type="submit"
+              disabled={loading ? true:false}
               className="bg-[#0077b6] py-3 text-white rounded-md shadow-sm "
               onClick={(e) => onSubmitLogin(e)}
             >
-              LOGIN
+              {loading ? (
+                <CircularProgress sx={{ color: "white"}} />
+              ):(
+                'LOGIN'
+              )}
+              
             </button>
           </form>
         </div>
