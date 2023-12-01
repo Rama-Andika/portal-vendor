@@ -1,5 +1,5 @@
 import Footer from "../components/Footer";
-import Navbar from "../components/Navbar";
+import NavbarAdmin from "../components/NavbarAdmin";
 import SidebarComponentWh from "../components/SidebarComponentWh";
 import { useStateContext } from "../contexts/ContextProvider";
 
@@ -36,7 +36,7 @@ const AdminWhSmith = ({ children }) => {
         }`}
       >
         <div className="fixed md:static bg-main-bg dark:bg-main-dark-bg navbar w-full">
-          <Navbar />
+          <NavbarAdmin />
         </div>
 
         <div>{children}</div>

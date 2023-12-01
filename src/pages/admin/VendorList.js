@@ -1,43 +1,126 @@
-import { Backdrop, CircularProgress, Fade, Modal, Pagination } from "@mui/material";
+import {
+  Backdrop,
+  CircularProgress,
+  Fade,
+  Modal
+} from "@mui/material";
 import { useStateContext } from "../../contexts/ContextProvider";
 import AdminWhSmith from "../../layouts/AdminWhSmith";
 
 import { useEffect, useState } from "react";
-import Api from "../../api";
 import titleCase from "../../components/functions/TitleCase";
+import Cookies from "js-cookie";
+import toast from "react-hot-toast";
+import { useNavigate } from "react-router-dom";
+import { PiFileZipDuotone } from "react-icons/pi";
+import isEmpty from "../../components/functions/CheckEmptyObject";
 
+const api = process.env.REACT_APP_BASEURL;
+const apiExport = process.env.REACT_APP_EXPORT_URL;
 const VendorList = () => {
   const { screenSize } = useStateContext();
+  // eslint-disable-next-line no-unused-vars
   const [page, setPage] = useState(1);
   const [open, setOpen] = useState(false);
+  // eslint-disable-next-line no-unused-vars
   const [term, setTerm] = useState("");
-  const [openBackdrop, setOpenBackdrop] = useState(false)
+  const [openBackdrop, setOpenBackdrop] = useState(false);
 
-  const [listVendor, setListVendor] = useState([])
+  const [name, setName] = useState("");
+  const [code, setCode] = useState("");
+  const [location, setLocation] = useState("");
+  const [email, setEmail] = useState("");
 
-  //const handleOpen = () => setOpen(true);
+  const [listVendor, setListVendor] = useState([]);
+  const [vendorDetail, setVendorDetail] = useState({});
+
+  const navigate = useNavigate();
+  const handleOpen = () => setOpen(true);
   const handleClose = () => setOpen(false);
 
+  // eslint-disable-next-line no-unused-vars
   const onChangePagination = (e, value) => {
     setPage(value);
   };
 
-  const onChangeTerm = (e) => {
-    e.target.validity.valid ? setTerm(e.target.value) : setTerm("");
-  };
+  // const onChangeTerm = (e) => {
+  //   e.target.validity.valid ? setTerm(e.target.value) : setTerm("");
+  // };
 
-  const fetchData = async () => {
-    setOpenBackdrop(true)
-    await Api.get('portal-vendor/list/vendors', {status: "ACTIVE"}).then((response) => {
-      setOpenBackdrop(false)
-      setListVendor(response.data.data)
+  // eslint-disable-next-line no-new-object
+  const fetchData = async (parameter = new Object()) => {
+    setOpenBackdrop(true);
+    parameter["status"] = "APPROVED";
+    await fetch(`${api}api/portal-vendor/list/vendors`, {
+      method: "POST",
+      body: JSON.stringify(parameter),
     })
-  }
+      .then((response) => response.json())
+      .then((res) => {
+        setOpenBackdrop(false);
+        setListVendor(res.data);
+      })
+      .catch((err) => {
+        setOpenBackdrop(false);
+      });
+  };
 
   useEffect(() => {
     window.scrollTo(0, 0);
-    fetchData()
+    fetchData();
   }, []);
+
+  const onSearch = (e) => {
+    e.preventDefault();
+    let parameter = {};
+    if (name.trim().length > 0) {
+      parameter["name"] = name.trim();
+    }
+    if (code.trim().length > 0) {
+      parameter["code"] = code.trim();
+    }
+    if (location.trim().length > 0) {
+      parameter["location"] = location.trim();
+    }
+    if (email.trim().length > 0) {
+      parameter["email"] = email.trim();
+    }
+
+    fetchData(parameter);
+  };
+
+  const onClickEdit = (item) => {
+    if (Cookies.get("admin_token") !== undefined) {
+      setVendorDetail(item);
+      handleOpen();
+    } else {
+      navigate("/wh-smith");
+      toast.error("Silahkan Login Terlebih Dahulu!", {
+        position: "top-right",
+        style: {
+          borderRadius: "10px",
+          background: "#333",
+          color: "#fff",
+        },
+      });
+    }
+  };
+
+  const onClickDownload = (id) => {
+    if (Cookies.get("admin_token") !== undefined) {
+      window.location = `${apiExport}fin/transactionact/portalvendorinvoicedownload.jsp?oid=${id}`;
+    } else {
+      navigate("/wh-smith");
+      toast.error("Silahkan Login Terlebih Dahulu!", {
+        position: "top-right",
+        style: {
+          borderRadius: "10px",
+          background: "#333",
+          color: "#fff",
+        },
+      });
+    }
+  };
 
   // const onClickEdit = (index) => {
   //   handleOpen();
@@ -53,7 +136,7 @@ const VendorList = () => {
         <div className="mb-5 w-[70%] max-[638px]:w-full">
           <div className="mb-5 text-slate-400">Parameter Pencarian</div>
           <div>
-            <form action="">
+            <form onSubmit={(e) => onSearch(e)}>
               <div className="flex gap-5 items-center mb-5">
                 <div className="flex flex-col  gap-1  mb-3 w-full ">
                   <div className="whitespace-nowrap flex">
@@ -67,6 +150,8 @@ const VendorList = () => {
                   </div>
                   <div className="w-full relative">
                     <input
+                      value={name}
+                      onChange={(e) => setName(e.target.value.trim())}
                       type="text"
                       name=""
                       id=""
@@ -86,6 +171,8 @@ const VendorList = () => {
                   </div>
                   <div className="w-full relative">
                     <input
+                      value={code}
+                      onChange={(e) => setCode(e.target.value.trim())}
                       type="text"
                       name=""
                       id=""
@@ -107,6 +194,8 @@ const VendorList = () => {
                   </div>
                   <div className="w-full relative">
                     <input
+                      value={location}
+                      onChange={(e) => setLocation(e.target.value.trim())}
                       type="text"
                       name=""
                       id=""
@@ -126,6 +215,8 @@ const VendorList = () => {
                   </div>
                   <div className="w-full relative">
                     <input
+                      value={email}
+                      onChange={(e) => setEmail(e.target.value.trim())}
                       type="text"
                       name=""
                       id=""
@@ -135,7 +226,10 @@ const VendorList = () => {
                 </div>
               </div>
               <div className="flex justify-end mt-2">
-                <button className="py-1 max-[415px]:w-full px-10 rounded-sm shadow-sm bg-[#0077b6] text-white">
+                <button
+                  type="submit"
+                  className="py-1 max-[415px]:w-full px-10 rounded-sm shadow-sm bg-[#0077b6] text-white"
+                >
                   Search
                 </button>
               </div>
@@ -146,7 +240,7 @@ const VendorList = () => {
           <table className="w-full table-monitoring">
             <thead>
               <tr className="text-center whitespace-nowrap border-2 bg-[#eaf4f4]">
-               
+                <td className="p-5 border">Action</td>
                 <td className="p-5 border">No</td>
                 <td className="p-5 border">Supplier Name</td>
                 <td className="p-5 border">Supplier Code</td>
@@ -154,41 +248,60 @@ const VendorList = () => {
                 <td className="p-5 border">Location</td>
                 <td className="p-5 border">Contact Person</td>
                 <td className="p-5 border">Email</td>
+               
               </tr>
             </thead>
             <tbody>
-              {listVendor.map((item, index) => (
-                <tr
-                  key={index}
-                  className="text-center whitespace-nowrap hover:bg-slate-100 border bg-white"
-                >
-                  
-                  <td className="p-5 border">{index + 1}</td>
-                  <td className="text-left p-5 border">
-                    {item.nama}
+              {listVendor.length > 0 ? (
+                listVendor.map((item, index) => (
+                  <tr
+                    key={index}
+                    className="text-center whitespace-nowrap hover:bg-slate-100 border bg-white"
+                  >
+                    <td className="p-5 border">
+                      <div className="flex gap-2 items-center justify-center">
+                        <div
+                          className={`cursor-pointer py-2 px-5 bg-gray-200 rounded-md`}
+                          onClick={() => onClickEdit(item)}
+                        >
+                          Detail
+                        </div>
+                      </div>
+                    </td>
+                    <td className="p-5 border">{index + 1}</td>
+                    <td className="text-left p-5 border">{item.nama}</td>
+                    <td className="p-5 border">{item.kode}</td>
+                    <td className="p-5 border">{item.term_pembayaran}</td>
+                    <td className="p-5 border">{titleCase(item.provinsi)}</td>
+                    <td className="p-5 border">{item.no_wa_purchase_order}</td>
+                    <td className="p-5 border">{item.email_korespondensi}</td>
+               
+                  </tr>
+                ))
+              ) : (
+                <tr>
+                  <td className="text-center p-5" colSpan={7}>
+                    Data Not Found
                   </td>
-                  <td className="p-5 border"></td>
-                  <td className="p-5 border">{item.term_pembayaran}</td>
-                  <td className="p-5 border">{titleCase(item.provinsi)}</td>
-                  <td className="p-5 border">{item.no_wa_purchase_order}</td>
-                  <td className="p-5 border">{item.email_korespondensi}</td>
                 </tr>
-              ))}
+              )}
             </tbody>
           </table>
         </div>
-        <div className="mt-10">
-          <Pagination
-            count={20}
-            page={page}
-            onChange={onChangePagination}
-            showFirstButton
-            showLastButton
-            size="small"
-          />
-        </div>
+        {/* {listVendor.length > 0 && (
+          <div className="mt-10">
+            <Pagination
+              count={20}
+              page={page}
+              onChange={onChangePagination}
+              showFirstButton
+              showLastButton
+              size="small"
+            />
+          </div>
+        )} */}
 
-        <div>
+<div>
           <Modal
             aria-labelledby="transition-modal-title"
             aria-describedby="transition-modal-description"
@@ -203,50 +316,190 @@ const VendorList = () => {
             }}
           >
             <Fade in={open}>
-              <div
-                className={`border-0 bg-white  py-5 px-7 absolute top-[50%] left-1/2 translate-x-[-50%] translate-y-[-50%] h-[400px] overflow-y-auto z-[999999]  ${
-                  screenSize <= 548 ? "w-[90%]" : "w-fit"
-                }`}
-              >
-                <div className="text-[20px] mb-5 font-semibold ">Edit Data</div>
-                <div>
-                  <form action="">
-                    <div className="flex flex-col min-[490px]:flex-row justify-between gap-5 mb-5">
-                      <div>
-                        <div className="mb-2">
-                          <label htmlFor="">Rate</label>
-                        </div>
-                        <div>
-                          <input
-                            type="text"
-                            className="border border-slate-400 focus:border focus:border-[#0077b6] rounded-sm max-[490px]:w-full"
-                          />
-                        </div>
+              {!isEmpty(vendorDetail) && (
+                <div
+                  className={`border-0 bg-white py-5 px-7 absolute top-[50%] left-1/2 translate-x-[-50%] translate-y-[-50%] h-[400px] overflow-y-auto z-[999999]  ${
+                    screenSize <= 548 ? "w-[90%]" : "w-fit"
+                  }`}
+                >
+                  <div className="text-[20px] mb-5 font-semibold ">Detail</div>
+                  <div className="flex flex-col gap-2">
+                    <div className="flex max-[549px]:flex-col max-[549px]:items-start items-center gap-2">
+                      <div className="w-[270px] whitespace-nowrap font-bold">
+                        Nama
                       </div>
-                      <div>
-                        <div className="mb-2">
-                          <label htmlFor="">Term (Days)</label>
-                        </div>
-                        <div>
-                          <input
-                            type="text"
-                            pattern="[0-9]*"
-                            value={term}
-                            onChange={onChangeTerm}
-                            className="border border-slate-400 focus:border focus:border-[#0077b6] rounded-sm max-[490px]:w-full"
-                          />
-                        </div>
+                      <div className="max-[549px]:hidden min-[550px]:block">
+                        :
+                      </div>
+                      <div className="w-[240px] whitespace-nowrap overflow-ellipsis overflow-hidden">
+                        {titleCase(vendorDetail.nama)}
+                      </div>
+                    </div>
+                    <div className="flex max-[549px]:flex-col max-[549px]:items-start items-center gap-2">
+                      <div className="w-[270px] whitespace-nowrap font-bold">
+                        Tipe Perusahaan
+                      </div>
+                      <div className="max-[549px]:hidden min-[550px]:block">
+                        :
+                      </div>
+                      <div className="w-[240px] whitespace-nowrap overflow-ellipsis overflow-hidden">
+                        {titleCase(vendorDetail.tipe_perusahaan)}
+                      </div>
+                    </div>
+                    <div className="flex max-[549px]:flex-col max-[549px]:items-start items-center gap-2">
+                      <div className="w-[270px] whitespace-nowrap font-bold">
+                        Tipe Perusahaan Lainnya
+                      </div>
+                      <div className="max-[549px]:hidden min-[550px]:block">
+                        :
+                      </div>
+                      <div className="w-[240px] whitespace-nowrap overflow-ellipsis overflow-hidden">
+                        {titleCase(vendorDetail.tipe_perusahaan_lainnya)}
                       </div>
                     </div>
 
-                    <div className="flex justify-end">
-                      <button className="bg-[#0077b6] px-5 py-2 shadow-sm rounded-sm text-white ">
-                        Simpan
-                      </button>
+                    <div className="flex max-[549px]:flex-col max-[549px]:items-start gap-2">
+                      <div className="w-[270px] whitespace-nowrap font-bold">
+                        Alamat
+                      </div>
+                      <div className="max-[549px]:hidden min-[550px]:block">
+                        :
+                      </div>
+                      <div className="w-[240px] max-[549px]:w-full whitespace-pre-wrap">
+                        {vendorDetail.alamat}
+                      </div>
                     </div>
-                  </form>
+                    <div className="flex max-[549px]:flex-col max-[549px]:items-start items-center gap-2">
+                      <div className="w-[270px] whitespace-nowrap font-bold">
+                        Provinsi
+                      </div>
+                      <div className="max-[549px]:hidden min-[550px]:block">
+                        :
+                      </div>
+                      <div className="w-[240px] whitespace-nowrap overflow-ellipsis overflow-hidden">
+                        {titleCase(vendorDetail.provinsi)}
+                      </div>
+                    </div>
+                    <div className="flex max-[549px]:flex-col max-[549px]:items-start items-center gap-2">
+                      <div className="w-[270px] whitespace-nowrap font-bold">
+                        Kota
+                      </div>
+                      <div className="max-[549px]:hidden min-[550px]:block">
+                        :
+                      </div>
+                      <div className="w-[240px] whitespace-nowrap overflow-ellipsis overflow-hidden">
+                        {titleCase(vendorDetail.kota)}
+                      </div>
+                    </div>
+                    <div className="flex max-[549px]:flex-col max-[549px]:items-start  gap-2">
+                      <div className="w-[270px] whitespace-nowrap font-bold">
+                        Kode Pos
+                      </div>
+                      <div className="max-[549px]:hidden min-[550px]:block">
+                        :
+                      </div>
+                      <div className="w-[240px] whitespace-nowrap overflow-ellipsis overflow-hidden">
+                        {titleCase(vendorDetail.kode_pos)}
+                      </div>
+                    </div>
+                    <div className="flex max-[549px]:flex-col max-[549px]:items-start gap-2">
+                      <div className="w-[270px] whitespace-nowrap font-bold">
+                        Tipe Pembelian
+                      </div>
+                      <div className="max-[549px]:hidden min-[550px]:block">
+                        :
+                      </div>
+                      <div className="w-[240px] whitespace-nowrap overflow-ellipsis overflow-hidden">
+                        {titleCase(vendorDetail.tipe_pembelian)}
+                      </div>
+                    </div>
+                    <div className="flex max-[549px]:flex-col max-[549px]:items-start gap-2">
+                      <div className="w-[270px] whitespace-nowrap font-bold">
+                        Status Pajak
+                      </div>
+                      <div className="max-[549px]:hidden min-[550px]:block">
+                        :
+                      </div>
+                      <div className="w-[240px] whitespace-nowrap overflow-ellipsis overflow-hidden">
+                        {vendorDetail.status_pajak}
+                      </div>
+                    </div>
+                    <div className="flex max-[549px]:flex-col max-[549px]:items-start items-center gap-2">
+                      <div className="w-[270px] whitespace-nowrap font-bold">
+                        NPWP
+                      </div>
+                      <div className="max-[549px]:hidden min-[550px]:block">
+                        :
+                      </div>
+                      <div className="w-[240px] whitespace-nowrap overflow-ellipsis overflow-hidden">
+                        {vendorDetail.npwp}
+                      </div>
+                    </div>
+                    <div className="flex max-[549px]:flex-col max-[549px]:items-start gap-2">
+                      <div className="w-[270px] whitespace-nowrap font-bold">
+                        Website
+                      </div>
+                      <div className="max-[549px]:hidden min-[550px]:block">
+                        :
+                      </div>
+                      <div className="w-[240px] whitespace-nowrap overflow-ellipsis overflow-hidden">
+                        {vendorDetail.website}
+                      </div>
+                    </div>
+                    <div className="flex max-[549px]:flex-col max-[549px]:items-start gap-2">
+                      <div className="w-[270px] whitespace-nowrap font-bold">
+                        Nama Pemilik
+                      </div>
+                      <div className="max-[549px]:hidden min-[550px]:block">
+                        :
+                      </div>
+                      <div className="w-[240px] whitespace-nowrap overflow-ellipsis overflow-hidden">
+                        {titleCase(vendorDetail.nama_pemilik)}
+                      </div>
+                    </div>
+                    <div className="flex max-[549px]:flex-col max-[549px]:items-start gap-2">
+                      <div className="w-[270px] whitespace-nowrap font-bold">
+                        Nama Penanggung Jawab
+                      </div>
+                      <div className="max-[549px]:hidden min-[550px]:block">
+                        :
+                      </div>
+                      <div className="w-[240px] whitespace-nowrap overflow-ellipsis overflow-hidden">
+                        {titleCase(vendorDetail.nama_penanggung_jawab)}
+                      </div>
+                    </div>
+
+                    <button
+                      type="button"
+                      onClick={() => onClickDownload(vendorDetail.id)}
+                      className="mt-5 rounded-sm py-2 px-5 text-white bg-[#d4a373] w-fit cursor-pointer flex gap-1 items-center"
+                    >
+                      <div>
+                        <PiFileZipDuotone />
+                      </div>
+                      <div>Download</div>
+                    </button>
+                  </div>
+
+                  <div
+                    className={` max-[402px]:flex-col items-center max-[402px]:items-start gap-2 mt-5 ${
+                      vendorDetail.status === "APPROVED" ? "hidden" : "flex"
+                    } `}
+                  >
+                    
+                  </div>
+
+                  <div className="mt-5 flex max-[479px]:flex-col max-[479px]:items-start items-center gap-2 text-center justify-between">
+                    <div
+                      onClick={handleClose}
+                      className="rounded-md py-2 px-5 shadow-sm border border-gray-400 cursor-pointer max-[479px]:w-full"
+                    >
+                      Back
+                    </div>
+                    
+                  </div>
                 </div>
-              </div>
+              )}
             </Fade>
           </Modal>
         </div>

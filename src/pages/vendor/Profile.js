@@ -5,14 +5,14 @@ import { useEffect, useRef, useState } from "react";
 import Select from "react-select";
 //import { MdKeyboardArrowDown } from "react-icons/md";
 import ApiDataWilayahIndonesia from "../../api/ApiDataWilayahIndonesia";
-import { PiWarningCircleLight } from "react-icons/pi";
-import Api from "../../api";
+import { PiFileZipDuotone, PiWarningCircleLight } from "react-icons/pi";
 import toast from "react-hot-toast";
 import Cookies from "js-cookie";
 import { Backdrop, CircularProgress } from "@mui/material";
 import { FaCloudUploadAlt } from "react-icons/fa";
 import titleCase from "../../components/functions/TitleCase";
-import { useLocation } from "react-router-dom";
+import GetBase64 from "../../components/functions/GetBase64";
+import { useNavigate } from "react-router-dom";
 
 const options = [
   { value: "cv", label: "CV", key: 1 },
@@ -37,7 +37,8 @@ const optionMetodePengiriman = [
   { value: "laut", label: "Laut", key: 2 },
   { value: "udara", label: "Udara", key: 3 },
 ];
-
+const api = process.env.REACT_APP_BASEURL;
+const apiExport = process.env.REACT_APP_EXPORT_URL;
 const Profile = () => {
   const { screenSize } = useStateContext();
   const [optionProvinsi, setOptionProvinsi] = useState([]);
@@ -53,6 +54,7 @@ const Profile = () => {
   const [tipePembelian, setTipePembelian] = useState({});
   const [npwp, setNpwp] = useState("");
   const [statusPajak, setStatusPajak] = useState({});
+  const [status, setStatus] = useState("");
   const [website, setWebsite] = useState("");
   const [namaPemilikPerusahaan, setNamaPemilikPerusahaan] = useState("");
   const [namaPenanggungJawab, setNamaPenanggungJawab] = useState("");
@@ -68,6 +70,7 @@ const Profile = () => {
   const [emailKorespondensiKeuangan, setEmailKorespondensiKeuangan] =
     useState("");
   const [termPembayaran, setTermPembayaran] = useState("");
+  const [pengembalianBarang, setPengembalianBarang] = useState("");
   const [bank, setBank] = useState("");
   const [nomorRekening, setRekening] = useState("");
   const [namaRekening, setNamaRekening] = useState("");
@@ -87,11 +90,11 @@ const Profile = () => {
   const [sertifBpomFile, setSertifBpomFile] = useState(null);
 
   const id = Cookies.get("vendor_id");
-  const location = useLocation();
-  console.log(location.state.vendor_id)
+
+  const navigate = useNavigate();
 
   const company_section = useRef();
-  const [openBackdrop, setOpenBackdrop] = useState(false)
+  const [openBackdrop, setOpenBackdrop] = useState(false);
 
   const customeStyles = {
     control: (baseStyles, state) => ({
@@ -124,103 +127,92 @@ const Profile = () => {
   };
 
   const fetchVendor = async () => {
-    setOpenBackdrop(true)
-    await Api.get(`/vendors/${location.state.vendor_id}`).then((response) => {
-      const data = response.data;
-      setNamaPerusahaan(data.nama)
-      setTipePerusahaan({value: data.tipe_perusahaan, label: titleCase(data.tipe_perusahaan)})
-      setTipePerusahaanText(data.tipe_perusahaan_lainnya)
-      setProvinsi({value: data.provinsi, label: data.provinsi.toUpperCase()})
-      setAlamat(data.alamat)
-      setKota(data.kota)
-      setKodePos(data.kode_pos)
-      setTipePembelian({value: data.tipe_pembelian, label: titleCase(data.tipe_pembelian)})
-      if(data.status_pajak === "PKP"){
-        setStatusPajak({value: data.status_pajak, label: "Perusahaan Kena Pajak (PKP)"})
-      }else{
-        setStatusPajak({value: data.status_pajak, label: "Non Perusahaan Kena Pajak (NPKP)"})
-      }     
-      setNpwp(data.npwp)
-      setWebsite(data.website)
-      setNamaPemilikPerusahaan(data.nama_pemilik)
-      setNamaPenanggungJawab(data.nama_penanggung_jawab)
-      setJabatanPenanggungJawab(data.jabatan_penanggung_jawab)
-      setNoTelpKantor(data.no_telp_kantor)
-      setWhatsappPO(data.no_wa_purchase_order)
-      setEmailKorespondensiPo(data.email_korespondensi)
-      setNamaKontak(data.nama_kontak)
-      setJabatan(data.jabatan_kontak)
-      setWhatsappKeuangan(data.no_wa_keuangan)
-      setEmailKorespondensiKeuangan(data.email_korespondensi_keuangan)
-      setNamaKontakKeuangan(data.nama_kontak_keuangan)
-      setJabatanKeuangan(data.jabatan_keuangan)
-      setTermPembayaran(data.term_pembayaran)
-      setBank(data.bank)
-      setRekening(data.no_rekening_bank)
-      setNamaRekening(data.nama_rekening_bank)
-      setKantorCabangBank(data.kantor_cabang_bank)
-      setMetodePengiriman({value: data.metode_pengiriman, label: titleCase(data.metode_pengiriman)})
-      setRebate(data.rebate)
-      setMarketingFee(data.merketing_fee)
-      setListingFee(data.listingFee)
-      setPromotionFund(data.promotion_found)
-      setOpenBackdrop(false)
-    });
+    setOpenBackdrop(true);
+
+    await fetch(`${api}api/portal-vendor/list/vendors`, {
+      method: "POST",
+      body: JSON.stringify({
+        id: id,
+      }),
+    })
+      .then((response) => response.json())
+      .then((res) => {
+        if (res.data.length > 0) {
+          setOpenBackdrop(false);
+          const data = res.data[0];
+          setNamaPerusahaan(data.nama);
+          setKode(data.kode);
+          setTipePerusahaan({
+            value: data.tipe_perusahaan,
+            label: titleCase(data.tipe_perusahaan),
+          });
+          setTipePerusahaanText(data.tipe_perusahaan_lainnya);
+          setProvinsi({
+            value: data.provinsi,
+            label: data.provinsi.toUpperCase(),
+          });
+          setAlamat(data.alamat);
+          setKota(data.kota);
+          setKodePos(data.kode_pos);
+          setTipePembelian({
+            value: data.tipe_pembelian,
+            label: titleCase(data.tipe_pembelian),
+          });
+          if (data.status_pajak === "PKP") {
+            setStatusPajak({
+              value: data.status_pajak,
+              label: "Perusahaan Kena Pajak (PKP)",
+            });
+          } else {
+            setStatusPajak({
+              value: data.status_pajak,
+              label: "Non Perusahaan Kena Pajak (NPKP)",
+            });
+          }
+          setNpwp(data.npwp);
+          setWebsite(data.website);
+          setNamaPemilikPerusahaan(data.nama_pemilik);
+          setNamaPenanggungJawab(data.nama_penanggung_jawab);
+          setJabatanPenanggungJawab(data.jabatan_penanggung_jawab);
+          setNoTelpKantor(data.no_telp_kantor);
+          setWhatsappPO(data.no_wa_purchase_order);
+          setEmailKorespondensiPo(data.email_korespondensi);
+          setNamaKontak(data.nama_kontak);
+          setJabatan(data.jabatan_kontak);
+          setWhatsappKeuangan(data.no_wa_keuangan);
+          setEmailKorespondensiKeuangan(data.email_korespondensi_keuangan);
+          setNamaKontakKeuangan(data.nama_kontak_keuangan);
+          setJabatanKeuangan(data.jabatan_keuangan);
+          setTermPembayaran(data.term_pembayaran);
+          setBank(data.bank);
+          setRekening(data.no_rekening_bank);
+          setNamaRekening(data.nama_rekening_bank);
+          setKantorCabangBank(data.kantor_cabang_bank);
+          setMetodePengiriman({
+            value: data.metode_pengiriman,
+            label: titleCase(data.metode_pengiriman),
+          });
+          setRebate(data.rebate === 0 ? "" : data.rebate);
+          setMarketingFee(data.marketing_fee === 0 ? "" : data.marketing_fee);
+          setListingFee(data.listing_fee === 0 ? "" : data.listing_fee);
+          setPromotionFund(
+            data.promotion_found === 0 ? "" : data.promotion_found
+          );
+          setStatus(data.status);
+        } else {
+          setOpenBackdrop(false);
+        }
+      })
+      .catch((err) => {
+        setOpenBackdrop(false);
+      });
   };
 
   const updateVendor = async () => {
-    let npwpText;
-    let ktpPemilikText;
-    let ktpPenanggungJawabText;
-    let spkpText;
-    let nibText;
-    let ssRekeningText;
-    let sertifBpomText;
-    setOpenBackdrop(true)
-
-    if (npwpFile !== null) {
-      npwpText = npwpFile.name;
-    } else {
-      npwpText = "";
-    }
-
-    if (ktpPemilikFile !== null) {
-      ktpPemilikText = ktpPemilikFile.name;
-    } else {
-      ktpPemilikText = "";
-    }
-
-    if (ktpPenanggungJawabFile !== null) {
-      ktpPenanggungJawabText = ktpPenanggungJawabFile.name;
-    } else {
-      ktpPenanggungJawabText = "";
-    }
-
-    if (spkpFile !== null) {
-      spkpText = spkpFile.name;
-    } else {
-      spkpText = "";
-    }
-
-    if (nibFile !== null) {
-      nibText = nibFile.name;
-    } else {
-      nibText = "";
-    }
-
-    if (ssPerusahaanFile !== null) {
-      ssRekeningText = ssPerusahaanFile.name;
-    } else {
-      ssRekeningText = "";
-    }
-
-    if (sertifBpomFile !== null) {
-      sertifBpomText = sertifBpomFile.name;
-    } else {
-      sertifBpomText = "";
-    }
+    setOpenBackdrop(true);
 
     const inititalValue = {
+      id: id,
       nama: namaPerusahaan.trim(),
       kode: kode.trim(),
       tipe_perusahaan: tipePerusahaan.value,
@@ -245,7 +237,8 @@ const Profile = () => {
       email_korespondensi_keuangan: emailKorespondensiKeuangan.trim(),
       nama_kontak_keuangan: namaKontakKeuangan.trim(),
       jabatan_keuangan: jabatanKeuangan.trim(),
-      term_pembayaran: termPembayaran.trim(),
+      term_pembayaran: termPembayaran,
+      pengembalian_barang: pengembalianBarang.trim(),
       bank: bank.trim(),
       no_rekening_bank: nomorRekening.trim(),
       nama_rekening_bank: namaRekening.trim(),
@@ -254,46 +247,72 @@ const Profile = () => {
       rebate: rebate.trim(),
       marketing_fee: marketingFee.trim(),
       listing_fee: listingFee.trim(),
-      promotion_found: promotionFund.trim(),
-      file_npwp: npwpText,
-      file_ktp_pemilik: ktpPemilikText,
-      file_ktp_penanggung_jawab: ktpPenanggungJawabText,
-      file_spkp: spkpText,
-      file_nib: nibText,
-      file_screenshot_rekening: ssRekeningText,
-      file_sertikasi_bpom: sertifBpomText,
-      status: "PENDING"
+      promotion_found: promotionFund,
+      file_npwp: npwpFile !== null ? npwpFile : null,
+      file_ktp_pemilik: ktpPemilikFile !== null ? ktpPemilikFile : null,
+      file_ktp_penanggung_jawab:
+        ktpPenanggungJawabFile !== null ? ktpPenanggungJawabFile : null,
+      file_spkp: spkpFile !== null ? spkpFile : null,
+      file_nib: nibFile !== null ? nibFile : null,
+      file_screenshot_rekening:
+        ssPerusahaanFile !== null ? ssPerusahaanFile : null,
+      file_sertikasi_bpom: sertifBpomFile !== null ? sertifBpomFile : null,
+      status: status,
     };
-
-    await Api.put(`/vendors/${location.state.vendor_id}`, inititalValue, {
-      headers: {
-        "content-type": "application/json",
-      },
-    })
-      .then((response) => {
-        setOpenBackdrop(false)
-        toast.success("Update Success!", {
-          position: "top-right",
-          style: {
-            borderRadius: "10px",
-            background: "#333",
-            color: "#fff",
-          },
-        });
+    if (Cookies.get("token") !== undefined) {
+      await fetch(`${api}api/portal-vendor/sign-up`, {
+        method: "POST",
+        body: JSON.stringify(inititalValue),
       })
-      .catch((response) => {
-        response.jsonp({
-          body: "error"
+        .then((response) => response.json())
+        .then((res) => {
+          if (res.data === 0) {
+            fetchVendor();
+            setOpenBackdrop(false);
+            toast.error("Update Failed!", {
+              position: "top-right",
+              style: {
+                borderRadius: "10px",
+                background: "#333",
+                color: "#fff",
+              },
+            });
+          } else {
+            fetchVendor();
+            setOpenBackdrop(false);
+            toast.success("Update Success!", {
+              position: "top-right",
+              style: {
+                borderRadius: "10px",
+                background: "#333",
+                color: "#fff",
+              },
+            });
+          }
         })
-        toast.error("Update Failed!", {
-          position: "top-right",
-          style: {
-            borderRadius: "10px",
-            background: "#333",
-            color: "#fff",
-          },
+        .catch((err) => {
+          fetchVendor();
+          setOpenBackdrop(false);
+          toast.error("Update Failed!", {
+            position: "top-right",
+            style: {
+              borderRadius: "10px",
+              background: "#333",
+              color: "#fff",
+            },
+          });
         });
+    } else {
+      navigate("/");
+      toast.error("Silahkan Login Terlebih Dahulu!", {
+        position: "top-right",
+        style: {
+          borderRadius: "10px",
+          background: "#333",
+          color: "#fff",
+        },
       });
+    }
   };
 
   useEffect(() => {
@@ -303,29 +322,149 @@ const Profile = () => {
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, []);
 
+  useEffect(() => {
+    if (Cookies.get("token") === undefined) {
+      navigate("/");
+    }
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [updateVendor]);
+
   const formatNpwp = (value) => {
     try {
       var cleaned = ("" + value).replace(/\D/g, "");
       var match = cleaned.match(
-        /(\d{0,2})?(\d{0,3})?(\d{0,3})?(\d{0,1})?(\d{0,3})?(\d{0,3})$/
+        /(\d{0,1})?(\d{0,2})?(\d{0,3})?(\d{0,3})?(\d{0,1})?(\d{0,3})?(\d{0,3})$/
       );
 
       var nilai = [
-        match[1],
-        match[2] ? "." : "",
+        match[1] && "0",
         match[2],
         match[3] ? "." : "",
         match[3],
         match[4] ? "." : "",
         match[4],
-        match[5] ? "-" : "",
+        match[5] ? "." : "",
         match[5],
-        match[6] ? "." : "",
+        match[6] ? "-" : "",
         match[6],
+        match[7] ? "." : "",
+        match[7],
       ].join("");
       setNpwp(nilai);
     } catch (err) {
       return "";
+    }
+  };
+
+  const onChangeNpwpFile = (e) => {
+    if (e.target.files[0] !== undefined) {
+      if (e.target.files[0].size <= 2000000) {
+        GetBase64(e.target.files[0])
+          .then((result) => {
+            setNpwpFile(result);
+          })
+          .catch((err) => {
+            setNpwpFile(null);
+          });
+      } else {
+        setNpwpFile(null);
+      }
+    }
+  };
+
+  const onChangeKtpPemilikFile = (e) => {
+    if (e.target.files[0] !== undefined) {
+      if (e.target.files[0].size <= 2000000) {
+        GetBase64(e.target.files[0])
+          .then((result) => {
+            setKtpPemilikFIle(result);
+          })
+          .catch((err) => {
+            setKtpPemilikFIle(null);
+          });
+      } else {
+        setKtpPemilikFIle(null);
+      }
+    }
+  };
+
+  const onChangeKtpPenanggungJawabFile = (e) => {
+    if (e.target.files[0] !== undefined) {
+      if (e.target.files[0].size <= 2000000) {
+        GetBase64(e.target.files[0])
+          .then((result) => {
+            setKtpPenanggungJawabFile(result);
+          })
+          .catch((err) => {
+            setKtpPenanggungJawabFile(null);
+          });
+      } else {
+        setKtpPenanggungJawabFile(null);
+      }
+    }
+  };
+
+  const onChangeSpkpFile = (e) => {
+    if (e.target.files[0] !== undefined) {
+      if (e.target.files[0].size <= 2000000) {
+        GetBase64(e.target.files[0])
+          .then((result) => {
+            setSpkpFile(result);
+          })
+          .catch((err) => {
+            setSpkpFile(null);
+          });
+      } else {
+        setSpkpFile(null);
+      }
+    }
+  };
+
+  const onChangeNibFile = (e) => {
+    if (e.target.files[0] !== undefined) {
+      if (e.target.files[0].size <= 2000000) {
+        GetBase64(e.target.files[0])
+          .then((result) => {
+            setNibFile(result);
+          })
+          .catch((err) => {
+            setNibFile(null);
+          });
+      } else {
+        setNibFile(null);
+      }
+    }
+  };
+
+  const onChangeSsRekeningFile = (e) => {
+    if (e.target.files[0] !== undefined) {
+      if (e.target.files[0].size <= 2000000) {
+        GetBase64(e.target.files[0])
+          .then((result) => {
+            setSsPerusahaanFile(result);
+          })
+          .catch((err) => {
+            setSsPerusahaanFile(null);
+          });
+      } else {
+        setSsPerusahaanFile(null);
+      }
+    }
+  };
+
+  const onChangeBpomFile = (e) => {
+    if (e.target.files[0] !== undefined) {
+      if (e.target.files[0].size <= 2000000) {
+        GetBase64(e.target.files[0])
+          .then((result) => {
+            setSertifBpomFile(result);
+          })
+          .catch((err) => {
+            setSertifBpomFile(null);
+          });
+      } else {
+        setSertifBpomFile(null);
+      }
     }
   };
 
@@ -357,6 +496,14 @@ const Profile = () => {
     }
   };
 
+  const onChangePengembalianBarang = (e) => {
+    if (e.target.validity.valid) {
+      setPengembalianBarang(e.target.value);
+    } else {
+      setPengembalianBarang("");
+    }
+  };
+
   const onChangeProvinsi = (item) => {
     if (provinsi.value !== item.value) {
       setProvinsi(item);
@@ -381,6 +528,22 @@ const Profile = () => {
     e.target.validity.valid
       ? setPromotionFund(e.target.value)
       : setPromotionFund("");
+  };
+
+  const onClickDownload = () => {
+    if (Cookies.get("token") !== undefined) {
+      window.location = `${apiExport}fin/transactionact/portalvendorinvoicedownload.jsp?oid=${id}`;
+    } else {
+      navigate("/wh-smith");
+      toast.error("Silahkan Login Terlebih Dahulu!", {
+        position: "top-right",
+        style: {
+          borderRadius: "10px",
+          background: "#333",
+          color: "#fff",
+        },
+      });
+    }
   };
 
   // const onClickCompany = () => {
@@ -417,6 +580,24 @@ const Profile = () => {
                     <div className="flex flex-col items-center">
                       {screenSize > 612 ? (
                         <>
+                          <div className="flex gap-2 items-center mb-3 w-full">
+                            <div className="whitespace-nowrap flex">
+                              <label htmlFor="" className="w-72">
+                                Status
+                              </label>
+                              <div>:</div>
+                            </div>
+                            <div className="w-full relative">
+                              <input
+                                value={status}
+                                disabled
+                                type="text"
+                                name=""
+                                id=""
+                                className="bg-gray-200 w-full h-[36px] border border-slate-300 rounded-sm focus:border focus:border-[#0077b6]  "
+                              />
+                            </div>
+                          </div>
                           <div className="flex gap-2 items-center mb-3 w-full">
                             <div className="whitespace-nowrap flex">
                               <label htmlFor="" className="w-72">
@@ -481,19 +662,35 @@ const Profile = () => {
                             <div className="w-full relative">
                               <input
                                 value={kode}
-                                onChange={(e) =>
-                                  setKode(e.target.value)
-                                }
+                                onChange={(e) => setKode(e.target.value)}
                                 type="text"
                                 name=""
                                 id=""
-                                className="w-full h-[36px] border border-slate-300 rounded-sm focus:border focus:border-[#0077b6]  "
+                                disabled
+                                className="bg-gray-200 w-full h-[36px] border border-slate-300 rounded-sm focus:border focus:border-[#0077b6]  "
                               />
                             </div>
                           </div>
                         </>
                       ) : (
                         <>
+                          <div className="flex flex-col gap-2 mb-3 w-full">
+                            <div className="whitespace-nowrap flex">
+                              <label htmlFor="" className="w-72">
+                                Status
+                              </label>
+                            </div>
+                            <div className="w-full relative">
+                              <input
+                                value={status}
+                                disabled
+                                type="text"
+                                name=""
+                                id=""
+                                className="bg-gray-200 w-full h-[36px] border border-slate-300 rounded-sm focus:border focus:border-[#0077b6]  "
+                              />
+                            </div>
+                          </div>
                           <div className="flex flex-col gap-2 mb-3 w-full">
                             <div className="whitespace-nowrap flex">
                               <label htmlFor="" className="w-72">
@@ -555,9 +752,7 @@ const Profile = () => {
                             <div className="w-full relative">
                               <input
                                 value={kode}
-                                onChange={(e) =>
-                                  setKode(e.target.value)
-                                }
+                                onChange={(e) => setKode(e.target.value)}
                                 type="text"
                                 name=""
                                 id=""
@@ -774,7 +969,7 @@ const Profile = () => {
                             </div>
                             <div className="w-full relative">
                               <input
-                                maxLength={20}
+                                maxLength={21}
                                 type="text"
                                 name=""
                                 id=""
@@ -817,7 +1012,7 @@ const Profile = () => {
                             </div>
                             <div className="w-full relative">
                               <input
-                                maxLength={20}
+                                maxLength={21}
                                 type="text"
                                 name=""
                                 id=""
@@ -1288,8 +1483,8 @@ const Profile = () => {
                       pattern="[0-9]*"
                       name=""
                       id=""
-                      value={termPembayaran}
-                      onChange={onChangeTermPembayaran}
+                      value={pengembalianBarang}
+                      onChange={onChangePengembalianBarang}
                       className="w-full h-[36px] border border-slate-300 rounded-sm focus:border focus:border-[#0077b6]  "
                     />
                     <div>Hari</div>
@@ -1385,6 +1580,18 @@ const Profile = () => {
                   </div>
                 </div>
               </form>
+              <div className="flex justify-end max-[415px]:w-full py-4">
+                <button
+                  type="button"
+                  onClick={() => onClickDownload()}
+                  className="mt-5 max-[415px]:w-full rounded-sm py-2 px-5 text-white bg-[#d4a373] w-fit cursor-pointer flex gap-1 items-center"
+                >
+                  <div className="">
+                    <PiFileZipDuotone />
+                  </div>
+                  <div className="w-full">Download Document</div>
+                </button>
+              </div>
             </div>
           </div>
 
@@ -1412,16 +1619,27 @@ const Profile = () => {
 
                   <div className="w-full relative">
                     <label htmlFor="upload-npwp" className="w-fit">
-                      <div className="w-fit flex gap-1 items-center bg-blue-400 py-2 px-5 text-white hover:bg-blue-200 rounded-md">
-                        <span><FaCloudUploadAlt /></span>
-                        <div>Upload</div>
-                      </div>
+                      {npwpFile === null ? (
+                        <div className="w-fit flex gap-1 items-center bg-blue-400 py-2 px-5 text-white hover:bg-blue-200 rounded-md">
+                          <span>
+                            <FaCloudUploadAlt />
+                          </span>
+                          <div>Upload</div>
+                        </div>
+                      ) : (
+                        <div className="w-fit flex gap-1 items-center bg-blue-400 py-2 px-5 text-white hover:bg-blue-200 rounded-md">
+                          <span>
+                            <FaCloudUploadAlt />
+                          </span>
+                          <div>1 File</div>
+                        </div>
+                      )}
                     </label>
                     <input
                       type="file"
-                      onChange={(e) => setNpwpFile(e.target.files[0])}
+                      onChange={onChangeNpwpFile}
                       id="upload-npwp"
-                      accept="image/jpg,.pdf"
+                      accept=".jpg,.pdf"
                       className="hidden w-full h-[36px] border border-slate-300 rounded-sm focus:border focus:border-[#0077b6]  "
                     />
                   </div>
@@ -1439,14 +1657,25 @@ const Profile = () => {
                     </div>
                   </div>
                   <div className="w-full relative">
-                  <label htmlFor="upload-ktppemilik" className="w-fit">
-                      <div className="w-fit flex gap-1 items-center bg-blue-400 py-2 px-5 text-white hover:bg-blue-200 rounded-md">
-                        <span><FaCloudUploadAlt /></span>
-                        <div>Upload</div>
-                      </div>
+                    <label htmlFor="upload-ktppemilik" className="w-fit">
+                      {ktpPemilikFile === null ? (
+                        <div className="w-fit flex gap-1 items-center bg-blue-400 py-2 px-5 text-white hover:bg-blue-200 rounded-md">
+                          <span>
+                            <FaCloudUploadAlt />
+                          </span>
+                          <div>Upload</div>
+                        </div>
+                      ) : (
+                        <div className="w-fit flex gap-1 items-center bg-blue-400 py-2 px-5 text-white hover:bg-blue-200 rounded-md">
+                          <span>
+                            <FaCloudUploadAlt />
+                          </span>
+                          <div>1 File</div>
+                        </div>
+                      )}
                     </label>
                     <input
-                      onChange={(e) => setKtpPemilikFIle(e.target.files[0])}
+                      onChange={onChangeKtpPemilikFile}
                       type="file"
                       id="upload-ktppemilik"
                       accept="image/jpg,.pdf"
@@ -1467,16 +1696,28 @@ const Profile = () => {
                     </div>
                   </div>
                   <div className="w-full relative">
-                  <label htmlFor="upload-ktppenanggungjawab" className="w-fit">
-                      <div className="w-fit flex gap-1 items-center bg-blue-400 py-2 px-5 text-white hover:bg-blue-200 rounded-md">
-                        <span><FaCloudUploadAlt /></span>
-                        <div>Upload</div>
-                      </div>
+                    <label
+                      htmlFor="upload-ktppenanggungjawab"
+                      className="w-fit"
+                    >
+                      {ktpPenanggungJawabFile === null ? (
+                        <div className="w-fit flex gap-1 items-center bg-blue-400 py-2 px-5 text-white hover:bg-blue-200 rounded-md">
+                          <span>
+                            <FaCloudUploadAlt />
+                          </span>
+                          <div>Upload</div>
+                        </div>
+                      ) : (
+                        <div className="w-fit flex gap-1 items-center bg-blue-400 py-2 px-5 text-white hover:bg-blue-200 rounded-md">
+                          <span>
+                            <FaCloudUploadAlt />
+                          </span>
+                          <div>1 File</div>
+                        </div>
+                      )}
                     </label>
                     <input
-                      onChange={(e) =>
-                        setKtpPenanggungJawabFile(e.target.files[0])
-                      }
+                      onChange={onChangeKtpPenanggungJawabFile}
                       type="file"
                       id="upload-ktppenanggungjawab"
                       accept="image/jpg,.pdf"
@@ -1498,15 +1739,26 @@ const Profile = () => {
                     </div>
                   </div>
                   <div className="w-full relative">
-                  <label htmlFor="upload-spkp" className="w-fit">
-                      <div className="w-fit flex gap-1 items-center bg-blue-400 py-2 px-5 text-white hover:bg-blue-200 rounded-md">
-                        <span><FaCloudUploadAlt /></span>
-                        <div>Upload</div>
-                      </div>
+                    <label htmlFor="upload-spkp" className="w-fit">
+                      {spkpFile === null ? (
+                        <div className="w-fit flex gap-1 items-center bg-blue-400 py-2 px-5 text-white hover:bg-blue-200 rounded-md">
+                          <span>
+                            <FaCloudUploadAlt />
+                          </span>
+                          <div>Upload</div>
+                        </div>
+                      ) : (
+                        <div className="w-fit flex gap-1 items-center bg-blue-400 py-2 px-5 text-white hover:bg-blue-200 rounded-md">
+                          <span>
+                            <FaCloudUploadAlt />
+                          </span>
+                          <div>1 File</div>
+                        </div>
+                      )}
                     </label>
                     <input
                       type="file"
-                      onChange={(e) => setSpkpFile(e.target.files[0])}
+                      onChange={onChangeSpkpFile}
                       id="upload-spkp"
                       accept="image/jpg,.pdf"
                       className="hidden w-full h-[36px] border border-slate-300 rounded-sm focus:border focus:border-[#0077b6]  "
@@ -1527,15 +1779,26 @@ const Profile = () => {
                     </div>
                   </div>
                   <div className="w-full relative">
-                  <label htmlFor="upload-nib" className="w-fit">
-                      <div className="w-fit flex gap-1 items-center bg-blue-400 py-2 px-5 text-white hover:bg-blue-200 rounded-md">
-                        <span><FaCloudUploadAlt /></span>
-                        <div>Upload</div>
-                      </div>
+                    <label htmlFor="upload-nib" className="w-fit">
+                      {nibFile === null ? (
+                        <div className="w-fit flex gap-1 items-center bg-blue-400 py-2 px-5 text-white hover:bg-blue-200 rounded-md">
+                          <span>
+                            <FaCloudUploadAlt />
+                          </span>
+                          <div>Upload</div>
+                        </div>
+                      ) : (
+                        <div className="w-fit flex gap-1 items-center bg-blue-400 py-2 px-5 text-white hover:bg-blue-200 rounded-md">
+                          <span>
+                            <FaCloudUploadAlt />
+                          </span>
+                          <div>1 File</div>
+                        </div>
+                      )}
                     </label>
                     <input
                       type="file"
-                      onChange={(e) => setNibFile(e.target.files[0])}
+                      onChange={onChangeNibFile}
                       id="upload-nib"
                       accept="image/jpg,.pdf"
                       className="hidden w-full h-[36px] border border-slate-300 rounded-sm focus:border focus:border-[#0077b6]  "
@@ -1555,14 +1818,25 @@ const Profile = () => {
                     </div>
                   </div>
                   <div className="w-full relative">
-                  <label htmlFor="upload-ssperusahaan" className="w-fit">
-                      <div className="w-fit flex gap-1 items-center bg-blue-400 py-2 px-5 text-white hover:bg-blue-200 rounded-md">
-                        <span><FaCloudUploadAlt /></span>
-                        <div>Upload</div>
-                      </div>
+                    <label htmlFor="upload-ssperusahaan" className="w-fit">
+                      {ssPerusahaanFile === null ? (
+                        <div className="w-fit flex gap-1 items-center bg-blue-400 py-2 px-5 text-white hover:bg-blue-200 rounded-md">
+                          <span>
+                            <FaCloudUploadAlt />
+                          </span>
+                          <div>Upload</div>
+                        </div>
+                      ) : (
+                        <div className="w-fit flex gap-1 items-center bg-blue-400 py-2 px-5 text-white hover:bg-blue-200 rounded-md">
+                          <span>
+                            <FaCloudUploadAlt />
+                          </span>
+                          <div>1 File</div>
+                        </div>
+                      )}
                     </label>
                     <input
-                      onChange={(e) => setSsPerusahaanFile(e.target.files[0])}
+                      onChange={onChangeSsRekeningFile}
                       type="file"
                       id="upload-ssperusahaan"
                       accept="image/jpg,.pdf"
@@ -1591,14 +1865,25 @@ const Profile = () => {
                     :
                   </div>
                   <div className="w-full relative">
-                  <label htmlFor="upload-bpom" className="w-fit">
-                      <div className="w-fit flex gap-1 items-center bg-blue-400 py-2 px-5 text-white hover:bg-blue-200 rounded-md">
-                        <span><FaCloudUploadAlt /></span>
-                        <div>Upload</div>
-                      </div>
+                    <label htmlFor="upload-bpom" className="w-fit">
+                      {sertifBpomFile === null ? (
+                        <div className="w-fit flex gap-1 items-center bg-blue-400 py-2 px-5 text-white hover:bg-blue-200 rounded-md">
+                          <span>
+                            <FaCloudUploadAlt />
+                          </span>
+                          <div>Upload</div>
+                        </div>
+                      ) : (
+                        <div className="w-fit flex gap-1 items-center bg-blue-400 py-2 px-5 text-white hover:bg-blue-200 rounded-md">
+                          <span>
+                            <FaCloudUploadAlt />
+                          </span>
+                          <div>1 File</div>
+                        </div>
+                      )}
                     </label>
                     <input
-                      onChange={(e) => setSertifBpomFile(e.target.files[0])}
+                      onChange={onChangeBpomFile}
                       type="file"
                       id="upload-bpom"
                       accept="image/jpg,.pdf"
@@ -1610,7 +1895,11 @@ const Profile = () => {
             </div>
           </div>
           <div className="flex justify-start max-[415px]:w-full py-4">
-            <button type="button" onClick={updateVendor} className="py-3 max-[415px]:w-full px-10 rounded-sm shadow-sm bg-[#0077b6] text-white">
+            <button
+              type="button"
+              onClick={updateVendor}
+              className="py-3 max-[415px]:w-full px-10 rounded-sm shadow-sm bg-[#0077b6] text-white"
+            >
               Simpan
             </button>
           </div>
@@ -1618,7 +1907,10 @@ const Profile = () => {
       </div>
 
       <Backdrop
-        sx={{ color: '#fff', zIndex: (theme) => theme.zIndex.drawer + 9999999999 }}
+        sx={{
+          color: "#fff",
+          zIndex: (theme) => theme.zIndex.drawer + 9999999999,
+        }}
         open={openBackdrop}
       >
         <CircularProgress color="inherit" />

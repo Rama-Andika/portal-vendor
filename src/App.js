@@ -17,6 +17,7 @@ import Monitoring from "./pages/vendor/Monitoring";
 import EdtPenagihan from "./pages/vendor/penagihan/EdtPenagihan";
 import { Toaster } from "react-hot-toast";
 import PrivateRoute from "./routes/PrivateRoute";
+import PrivateRouteAdmin from "./routes/PrivateRouteAdmin";
 
 function App() {
   return (
@@ -40,24 +41,27 @@ function App() {
             />
             <Route path="vendor/monitoring" element={<Monitoring />} />
           </Route>
+
           <Route path="/wh-smith" element={<LoginWh />} />
           <Route path="/registration" element={<Registration />} />
 
-          <Route
-            path="admin/vendor-&-non-vendor"
-            element={<VendorAndNonVendor />}
-          />
-          <Route path="admin/cod" element={<Cod />} />
-          <Route
-            path="admin/vendor/registration-list"
-            element={<VendorRegistrationList />}
-          />
-          <Route path="admin/vendor/vendor-list" element={<VendorList />} />
-          <Route path="admin/vendor/pending-task" element={<PendingTask />} />
-          <Route
-            path="admin/vendor/listing-penagihan"
-            element={<ListingPenagihan />}
-          />
+          <Route element={<PrivateRouteAdmin />}>
+            <Route
+              path="admin/vendor-&-non-vendor"
+              element={<VendorAndNonVendor />}
+            />
+            <Route path="admin/cod" element={<Cod />} />
+            <Route
+              path="admin/vendor/registration-list"
+              element={<VendorRegistrationList />}
+            />
+            <Route path="admin/vendor/vendor-list" element={<VendorList />} />
+            <Route path="admin/vendor/pending-task" element={<PendingTask />} />
+            <Route
+              path="admin/vendor/listing-penagihan"
+              element={<ListingPenagihan />}
+            />
+          </Route>
         </Routes>
       </BrowserRouter>
     </div>

@@ -4,12 +4,26 @@ import Admin from "../../layouts/Admin";
 import { useEffect, useState } from "react";
 import { Link, useNavigate } from "react-router-dom";
 import Cookies from "js-cookie";
-import Api from "../../api";
 import dayjs from "dayjs";
 import titleCase from "../../components/functions/TitleCase";
 import isEmpty from "../../components/functions/CheckEmptyObject";
+import accountingNumber from "../../components/functions/AccountingNumber";
+import { DatePicker, LocalizationProvider } from "@mui/x-date-pickers";
+import { AdapterDayjs } from "@mui/x-date-pickers/AdapterDayjs";
+import { DemoContainer } from "@mui/x-date-pickers/internals/demo";
+import Select from "react-select";
+import toast from "react-hot-toast";
+
+const srcStatusOptions = [
+  { value: 0, label: "All", key: 0 },
+  { value: "APPROVED", label: "Approved", key: 0 },
+  { value: "DRAFT", label: "Draft", key: 1 },
+  { value: "Waiting_for_approval", label: "Waiting", key: 1 },
+];
 
 const Monitoring = () => {
+  const [totalInvoice, setTotalInvoice] = useState([]);
+
   const { screenSize } = useStateContext();
   const [open, setOpen] = useState(false);
   const [openBackdrop, setOpenBackdrop] = useState(false);
@@ -19,32 +33,113 @@ const Monitoring = () => {
   const [listPenagihan, setListPenagihan] = useState([]);
   const [detail, setDetail] = useState({});
 
+  const [srcStatus, setSrcStatus] = useState({});
+  const [ignoreDate, setIgnoreDate] = useState(1);
+  const [startDate, setStartDate] = useState(dayjs(new Date()));
+  const [endDate, setEndDate] = useState(dayjs(new Date()));
+
   const navigate = useNavigate();
 
-  const fetchData = async () => {
+  const customeStyles = {
+    control: (baseStyles, state) => ({
+      ...baseStyles,
+    }),
+    menu: (baseStyles, state) => ({
+      ...baseStyles,
+    }),
+    option: (baseStyles, state) => ({
+      ...baseStyles,
+      backgroundColor: state.isSelected
+        ? "#569cb8"
+        : state.isFocused && "#caf0f8",
+    }),
+  };
+
+  // eslint-disable-next-line no-new-object
+  const fetchData = async (parameter = new Object()) => {
     setOpenBackdrop(true);
-    await Api.get(`/penagihan?vendor.id=${vendorId}`).then((response) => {
-      setListPenagihan(response.data);
-      setOpenBackdrop(false);
-    });
+    parameter["vendor_id"] = vendorId;
+    const api = process.env.REACT_APP_BASEURL;
+
+    await fetch(`${api}api/portal-vendor/list/penagihan`, {
+      method: "POST",
+      body: JSON.stringify(parameter),
+    })
+      .then((response) => response.json())
+      .then((res) => {
+        // eslint-disable-next-line array-callback-return
+        res.data.map((data) => {
+          var total = 0;
+          data.nilai_invoices.map((nilai) => (total += nilai));
+          setTotalInvoice((prev) => {
+            return [...prev, total.toFixed(2)];
+          });
+        });
+
+        setListPenagihan(res.data);
+        setOpenBackdrop(false);
+      })
+      .catch((err) => {
+        setOpenBackdrop(false);
+      });
   };
 
   const handleOpen = () => setOpen(true);
   const handleClose = () => setOpen(false);
 
   const onClickNoRequest = (item) => {
-    if (item.status === "DRAFT") {
-      navigate(`/vendor/penagihan/edit/${item.id}`, {
-        state: { vendor_id: vendorId },
-      });
+    if (Cookies.get("token") !== undefined) {
+      if (item.status === "DRAFT") {
+        navigate(`/vendor/penagihan/edit/${item.id}`, {
+          state: { vendor_id: vendorId },
+        });
+      } else {
+        handleOpen();
+        setDetail(item);
+      }
     } else {
-      handleOpen();
-      setDetail(item);
+      navigate("/");
+      toast.error("Silahkan Login Terlebih Dahulu!", {
+        position: "top-right",
+        style: {
+          borderRadius: "10px",
+          background: "#333",
+          color: "#fff",
+        },
+      });
     }
+  };
+
+  const onChangeSrcStatus = (item) => {
+    setSrcStatus(item);
+  };
+
+  const onChangeStartDate = (value) => {
+    setStartDate(value);
+  };
+
+  const onChangeEndDate = (value) => {
+    setEndDate(value);
+  };
+
+  const onSearch = (e) => {
+    e.preventDefault();
+    let parameter = {};
+    if (srcStatus.value !== 0) {
+      parameter["status"] = srcStatus.value;
+    }
+
+    if (ignoreDate === 0) {
+      parameter["start_date"] = dayjs(startDate).format("YYYY-MM-DD HH:mm:ss");
+      parameter["end_date"] = dayjs(endDate).format("YYYY-MM-DD HH:mm:ss");
+    }
+
+    fetchData(parameter);
   };
 
   useEffect(() => {
     fetchData();
+
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, []);
 
@@ -56,7 +151,103 @@ const Monitoring = () => {
             screenSize < 768 ? "px-5 pt-20" : "px-10"
           } pt-20 font-roboto `}
         >
-          Monitoring
+          <div className="mb-20 max-[349px]:mb-5">Monitoring</div>
+          <div className="mb-5 w-[80%] max-[638px]:w-full">
+            <div className="mb-5 text-slate-400">Parameter Pencarian</div>
+            <div>
+              <form action="">
+                <div className="flex max-[1254px]:flex-col gap-5 items-center mb-5">
+                  <div className="flex flex-col gap-3 mb-3 w-full ">
+                    <div className="whitespace-nowrap flex">
+                      <label
+                        htmlFor=""
+                        className="w-36 text-[14px] text-slate-400"
+                      >
+                        Status
+                      </label>
+                      <div className="hidden ">:</div>
+                    </div>
+                    <div className="w-full">
+                      <Select
+                        value={srcStatus}
+                        onChange={onChangeSrcStatus}
+                        className="whitespace-nowrap"
+                        options={srcStatusOptions}
+                        noOptionsMessage={() => "Data not found"}
+                        styles={customeStyles}
+                        required
+                      />
+                    </div>
+                  </div>
+                  <div className="flex flex-col gap-1 w-full mb-3 ">
+                    <div className="whitespace-nowrap flex">
+                      <label
+                        htmlFor=""
+                        className="w-36 text-[14px] text-slate-400"
+                      >
+                        Date Submit
+                      </label>
+                      <div className="hidden">:</div>
+                    </div>
+                    <div className="flex max-[1254px]:items-start items-center gap-2 max-[1254px]:flex-col">
+                      <div className="w-full">
+                        <div className="flex max-[501px]:flex-col max-[501px]:gap-2 items-center gap-5">
+                          <div className="w-full">
+                            <LocalizationProvider dateAdapter={AdapterDayjs}>
+                              <DemoContainer components={["DatePicker"]}>
+                                <DatePicker
+                                  className="w-full"
+                                  value={startDate}
+                                  onChange={onChangeStartDate}
+                                  slotProps={{ textField: { size: "small" } }}
+                                />
+                              </DemoContainer>
+                            </LocalizationProvider>
+                          </div>
+                          <div>to</div>
+                          <div className="w-full">
+                            <LocalizationProvider dateAdapter={AdapterDayjs}>
+                              <DemoContainer components={["DatePicker"]}>
+                                <DatePicker
+                                  className="w-full"
+                                  value={endDate}
+                                  onChange={onChangeEndDate}
+                                  slotProps={{ textField: { size: "small" } }}
+                                />
+                              </DemoContainer>
+                            </LocalizationProvider>
+                          </div>
+                        </div>
+                      </div>
+                      <div className="flex gap-1 items-center text-[12px]">
+                        <div>
+                          <input
+                            onChange={() =>
+                              setIgnoreDate((prev) => (prev === 1 ? 0 : 1))
+                            }
+                            type="checkbox"
+                            className="checked:bg-[#0077b6] border-[#cecfcf]"
+                            value="1"
+                            checked={ignoreDate === 1 ? true : false}
+                          />
+                        </div>
+                        <div className="whitespace-nowrap">Ignore</div>
+                      </div>
+                    </div>
+                  </div>
+                </div>
+
+                <div className="flex justify-end mt-2">
+                  <button
+                    onClick={(e) => onSearch(e)}
+                    className="py-1 max-[415px]:w-full px-10 rounded-sm shadow-sm bg-[#0077b6] text-white"
+                  >
+                    Search
+                  </button>
+                </div>
+              </form>
+            </div>
+          </div>
           <div className="w-full mt-20">
             <div className="w-full overflow-x-auto shadow-md text-[14px]">
               <table className="w-full table-monitoring">
@@ -84,11 +275,13 @@ const Monitoring = () => {
                       <td className="p-5 border">
                         {dayjs(item.created_at).format("DD/MM/YYYY")}
                       </td>
-                      <td className="p-5 border"></td>
+                      <td className="p-5 border">
+                        Rp. {accountingNumber(totalInvoice[index])}
+                      </td>
                       <td className="p-5 border">
                         {titleCase(item.status, "_")}
                       </td>
-                      <td className="p-5 border"></td>
+                      <td className="p-5 border">{item.doc_receive_number}</td>
                     </tr>
                   ))}
                 </tbody>
@@ -142,7 +335,7 @@ const Monitoring = () => {
                           :
                         </div>
                         <div className="w-[240px] whitespace-nowrap overflow-ellipsis overflow-hidden">
-                          {detail.tanggal_po}
+                          {dayjs(detail.created_at).format("DD/MM/YYYY")}
                         </div>
                       </div>
                       <div className="flex max-[549px]:flex-col max-[549px]:items-start items-center gap-2">
@@ -153,7 +346,7 @@ const Monitoring = () => {
                           :
                         </div>
                         <div className="w-[240px] whitespace-nowrap overflow-ellipsis overflow-hidden">
-                          PT xx
+                          {detail.vendor.nama}
                         </div>
                       </div>
                       <div className="flex max-[549px]:flex-col max-[549px]:items-start items-center gap-2">
@@ -164,7 +357,7 @@ const Monitoring = () => {
                           :
                         </div>
                         <div className="w-[240px] whitespace-nowrap overflow-ellipsis overflow-hidden text-red-500">
-                          {titleCase(detail.tipe_penagihan)}
+                          {titleCase(detail.tipe_penagihan, "_")}
                         </div>
                       </div>
                       <div className="flex max-[549px]:flex-col max-[549px]:items-start items-center gap-2">
@@ -175,7 +368,7 @@ const Monitoring = () => {
                           :
                         </div>
                         <div className="w-[240px] whitespace-nowrap overflow-ellipsis overflow-hidden">
-                          {detail.nomer_do}
+                          {detail.nomer_po}
                         </div>
                       </div>
                       <div className="flex max-[549px]:flex-col max-[549px]:items-start items-center gap-2">
@@ -186,7 +379,7 @@ const Monitoring = () => {
                           :
                         </div>
                         <div className="w-[240px] whitespace-nowrap overflow-ellipsis overflow-hidden">
-                          {detail.tanggal_po}
+                          {dayjs(detail.tanggal_po).format("DD/MM/YYYY")}
                         </div>
                       </div>
                       <div className="flex max-[549px]:flex-col max-[549px]:items-start items-center gap-2">
@@ -197,7 +390,7 @@ const Monitoring = () => {
                           :
                         </div>
                         <div className="w-[240px] whitespace-nowrap overflow-ellipsis overflow-hidden">
-                          Bali
+                          {detail.delivery_area}
                         </div>
                       </div>
                       <div className="flex max-[549px]:flex-col max-[549px]:items-start items-center gap-2">
@@ -211,37 +404,49 @@ const Monitoring = () => {
                           12/09/23
                         </div>
                       </div>
-                      <div className="flex max-[549px]:flex-col max-[549px]:items-start items-center gap-2">
+                      <div className="flex max-[549px]:flex-col max-[549px]:items-start  gap-2">
                         <div className="w-[270px] whitespace-nowrap font-bold">
                           No Invoice
                         </div>
                         <div className="max-[549px]:hidden min-[550px]:block">
                           :
                         </div>
-                        <div className="w-[240px] whitespace-nowrap overflow-ellipsis overflow-hidden">
-                          PTXX12345678901234567YY
+                        <div className="flex flex-col gap-1">
+                          {detail.nomer_invoices.map((nomer) => (
+                            <div className="w-[240px] whitespace-nowrap overflow-ellipsis overflow-hidden">
+                              {nomer}
+                            </div>
+                          ))}
                         </div>
                       </div>
-                      <div className="flex max-[549px]:flex-col max-[549px]:items-start items-center gap-2">
+                      <div className="flex max-[549px]:flex-col max-[549px]:items-start gap-2">
                         <div className="w-[270px] whitespace-nowrap font-bold">
                           Tanggal Invoice
                         </div>
                         <div className="max-[549px]:hidden min-[550px]:block">
                           :
                         </div>
-                        <div className="w-[240px] whitespace-nowrap overflow-ellipsis overflow-hidden">
-                          18/09/23
+                        <div className="flex flex-col gap-1">
+                          {detail.tanggal_invoices.map((tanggal) => (
+                            <div className="w-[240px] whitespace-nowrap overflow-ellipsis overflow-hidden">
+                              {dayjs(tanggal).format("DD/MM/YYYY")}
+                            </div>
+                          ))}
                         </div>
                       </div>
-                      <div className="flex max-[549px]:flex-col max-[549px]:items-start items-center gap-2">
+                      <div className="flex max-[549px]:flex-col max-[549px]:items-start gap-2">
                         <div className="w-[270px] whitespace-nowrap font-bold">
                           Nilai Invoice
                         </div>
                         <div className="max-[549px]:hidden min-[550px]:block">
                           :
                         </div>
-                        <div className="w-[240px] whitespace-nowrap overflow-ellipsis overflow-hidden flex flex-col">
-                          <div>Rp. 100.000,00</div>
+                        <div className="flex flex-col gap-1">
+                          {detail.nilai_invoices.map((nilai) => (
+                            <div className="w-[240px] whitespace-nowrap overflow-ellipsis overflow-hidden">
+                              Rp. {accountingNumber(nilai)}
+                            </div>
+                          ))}
                         </div>
                       </div>
                       <div className="flex max-[549px]:flex-col max-[549px]:items-start items-center gap-2">
@@ -252,18 +457,22 @@ const Monitoring = () => {
                           :
                         </div>
                         <div className="w-[240px] whitespace-nowrap overflow-ellipsis overflow-hidden flex flex-col">
-                          <div>{detail.is_pajak === 0 ? "Ya" : "Tidak"}</div>
+                          <div>{detail.is_pajak === 0 ? "Tidak" : "Ya"}</div>
                         </div>
                       </div>
-                      <div className="flex max-[549px]:flex-col max-[549px]:items-start items-start gap-2">
+                      <div className="flex max-[549px]:flex-col max-[549px]:items-start gap-2">
                         <div className="w-[270px] whitespace-nowrap font-bold">
                           No Seri Faktur Pajak
                         </div>
                         <div className="max-[549px]:hidden min-[550px]:block">
                           :
                         </div>
-                        <div className="w-[240px] whitespace-nowrap overflow-ellipsis overflow-hidden flex flex-col">
-                          <div>{detail.nomer_seri_pajak}</div>
+                        <div className="flex flex-col gap-1">
+                          {detail.nomer_seri_pajak.map((nomer) => (
+                            <div className="w-[240px] whitespace-nowrap overflow-ellipsis overflow-hidden">
+                              {nomer}
+                            </div>
+                          ))}
                         </div>
                       </div>
                       <div className="flex max-[549px]:flex-col max-[549px]:items-start items-center gap-2">

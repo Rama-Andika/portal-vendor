@@ -26,11 +26,11 @@ import { DemoContainer } from "@mui/x-date-pickers/internals/demo";
 import dayjs from "dayjs";
 import { PiWarningCircleLight } from "react-icons/pi";
 import isEmpty from "../../../components/functions/CheckEmptyObject";
-import Api from "../../../api";
 import toast from "react-hot-toast";
 import Cookies from "js-cookie";
 import { FaCloudUploadAlt } from "react-icons/fa";
-import { UploadDropzone } from "@bytescale/upload-widget-react";
+
+import GetBase64 from "../../../components/functions/GetBase64";
 
 const optionsTipePenagihan = [
   { value: "beli_putus", label: "Beli Putus", key: 0 },
@@ -43,8 +43,8 @@ const optionsDeliveryArea = [
   { value: "makassar", label: "Makassar", key: 3 },
 ];
 const options = [
-  { value: 0, label: "Ya", key: 0 },
-  { value: 1, label: "Tidak", key: 1 },
+  { value: 0, label: "Tidak", key: 0 },
+  { value: 1, label: "Ya", key: 1 },
 ];
 const optionsTipePengiriman = [
   { value: 0, label: "Drop Box Gudang PT KPU", key: 0 },
@@ -52,25 +52,8 @@ const optionsTipePengiriman = [
   { value: 2, label: "Diantar langsung ke office PT KPU", key: 2 },
 ];
 
-const optionsUpload = {
+const api = process.env.REACT_APP_BASEURL;
 
-  apiKey: "public_kW15bnV5Mp5Z1cv95X3eofJC2Ekx", // This is your API key.
-
-  maxFileCount: 1,
-
-  showFinishButton: true, // Note: You must use 'onUpdate' if you set 'showFinishButton: false' (default).
-
-  styles: {
-
-    colors: {
-
-      primary: "#377dff"
-
-    }
-
-  }
-
-};
 const Penagihan = () => {
   const inputArr = [
     {
@@ -95,28 +78,12 @@ const Penagihan = () => {
       type: "text",
       value: "",
     },
-    {
-      type: "text",
-      value: "",
-    },
-    {
-      type: "text",
-      value: "",
-    },
-    {
-      type: "text",
-      value: "",
-    },
-    {
-      type: "text",
-      value: "",
-    },
   ];
   const { screenSize } = useStateContext();
   const [activeStep, setActiveStep] = useState(0);
 
   const [tipePenagihan, setTipePenagihan] = useState({
-    value: "beli putus",
+    value: "beli_putus",
     label: "Beli Putus",
     key: 0,
   });
@@ -142,7 +109,7 @@ const Penagihan = () => {
     key: 0,
   });
 
-  const [isPajak, setIsPajak] = useState({ value: 0, label: "Ya", key: 0 });
+  const [isPajak, setIsPajak] = useState({ value: 0, label: "Tidak", key: 0 });
   const [nomerSeriFakturPajak, setNomerSeriFakturPajak] = useState(
     inputNoSeriFakturPajak
   );
@@ -154,6 +121,7 @@ const Penagihan = () => {
   const [receivingNoteFile, setReceivingNoteFile] = useState(null);
   const [resiFile, setResiFile] = useState(null);
   const [scanReportSalesFile, setScanReportSalesFile] = useState(null);
+  // eslint-disable-next-line no-unused-vars
   const [createdAt, setCreatedAt] = useState();
   // eslint-disable-next-line no-unused-vars
   const [updatedAt, setUpdatedAt] = useState();
@@ -161,26 +129,39 @@ const Penagihan = () => {
   const [isError, setIsError] = useState(false);
   const [openBackdrop, setOpenBackdrop] = useState(false);
   const [id, setId] = useState(0);
+  // eslint-disable-next-line no-unused-vars
   const [nomerRequest, setNomerRequest] = useState("");
   const navigate = useNavigate();
   const vendorId = Cookies.get("vendor_id");
   const [vendors, setVendors] = useState({});
 
-  
-
   const fetchvendor = async () => {
     setOpenBackdrop(true);
-    await Api.get(`/vendors/${vendorId}`).then((response) => {
-      setOpenBackdrop(false);
-      setVendors(response.data);
-    });
+    await fetch(`${api}api/portal-vendor/list/vendors`, {
+      method: "POST",
+      body: JSON.stringify({
+        id: vendorId,
+      }),
+    })
+      .then((response) => response.json())
+      .then((res) => {
+   
+        if(res.data.length > 0){
+          setVendors(res.data[0]);
+        }
+        setOpenBackdrop(false);
+        
+      })
+      .then((err) => {
+        setOpenBackdrop(false);
+      });
   };
 
   const handleNext = () => {
-    console.log("handle next 1");
     let countNomerInvoice = 0;
     let countTanggalInvoice = 0;
     let countNilaiInvoice = 0;
+    let countInvoiceTambahan = 0
 
     // eslint-disable-next-line array-callback-return
     nomerInvoice.map((invoice) => {
@@ -203,6 +184,21 @@ const Penagihan = () => {
       }
     });
 
+    const invoiceTambahanArray =  invoiceTambahan.filter((invoice)=>{
+      return !isEmpty(invoice)
+    });
+
+    const fakturPajakTambahanArray =  fakturPajakTambahan.filter((invoice)=>{
+      return !isEmpty(invoice)
+    });
+
+    // eslint-disable-next-line array-callback-return
+    nomerInvoice.map((invoice) =>{
+      if(!isEmpty(invoice)){
+        countInvoiceTambahan += 1
+      }
+    })
+
     if (activeStep === 0) {
       setActiveStep((prevActiveStep) => prevActiveStep + 1);
     } else if (activeStep === 1) {
@@ -214,7 +210,7 @@ const Penagihan = () => {
         countTanggalInvoice === nomerInvoice.length &&
         countNilaiInvoice === nomerInvoice.length
       ) {
-        if (isPajak.value === 1) {
+        if (isPajak.value === 0) {
           setIsError(false);
           setActiveStep((prevActiveStep) => prevActiveStep + 1);
         } else {
@@ -230,6 +226,7 @@ const Penagihan = () => {
       }
     } else if (activeStep === 2) {
       if (
+        countInvoiceTambahan - 1 === invoiceTambahanArray.length &&
         purchaseOrderFile !== null &&
         deliveryOrderFile !== null &&
         invoiceFile !== null &&
@@ -237,7 +234,7 @@ const Penagihan = () => {
         receivingNoteFile !== null
       ) {
         if (vendors.status_pajak === "PKP") {
-          if (fakturPajakFile !== null) {
+          if (fakturPajakFile !== null && countInvoiceTambahan - 1 === fakturPajakTambahanArray.length) {
             setIsError(false);
           } else {
             return setIsError(true);
@@ -264,10 +261,25 @@ const Penagihan = () => {
   };
 
   const handleNext2 = () => {
-    console.log("handle next 2");
     let countNomerInvoice = 0;
     let countTanggalInvoice = 0;
     let countNilaiInvoice = 0;
+    let countInvoiceTambahan = 0
+
+    const invoiceTambahanArray =  invoiceTambahan.filter((invoice)=>{
+       return !isEmpty(invoice)
+     });
+
+     const fakturPajakTambahanArray =  fakturPajakTambahan.filter((invoice)=>{
+      return !isEmpty(invoice)
+    });
+ 
+     // eslint-disable-next-line array-callback-return
+     nomerInvoice.map((invoice) =>{
+       if(!isEmpty(invoice)){
+         countInvoiceTambahan += 1
+       }
+     })
 
     // eslint-disable-next-line array-callback-return
     nomerInvoice.map((invoice) => {
@@ -302,7 +314,7 @@ const Penagihan = () => {
         startDatePeriode !== undefined &&
         endDatePeriode !== undefined
       ) {
-        if (isPajak.value === 1) {
+        if (isPajak.value === 0) {
           setIsError(false);
           setActiveStep((prevActiveStep) => prevActiveStep + 1);
         } else {
@@ -318,15 +330,15 @@ const Penagihan = () => {
       }
     } else if (activeStep === 2) {
       if (
+        countInvoiceTambahan - 1 === invoiceTambahanArray.length &&
         purchaseOrderFile !== null &&
         deliveryOrderFile !== null &&
         invoiceFile !== null &&
         kwitansiFile !== null &&
         scanReportSalesFile !== null
       ) {
-        console.log("correct");
         if (vendors.status_pajak === "PKP") {
-          if (fakturPajakFile !== null) {
+          if (fakturPajakFile !== null && countInvoiceTambahan - 1 === fakturPajakTambahanArray.length) {
             setIsError(false);
           } else {
             return setIsError(true);
@@ -347,7 +359,6 @@ const Penagihan = () => {
           onSubmitButton2();
         }
       } else {
-        console.log("incorrect");
         setIsError(true);
       }
     }
@@ -533,29 +544,31 @@ const Penagihan = () => {
     setIsPajak(item);
   };
 
-  const onChangeInvoiceTambahan = (e) => {
+  const onChangeInvoiceTambahan = (e,index) => {
     e.preventDefault();
 
-    const index = e.target.id;
-    console.log(index);
-    setInvoiceTambahan((s) => {
-      const newArr = s.slice();
-      newArr[index].file = e.target.files[0];
-
-      return newArr;
-    });
+    const invoiceTambahanCopy = [...invoiceTambahan];
+    GetBase64(e.target.files[0])
+      .then((result) => {
+        invoiceTambahanCopy[index].file = result
+        setInvoiceTambahan(invoiceTambahanCopy);
+      })
+      .catch((err) => {
+        console.log(err);
+      });
   };
 
-  const onChangeFakturPajakTambahan = (e) => {
+  const onChangeFakturPajakTambahan = (e,index) => {
     e.preventDefault();
-
-    const index = e.target.id;
-    setFakturPajakTambahan((s) => {
-      const newArr = s.slice();
-      newArr[index].file = e.target.files[0];
-
-      return newArr;
-    });
+    const fakturPajakTambahanCopy = [...fakturPajakTambahan];
+    GetBase64(e.target.files[0])
+      .then((result) => {
+        fakturPajakTambahanCopy[index].file = result
+        setFakturPajakTambahan(fakturPajakTambahanCopy);
+      })
+      .catch((err) => {
+        console.log(err);
+      });
   };
 
   const onChangeTipePengiriman = (item) => {
@@ -594,24 +607,44 @@ const Penagihan = () => {
       setTanggalInvoice2((s) => {
         return [...s, {}];
       });
-    }
-  };
 
-  const addInvoiceTambahan = () => {
-    if (invoiceTambahan.length < 5) {
+  
       setInvoiceTambahan((s) => {
         return [...s, {}];
       });
-    }
-  };
 
-  const addFakturPajakFile = () => {
-    if (fakturPajakTambahan.length < 5) {
       setFakturPajakTambahan((s) => {
         return [...s, {}];
       });
+
+      setNomerSeriFakturPajak((s) => {
+        return [
+          ...s,
+          {
+            type: "text",
+            value: "",
+          },
+        ];
+      });
+      
     }
   };
+
+  // const addInvoiceTambahan = () => {
+  //   if (invoiceTambahan.length < 5) {
+  //     setInvoiceTambahan((s) => {
+  //       return [...s, {}];
+  //     });
+  //   }
+  // };
+
+  // const addFakturPajakFile = () => {
+  //   if (fakturPajakTambahan.length < 5) {
+  //     setFakturPajakTambahan((s) => {
+  //       return [...s, {}];
+  //     });
+  //   }
+  // };
 
   const formatFakturPajak = (value, i) => {
     try {
@@ -639,7 +672,13 @@ const Penagihan = () => {
   const onChangePurchaseOrderFile = (e) => {
     if (e.target.files[0] !== undefined) {
       if (e.target.files[0].size <= 2000000) {
-        setPurchaseOrderFile(e.target.files[0]);
+        GetBase64(e.target.files[0])
+          .then((result) => {
+            setPurchaseOrderFile(result);
+          })
+          .catch((err) => {
+            setPurchaseOrderFile(null);
+          });
       } else {
         setPurchaseOrderFile(null);
       }
@@ -649,7 +688,13 @@ const Penagihan = () => {
   const onChangeDeliveryOrderFile = (e) => {
     if (e.target.files[0] !== undefined) {
       if (e.target.files[0].size <= 2000000) {
-        setDeliveryOrderFile(e.target.files[0]);
+        GetBase64(e.target.files[0])
+          .then((result) => {
+            setDeliveryOrderFile(result);
+          })
+          .catch((err) => {
+            setDeliveryOrderFile(null);
+          });
       } else {
         setDeliveryOrderFile(null);
       }
@@ -659,7 +704,13 @@ const Penagihan = () => {
   const onChangeInvoiceFile = (e) => {
     if (e.target.files[0] !== undefined) {
       if (e.target.files[0].size <= 2000000) {
-        setInvoiceFile(e.target.files[0]);
+        GetBase64(e.target.files[0])
+          .then((result) => {
+            setInvoiceFile(result);
+          })
+          .catch((err) => {
+            setInvoiceFile(null);
+          });
       } else {
         setInvoiceFile(null);
       }
@@ -669,7 +720,13 @@ const Penagihan = () => {
   const onChangeKwitansiFile = (e) => {
     if (e.target.files[0] !== undefined) {
       if (e.target.files[0].size <= 2000000) {
-        setKwitansiFile(e.target.files[0]);
+        GetBase64(e.target.files[0])
+          .then((result) => {
+            setKwitansiFile(result);
+          })
+          .catch((err) => {
+            setKwitansiFile(null);
+          });
       } else {
         setKwitansiFile(null);
       }
@@ -679,7 +736,13 @@ const Penagihan = () => {
   const onChangeFakturPajakFile = (e) => {
     if (e.target.files[0] !== undefined) {
       if (e.target.files[0].size <= 2000000) {
-        setFakturPajakFile(e.target.files[0]);
+        GetBase64(e.target.files[0])
+          .then((result) => {
+            setFakturPajakFile(result);
+          })
+          .catch((err) => {
+            setFakturPajakFile(null);
+          });
       } else {
         setFakturPajakFile(null);
       }
@@ -689,7 +752,13 @@ const Penagihan = () => {
   const onChangeScanReportSalesFile = (e) => {
     if (e.target.files[0] !== undefined) {
       if (e.target.files[0].size <= 2000000) {
-        setScanReportSalesFile(e.target.files[0]);
+        GetBase64(e.target.files[0])
+          .then((result) => {
+            setScanReportSalesFile(result);
+          })
+          .catch((err) => {
+            setScanReportSalesFile(null);
+          });
       } else {
         setScanReportSalesFile(null);
       }
@@ -699,7 +768,13 @@ const Penagihan = () => {
   const onChangeReceivingNoteFile = (e) => {
     if (e.target.files[0] !== undefined) {
       if (e.target.files[0].size <= 2000000) {
-        setReceivingNoteFile(e.target.files[0]);
+        GetBase64(e.target.files[0])
+          .then((result) => {
+            setReceivingNoteFile(result);
+          })
+          .catch((err) => {
+            setReceivingNoteFile(null);
+          });
       } else {
         setReceivingNoteFile(null);
       }
@@ -709,7 +784,13 @@ const Penagihan = () => {
   const onChangeResiBuktiPengirimanFile = (e) => {
     if (e.target.files[0] !== undefined) {
       if (e.target.files[0].size <= 2000000) {
-        setResiFile(e.target.files[0]);
+        GetBase64(e.target.files[0])
+          .then((result) => {
+            setResiFile(result);
+          })
+          .catch((err) => {
+            setResiFile(null);
+          });
       } else {
         setResiFile(null);
       }
@@ -719,7 +800,26 @@ const Penagihan = () => {
   const saveDraft = async () => {
     setOpenBackdrop(true);
     let isSave = false;
+    let countInvoiceTambahan = 0
+
+   const invoiceTambahanArray =  invoiceTambahan.filter((invoice)=>{
+      return !isEmpty(invoice)
+    });
+
+    const fakturPajakTambahanArray =  fakturPajakTambahan.filter((invoice)=>{
+      return !isEmpty(invoice)
+    });
+
+    // eslint-disable-next-line array-callback-return
+    nomerInvoice.map((invoice) =>{
+      if(!isEmpty(invoice)){
+        countInvoiceTambahan += 1
+      }
+    })
+
+  
     if (
+      countInvoiceTambahan - 1 === invoiceTambahanArray.length &&
       purchaseOrderFile !== null &&
       deliveryOrderFile !== null &&
       invoiceFile !== null &&
@@ -727,7 +827,7 @@ const Penagihan = () => {
       receivingNoteFile !== null
     ) {
       if (vendors.status_pajak === "PKP") {
-        if (fakturPajakFile !== null) {
+        if (fakturPajakFile !== null && countInvoiceTambahan - 1 === fakturPajakTambahanArray.length) {
           setIsError(false);
           isSave = true;
         } else {
@@ -739,18 +839,21 @@ const Penagihan = () => {
         isSave = true;
       }
 
-      if (tipePengiriman.value === 1) {
-        if (resiFile !== null) {
+      if(isSave){
+        if (tipePengiriman.value === 1) {
+          if (resiFile !== null) {
+            setIsError(false);
+            isSave = true;
+          } else {
+            setIsError(true);
+            isSave = false;
+          }
+        } else {
           setIsError(false);
           isSave = true;
-        } else {
-          setIsError(true);
-          isSave = false;
         }
-      } else {
-        setIsError(false);
-        isSave = true;
       }
+      
     } else {
       setIsError(true);
       isSave = false;
@@ -784,41 +887,66 @@ const Penagihan = () => {
       }
     });
 
+    // eslint-disable-next-line array-callback-return
+    const invoiceTambahanList = invoiceTambahan.map((invoice) => {
+      if (!isEmpty(invoice)) {
+        return invoice.file;
+      }
+    });
+
+    // eslint-disable-next-line array-callback-return
+    const fakturPajakTambahanList = fakturPajakTambahan.map((faktur) => {
+      if (!isEmpty(faktur)) {
+        return faktur.file;
+      }
+    });
+
+    const validationFakturPajakTambahan = fakturPajakTambahan.filter((faktur) => {
+      return !isEmpty(faktur)
+    });
+
     if (isSave) {
       let lastItem;
       let counter = 1;
 
-      await Api.get("/penagihan").then((response) => {
-        lastItem = response.data[response.data.length - 1];
-      });
+      const currDate = new Date();
+      const month = dayjs(currDate).month();
+      const year = dayjs(currDate).year();
+
+      await fetch(`${api}api/portal-vendor/list/penagihan`)
+        .then((response) => response.json())
+        .then((res) => {
+          lastItem = res.data[res.data.length - 1];
+        })
+        .catch((err) => console.log(err));
 
       if (lastItem !== undefined) {
         if (lastItem.no_request !== undefined) {
           counter = parseInt(lastItem.no_request.split("/")[0]) + 1;
+          if((month+1) !== lastItem.no_request.split("/")[1]){
+            counter = 1;
+          }
         }
       }
-
-      const currDate = new Date();
 
       let formattedNumber = counter.toLocaleString("en-US", {
         minimumIntegerDigits: 9,
         useGrouping: false,
       });
 
-      const month = dayjs(currDate).month();
-      const year = dayjs(currDate).year();
-
+      
       const noRequest = formattedNumber + "/" + (month + 1) + "/" + year;
       setNomerRequest(noRequest);
 
       if (id === 0) {
-        const inititalValue = {
+        const initialValue = {
+          id: id,
           vendor_id: vendorId,
           no_request: noRequest,
           tipe_penagihan: tipePenagihan.value,
           tipe_pengiriman: tipePengiriman.value,
           nomer_po: "PO" + nomerPo,
-          tanggal_po: dayjs(tanggalPo).format("YYYY-MM-DD"),
+          tanggal_po: dayjs(tanggalPo).format("YYYY-MM-DD HH:mm:ss"),
           nomer_do: "DO" + nomerDo,
           delivery_area: deliveryArea.value,
           nomer_invoices: invoiceList,
@@ -830,27 +958,53 @@ const Penagihan = () => {
           end_date_periode: null,
           created_at: dayjs(new Date()).format("YYYY-MM-DD HH:mm:ss"),
           updated_at: dayjs(new Date()).format("YYYY-MM-DD HH:mm:ss"),
+          po_file:
+            purchaseOrderFile !== null && purchaseOrderFile,
+          do_file:
+            deliveryOrderFile !== null && deliveryOrderFile,
+          invoice_file: invoiceFile !== null && invoiceFile,
+          invoice_tambahan_file: invoiceTambahanList,
+          kwitansi_file: kwitansiFile !== null && kwitansiFile,
+          faktur_pajak_file:
+            fakturPajakFile !== null ? fakturPajakFile : null,
+          faktur_pajak_tambahan_file: validationFakturPajakTambahan.length > 0 ? fakturPajakTambahanList : null,
+          note_file: receivingNoteFile !== null ? receivingNoteFile : null,
+          resi_file:
+            resiFile !== null ? resiFile : null,
+          scan_report_sales_file: scanReportSalesFile !== null ? scanReportSalesFile : null,
           status: "DRAFT",
         };
-        await Api.post("/penagihan", inititalValue, {
-          Headers: {
-            "content-type": "application/json",
-          },
+        await fetch(`${api}api/portal-vendor/invoice`, {
+          method: "POST",
+          body: JSON.stringify(initialValue),
         })
-          .then((response) => {
-            setId(response.data.id);
-            setCreatedAt(response.data.created_at);
-            setOpenBackdrop(false);
-            toast.success("Penagihan create success!", {
-              position: "top-right",
-              style: {
-                borderRadius: "10px",
-                background: "#333",
-                color: "#fff",
-              },
-            });
+          .then((response) => response.json())
+          .then((res) => {
+            if (res.data === 0) {
+              setOpenBackdrop(false);
+              toast.error("Penagihan create failed!", {
+                position: "top-right",
+                style: {
+                  borderRadius: "10px",
+                  background: "#333",
+                  color: "#fff",
+                },
+              });
+            } else {
+              setId(res.data);
+              navigate("/vendor/monitoring");
+              setOpenBackdrop(false);
+              toast.success("Penagihan create success!", {
+                position: "top-right",
+                style: {
+                  borderRadius: "10px",
+                  background: "#333",
+                  color: "#fff",
+                },
+              });
+            }
           })
-          .catch(() => {
+          .catch((err) => {
             setOpenBackdrop(false);
             toast.error("Penagihan create failed!", {
               position: "top-right",
@@ -862,13 +1016,14 @@ const Penagihan = () => {
             });
           });
       } else {
-        const inititalValue = {
+        const initialValue = {
+          id: id,
           vendor_id: vendorId,
           no_request: noRequest,
           tipe_penagihan: tipePenagihan.value,
           tipe_pengiriman: tipePengiriman.value,
           nomer_po: "PO" + nomerPo,
-          tanggal_po: dayjs(tanggalPo).format("YYYY-MM-DD"),
+          tanggal_po: dayjs(tanggalPo).format("YYYY-MM-DD HH:mm:ss"),
           nomer_do: "DO" + nomerDo,
           delivery_area: deliveryArea.value,
           nomer_invoices: invoiceList,
@@ -880,26 +1035,53 @@ const Penagihan = () => {
           end_date_periode: null,
           created_at: createdAt,
           updated_at: dayjs(new Date()).format("YYYY-MM-DD HH:mm:ss"),
+          po_file:
+            purchaseOrderFile !== null && purchaseOrderFile,
+          do_file:
+            deliveryOrderFile !== null && deliveryOrderFile,
+          invoice_file: invoiceFile !== null && invoiceFile,
+          invoice_tambahan_file: invoiceTambahanList,
+          kwitansi_file: kwitansiFile !== null && kwitansiFile,
+          faktur_pajak_file:
+            fakturPajakFile !== null ? fakturPajakFile : null,
+          faktur_pajak_tambahan_file: fakturPajakTambahanList,
+          note_file: receivingNoteFile !== null ? receivingNoteFile : null,
+          resi_file:
+            resiFile !== null ? resiFile : null,
+          scan_report_sales_file: scanReportSalesFile !== null ? scanReportSalesFile : null,
           status: "DRAFT",
         };
-        await Api.put(`/penagihan/${id}`, inititalValue, {
-          Headers: {
-            "content-type": "application/json",
-          },
+        await fetch(`${api}api/portal-vendor/invoice`, {
+          method: "POST",
+          body: JSON.stringify(initialValue),
         })
-          .then((response) => {
-            setId(response.data.id);
-            setOpenBackdrop(false);
-            toast.success("Penagihan update success!", {
-              position: "top-right",
-              style: {
-                borderRadius: "10px",
-                background: "#333",
-                color: "#fff",
-              },
-            });
+          .then((response) => response.json())
+          .then((res) => {
+            if (res.data === 0) {
+              setOpenBackdrop(false);
+              toast.error("Penagihan update failed!", {
+                position: "top-right",
+                style: {
+                  borderRadius: "10px",
+                  background: "#333",
+                  color: "#fff",
+                },
+              });
+            } else {
+              setId(res.data);
+
+              setOpenBackdrop(false);
+              toast.success("Penagihan update success!", {
+                position: "top-right",
+                style: {
+                  borderRadius: "10px",
+                  background: "#333",
+                  color: "#fff",
+                },
+              });
+            }
           })
-          .catch(() => {
+          .catch((err) => {
             setOpenBackdrop(false);
             toast.error("Penagihan update failed!", {
               position: "top-right",
@@ -919,7 +1101,25 @@ const Penagihan = () => {
   const saveDraft2 = async () => {
     setOpenBackdrop(true);
     let isSave = false;
+    let countInvoiceTambahan = 0
+
+    const invoiceTambahanArray =  invoiceTambahan.filter((invoice)=>{
+       return !isEmpty(invoice)
+     });
+
+     const fakturPajakTambahanArray =  fakturPajakTambahan.filter((invoice)=>{
+      return !isEmpty(invoice)
+    });
+ 
+     // eslint-disable-next-line array-callback-return
+     nomerInvoice.map((invoice) =>{
+       if(!isEmpty(invoice)){
+         countInvoiceTambahan += 1
+       }
+     })
+ 
     if (
+      countInvoiceTambahan - 1 === invoiceTambahanArray.length &&
       purchaseOrderFile !== null &&
       deliveryOrderFile !== null &&
       invoiceFile !== null &&
@@ -927,7 +1127,7 @@ const Penagihan = () => {
       scanReportSalesFile !== null
     ) {
       if (vendors.status_pajak === "PKP") {
-        if (fakturPajakFile !== null) {
+        if (fakturPajakFile !== null && countInvoiceTambahan - 1 === fakturPajakTambahanArray.length) {
           setIsError(false);
           isSave = true;
         } else {
@@ -939,17 +1139,19 @@ const Penagihan = () => {
         isSave = true;
       }
 
-      if (tipePengiriman.value === 1) {
-        if (resiFile !== null) {
+      if(isSave){
+        if (tipePengiriman.value === 1) {
+          if (resiFile !== null) {
+            setIsError(false);
+            isSave = true;
+          } else {
+            setIsError(true);
+            isSave = false;
+          }
+        } else {
           setIsError(false);
           isSave = true;
-        } else {
-          setIsError(true);
-          isSave = false;
         }
-      } else {
-        setIsError(false);
-        isSave = true;
       }
     } else {
       setIsError(true);
@@ -984,76 +1186,127 @@ const Penagihan = () => {
       }
     });
 
+    // eslint-disable-next-line array-callback-return
+    const invoiceTambahanList = invoiceTambahan.map((invoice) => {
+      if (!isEmpty(invoice)) {
+        return invoice.file;
+      }
+    });
+
+    // eslint-disable-next-line array-callback-return
+    const fakturPajakTambahanList = fakturPajakTambahan.map((faktur) => {
+      if (!isEmpty(faktur)) {
+        return faktur.file;
+      }
+    });
+
+    const validationFakturPajakTambahan = fakturPajakTambahan.filter((faktur) => {
+      return !isEmpty(faktur)
+    });
+
     if (isSave) {
       let lastItem;
       let counter = 1;
 
-      await Api.get("/penagihan").then((response) => {
-        lastItem = response.data[response.data.length - 1];
-      });
+      const currDate = new Date();
+      const month = dayjs(currDate).month();
+      const year = dayjs(currDate).year();
+
+      await fetch(`${api}api/portal-vendor/list/penagihan`)
+        .then((response) => response.json())
+        .then((res) => {
+          lastItem = res.data[res.data.length - 1];
+        })
+        .catch((err) => console.log(err));
 
       if (lastItem !== undefined) {
         if (lastItem.no_request !== undefined) {
           counter = parseInt(lastItem.no_request.split("/")[0]) + 1;
+          if((month+1) !== lastItem.no_request.split("/")[1]){
+            counter = 1;
+          }
         }
       }
 
-      const currDate = new Date();
 
       let formattedNumber = counter.toLocaleString("en-US", {
         minimumIntegerDigits: 9,
         useGrouping: false,
       });
 
-      const month = dayjs(currDate).month();
-      const year = dayjs(currDate).year();
-
       const noRequest = formattedNumber + "/" + (month + 1) + "/" + year;
       setNomerRequest(noRequest);
 
       if (id === 0) {
-        const inititalValue = {
+        const initialValue = {
+          id: id,
           vendor_id: vendorId,
           no_request: noRequest,
           tipe_penagihan: tipePenagihan.value,
           tipe_pengiriman: tipePengiriman.value,
           nomer_po: "PO" + nomerPo,
-          tanggal_po: dayjs(tanggalPo).format("YYYY-MM-DD"),
-          nomer_do: "",
+          tanggal_po: dayjs(tanggalPo).format("YYYY-MM-DD HH:mm:ss"),
+          nomer_do: "DO" + nomerDo,
           delivery_area: deliveryArea.value,
           nomer_invoices: invoiceList,
           tanggal_invoices: tanggalList,
           nilai_invoices: nilaiInvoiceList,
-          start_date_periode: dayjs(startDatePeriode).format("YYYY-MM-DD"),
-          end_date_periode: dayjs(endDatePeriode).format("YYYY-MM-DD"),
           is_pajak: isPajak.value,
           nomer_seri_pajak: nomerSeriFakturPajakList,
+          start_date_periode: dayjs(startDatePeriode).format("YYYY-MM-DD HH:mm:ss"),
+          end_date_periode: dayjs(endDatePeriode).format("YYYY-MM-DD HH:mm:ss"),
           created_at: dayjs(new Date()).format("YYYY-MM-DD HH:mm:ss"),
           updated_at: dayjs(new Date()).format("YYYY-MM-DD HH:mm:ss"),
+          po_file:
+            purchaseOrderFile !== null && purchaseOrderFile,
+          do_file:
+            deliveryOrderFile !== null && deliveryOrderFile,
+          invoice_file: invoiceFile !== null && invoiceFile,
+          invoice_tambahan_file: invoiceTambahanList,
+          kwitansi_file: kwitansiFile !== null && kwitansiFile,
+          faktur_pajak_file:
+            fakturPajakFile !== null ? fakturPajakFile : null,
+          faktur_pajak_tambahan_file: validationFakturPajakTambahan.length > 0 ? fakturPajakTambahanList : null,
+          note_file: receivingNoteFile !== null ? receivingNoteFile : null,
+          resi_file:
+            resiFile !== null ? resiFile : null,
+          scan_report_sales_file: scanReportSalesFile !== null ? scanReportSalesFile : null,
           status: "DRAFT",
         };
 
-        await Api.post("/penagihan", inititalValue, {
-          Headers: {
-            "content-type": "application/json",
-          },
+        await fetch(`${api}api/portal-vendor/invoice`, {
+          method: "POST",
+          body: JSON.stringify(initialValue),
         })
-          .then((response) => {
-            setId(response.data.id);
-            setCreatedAt(response.data.created_at);
-            setOpenBackdrop(false);
-            toast.success("Penagihan create success!", {
-              position: "top-right",
-              style: {
-                borderRadius: "10px",
-                background: "#333",
-                color: "#fff",
-              },
-            });
+          .then((response) => response.json())
+          .then((res) => {
+            if (res.data === 0) {
+              setOpenBackdrop(false);
+              toast.error("Penagihan create failed!", {
+                position: "top-right",
+                style: {
+                  borderRadius: "10px",
+                  background: "#333",
+                  color: "#fff",
+                },
+              });
+            } else {
+              setId(res.data);
+              navigate("/vendor/monitoring");
+              setOpenBackdrop(false);
+              toast.success("Penagihan Create success!", {
+                position: "top-right",
+                style: {
+                  borderRadius: "10px",
+                  background: "#333",
+                  color: "#fff",
+                },
+              });
+            }
           })
-          .catch(() => {
+          .catch((err) => {
             setOpenBackdrop(false);
-            toast.error("Penagihan create failed!", {
+            toast.error("Penagihan Create failed!", {
               position: "top-right",
               style: {
                 borderRadius: "10px",
@@ -1063,45 +1316,73 @@ const Penagihan = () => {
             });
           });
       } else {
-        const inititalValue = {
+        const initialValue = {
+          id: id,
           vendor_id: vendorId,
           no_request: noRequest,
           tipe_penagihan: tipePenagihan.value,
           tipe_pengiriman: tipePengiriman.value,
           nomer_po: "PO" + nomerPo,
-          tanggal_po: dayjs(tanggalPo).format("YYYY-MM-DD"),
-          nomer_do: "",
+          tanggal_po: dayjs(tanggalPo).format("YYYY-MM-DD HH:mm:ss"),
+          nomer_do: "DO" + nomerDo,
           delivery_area: deliveryArea.value,
           nomer_invoices: invoiceList,
           tanggal_invoices: tanggalList,
           nilai_invoices: nilaiInvoiceList,
-          start_date_periode: dayjs(startDatePeriode).format("YYYY-MM-DD"),
-          end_date_periode: dayjs(endDatePeriode).format("YYYY-MM-DD"),
           is_pajak: isPajak.value,
           nomer_seri_pajak: nomerSeriFakturPajakList,
-          created_at: createdAt,
+          start_date_periode: dayjs(startDatePeriode).format("YYYY-MM-DD HH:mm:ss"),
+          end_date_periode: dayjs(endDatePeriode).format("YYYY-MM-DD HH:mm:ss"),
+          created_at: dayjs(new Date()).format("YYYY-MM-DD HH:mm:ss"),
           updated_at: dayjs(new Date()).format("YYYY-MM-DD HH:mm:ss"),
+          po_file:
+            purchaseOrderFile !== null && purchaseOrderFile,
+          do_file:
+            deliveryOrderFile !== null && deliveryOrderFile,
+          invoice_file: invoiceFile !== null && invoiceFile,
+          invoice_tambahan_file: invoiceTambahanList,
+          kwitansi_file: kwitansiFile !== null && kwitansiFile,
+          faktur_pajak_file:
+            fakturPajakFile !== null ? fakturPajakFile : null,
+          faktur_pajak_tambahan_file: fakturPajakTambahanList,
+          note_file: receivingNoteFile !== null ? receivingNoteFile : null,
+          resi_file:
+            resiFile !== null ? resiFile : null,
+          scan_report_sales_file: scanReportSalesFile !== null ? scanReportSalesFile : null,
           status: "DRAFT",
         };
 
-        await Api.put(`/penagihan/${id}`, inititalValue, {
-          Headers: {
-            "content-type": "application/json",
-          },
+        await fetch(`${api}api/portal-vendor/invoice`, {
+          method: "POST",
+          body: JSON.stringify(initialValue),
         })
-          .then((response) => {
-            setId(response.data.id);
-            setOpenBackdrop(false);
-            toast.success("Penagihan update success!", {
-              position: "top-right",
-              style: {
-                borderRadius: "10px",
-                background: "#333",
-                color: "#fff",
-              },
-            });
+          .then((response) => response.json())
+          .then((res) => {
+            if (res.data === 0) {
+              setOpenBackdrop(false);
+              toast.error("Penagihan update failed!", {
+                position: "top-right",
+                style: {
+                  borderRadius: "10px",
+                  background: "#333",
+                  color: "#fff",
+                },
+              });
+            } else {
+              setId(res.data);
+
+              setOpenBackdrop(false);
+              toast.success("Penagihan update success!", {
+                position: "top-right",
+                style: {
+                  borderRadius: "10px",
+                  background: "#333",
+                  color: "#fff",
+                },
+              });
+            }
           })
-          .catch(() => {
+          .catch((err) => {
             setOpenBackdrop(false);
             toast.error("Penagihan update failed!", {
               position: "top-right",
@@ -1122,26 +1403,32 @@ const Penagihan = () => {
     setOpenBackdrop(true);
     let lastItem;
     let counter = 1;
+    const currDate = new Date();
+      const month = dayjs(currDate).month();
+      const year = dayjs(currDate).year();
 
-    await Api.get("/penagihan").then((response) => {
-      lastItem = response.data[response.data.length - 1];
-    });
+    await fetch(`${api}api/portal-vendor/list/penagihan`)
+      .then((response) => response.json())
+      .then((res) => {
+        lastItem = res.data[res.data.length - 1];
+      })
+      .catch((err) => console.log(err));
 
     if (lastItem !== undefined) {
       if (lastItem.no_request !== undefined) {
         counter = parseInt(lastItem.no_request.split("/")[0]) + 1;
+        if((month+1) !== lastItem.no_request.split("/")[1]){
+          counter = 1;
+        }
       }
     }
 
-    const currDate = new Date();
 
     let formattedNumber = counter.toLocaleString("en-US", {
       minimumIntegerDigits: 9,
       useGrouping: false,
     });
 
-    const month = dayjs(currDate).month();
-    const year = dayjs(currDate).year();
 
     const noRequest = formattedNumber + "/" + (month + 1) + "/" + year;
 
@@ -1173,47 +1460,93 @@ const Penagihan = () => {
       }
     });
 
+    // eslint-disable-next-line array-callback-return
+    const invoiceTambahanList = invoiceTambahan.map((invoice) => {
+      if (!isEmpty(invoice)) {
+        return invoice.file;
+      }
+    });
+
+    // eslint-disable-next-line array-callback-return
+    const fakturPajakTambahanList = fakturPajakTambahan.map((faktur) => {
+      if (!isEmpty(faktur)) {
+        return faktur.file;
+      }
+    });
+
+    const validationFakturPajakTambahan = fakturPajakTambahan.filter((faktur) => {
+      return !isEmpty(faktur)
+    });
+
     if (id !== 0) {
-      const inititalValue = {
+      const initialValue = {
+        id: id,
         vendor_id: vendorId,
-        no_request: nomerRequest,
+        no_request: noRequest,
         tipe_penagihan: tipePenagihan.value,
         tipe_pengiriman: tipePengiriman.value,
         nomer_po: "PO" + nomerPo,
-        tanggal_po: dayjs(tanggalPo).format("YYYY-MM-DD"),
+        tanggal_po: dayjs(tanggalPo).format("YYYY-MM-DD HH:mm:ss"),
         nomer_do: "DO" + nomerDo,
         delivery_area: deliveryArea.value,
         nomer_invoices: invoiceList,
         tanggal_invoices: tanggalList,
         nilai_invoices: nilaiInvoiceList,
-        start_date_periode: null,
-        end_date_periode: null,
         is_pajak: isPajak.value,
         nomer_seri_pajak: nomerSeriFakturPajakList,
-        created_at: createdAt,
+        start_date_periode: null,
+        end_date_periode: null,
+        created_at: dayjs(new Date()).format("YYYY-MM-DD HH:mm:ss"),
         updated_at: dayjs(new Date()).format("YYYY-MM-DD HH:mm:ss"),
-        status: "waiting_for_approval",
+        po_file:
+          purchaseOrderFile !== null && purchaseOrderFile,
+        do_file:
+          deliveryOrderFile !== null && deliveryOrderFile,
+        invoice_file: invoiceFile !== null && invoiceFile,
+        invoice_tambahan_file: invoiceTambahanList,
+        kwitansi_file: kwitansiFile !== null && kwitansiFile,
+        faktur_pajak_file:
+          fakturPajakFile !== null ? fakturPajakFile : null,
+        faktur_pajak_tambahan_file: validationFakturPajakTambahan.length > 0 ? fakturPajakTambahanList : null,
+        note_file: receivingNoteFile !== null ? receivingNoteFile : null,
+        resi_file:
+          resiFile !== null ? resiFile : null,
+        scan_report_sales_file: scanReportSalesFile !== null ? scanReportSalesFile : null,
+        status: "Waiting_for_approval",
       };
 
-      await Api.put(`/penagihan/${id}`, inititalValue, {
-        Headers: {
-          "content-type": "application/json",
-        },
+      await fetch(`${api}api/portal-vendor/invoice`, {
+        method: "POST",
+        body: JSON.stringify(initialValue),
       })
-        .then((response) => {
-          setId(response.data.id);
-          setOpenBackdrop(false);
-          toast.success("Penagihan update success!", {
-            position: "top-right",
-            style: {
-              borderRadius: "10px",
-              background: "#333",
-              color: "#fff",
-            },
-          });
-          navigate("/vendor/monitoring");
+        .then((response) => response.json())
+        .then((res) => {
+          if (res.data === 0) {
+            setOpenBackdrop(false);
+            toast.error("Penagihan update failed!", {
+              position: "top-right",
+              style: {
+                borderRadius: "10px",
+                background: "#333",
+                color: "#fff",
+              },
+            });
+          } else {
+            setId(res.data);
+
+            setOpenBackdrop(false);
+            toast.success("Penagihan update success!", {
+              position: "top-right",
+              style: {
+                borderRadius: "10px",
+                background: "#333",
+                color: "#fff",
+              },
+            });
+            navigate("/vendor/monitoring");
+          }
         })
-        .catch(() => {
+        .catch((err) => {
           setOpenBackdrop(false);
           toast.error("Penagihan update failed!", {
             position: "top-right",
@@ -1225,48 +1558,76 @@ const Penagihan = () => {
           });
         });
     } else {
-      const inititalValue = {
+      const initialValue = {
+        id: id,
         vendor_id: vendorId,
         no_request: noRequest,
         tipe_penagihan: tipePenagihan.value,
         tipe_pengiriman: tipePengiriman.value,
         nomer_po: "PO" + nomerPo,
-        tanggal_po: dayjs(tanggalPo).format("YYYY-MM-DD"),
+        tanggal_po: dayjs(tanggalPo).format("YYYY-MM-DD HH:mm:ss"),
         nomer_do: "DO" + nomerDo,
         delivery_area: deliveryArea.value,
         nomer_invoices: invoiceList,
         tanggal_invoices: tanggalList,
         nilai_invoices: nilaiInvoiceList,
-        start_date_periode: null,
-        end_date_periode: null,
         is_pajak: isPajak.value,
         nomer_seri_pajak: nomerSeriFakturPajakList,
+        start_date_periode: null,
+        end_date_periode: null,
         created_at: dayjs(new Date()).format("YYYY-MM-DD HH:mm:ss"),
         updated_at: dayjs(new Date()).format("YYYY-MM-DD HH:mm:ss"),
-        status: "waiting_for_approval",
+        po_file:
+          purchaseOrderFile !== null && purchaseOrderFile,
+        do_file:
+          deliveryOrderFile !== null && deliveryOrderFile,
+        invoice_file: invoiceFile !== null && invoiceFile,
+        invoice_tambahan_file: invoiceTambahanList,
+        kwitansi_file: kwitansiFile !== null && kwitansiFile,
+        faktur_pajak_file:
+          fakturPajakFile !== null ? fakturPajakFile : null,
+        faktur_pajak_tambahan_file: fakturPajakTambahanList,
+        note_file: receivingNoteFile !== null ? receivingNoteFile : null,
+        resi_file:
+          resiFile !== null ? resiFile : null,
+        scan_report_sales_file: scanReportSalesFile !== null ? scanReportSalesFile : null,
+        status: "Waiting_for_approval",
       };
 
-      await Api.post(`/penagihan`, inititalValue, {
-        Headers: {
-          "content-type": "application/json",
-        },
+      await fetch(`${api}api/portal-vendor/invoice`, {
+        method: "POST",
+        body: JSON.stringify(initialValue),
       })
-        .then((response) => {
-          setId(response.data.id);
-          setOpenBackdrop(false);
-          toast.success("Penagihan create success!", {
-            position: "top-right",
-            style: {
-              borderRadius: "10px",
-              background: "#333",
-              color: "#fff",
-            },
-          });
-          navigate("/vendor/monitoring");
+        .then((response) => response.json())
+        .then((res) => {
+          if (res.data === 0) {
+            setOpenBackdrop(false);
+            toast.error("Penagihan create failed!", {
+              position: "top-right",
+              style: {
+                borderRadius: "10px",
+                background: "#333",
+                color: "#fff",
+              },
+            });
+          } else {
+            setId(res.data.id);
+
+            setOpenBackdrop(false);
+            toast.success("Penagihan Create success!", {
+              position: "top-right",
+              style: {
+                borderRadius: "10px",
+                background: "#333",
+                color: "#fff",
+              },
+            });
+            navigate("/vendor/monitoring");
+          }
         })
-        .catch(() => {
+        .catch((err) => {
           setOpenBackdrop(false);
-          toast.error("Penagihan create failed!", {
+          toast.error("Penagihan Create failed!", {
             position: "top-right",
             style: {
               borderRadius: "10px",
@@ -1282,26 +1643,32 @@ const Penagihan = () => {
     let lastItem;
     setOpenBackdrop(true);
     let counter = 1;
+    const currDate = new Date();
+      const month = dayjs(currDate).month();
+      const year = dayjs(currDate).year();
 
-    await Api.get("/penagihan").then((response) => {
-      lastItem = response.data[response.data.length - 1];
-    });
+    await fetch(`${api}api/portal-vendor/list/penagihan`)
+      .then((response) => response.json())
+      .then((res) => {
+        lastItem = res.data[res.data.length - 1];
+      })
+      .catch((err) => console.log(err));
 
     if (lastItem !== undefined) {
       if (lastItem.no_request !== undefined) {
         counter = parseInt(lastItem.no_request.split("/")[0]) + 1;
+        if((month+1) !== lastItem.no_request.split("/")[1]){
+          counter = 1;
+        }
       }
     }
-
-    const currDate = new Date();
 
     let formattedNumber = counter.toLocaleString("en-US", {
       minimumIntegerDigits: 9,
       useGrouping: false,
     });
 
-    const month = dayjs(currDate).month();
-    const year = dayjs(currDate).year();
+    
 
     const noRequest = formattedNumber + "/" + (month + 1) + "/" + year;
 
@@ -1333,48 +1700,93 @@ const Penagihan = () => {
       }
     });
 
+    // eslint-disable-next-line array-callback-return
+    const invoiceTambahanList = invoiceTambahan.map((invoice) => {
+      if (!isEmpty(invoice)) {
+        return invoice.file;
+      }
+    });
+
+    // eslint-disable-next-line array-callback-return
+    const fakturPajakTambahanList = fakturPajakTambahan.map((faktur) => {
+      if (!isEmpty(faktur)) {
+        return faktur.file;
+      }
+    });
+
+    const validationFakturPajakTambahan = fakturPajakTambahan.filter((faktur) => {
+      return !isEmpty(faktur)
+    });
+
     if (id !== 0) {
-      const inititalValue = {
+      const initialValue = {
+        id: id,
         vendor_id: vendorId,
-        no_request: nomerRequest,
+        no_request: noRequest,
         tipe_penagihan: tipePenagihan.value,
         tipe_pengiriman: tipePengiriman.value,
         nomer_po: "PO" + nomerPo,
-        tanggal_po: dayjs(tanggalPo).format("YYYY-MM-DD"),
-        nomer_do: "",
+        tanggal_po: dayjs(tanggalPo).format("YYYY-MM-DD HH:mm:ss"),
+        nomer_do: "DO" + nomerDo,
         delivery_area: deliveryArea.value,
         nomer_invoices: invoiceList,
         tanggal_invoices: tanggalList,
         nilai_invoices: nilaiInvoiceList,
-        start_date_periode: dayjs(startDatePeriode).format("YYYY-MM-DD"),
-        end_date_periode: dayjs(endDatePeriode).format("YYYY-MM-DD"),
         is_pajak: isPajak.value,
         nomer_seri_pajak: nomerSeriFakturPajakList,
-        created_at: createdAt,
+        start_date_periode: dayjs(startDatePeriode).format("YYYY-MM-DD HH:mm:ss"),
+        end_date_periode: dayjs(endDatePeriode).format("YYYY-MM-DD HH:mm:ss"),
+        created_at: dayjs(new Date()).format("YYYY-MM-DD HH:mm:ss"),
         updated_at: dayjs(new Date()).format("YYYY-MM-DD HH:mm:ss"),
-        status: "waiting_for_approval",
+        po_file:
+          purchaseOrderFile !== null && purchaseOrderFile,
+        do_file:
+          deliveryOrderFile !== null && deliveryOrderFile,
+        invoice_file: invoiceFile !== null && invoiceFile,
+        invoice_tambahan_file: invoiceTambahanList,
+        kwitansi_file: kwitansiFile !== null && kwitansiFile,
+        faktur_pajak_file:
+          fakturPajakFile !== null ? fakturPajakFile : null,
+        faktur_pajak_tambahan_file: validationFakturPajakTambahan.length > 0 ? fakturPajakTambahanList : null,
+        note_file: receivingNoteFile !== null ? receivingNoteFile : null,
+        resi_file:
+          resiFile !== null ? resiFile : null,
+        scan_report_sales_file: scanReportSalesFile !== null ? scanReportSalesFile : null,
+        status: "Waiting_for_approval",
       };
 
-      await Api.put(`/penagihan/${id}`, inititalValue, {
-        Headers: {
-          "content-type": "application/json",
-        },
+      await fetch(`${api}api/portal-vendor/invoice`, {
+        method: "POST",
+        body: JSON.stringify(initialValue),
       })
-        .then((response) => {
-          setId(response.data.id);
-          setOpenBackdrop(false);
-          toast.success("Penagihan update success!", {
-            position: "top-right",
-            style: {
-              borderRadius: "10px",
-              background: "#333",
-              color: "#fff",
-            },
-          });
-          navigate("/vendor/monitoring");
+        .then((response) => response.json())
+        .then((res) => {
+          if (res.data === 0) {
+            setOpenBackdrop(false);
+            toast.error("Penagihan update failed!", {
+              position: "top-right",
+              style: {
+                borderRadius: "10px",
+                background: "#333",
+                color: "#fff",
+              },
+            });
+          } else {
+            setId(res.data.id);
+
+            setOpenBackdrop(false);
+            toast.success("Penagihan update success!", {
+              position: "top-right",
+              style: {
+                borderRadius: "10px",
+                background: "#333",
+                color: "#fff",
+              },
+            });
+            navigate("/vendor/monitoring");
+          }
         })
-        .catch(() => {
-          setId(0);
+        .catch((err) => {
           setOpenBackdrop(false);
           toast.error("Penagihan update failed!", {
             position: "top-right",
@@ -1386,49 +1798,76 @@ const Penagihan = () => {
           });
         });
     } else {
-      const inititalValue = {
+      const initialValue = {
+        id: id,
         vendor_id: vendorId,
         no_request: noRequest,
         tipe_penagihan: tipePenagihan.value,
         tipe_pengiriman: tipePengiriman.value,
         nomer_po: "PO" + nomerPo,
-        tanggal_po: dayjs(tanggalPo).format("YYYY-MM-DD"),
-        nomer_do: "",
+        tanggal_po: dayjs(tanggalPo).format("YYYY-MM-DD HH:mm:ss"),
+        nomer_do: "DO" + nomerDo,
         delivery_area: deliveryArea.value,
         nomer_invoices: invoiceList,
         tanggal_invoices: tanggalList,
         nilai_invoices: nilaiInvoiceList,
-        start_date_periode: dayjs(startDatePeriode).format("YYYY-MM-DD"),
-        end_date_periode: dayjs(endDatePeriode).format("YYYY-MM-DD"),
         is_pajak: isPajak.value,
         nomer_seri_pajak: nomerSeriFakturPajakList,
+        start_date_periode: null,
+        end_date_periode: null,
         created_at: dayjs(new Date()).format("YYYY-MM-DD HH:mm:ss"),
         updated_at: dayjs(new Date()).format("YYYY-MM-DD HH:mm:ss"),
-        status: "waiting_for_approval",
+        po_file:
+          purchaseOrderFile !== null && purchaseOrderFile,
+        do_file:
+          deliveryOrderFile !== null && deliveryOrderFile,
+        invoice_file: invoiceFile !== null && invoiceFile,
+        invoice_tambahan_file: invoiceTambahanList,
+        kwitansi_file: kwitansiFile !== null && kwitansiFile,
+        faktur_pajak_file:
+          fakturPajakFile !== null ? fakturPajakFile : null,
+        faktur_pajak_tambahan_file: fakturPajakTambahanList,
+        note_file: receivingNoteFile !== null ? receivingNoteFile : null,
+        resi_file:
+          resiFile !== null ? resiFile : null,
+        scan_report_sales_file: scanReportSalesFile !== null ? scanReportSalesFile : null,
+        status: "Waiting_for_approval",
       };
 
-      await Api.post(`/penagihan`, inititalValue, {
-        Headers: {
-          "content-type": "application/json",
-        },
+      await fetch(`${api}api/portal-vendor/invoice`, {
+        method: "POST",
+        body: JSON.stringify(initialValue),
       })
-        .then((response) => {
-          setId(response.data.id);
-          setOpenBackdrop(false);
-          toast.success("Penagihan create success!", {
-            position: "top-right",
-            style: {
-              borderRadius: "10px",
-              background: "#333",
-              color: "#fff",
-            },
-          });
-          navigate("/vendor/monitoring");
+        .then((response) => response.json())
+        .then((res) => {
+          if (res.data === 0) {
+            setOpenBackdrop(false);
+            toast.error("Penagihan create failed!", {
+              position: "top-right",
+              style: {
+                borderRadius: "10px",
+                background: "#333",
+                color: "#fff",
+              },
+            });
+          } else {
+            setId(res.data.id);
+
+            setOpenBackdrop(false);
+            toast.success("Penagihan Create success!", {
+              position: "top-right",
+              style: {
+                borderRadius: "10px",
+                background: "#333",
+                color: "#fff",
+              },
+            });
+            navigate("/vendor/monitoring");
+          }
         })
-        .catch(() => {
-          setId(0);
+        .catch((err) => {
           setOpenBackdrop(false);
-          toast.error("Penagihan create failed!", {
+          toast.error("Penagihan Create failed!", {
             position: "top-right",
             style: {
               borderRadius: "10px",
@@ -1441,10 +1880,65 @@ const Penagihan = () => {
   };
 
   const steps = ["Tipe Penagihan", "Billing", "Dokumen"];
+
+  // const uploadFile = async () => {
+  //   const btn = document.getElementById("btn-upload");
+
+  //   const files = [purchaseOrderFile, deliveryOrderFile];
+  //   try {
+  //     for (let i = 0; i < files.length; i++) {
+  //       const { fileUrl, filePath } = await uploadManager.upload({
+  //         data: files[i],
+
+  //         onProgress: ({ progress }) => {
+  //           btn.disabled = true;
+  //           btn.innerHTML = "Uploading Files... " + progress + "%";
+  //         },
+
+  //         maxConcurrentUploadParts: 10,
+
+  //         // About file paths:
+
+  //         // - Your API key's "file upload path" is used by default, and can be changed by editing the API key's settings.
+
+  //         // - You can override the API key's file upload path by specifying a path below.
+
+  //         // - You may use path variables (e.g. "{UTC_DAY}"): https://www.bytescale.com/docs/path-variables
+
+  //         path: {
+  //           folderPath: "/portal-vendor/assets",
+  //         },
+
+  //         // Set to 'isCancelled = true' after invoking 'upload' to cancel the upload.
+
+  //         // cancellationToken: {
+
+  //         //   isCancelled: false
+
+  //         // }
+  //       });
+
+  //       // --------------------------------------------
+
+  //       // File successfully uploaded!
+
+  //       // --------------------------------------------
+
+  //       // The 'filePath' uniquely identifies the file,
+
+  //       // and is what you should save to your API.
+
+  //       // --------------------------------------------
+  //       btn.innerHTML = "Upload File";
+  //       alert(`File uploaded:\n${fileUrl}`);
+  //     }
+  //   } catch (e) {
+  //     alert(`Error:\n${e.message}`);
+  //   }
+  // };
   return (
     <Admin>
-      {console.log(invoiceTambahan)}
-      {vendors.status === "ACTIVE" ? (
+      { !isEmpty(vendors) && vendors.status === "APPROVED" ? (
         <div
           className={`${
             screenSize < 768 ? "px-5 pt-20" : "px-10"
@@ -1563,6 +2057,7 @@ const Penagihan = () => {
                                     <DemoContainer components={["DatePicker"]}>
                                       <DatePicker
                                         className="w-full bg-[#ddebf7]"
+                                        format="MM/DD/YYYY"
                                         value={tanggalPo}
                                         onChange={onChangeTanggalPo}
                                         slotProps={{
@@ -1597,6 +2092,9 @@ const Penagihan = () => {
                                     name=""
                                     id=""
                                     value={nomerDo}
+                                    onKeyDown={(evt) =>
+                                      evt.key === " " && evt.preventDefault()
+                                    }
                                     onChange={(e) => setNomerDo(e.target.value)}
                                     className={`max-[821px]:w-full w-[246.4px] h-[40px] rounded-sm focus:border focus:border-[#0077b6] bg-[#ddebf7] ${
                                       isError && nomerDo.trim().length === 0
@@ -1665,6 +2163,10 @@ const Penagihan = () => {
                                         type="text"
                                         name=""
                                         id={i}
+                                        onKeyDown={(evt) =>
+                                          evt.key === " " &&
+                                          evt.preventDefault()
+                                        }
                                         value={item.value}
                                         onChange={onChangeInvoice}
                                         className="max-[821px]:w-full w-[246.4px] h-[40px] border border-slate-300 rounded-sm focus:border focus:border-[#0077b6] bg-[#ddebf7]"
@@ -1747,7 +2249,8 @@ const Penagihan = () => {
                                           step={0.01}
                                           onKeyDown={(evt) =>
                                             (evt.key === "e" ||
-                                              evt.key === "-") &&
+                                              evt.key === "-" ||
+                                              evt.key === " ") &&
                                             evt.preventDefault()
                                           }
                                           value={nilaiInvoice[i].value}
@@ -1963,6 +2466,10 @@ const Penagihan = () => {
                                           type="text"
                                           name=""
                                           id={i}
+                                          onKeyDown={(evt) =>
+                                            evt.key === " " &&
+                                            evt.preventDefault()
+                                          }
                                           value={item.value}
                                           onChange={onChangeInvoice}
                                           className="max-[821px]:w-full w-[246.4px] h-[40px] border border-slate-300 rounded-sm focus:border focus:border-[#0077b6] bg-[#fff2cc]"
@@ -2050,7 +2557,8 @@ const Penagihan = () => {
                                         step={0.01}
                                         onKeyDown={(evt) =>
                                           (evt.key === "e" ||
-                                            evt.key === "-") &&
+                                            evt.key === "-" ||
+                                            evt.key === " ") &&
                                           evt.preventDefault()
                                         }
                                         value={nilaiInvoice[i].value}
@@ -2364,7 +2872,7 @@ const Penagihan = () => {
                                       <div>:</div>
                                       <div className="flex items-center gap-1">
                                         <div>
-                                          <label htmlFor={i} className="w-fit">
+                                          <label htmlFor={`invoice_${i}`} className="w-fit">
                                             {isEmpty(invoiceTambahan[i]) ? (
                                               <div className="w-fit flex gap-1 items-center bg-blue-400 py-2 px-5 text-white hover:bg-blue-200 rounded-md">
                                                 <span>
@@ -2383,8 +2891,8 @@ const Penagihan = () => {
                                           </label>
                                           <input
                                             type="file"
-                                            id={i}
-                                            onChange={onChangeInvoiceTambahan}
+                                            id={`invoice_${i}`}
+                                            onChange={(e) => onChangeInvoiceTambahan(e,i)}
                                             accept=".jpg,.pdf"
                                             className="hidden w-full h-[40px] border border-slate-300 rounded-sm focus:border focus:border-[#0077b6]  "
                                           />
@@ -2394,16 +2902,7 @@ const Penagihan = () => {
                                     </div>
                                   </div>
                                 ))}
-                                <div
-                                  onClick={addInvoiceTambahan}
-                                  className={`py-1 px-4 rounded-sm shadow-sm text-white bg-[#305496] w-fit ${
-                                    invoiceTambahan.length === 5
-                                      ? "cursor-not-allowed"
-                                      : "cursor-pointer"
-                                  } `}
-                                >
-                                  Add row
-                                </div>
+                             
                               </div>
                               <div className="flex items-center gap-3 mb-10">
                                 <div className="flex flex-col gap-1 w-[350px]">
@@ -2519,7 +3018,7 @@ const Penagihan = () => {
                                           <div className="flex items-center gap-1">
                                             <div>
                                               <label
-                                                htmlFor={i}
+                                                htmlFor={`pajak_${i}`}
                                                 className="w-fit"
                                               >
                                                 {isEmpty(
@@ -2542,10 +3041,8 @@ const Penagihan = () => {
                                               </label>
                                               <input
                                                 type="file"
-                                                id={i}
-                                                onChange={
-                                                  onChangeFakturPajakTambahan
-                                                }
+                                                id={`pajak_${i}`}
+                                                onChange={(e) => onChangeFakturPajakTambahan(e,i)}
                                                 accept=".jpg,.pdf"
                                                 className="hidden w-full h-[40px] border border-slate-300 rounded-sm focus:border focus:border-[#0077b6]  "
                                               />
@@ -2555,16 +3052,7 @@ const Penagihan = () => {
                                         </div>
                                       </div>
                                     ))}
-                                    <div
-                                      onClick={addFakturPajakFile}
-                                      className={`py-1 px-4 rounded-sm shadow-sm text-white bg-[#305496] w-fit ${
-                                        fakturPajakTambahan.length === 5
-                                          ? "cursor-not-allowed"
-                                          : "cursor-pointer"
-                                      } `}
-                                    >
-                                      Add row
-                                    </div>
+                                 
                                   </div>
                                 </>
                               )}
@@ -2695,6 +3183,13 @@ const Penagihan = () => {
                                     )}
                                   </div>
                                 </div>
+                                {/* <div
+                                  id="btn-upload"
+                                  onClick={uploadFile}
+                                  className="py-2 px-5 bg-blue-400 cursor-pointer"
+                                >
+                                  Upload file
+                                </div> */}
                                 {isError && (
                                   <div className="mt-10 mb-3">
                                     <div className="w-fit flex gap-1 items-center text-[14px] bg-red-500 text-white py-3 px-5 ">
@@ -2863,7 +3358,7 @@ const Penagihan = () => {
                                       <div>:</div>
                                       <div className="flex items-center gap-1">
                                         <div>
-                                          <label htmlFor={i} className="w-fit">
+                                          <label htmlFor={`invoice_${i}`} className="w-fit">
                                             {isEmpty(invoiceTambahan[i]) ? (
                                               <div className="w-fit flex gap-1 items-center bg-[#fff2cc] py-2 px-5 hover:bg-yellow-100 rounded-md">
                                                 <span>
@@ -2882,8 +3377,8 @@ const Penagihan = () => {
                                           </label>
                                           <input
                                             type="file"
-                                            id={i}
-                                            onChange={onChangeInvoiceTambahan}
+                                            id={`invoice_${i}`}
+                                            onChange={(e) => onChangeInvoiceTambahan(e,i)}
                                             accept=".jpg,.pdf"
                                             className="hidden w-full h-[40px] border border-slate-300 rounded-sm focus:border focus:border-[#0077b6]  "
                                           />
@@ -2893,16 +3388,7 @@ const Penagihan = () => {
                                     </div>
                                   </div>
                                 ))}
-                                <div
-                                  onClick={addInvoiceTambahan}
-                                  className={`py-1 px-4 rounded-sm shadow-sm text-white bg-[#305496] w-fit ${
-                                    invoiceTambahan.length === 5
-                                      ? "cursor-not-allowed"
-                                      : "cursor-pointer"
-                                  } `}
-                                >
-                                  Add row
-                                </div>
+                              
                               </div>
                               <div className="flex items-center gap-3 mb-10">
                                 <div className="flex flex-col gap-1 w-[350px] ">
@@ -3017,7 +3503,7 @@ const Penagihan = () => {
                                           <div className="flex items-center gap-1">
                                             <div>
                                               <label
-                                                htmlFor={i}
+                                                htmlFor={`pajak_${i}`}
                                                 className="w-fit"
                                               >
                                                 {isEmpty(
@@ -3040,10 +3526,8 @@ const Penagihan = () => {
                                               </label>
                                               <input
                                                 type="file"
-                                                id={i}
-                                                onChange={
-                                                  onChangeFakturPajakTambahan
-                                                }
+                                                id={`pajak_${i}`}
+                                                onChange={(e) => onChangeFakturPajakTambahan(e,i)}
                                                 accept=".jpg,.pdf"
                                                 className="hidden w-full h-[40px] border border-slate-300 rounded-sm focus:border focus:border-[#0077b6]  "
                                               />
@@ -3053,16 +3537,7 @@ const Penagihan = () => {
                                         </div>
                                       </div>
                                     ))}
-                                    <div
-                                      onClick={addFakturPajakFile}
-                                      className={`py-1 px-4 rounded-sm shadow-sm text-white bg-[#305496] w-fit ${
-                                        fakturPajakTambahan.length === 5
-                                          ? "cursor-not-allowed"
-                                          : "cursor-pointer"
-                                      } `}
-                                    >
-                                      Add row
-                                    </div>
+                                
                                   </div>
                                 </>
                               )}
@@ -3216,7 +3691,7 @@ const Penagihan = () => {
                     {activeStep === steps.length - 1 ? (
                       <button
                         onClick={
-                          tipePenagihan.value === "beli putus"
+                          tipePenagihan.value === "beli_putus"
                             ? saveDraft
                             : saveDraft2
                         }
@@ -3240,7 +3715,7 @@ const Penagihan = () => {
                     {activeStep === steps.length - 1 ? (
                       <button
                         onClick={
-                          tipePenagihan.value === "beli putus"
+                          tipePenagihan.value === "beli_putus"
                             ? handleNext
                             : handleNext2
                         }
@@ -3251,7 +3726,7 @@ const Penagihan = () => {
                     ) : (
                       <button
                         onClick={
-                          tipePenagihan.value === "beli putus"
+                          tipePenagihan.value === "beli_putus"
                             ? handleNext
                             : handleNext2
                         }
@@ -3432,6 +3907,10 @@ const Penagihan = () => {
                                           name=""
                                           id=""
                                           value={nomerDo}
+                                          onKeyDown={(evt) =>
+                                            evt.key === " " &&
+                                            evt.preventDefault()
+                                          }
                                           onChange={(e) =>
                                             setNomerDo(e.target.value)
                                           }
@@ -3501,6 +3980,10 @@ const Penagihan = () => {
                                               name=""
                                               id={i}
                                               value={item.value}
+                                              onKeyDown={(evt) =>
+                                                evt.key === " " &&
+                                                evt.preventDefault()
+                                              }
                                               onChange={onChangeInvoice}
                                               className="max-[821px]:w-full w-[246.4px] h-[40px] border border-slate-300 rounded-sm focus:border focus:border-[#0077b6] bg-[#ddebf7]"
                                             />
@@ -3584,7 +4067,8 @@ const Penagihan = () => {
                                                 step={0.01}
                                                 onKeyDown={(evt) =>
                                                   (evt.key === "e" ||
-                                                    evt.key === "-") &&
+                                                    evt.key === "-" ||
+                                                    evt.key === " ") &&
                                                   evt.preventDefault()
                                                 }
                                                 value={nilaiInvoice[i].value}
@@ -3821,6 +4305,10 @@ const Penagihan = () => {
                                                 id={i}
                                                 value={item.value}
                                                 onChange={onChangeInvoice}
+                                                onKeyDown={(evt) =>
+                                                  evt.key === " " &&
+                                                  evt.preventDefault()
+                                                }
                                                 className="max-[821px]:w-full w-[246.4px] h-[40px] border border-slate-300 rounded-sm focus:border focus:border-[#0077b6] bg-[#fff2cc]"
                                               />
                                             </div>
@@ -3907,7 +4395,8 @@ const Penagihan = () => {
                                               step={0.01}
                                               onKeyDown={(evt) =>
                                                 (evt.key === "e" ||
-                                                  evt.key === "-") &&
+                                                  evt.key === "-" ||
+                                                  evt.key === " ") &&
                                                 evt.preventDefault()
                                               }
                                               value={nilaiInvoice[i].value}
@@ -4060,7 +4549,7 @@ const Penagihan = () => {
                                     <button
                                       disabled={activeStep === 0}
                                       onClick={
-                                        tipePenagihan.value === "beli putus"
+                                        tipePenagihan.value === "beli_putus"
                                           ? saveDraft
                                           : saveDraft2
                                       }
@@ -4084,7 +4573,7 @@ const Penagihan = () => {
 
                                   <button
                                     onClick={
-                                      tipePenagihan.value === "beli putus"
+                                      tipePenagihan.value === "beli_putus"
                                         ? handleNext
                                         : handleNext2
                                     }
@@ -4101,7 +4590,7 @@ const Penagihan = () => {
                                     <button
                                       disabled={activeStep === 0}
                                       onClick={
-                                        tipePenagihan.value === "beli putus"
+                                        tipePenagihan.value === "beli_putus"
                                           ? saveDraft
                                           : saveDraft2
                                       }
@@ -4125,7 +4614,7 @@ const Penagihan = () => {
 
                                   <button
                                     onClick={
-                                      tipePenagihan.value === "beli putus"
+                                      tipePenagihan.value === "beli_putus"
                                         ? handleNext
                                         : handleNext2
                                     }
@@ -4285,7 +4774,7 @@ const Penagihan = () => {
 
                                             <div>
                                               <label
-                                                htmlFor={i}
+                                                htmlFor={`invoice_${i}`}
                                                 className="w-fit"
                                               >
                                                 {isEmpty(invoiceTambahan[i]) ? (
@@ -4306,10 +4795,8 @@ const Penagihan = () => {
                                               </label>
                                               <input
                                                 type="file"
-                                                id={i}
-                                                onChange={
-                                                  onChangeInvoiceTambahan
-                                                }
+                                                id={`invoice_${i}`}
+                                                onChange={(e) => onChangeInvoiceTambahan(e,i)}
                                                 accept=".jpg,.pdf"
                                                 className="hidden w-full h-[40px] border border-slate-300 rounded-sm focus:border focus:border-[#0077b6] "
                                               />
@@ -4317,18 +4804,7 @@ const Penagihan = () => {
                                           </div>
                                         </div>
                                       ))}
-                                      <div
-                                        onClick={addInvoiceTambahan}
-                                        className={` flex justify-end ${
-                                          invoiceTambahan.length === 5
-                                            ? "cursor-not-allowed"
-                                            : "cursor-pointer"
-                                        } `}
-                                      >
-                                        <div className="py-1 px-4 rounded-sm shadow-sm text-white bg-[#305496]">
-                                          Add row
-                                        </div>
-                                      </div>
+                                    
                                     </div>
                                     <div className="flex flex-col gap-3 mb-10">
                                       <div className="flex flex-col gap-1">
@@ -4441,7 +4917,7 @@ const Penagihan = () => {
 
                                                   <div>
                                                     <label
-                                                      htmlFor={i}
+                                                      htmlFor={`pajak_${i}`}
                                                       className="w-fit"
                                                     >
                                                       {isEmpty(
@@ -4464,10 +4940,8 @@ const Penagihan = () => {
                                                     </label>
                                                     <input
                                                       type="file"
-                                                      id={i}
-                                                      onChange={
-                                                        onChangeFakturPajakTambahan
-                                                      }
+                                                      id={`pajak_${i}`}
+                                                      onChange={(e) => onChangeFakturPajakTambahan(e,i)}
                                                       accept=".jpg,.pdf"
                                                       className="hidden w-full h-[40px] border border-slate-300 rounded-sm focus:border focus:border-[#0077b6]  "
                                                     />
@@ -4476,18 +4950,7 @@ const Penagihan = () => {
                                               </div>
                                             )
                                           )}
-                                          <div
-                                            onClick={addFakturPajakFile}
-                                            className={` flex justify-end ${
-                                              invoiceTambahan.length === 5
-                                                ? "cursor-not-allowed"
-                                                : "cursor-pointer"
-                                            } `}
-                                          >
-                                            <div className="py-1 px-4 rounded-sm shadow-sm text-white bg-[#305496]">
-                                              Add row
-                                            </div>
-                                          </div>
+                                       
                                         </div>
                                       </>
                                     )}
@@ -4759,7 +5222,7 @@ const Penagihan = () => {
 
                                             <div>
                                               <label
-                                                htmlFor={i}
+                                                htmlFor={`invoice_${i}`}
                                                 className="w-fit"
                                               >
                                                 {isEmpty(invoiceTambahan[i]) ? (
@@ -4780,10 +5243,8 @@ const Penagihan = () => {
                                               </label>
                                               <input
                                                 type="file"
-                                                id={i}
-                                                onChange={
-                                                  onChangeInvoiceTambahan
-                                                }
+                                                id={`invoice_${i}`}
+                                                onChange={(e) => onChangeInvoiceTambahan(e,i)}
                                                 accept=".jpg,.pdf"
                                                 className="hidden w-full h-[40px] border border-slate-300 rounded-sm focus:border focus:border-[#0077b6]  "
                                               />
@@ -4791,18 +5252,7 @@ const Penagihan = () => {
                                           </div>
                                         </div>
                                       ))}
-                                      <div
-                                        onClick={addInvoiceTambahan}
-                                        className={`flex justify-end ${
-                                          invoiceTambahan.length === 5
-                                            ? "cursor-not-allowed"
-                                            : "cursor-pointer"
-                                        } `}
-                                      >
-                                        <div className="py-1 px-4 rounded-sm shadow-sm text-white bg-[#305496]">
-                                          Add row
-                                        </div>
-                                      </div>
+                                    
                                     </div>
                                     <div className="flex flex-col gap-3 mb-10">
                                       <div className="flex flex-col gap-1">
@@ -4915,7 +5365,7 @@ const Penagihan = () => {
 
                                                   <div>
                                                     <label
-                                                      htmlFor={i}
+                                                      htmlFor={`pajak_${i}`}
                                                       className="w-fit"
                                                     >
                                                       {isEmpty(
@@ -4938,10 +5388,8 @@ const Penagihan = () => {
                                                     </label>
                                                     <input
                                                       type="file"
-                                                      id={i}
-                                                      onChange={
-                                                        onChangeFakturPajakTambahan
-                                                      }
+                                                      id={`pajak_${i}`}
+                                                      onChange={(e) => onChangeFakturPajakTambahan(e,i)}
                                                       accept=".jpg,.pdf"
                                                       className="hidden w-full h-[40px] border border-slate-300 rounded-sm focus:border focus:border-[#0077b6]  "
                                                     />
@@ -4950,18 +5398,7 @@ const Penagihan = () => {
                                               </div>
                                             )
                                           )}
-                                          <div
-                                            onClick={addFakturPajakFile}
-                                            className={`flex justify-end ${
-                                              fakturPajakTambahan.length === 5
-                                                ? "cursor-not-allowed"
-                                                : "cursor-pointer"
-                                            } `}
-                                          >
-                                            <div className="py-1 px-4 rounded-sm shadow-sm text-white bg-[#305496]">
-                                              Add row
-                                            </div>
-                                          </div>
+                                       
                                         </div>
                                       </>
                                     )}
@@ -5102,7 +5539,7 @@ const Penagihan = () => {
                                       <button
                                         disabled={activeStep === 0}
                                         onClick={
-                                          tipePenagihan.value === "beli putus"
+                                          tipePenagihan.value === "beli_putus"
                                             ? saveDraft
                                             : saveDraft2
                                         }
@@ -5128,7 +5565,7 @@ const Penagihan = () => {
 
                                     <button
                                       onClick={
-                                        tipePenagihan.value === "beli putus"
+                                        tipePenagihan.value === "beli_putus"
                                           ? handleNext
                                           : handleNext2
                                       }
@@ -5145,7 +5582,7 @@ const Penagihan = () => {
                                       <button
                                         disabled={activeStep === 0}
                                         onClick={
-                                          tipePenagihan.value === "beli putus"
+                                          tipePenagihan.value === "beli_putus"
                                             ? saveDraft
                                             : saveDraft2
                                         }
@@ -5171,7 +5608,7 @@ const Penagihan = () => {
 
                                     <button
                                       onClick={
-                                        tipePenagihan.value === "beli putus"
+                                        tipePenagihan.value === "beli_putus"
                                           ? handleNext
                                           : handleNext2
                                       }

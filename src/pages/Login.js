@@ -1,6 +1,5 @@
 import { Checkbox, Label, TextInput } from "flowbite-react";
 import { Link, useNavigate } from "react-router-dom";
-import Api from "../api";
 import toast from "react-hot-toast";
 import { useState } from "react";
 import { useEffect } from "react";
@@ -15,7 +14,7 @@ const Login = () => {
   const [password, setPassword] = useState("");
 
   const [showPassword, setShowPassword] = useState(false);
-  const [loading, setLoading] = useState(false)
+  const [loading, setLoading] = useState(false);
 
   const unsplashimg = {
     src: "https://source.unsplash.com/1600x900/?random",
@@ -23,30 +22,47 @@ const Login = () => {
   };
 
   const onSubmitLogin = async (e) => {
-    setLoading(true)
+    setLoading(true);
     e.preventDefault();
-    await Api.get("/users").then((response) => {
-      // eslint-disable-next-line array-callback-return
-      const login = response.data.filter(
-        (user) => user.username === username && user.password === password
-      );
-      if (login.length > 0) {
-        toast.success("Login Success", {
-          position: "top-right",
-          style: {
-            borderRadius: "10px",
-            background: "#333",
-            color: "#fff",
-          },
-        });
-        Cookies.set("token", generateString(10));
-        Cookies.set("vendor_id", login[0].vendor_id);
-        console.log(login[0].vendor_id);
-        navigate(`/vendor/profile`, {
-          state: { vendor_id: login[0].vendor_id },
-        });
-        setLoading(false)
-      } else {
+    const api = process.env.REACT_APP_BASEURL;
+
+    await fetch(`${api}api/portal-vendor/list/users`, {
+      method: "GET",
+    })
+      .then((response) => response.json())
+      .then((data) => {
+        setLoading(false);
+        // eslint-disable-next-line array-callback-return
+        const login = data.data.filter(
+          (user) => user.username === username && user.password === password
+        );
+        if (login.length > 0) {
+          toast.success("Login Success", {
+            position: "top-right",
+            style: {
+              borderRadius: "10px",
+              background: "#333",
+              color: "#fff",
+            },
+          });
+          Cookies.set("id", login[0].id)
+          Cookies.set("token", generateString(10));
+          Cookies.set("vendor_id", login[0].vendor_id);
+          navigate(`/vendor/profile`);
+          setLoading(false);
+        } else {
+          toast.error("Login Failed!", {
+            position: "top-right",
+            style: {
+              borderRadius: "10px",
+              background: "#333",
+              color: "#fff",
+            },
+          });
+          setLoading(false);
+        }
+      })
+      .catch((err) => {
         toast.error("Login Failed!", {
           position: "top-right",
           style: {
@@ -55,12 +71,12 @@ const Login = () => {
             color: "#fff",
           },
         });
-        setLoading(false)
-      }
-    });
+        setLoading(false);
+      });
   };
 
   useEffect(() => {
+    Cookies.remove("id")
     Cookies.remove("token");
     Cookies.remove("vendor_id");
   }, []);
@@ -144,16 +160,11 @@ const Login = () => {
 
             <button
               type="submit"
-              disabled={loading ? true:false}
+              disabled={loading ? true : false}
               className="bg-[#0077b6] py-3 text-white rounded-md shadow-sm "
               onClick={(e) => onSubmitLogin(e)}
             >
-              {loading ? (
-                <CircularProgress sx={{ color: "white"}} />
-              ):(
-                'LOGIN'
-              )}
-              
+              {loading ? <CircularProgress size={20} sx={{ color: "white"}} /> : "LOGIN"}
             </button>
           </form>
         </div>

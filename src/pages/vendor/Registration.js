@@ -25,8 +25,8 @@ import ApiDataWilayahIndonesia from "../../api/ApiDataWilayahIndonesia";
 import { Link, useNavigate } from "react-router-dom";
 import isEmpty from "../../components/functions/CheckEmptyObject";
 import toast from "react-hot-toast";
-import Api from "../../api";
 import { FaEye, FaEyeSlash } from "react-icons/fa";
+import GetBase64 from "../../components/functions/GetBase64";
 
 const steps = ["Company Profile", "Contact Person", "Payment", "Document"];
 const options = [
@@ -53,9 +53,11 @@ const optionMetodePengiriman = [
   { value: "udara", label: "Udara", key: 3 },
 ];
 
+const api = process.env.REACT_APP_BASEURL;
+
 const Registration = () => {
   const { screenSize, setScreenSize } = useStateContext();
-  const [openBackdrop, setOpenBackdrop] = useState(false)
+  const [openBackdrop, setOpenBackdrop] = useState(false);
   const [activeStep, setActiveStep] = useState(0);
   const [optionProvinsi, setOptionProvinsi] = useState([]);
 
@@ -73,7 +75,11 @@ const Registration = () => {
   const [kodePos, setKodePos] = useState("");
   const [tipePembelian, setTipePembelian] = useState({});
   const [npwp, setNpwp] = useState("");
-  const [statusPajak, setStatusPajak] = useState({ value: "NPKP", label: "Non Perusahaan Kena Pajak (NPKP)", key: 2 });
+  const [statusPajak, setStatusPajak] = useState({
+    value: "NPKP",
+    label: "Non Perusahaan Kena Pajak (NPKP)",
+    key: 2,
+  });
   const [website, setWebsite] = useState("");
   const [namaPemilikPerusahaan, setNamaPemilikPerusahaan] = useState("");
   const [namaPenanggungJawab, setNamaPenanggungJawab] = useState("");
@@ -109,7 +115,10 @@ const Registration = () => {
   const [sertifBpomFile, setSertifBpomFile] = useState(null);
 
   const [isError, setIsError] = useState(false);
-  const [showPassword, setShowPassword] = useState(false)
+  const [message, setMessage] = useState("");
+  const [showPassword, setShowPassword] = useState(false);
+  const [loading, setLoading] = useState(false);
+  const [aggrement, setAggrement] = useState(0);
   const navigate = useNavigate();
 
   const handleNext = () => {
@@ -127,30 +136,76 @@ const Registration = () => {
         !isEmpty(tipePembelian) &&
         !isEmpty(statusPajak)
       ) {
-        if (statusPajak.value === "PKP") {
-          if (npwp.trim().length === 20) {
-            setIsError(false);
-          } else {
-            return setIsError(true);
-          }
-        }
-
-        if (!isEmpty(tipePerusahaan)) {
-          if (tipePerusahaan.value === "lainnya") {
-            if (tipePerusahaanText.trim().length > 0) {
-              setIsError(false);
-              setActiveStep((prevActiveStep) => prevActiveStep + 1);
-            } else {
-              setIsError(true);
-            }
-          } else {
-            setIsError(false);
-            setActiveStep((prevActiveStep) => prevActiveStep + 1);
-          }
-        } else {
+        if (!isValidEmail(email)) {
           setIsError(true);
+          setMessage("Email Tidak Valid!");
+        } else {
+          fetch(`${api}api/portal-vendor/user/validation`, {
+            method: "POST",
+            body: JSON.stringify({
+              username: username,
+              email: email,
+            }),
+          })
+            .then((response) => response.json())
+            .then((res) => {
+              if (!res.data) {
+                setIsError(true);
+                setMessage("Username atau Email Sudah ada!");
+              } else {
+                fetch(`${api}api/portal-vendor/vendor/validation`, {
+                  method: "POST",
+                  body: JSON.stringify({
+                    name: namaPerusahaan,
+                    code: kode
+                  }),
+                })
+                  .then((response) => response.json())
+                  .then((res) => {
+                    if (!res.data) {
+                      setIsError(true);
+                      setMessage("Nama Perusahaan atau kode Sudah ada!");
+                    } else {
+                      if (statusPajak.value === "PKP") {
+                        if (npwp.trim().length === 20) {
+                          setIsError(false);
+                        } else {
+                          setMessage("Data Belum Lengkap!");
+                          return setIsError(true);
+                        }
+                      }
+
+                      if (!isEmpty(tipePerusahaan)) {
+                        if (tipePerusahaan.value === "lainnya") {
+                          if (tipePerusahaanText.trim().length > 0) {
+                            setIsError(false);
+                            setActiveStep(
+                              (prevActiveStep) => prevActiveStep + 1
+                            );
+                          } else {
+                            setMessage("Data Belum Lengkap!");
+                            setIsError(true);
+                          }
+                        } else {
+                          setIsError(false);
+                          setActiveStep((prevActiveStep) => prevActiveStep + 1);
+                        }
+                      } else {
+                        setMessage("Data Belum Lengkap!");
+                        setIsError(true);
+                      }
+                    }
+                  }).catch((err) => {
+                    console.log(err)
+                  });
+              }
+            })
+            .catch((err) => {
+              console.log(err);
+            });
         }
       } else {
+        setMessage("Data Belum Lengkap!");
         setIsError(true);
       }
     } else if (activeStep === 1) {
@@ -169,6 +224,7 @@ const Registration = () => {
         setActiveStep((prevActiveStep) => prevActiveStep + 1);
       } else {
         setIsError(true);
+        setMessage("Data Belum Lengkap!");
       }
     } else if (activeStep === 2) {
       if (
@@ -184,6 +240,7 @@ const Registration = () => {
         setActiveStep((prevActiveStep) => prevActiveStep + 1);
       } else {
         setIsError(true);
+        setMessage("Data Belum Lengkap!");
       }
     } else if (activeStep === 3) {
       if (
@@ -194,10 +251,18 @@ const Registration = () => {
         nibFile !== null &&
         ssPerusahaanFile !== null
       ) {
-        setIsError(false);
-        saveVendor();
+        if (aggrement !== 1) {
+          setMessage("Perjanjian Belum Disetujui!");
+          setIsError(true);
+        } else {
+          setIsError(false);
+          saveVendor();
+        }
       } else {
         setIsError(true);
+        setMessage(
+          "File yang bertanda *) tidak boleh kosong atau maksimal size file adalah 2 mb!"
+        );
       }
     }
   };
@@ -309,116 +374,97 @@ const Registration = () => {
   };
 
   const saveVendor = async () => {
-    setOpenBackdrop(true)
-    let npwpText;
-    let ktpPemilikText;
-    let ktpPenanggungJawabText;
-    let spkpText;
-    let nibText;
-    let ssRekeningText;
-    let sertifBpomText;
-
-    if (npwpFile !== null) {
-      npwpText = npwpFile.name;
-    } else {
-      npwpText = "";
-    }
-
-    if (ktpPemilikFile !== null) {
-      ktpPemilikText = ktpPemilikFile.name;
-    } else {
-      ktpPemilikText = "";
-    }
-
-    if (ktpPenanggungJawabFile !== null) {
-      ktpPenanggungJawabText = ktpPenanggungJawabFile.name;
-    } else {
-      ktpPenanggungJawabText = "";
-    }
-
-    if (spkpFile !== null) {
-      spkpText = spkpFile.name;
-    } else {
-      spkpText = "";
-    }
-
-    if (nibFile !== null) {
-      nibText = nibFile.name;
-    } else {
-      nibText = "";
-    }
-
-    if (ssPerusahaanFile !== null) {
-      ssRekeningText = ssPerusahaanFile.name;
-    } else {
-      ssRekeningText = "";
-    }
-
-    if (sertifBpomFile !== null) {
-      sertifBpomText = sertifBpomFile.name;
-    } else {
-      sertifBpomText = "";
-    }
+    setOpenBackdrop(true);
+    setLoading(true);
 
     const inititalValue = {
-      "nama": namaPerusahaan.trim(),
-      "kode": kode.trim(),
-      "tipe_perusahaan": tipePerusahaan.value,
-      "tipe_perusahaan_lainnya": tipePerusahaanText.trim(),
-      "alamat": alamat.trim(),
-      "provinsi": provinsi.value,
-      "kota": kota.trim(),
-      "kode_pos": kodePos.trim(),
-      "tipe_pembelian": tipePembelian.value,
-      "status_pajak": statusPajak.value,
-      "npwp": npwp.trim(),
-      "website": website.trim(),
-      "nama_pemilik": namaPemilikPerusahaan.trim(),
-      "nama_penanggung_jawab": namaPenanggungJawab.trim(),
-      "jabatan_penanggung_jawab": jabatanPenanggungJawab.trim(),
-      "no_telp_kantor": noTelpKantor.trim(),
-      "no_wa_purchase_order": whatsappPO.trim(),
-      "email_korespondensi": emailKorespondensiPo.trim(),
-      "nama_kontak": namaKontak.trim(),
-      "jabatan_kontak": jabatan.trim(),
-      "no_wa_keuangan": whatsappKeuangan.trim(),
-      "email_korespondensi_keuangan": emailKorespondensiKeuangan.trim(),
-      "nama_kontak_keuangan": namaKontakKeuangan.trim(),
-      "jabatan_keuangan": jabatanKeuangan.trim(),
-      "term_pembayaran": termPembayaran.trim(),
-      "bank": bank.trim(),
-      "no_rekening_bank": nomorRekening.trim(),
-      "nama_rekening_bank": namaRekening.trim(),
-      "kantor_cabang_bank": kantorCabangBank.trim(),
-      "metode_pengiriman": metodePengiriman.value,
-      "rebate": rebate.trim(),
-      "marketing_fee": marketingFee.trim(),
-      "listing_fee": listingFee.trim(),
-      "promotion_found": promotionFund.trim(),
-      "file_npwp": npwpText,
-      "file_ktp_pemilik": ktpPemilikText,
-      "file_ktp_penanggung_jawab": ktpPenanggungJawabText,
-      "file_spkp": spkpText,
-      "file_nib": nibText,
-      "file_screenshot_rekening": ssRekeningText,
-      "file_sertikasi_bpom": sertifBpomText,
-      "status": "PENDING"
+      id: 0,
+      username: username,
+      email: email,
+      password: password,
+      nama: namaPerusahaan.trim(),
+      kode: kode.trim(),
+      tipe_perusahaan: tipePerusahaan.value,
+      tipe_perusahaan_lainnya: tipePerusahaanText.trim(),
+      alamat: alamat.trim(),
+      provinsi: provinsi.value,
+      kota: kota.trim(),
+      kode_pos: kodePos.trim(),
+      tipe_pembelian: tipePembelian.value,
+      status_pajak: statusPajak.value,
+      npwp: npwp.trim(),
+      website: website.trim(),
+      nama_pemilik: namaPemilikPerusahaan.trim(),
+      nama_penanggung_jawab: namaPenanggungJawab.trim(),
+      jabatan_penanggung_jawab: jabatanPenanggungJawab.trim(),
+      no_telp_kantor: noTelpKantor.trim(),
+      no_wa_purchase_order: whatsappPO.trim(),
+      email_korespondensi: emailKorespondensiPo.trim(),
+      nama_kontak: namaKontak.trim(),
+      jabatan_kontak: jabatan.trim(),
+      no_wa_keuangan: whatsappKeuangan.trim(),
+      email_korespondensi_keuangan: emailKorespondensiKeuangan.trim(),
+      nama_kontak_keuangan: namaKontakKeuangan.trim(),
+      jabatan_keuangan: jabatanKeuangan.trim(),
+      term_pembayaran: termPembayaran.trim(),
+      pengembalian_barang: pengembalianBarang.trim(),
+      bank: bank.trim(),
+      no_rekening_bank: nomorRekening.trim(),
+      nama_rekening_bank: namaRekening.trim(),
+      kantor_cabang_bank: kantorCabangBank.trim(),
+      metode_pengiriman: metodePengiriman.value,
+      rebate: rebate.trim(),
+      marketing_fee: marketingFee.trim(),
+      listing_fee: listingFee.trim(),
+      promotion_found: promotionFund.trim(),
+      file_npwp: npwpFile !== null ? npwpFile : null,
+      file_ktp_pemilik: ktpPemilikFile !== null ? ktpPemilikFile : null,
+      file_ktp_penanggung_jawab:
+        ktpPenanggungJawabFile !== null ? ktpPenanggungJawabFile : null,
+      file_spkp: spkpFile !== null ? spkpFile : null,
+      file_nib: nibFile !== null ? nibFile : null,
+      file_screenshot_rekening:
+        ssPerusahaanFile !== null ? ssPerusahaanFile : null,
+      file_sertikasi_bpom: sertifBpomFile !== null ? sertifBpomFile : null,
+      vendor_id: 0,
+      status: "PENDING",
     };
 
     //const json = JSON.stringify(inititalValue)
 
-    await Api.post('/vendors', inititalValue, {
-      headers: {
-        'content-type': 'application/json',
-        "accept" : "application/json"
-      },
+    await fetch(`${api}api/portal-vendor/sign-up`, {
+      method: "POST",
+      body: JSON.stringify(inititalValue),
     })
-      .then((response) => {
-        
-        saveUser(response.data.data);
+      .then((response) => response.json())
+      .then((res) => {
+        setLoading(false);
+        if (res.data !== 0) {
+          setOpenBackdrop(false);
+          toast.success("Sign up success!", {
+            position: "top-right",
+            style: {
+              borderRadius: "10px",
+              background: "#333",
+              color: "#fff",
+            },
+          });
+          navigate(`/`);
+        } else {
+          setOpenBackdrop(false);
+          toast.error("Failed to sign up!", {
+            position: "top-right",
+            style: {
+              borderRadius: "10px",
+              background: "#333",
+              color: "#fff",
+            },
+          });
+        }
       })
-      .catch(() => {
-        setOpenBackdrop(false)
+      .catch((err) => {
+        setLoading(false);
+        setOpenBackdrop(false);
         toast.error("Failed to sign up!", {
           position: "top-right",
           style: {
@@ -430,41 +476,55 @@ const Registration = () => {
       });
   };
 
-  const saveUser = async (id) => {
-    const inititalValue = {
-      email: email.trim(),
-      username: username.trim(),
-      password: password.trim(),
-      vendor_id: id,
-    };
+  // const saveUser = async (id) => {
+  //   const inititalValue = {
+  //     email: email.trim(),
+  //     username: username.trim(),
+  //     password: password.trim(),
+  //     vendor_id: id,
+  //   };
 
-    await Api.post("/users", inititalValue, {
-      headers: {
-        "content-type": "application/json",
-      },
-    }).then(() => {
-      setOpenBackdrop(false)
-      toast.success("Sign up success!", {
-        position: "top-right",
-        style: {
-          borderRadius: "10px",
-          background: "#333",
-          color: "#fff",
-        },
-      });
-      navigate(`/`);
-    }).catch(() => {
-      setOpenBackdrop(false)
-      toast.error("Sign up failed!", {
-        position: "top-right",
-        style: {
-          borderRadius: "10px",
-          background: "#333",
-          color: "#fff",
-        },
-      });
-    });
-  };
+  //   await fetch(`${api}api/portal-vendor/user`, {
+  //     method: "POST",
+  //     body: JSON.stringify(inititalValue),
+  //   })
+  //     .then((response) => response.json())
+  //     .then((res) => {
+  //       if (res.data !== 0) {
+  //         setOpenBackdrop(false);
+  //         toast.success("Sign up success!", {
+  //           position: "top-right",
+  //           style: {
+  //             borderRadius: "10px",
+  //             background: "#333",
+  //             color: "#fff",
+  //           },
+  //         });
+  //         navigate(`/`);
+  //       } else {
+  //         setOpenBackdrop(false);
+  //         toast.error("Sign up failed!", {
+  //           position: "top-right",
+  //           style: {
+  //             borderRadius: "10px",
+  //             background: "#333",
+  //             color: "#fff",
+  //           },
+  //         });
+  //       }
+  //     })
+  //     .catch((err) => {
+  //       setOpenBackdrop(false);
+  //       toast.error("Sign up failed!", {
+  //         position: "top-right",
+  //         style: {
+  //           borderRadius: "10px",
+  //           background: "#333",
+  //           color: "#fff",
+  //         },
+  //       });
+  //     });
+  // };
 
   useEffect(() => {
     window.scrollTo(0, 0);
@@ -491,21 +551,23 @@ const Registration = () => {
     try {
       var cleaned = ("" + value).replace(/\D/g, "");
       var match = cleaned.match(
-        /(\d{0,2})?(\d{0,3})?(\d{0,3})?(\d{0,1})?(\d{0,3})?(\d{0,3})$/
+        /(\d{0,1})?(\d{0,2})?(\d{0,3})?(\d{0,3})?(\d{0,1})?(\d{0,3})?(\d{0,3})$/
       );
 
+
       var nilai = [
-        match[1],
-        match[2] ? "." : "",
+        match[1] && "0",
         match[2],
         match[3] ? "." : "",
         match[3],
         match[4] ? "." : "",
         match[4],
-        match[5] ? "-" : "",
+        match[5] ? "." : "",
         match[5],
-        match[6] ? "." : "",
+        match[6] ? "-" : "",
         match[6],
+        match[7] ? "." : "",
+        match[7],
       ].join("");
       setNpwp(nilai);
     } catch (err) {
@@ -578,9 +640,15 @@ const Registration = () => {
   };
 
   const onChangeNpwpFile = (e) => {
-    if(e.target.files[0] !== undefined){
+    if (e.target.files[0] !== undefined) {
       if (e.target.files[0].size <= 2000000) {
-        setNpwpFile(e.target.files[0]);
+        GetBase64(e.target.files[0])
+          .then((result) => {
+            setNpwpFile(result);
+          })
+          .catch((err) => {
+            setNpwpFile(null);
+          });
       } else {
         setNpwpFile(null);
       }
@@ -588,9 +656,15 @@ const Registration = () => {
   };
 
   const onChangeKtpPemilikFile = (e) => {
-    if(e.target.files[0] !== undefined){
+    if (e.target.files[0] !== undefined) {
       if (e.target.files[0].size <= 2000000) {
-        setKtpPemilikFIle(e.target.files[0]);
+        GetBase64(e.target.files[0])
+          .then((result) => {
+            setKtpPemilikFIle(result);
+          })
+          .catch((err) => {
+            setKtpPemilikFIle(null);
+          });
       } else {
         setKtpPemilikFIle(null);
       }
@@ -598,9 +672,15 @@ const Registration = () => {
   };
 
   const onChangeKtpPenanggungJawabFile = (e) => {
-    if(e.target.files[0] !== undefined){
+    if (e.target.files[0] !== undefined) {
       if (e.target.files[0].size <= 2000000) {
-        setKtpPenanggungJawabFile(e.target.files[0]);
+        GetBase64(e.target.files[0])
+          .then((result) => {
+            setKtpPenanggungJawabFile(result);
+          })
+          .catch((err) => {
+            setKtpPenanggungJawabFile(null);
+          });
       } else {
         setKtpPenanggungJawabFile(null);
       }
@@ -608,9 +688,15 @@ const Registration = () => {
   };
 
   const onChangeSpkpFile = (e) => {
-    if(e.target.files[0] !== undefined){
+    if (e.target.files[0] !== undefined) {
       if (e.target.files[0].size <= 2000000) {
-        setSpkpFile(e.target.files[0]);
+        GetBase64(e.target.files[0])
+          .then((result) => {
+            setSpkpFile(result);
+          })
+          .catch((err) => {
+            setSpkpFile(null);
+          });
       } else {
         setSpkpFile(null);
       }
@@ -618,9 +704,15 @@ const Registration = () => {
   };
 
   const onChangeNibFile = (e) => {
-    if(e.target.files[0] !== undefined){
+    if (e.target.files[0] !== undefined) {
       if (e.target.files[0].size <= 2000000) {
-        setNibFile(e.target.files[0]);
+        GetBase64(e.target.files[0])
+          .then((result) => {
+            setNibFile(result);
+          })
+          .catch((err) => {
+            setNibFile(null);
+          });
       } else {
         setNibFile(null);
       }
@@ -628,9 +720,15 @@ const Registration = () => {
   };
 
   const onChangeSsRekeningFile = (e) => {
-    if(e.target.files[0] !== undefined){
+    if (e.target.files[0] !== undefined) {
       if (e.target.files[0].size <= 2000000) {
-        setSsPerusahaanFile(e.target.files[0]);
+        GetBase64(e.target.files[0])
+          .then((result) => {
+            setSsPerusahaanFile(result);
+          })
+          .catch((err) => {
+            setSsPerusahaanFile(null);
+          });
       } else {
         setSsPerusahaanFile(null);
       }
@@ -638,9 +736,15 @@ const Registration = () => {
   };
 
   const onChangeBpomFile = (e) => {
-    if(e.target.files[0] !== undefined){
+    if (e.target.files[0] !== undefined) {
       if (e.target.files[0].size <= 2000000) {
-        setSertifBpomFile(e.target.files[0]);
+        GetBase64(e.target.files[0])
+          .then((result) => {
+            setSertifBpomFile(result);
+          })
+          .catch((err) => {
+            setSertifBpomFile(null);
+          });
       } else {
         setSertifBpomFile(null);
       }
@@ -659,6 +763,10 @@ const Registration = () => {
       setTipePerusahaanText("");
     }
   };
+
+  function isValidEmail(email) {
+    return /\S+@\S+\.\S+/.test(email);
+  }
 
   return (
     <div className={`font-roboto pt-20 px-10 `}>
@@ -742,6 +850,7 @@ const Registration = () => {
                       </div>
                       <div className="w-1/2 relative">
                         <input
+                          required
                           value={email}
                           onChange={(e) => setEmail(e.target.value)}
                           onKeyDown={(evt) =>
@@ -781,7 +890,7 @@ const Registration = () => {
                           onKeyDown={(evt) =>
                             evt.key === " " && evt.preventDefault()
                           }
-                          type={`${showPassword ? 'text' : 'password'}`}
+                          type={`${showPassword ? "text" : "password"}`}
                           name=""
                           id=""
                           className={`w-full h-[36px] rounded-sm focus:border focus:border-[#0077b6] ${
@@ -790,7 +899,12 @@ const Registration = () => {
                               : "border-slate-300"
                           } `}
                         />
-                        <div onClick={()=>setShowPassword((prev)=> !prev)} className="cursor-pointer">{showPassword ? <FaEyeSlash /> : <FaEye /> } </div>
+                        <div
+                          onClick={() => setShowPassword((prev) => !prev)}
+                          className="cursor-pointer"
+                        >
+                          {showPassword ? <FaEyeSlash /> : <FaEye />}{" "}
+                        </div>
                         <div className="absolute right-[-20px] top-0">
                           {isError && password.trim().length === 0 ? (
                             <div className="text-red-500">
@@ -1119,7 +1233,7 @@ const Registration = () => {
 
                       <div className="w-1/2 relative">
                         <input
-                          maxLength={20}
+                          maxLength={21}
                           type="text"
                           name=""
                           id=""
@@ -1172,7 +1286,7 @@ const Registration = () => {
                           <div>
                             <PiWarningCircleLight />
                           </div>
-                          <div>Data masih belum lengkap</div>
+                          <div>{message}</div>
                         </div>
                       </div>
                     )}
@@ -1552,7 +1666,7 @@ const Registration = () => {
                           <div>
                             <PiWarningCircleLight />
                           </div>
-                          <div>Data masih belum lengkap</div>
+                          <div>{message}</div>
                         </div>
                       </div>
                     )}
@@ -1884,7 +1998,7 @@ const Registration = () => {
                           <div>
                             <PiWarningCircleLight />
                           </div>
-                          <div>Data masih belum lengkap</div>
+                          <div>{message}</div>
                         </div>
                       </div>
                     )}
@@ -2155,15 +2269,21 @@ const Registration = () => {
                   </form>
                   <div className="flex gap-2 mt-20">
                     <div>
-                      <Checkbox />
+                      <Checkbox
+                        onChange={() =>
+                          setAggrement((prev) => (prev === 0 ? 1 : 0))
+                        }
+                        value="1"
+                        checked={aggrement === 1 ? true : false}
+                      />
                     </div>
                     <div className="w-[500px] text-[12px]">
                       Kami, yang bertanda tangan dibawah ini menyatakan telah
-                      mengisi dengan sebenar-benarnya dan menyatakan
-                      telahmematuhi segala bentuk UU dan peraturan yang dibuat
-                      oleh Pemerintah Republik Indonesia, dalam lingkup usaha
-                      kami yang kami jalakan selama menajadi supplier/vendor
-                      aktif kepada PT Karya Prima Unggulan
+                      mengisi dengan sebenar-benarnya dan menyatakan telah
+                      mematuhi segala bentuk UU dan peraturan yang dibuat oleh
+                      Pemerintah Republik Indonesia, dalam lingkup usaha kami
+                      yang kami jalakan selama menajadi supplier/vendor aktif
+                      kepada PT Karya Prima Unggulan
                     </div>
                   </div>
 
@@ -2173,10 +2293,7 @@ const Registration = () => {
                         <div>
                           <PiWarningCircleLight />
                         </div>
-                        <div>
-                          File yang bertanda *) tidak boleh kosong atau maksimal
-                          size file adalah 2 mb
-                        </div>
+                        <div>{message}</div>
                       </div>
                     </div>
                   )}
@@ -2205,9 +2322,14 @@ const Registration = () => {
                 {activeStep === steps.length - 1 ? (
                   <button
                     onClick={handleNext}
+                    disabled={loading ? true : false}
                     className="bg-[#0077b6] text-white py-2 px-10 rounded-sm shadow-sm hover:bg-[#00b4d8]"
                   >
-                    Finish
+                    {loading ? (
+                      <CircularProgress size={20} sx={{ color: "white" }} />
+                    ) : (
+                      "Finish"
+                    )}
                   </button>
                 ) : (
                   <button
@@ -2288,6 +2410,7 @@ const Registration = () => {
                             </div>
                             <div className="whitespace-nowrap">
                               <input
+                                required
                                 value={email}
                                 onChange={(e) => setEmail(e.target.value)}
                                 onKeyDown={(evt) =>
@@ -2327,7 +2450,7 @@ const Registration = () => {
                                 onKeyDown={(evt) =>
                                   evt.key === " " && evt.preventDefault()
                                 }
-                                type={`${showPassword ? 'text' : 'password'}`}
+                                type={`${showPassword ? "text" : "password"}`}
                                 name=""
                                 id=""
                                 className={`w-full h-[36px] rounded-sm focus:border focus:border-[#0077b6] ${
@@ -2336,7 +2459,12 @@ const Registration = () => {
                                     : "border-slate-300"
                                 } `}
                               />
-                              <div onClick={()=>setShowPassword((prev)=> !prev)} className="cursor-pointer">{showPassword ? <FaEyeSlash /> : <FaEye /> } </div>
+                              <div
+                                onClick={() => setShowPassword((prev) => !prev)}
+                                className="cursor-pointer"
+                              >
+                                {showPassword ? <FaEyeSlash /> : <FaEye />}{" "}
+                              </div>
                             </div>
                           </div>
                           <div className="flex flex-col gap-2 mb-3">
@@ -2426,8 +2554,7 @@ const Registration = () => {
                                 className="w-36 flex gap-1 items-center"
                               >
                                 Kode{" "}
-                                {isError &&
-                                kode.trim().length === 0 ? (
+                                {isError && kode.trim().length === 0 ? (
                                   <span className="text-red-400">
                                     <PiWarningCircleLight />
                                   </span>
@@ -2439,9 +2566,7 @@ const Registration = () => {
                             <div className="whitespace-nowrap">
                               <input
                                 value={kode}
-                                onChange={(e) =>
-                                  setKode(e.target.value)
-                                }
+                                onChange={(e) => setKode(e.target.value)}
                                 type="text"
                                 name=""
                                 id=""
@@ -2486,13 +2611,12 @@ const Registration = () => {
                           </div>
                           <div className="flex flex-col gap-2 mb-3">
                             <div className="whitespace-nowrap flex">
-                            <label
+                              <label
                                 htmlFor=""
                                 className="w-36 flex gap-1 items-center"
                               >
                                 Provinsi{" "}
-                                {isError &&
-                                isEmpty(provinsi) ? (
+                                {isError && isEmpty(provinsi) ? (
                                   <span className="text-red-400">
                                     <PiWarningCircleLight />
                                   </span>
@@ -2668,7 +2792,7 @@ const Registration = () => {
                               <input
                                 type="text"
                                 pattern="[0-9]*"
-                                maxLength={20}
+                                maxLength={21}
                                 name=""
                                 id=""
                                 className={`w-full h-[36px] rounded-sm focus:border focus:border-[#0077b6] ${
@@ -2703,10 +2827,7 @@ const Registration = () => {
                           {isError && (
                             <div className="mt-10 mb-3">
                               <div className="w-fit flex gap-1 items-center text-[14px] bg-red-500 text-white py-3 px-5 ">
-                                
-                                <div>
-                                  Data Masih Belum Lengkap!
-                                </div>
+                                <div>{message}</div>
                               </div>
                             </div>
                           )}
@@ -2764,7 +2885,7 @@ const Registration = () => {
                         <form action="">
                           <div className="flex flex-col gap-2 mb-3">
                             <div className=" flex">
-                            <label
+                              <label
                                 htmlFor=""
                                 className="flex gap-1 items-center"
                               >
@@ -2788,13 +2909,18 @@ const Registration = () => {
                                 type="text"
                                 name=""
                                 id=""
-                                className={`w-full h-[36px] rounded-sm focus:border focus:border-[#0077b6] ${isError && namaPemilikPerusahaan.trim().length === 0 ? 'border-red-400' : 'border-slate-300'} `}
+                                className={`w-full h-[36px] rounded-sm focus:border focus:border-[#0077b6] ${
+                                  isError &&
+                                  namaPemilikPerusahaan.trim().length === 0
+                                    ? "border-red-400"
+                                    : "border-slate-300"
+                                } `}
                               />
                             </div>
                           </div>
                           <div className="flex flex-col gap-2 mb-3">
                             <div className="flex">
-                            <label
+                              <label
                                 htmlFor=""
                                 className=" flex gap-1 items-center"
                               >
@@ -2818,13 +2944,18 @@ const Registration = () => {
                                 type="text"
                                 name=""
                                 id=""
-                                className={`w-full h-[36px] rounded-sm focus:border focus:border-[#0077b6] ${isError && namaPenanggungJawab.trim().length === 0 ? 'border-red-400' : 'border-slate-300'} `}
+                                className={`w-full h-[36px] rounded-sm focus:border focus:border-[#0077b6] ${
+                                  isError &&
+                                  namaPenanggungJawab.trim().length === 0
+                                    ? "border-red-400"
+                                    : "border-slate-300"
+                                } `}
                               />
                             </div>
                           </div>
                           <div className="flex flex-col gap-2 mb-3">
                             <div className="flex">
-                            <label
+                              <label
                                 htmlFor=""
                                 className=" flex gap-1 items-center"
                               >
@@ -2848,19 +2979,23 @@ const Registration = () => {
                                 type="text"
                                 name=""
                                 id=""
-                                className={`w-full h-[36px] rounded-sm focus:border focus:border-[#0077b6] ${isError && jabatanPenanggungJawab.trim().length === 0 ? 'border-red-400' : 'border-slate-300'} `}
+                                className={`w-full h-[36px] rounded-sm focus:border focus:border-[#0077b6] ${
+                                  isError &&
+                                  jabatanPenanggungJawab.trim().length === 0
+                                    ? "border-red-400"
+                                    : "border-slate-300"
+                                } `}
                               />
                             </div>
                           </div>
                           <div className="flex flex-col gap-2 mb-3">
                             <div className=" flex">
-                            <label
+                              <label
                                 htmlFor=""
                                 className=" flex gap-1 items-center"
                               >
                                 No Telp Kantor{" "}
-                                {isError &&
-                                noTelpKantor.trim().length === 0 ? (
+                                {isError && noTelpKantor.trim().length === 0 ? (
                                   <span className="text-red-400">
                                     <PiWarningCircleLight />
                                   </span>
@@ -2878,7 +3013,11 @@ const Registration = () => {
                                 type="text"
                                 name=""
                                 id=""
-                                className={`w-full h-[36px] border rounded-sm focus:border focus:border-[#0077b6] ${isError && noTelpKantor.trim().length === 0 ? 'border-red-400' : 'border-slate-300'} `}
+                                className={`w-full h-[36px] border rounded-sm focus:border focus:border-[#0077b6] ${
+                                  isError && noTelpKantor.trim().length === 0
+                                    ? "border-red-400"
+                                    : "border-slate-300"
+                                } `}
                               />
                             </div>
                           </div>
@@ -2887,13 +3026,12 @@ const Registration = () => {
                           </div>
                           <div className="flex flex-col gap-2 mb-3 mt-2">
                             <div className="flex">
-                            <label
+                              <label
                                 htmlFor=""
                                 className=" flex gap-1 items-center"
                               >
                                 No Whatsapp Purchase Order (PO){" "}
-                                {isError &&
-                                whatsappPO.trim().length === 0 ? (
+                                {isError && whatsappPO.trim().length === 0 ? (
                                   <span className="text-red-400">
                                     <PiWarningCircleLight />
                                   </span>
@@ -2910,7 +3048,11 @@ const Registration = () => {
                                 id=""
                                 value={whatsappPO}
                                 onChange={(e) => onChangeWhatsappPO(e)}
-                                className={`w-full h-[36px] rounded-sm focus:border focus:border-[#0077b6] ${isError && whatsappPO.trim().length === 0 ? 'border-red-400' : 'border-slate-300'} `}
+                                className={`w-full h-[36px] rounded-sm focus:border focus:border-[#0077b6] ${
+                                  isError && whatsappPO.trim().length === 0
+                                    ? "border-red-400"
+                                    : "border-slate-300"
+                                } `}
                               />
                             </div>
                           </div>
@@ -2935,13 +3077,12 @@ const Registration = () => {
                           </div>
                           <div className="flex flex-col gap-2 mb-3">
                             <div className=" flex">
-                            <label
+                              <label
                                 htmlFor=""
                                 className=" flex gap-1 items-center"
                               >
                                 Nama Kontak{" "}
-                                {isError &&
-                                namaKontak.trim().length === 0 ? (
+                                {isError && namaKontak.trim().length === 0 ? (
                                   <span className="text-red-400">
                                     <PiWarningCircleLight />
                                   </span>
@@ -2957,7 +3098,11 @@ const Registration = () => {
                                 type="text"
                                 name=""
                                 id=""
-                                className={`w-full h-[36px] rounded-sm focus:border focus:border-[#0077b6] ${isError && namaKontak.trim().length === 0 ? 'border-red-400' : 'border-slate-300'} `}
+                                className={`w-full h-[36px] rounded-sm focus:border focus:border-[#0077b6] ${
+                                  isError && namaKontak.trim().length === 0
+                                    ? "border-red-400"
+                                    : "border-slate-300"
+                                } `}
                               />
                             </div>
                           </div>
@@ -2980,7 +3125,7 @@ const Registration = () => {
                           </div>
                           <div className="flex flex-col gap-2 mb-3 mt-10">
                             <div className="whitespace-nowrap flex">
-                            <label
+                              <label
                                 htmlFor=""
                                 className=" flex gap-1 items-center"
                               >
@@ -3004,7 +3149,12 @@ const Registration = () => {
                                 id=""
                                 value={whatsappKeuangan}
                                 onChange={(e) => onChangeWhatsappKeuangan(e)}
-                                className={`w-full h-[36px] rounded-sm focus:border focus:border-[#0077b6] ${isError && whatsappKeuangan.trim().length === 0 ? 'border-red-400' : 'border-slate-300'} `}
+                                className={`w-full h-[36px] rounded-sm focus:border focus:border-[#0077b6] ${
+                                  isError &&
+                                  whatsappKeuangan.trim().length === 0
+                                    ? "border-red-400"
+                                    : "border-slate-300"
+                                } `}
                               />
                             </div>
                           </div>
@@ -3029,7 +3179,7 @@ const Registration = () => {
                           </div>
                           <div className="flex flex-col gap-2 mb-3">
                             <div className="whitespace-nowrap flex">
-                            <label
+                              <label
                                 htmlFor=""
                                 className=" flex gap-1 items-center"
                               >
@@ -3053,13 +3203,18 @@ const Registration = () => {
                                 type="text"
                                 name=""
                                 id=""
-                                className={`w-full h-[36px] rounded-sm focus:border focus:border-[#0077b6] ${isError && namaKontakKeuangan.trim().length === 0 ? 'border-red-400' : 'border-slate-300'} `}
+                                className={`w-full h-[36px] rounded-sm focus:border focus:border-[#0077b6] ${
+                                  isError &&
+                                  namaKontakKeuangan.trim().length === 0
+                                    ? "border-red-400"
+                                    : "border-slate-300"
+                                } `}
                               />
                             </div>
                           </div>
                           <div className="flex flex-col gap-2 mb-3">
                             <div className="whitespace-nowrap flex">
-                            <label
+                              <label
                                 htmlFor=""
                                 className=" flex gap-1 items-center"
                               >
@@ -3083,17 +3238,18 @@ const Registration = () => {
                                 type="text"
                                 name=""
                                 id=""
-                                className={`w-full h-[36px] rounded-sm focus:border focus:border-[#0077b6] ${isError && jabatanKeuangan.trim().length === 0 ? 'border-red-400' : 'border-slate-300'} `}
+                                className={`w-full h-[36px] rounded-sm focus:border focus:border-[#0077b6] ${
+                                  isError && jabatanKeuangan.trim().length === 0
+                                    ? "border-red-400"
+                                    : "border-slate-300"
+                                } `}
                               />
                             </div>
                           </div>
                           {isError && (
                             <div className="mt-10 mb-3">
                               <div className="w-fit flex gap-1 items-center text-[14px] bg-red-500 text-white py-3 px-5 ">
-                                
-                                <div>
-                                  Data Masih Belum Lengkap!
-                                </div>
+                                <div>{message}</div>
                               </div>
                             </div>
                           )}
@@ -3157,7 +3313,7 @@ const Registration = () => {
                         <form action="">
                           <div className="flex flex-col gap-2 mb-3 mt-5">
                             <div className="whitespace-nowrap flex">
-                            <label
+                              <label
                                 htmlFor=""
                                 className=" flex gap-1 items-center"
                               >
@@ -3180,20 +3336,23 @@ const Registration = () => {
                                 id=""
                                 value={termPembayaran}
                                 onChange={onChangeTermPembayaran}
-                                className={`w-full h-[36px] rounded-sm focus:border focus:border-[#0077b6]  ${isError && termPembayaran.trim().length === 0 ? 'border-red-400' : 'border-slate-300'} `}
+                                className={`w-full h-[36px] rounded-sm focus:border focus:border-[#0077b6]  ${
+                                  isError && termPembayaran.trim().length === 0
+                                    ? "border-red-400"
+                                    : "border-slate-300"
+                                } `}
                               />
                               <div>Hari</div>
                             </div>
                           </div>
                           <div className="flex flex-col gap-2 mb-3">
                             <div className="whitespace-nowrap flex">
-                            <label
+                              <label
                                 htmlFor=""
                                 className=" flex gap-1 items-center"
                               >
                                 Bank{" "}
-                                {isError &&
-                                bank.trim().length === 0 ? (
+                                {isError && bank.trim().length === 0 ? (
                                   <span className="text-red-400">
                                     <PiWarningCircleLight />
                                   </span>
@@ -3209,13 +3368,17 @@ const Registration = () => {
                                 type="text"
                                 name=""
                                 id=""
-                                className={`w-full h-[36px] rounded-sm focus:border focus:border-[#0077b6] ${isError && bank.trim().length === 0 ? 'border-red-400' : 'border-slate-300'} `}
+                                className={`w-full h-[36px] rounded-sm focus:border focus:border-[#0077b6] ${
+                                  isError && bank.trim().length === 0
+                                    ? "border-red-400"
+                                    : "border-slate-300"
+                                } `}
                               />
                             </div>
                           </div>
                           <div className="flex flex-col gap-2 mb-3">
                             <div className="whitespace-nowrap flex">
-                            <label
+                              <label
                                 htmlFor=""
                                 className=" flex gap-1 items-center"
                               >
@@ -3237,19 +3400,22 @@ const Registration = () => {
                                 type="text"
                                 name=""
                                 id=""
-                                className={`w-full h-[36px] rounded-sm focus:border focus:border-[#0077b6] ${isError && nomorRekening.trim().length === 0 ? 'border-red-400' : 'border-slate-300'} `}
+                                className={`w-full h-[36px] rounded-sm focus:border focus:border-[#0077b6] ${
+                                  isError && nomorRekening.trim().length === 0
+                                    ? "border-red-400"
+                                    : "border-slate-300"
+                                } `}
                               />
                             </div>
                           </div>
                           <div className="flex gap-2 flex-col  mb-3">
                             <div className="whitespace-nowrap flex">
-                            <label
+                              <label
                                 htmlFor=""
                                 className=" flex gap-1 items-center"
                               >
                                 Nama Rekening Bank{" "}
-                                {isError &&
-                                namaRekening.trim().length === 0 ? (
+                                {isError && namaRekening.trim().length === 0 ? (
                                   <span className="text-red-400">
                                     <PiWarningCircleLight />
                                   </span>
@@ -3267,13 +3433,17 @@ const Registration = () => {
                                 type="text"
                                 name=""
                                 id=""
-                                className={`w-full h-[36px] rounded-sm focus:border focus:border-[#0077b6] ${isError && namaRekening.trim().length === 0 ? 'border-red-400' : 'border-slate-300'} `}
+                                className={`w-full h-[36px] rounded-sm focus:border focus:border-[#0077b6] ${
+                                  isError && namaRekening.trim().length === 0
+                                    ? "border-red-400"
+                                    : "border-slate-300"
+                                } `}
                               />
                             </div>
                           </div>
                           <div className="flex flex-col gap-2 mb-3">
                             <div className="whitespace-nowrap flex">
-                            <label
+                              <label
                                 htmlFor=""
                                 className=" flex gap-1 items-center"
                               >
@@ -3298,19 +3468,23 @@ const Registration = () => {
                                 type="text"
                                 name=""
                                 id=""
-                                className={`w-full h-[36px] rounded-sm focus:border focus:border-[#0077b6] ${isError && kantorCabangBank.trim().length === 0 ? 'border-red-400' : 'border-slate-300'} `}
+                                className={`w-full h-[36px] rounded-sm focus:border focus:border-[#0077b6] ${
+                                  isError &&
+                                  kantorCabangBank.trim().length === 0
+                                    ? "border-red-400"
+                                    : "border-slate-300"
+                                } `}
                               />
                             </div>
                           </div>
                           <div className="flex flex-col gap-2 mb-3">
                             <div className="whitespace-nowrap flex">
-                            <label
+                              <label
                                 htmlFor=""
                                 className=" flex gap-1 items-center"
                               >
                                 Metode Pengiriman{" "}
-                                {isError &&
-                                isEmpty(metodePengiriman) ? (
+                                {isError && isEmpty(metodePengiriman) ? (
                                   <span className="text-red-400">
                                     <PiWarningCircleLight />
                                   </span>
@@ -3334,7 +3508,7 @@ const Registration = () => {
                           </div>
                           <div className="flex flex-col gap-2 mb-3 mt-5">
                             <div className="whitespace-nowrap flex">
-                            <label
+                              <label
                                 htmlFor=""
                                 className=" flex gap-1 items-center"
                               >
@@ -3357,7 +3531,12 @@ const Registration = () => {
                                 id=""
                                 value={pengembalianBarang}
                                 onChange={onChangePengembalianBarang}
-                                className={`w-full h-[36px] rounded-sm focus:border focus:border-[#0077b6] ${isError && pengembalianBarang.trim().length === 0 ? 'border-red-400' : 'border-slate-300'} `}
+                                className={`w-full h-[36px] rounded-sm focus:border focus:border-[#0077b6] ${
+                                  isError &&
+                                  pengembalianBarang.trim().length === 0
+                                    ? "border-red-400"
+                                    : "border-slate-300"
+                                } `}
                               />
                               <div>Hari</div>
                             </div>
@@ -3450,10 +3629,7 @@ const Registration = () => {
                           {isError && (
                             <div className="mt-10 mb-3">
                               <div className="w-fit flex gap-1 items-center text-[14px] bg-red-500 text-white py-3 px-5 ">
-                                
-                                <div>
-                                  Data Masih Belum Lengkap!
-                                </div>
+                                <div>{message}</div>
                               </div>
                             </div>
                           )}
@@ -3523,21 +3699,19 @@ const Registration = () => {
                           <div className="flex flex-col gap-2 mb-3">
                             <div className="flex flex-col gap-1">
                               <div className=" flex">
-                              <label
-                                htmlFor=""
-                                className=" flex gap-1 items-center"
-                              >
-                                NPWP / Surat Keterangan Bebas Pajak {" "}
-                                {isError &&
-                                npwpFile === null ? (
-                                  <span className="text-red-400">
-                                    <PiWarningCircleLight />
-                                  </span>
-                                ) : (
-                                  "*"
-                                )}
-                              </label>
-                               
+                                <label
+                                  htmlFor=""
+                                  className=" flex gap-1 items-center"
+                                >
+                                  NPWP / Surat Keterangan Bebas Pajak{" "}
+                                  {isError && npwpFile === null ? (
+                                    <span className="text-red-400">
+                                      <PiWarningCircleLight />
+                                    </span>
+                                  ) : (
+                                    "*"
+                                  )}
+                                </label>
                               </div>
                               <div className="text-[10px] text-gray-400">
                                 Max size 2 mb
@@ -3557,20 +3731,19 @@ const Registration = () => {
                           <div className="flex flex-col gap-2 mb-3">
                             <div className="flex flex-col gap-1">
                               <div className=" flex">
-                              <label
-                                htmlFor=""
-                                className=" flex gap-1 items-center"
-                              >
-                                KTP Pemilik {" "}
-                                {isError &&
-                                ktpPemilikFile === null ? (
-                                  <span className="text-red-400">
-                                    <PiWarningCircleLight />
-                                  </span>
-                                ) : (
-                                  "*"
-                                )}
-                              </label>
+                                <label
+                                  htmlFor=""
+                                  className=" flex gap-1 items-center"
+                                >
+                                  KTP Pemilik{" "}
+                                  {isError && ktpPemilikFile === null ? (
+                                    <span className="text-red-400">
+                                      <PiWarningCircleLight />
+                                    </span>
+                                  ) : (
+                                    "*"
+                                  )}
+                                </label>
                               </div>
                               <div className="text-[10px] text-gray-400">
                                 Max size 2 mb
@@ -3589,20 +3762,20 @@ const Registration = () => {
                           <div className="flex flex-col gap-2  mb-3">
                             <div className="flex flex-col gap-1">
                               <div className=" flex">
-                              <label
-                                htmlFor=""
-                                className=" flex gap-1 items-center"
-                              >
-                                KTP Penanggung Jawab {" "}
-                                {isError &&
-                                ktpPenanggungJawabFile === null ? (
-                                  <span className="text-red-400">
-                                    <PiWarningCircleLight />
-                                  </span>
-                                ) : (
-                                  "*"
-                                )}
-                              </label>
+                                <label
+                                  htmlFor=""
+                                  className=" flex gap-1 items-center"
+                                >
+                                  KTP Penanggung Jawab{" "}
+                                  {isError &&
+                                  ktpPenanggungJawabFile === null ? (
+                                    <span className="text-red-400">
+                                      <PiWarningCircleLight />
+                                    </span>
+                                  ) : (
+                                    "*"
+                                  )}
+                                </label>
                               </div>
                               <div className="text-[10px] text-gray-400">
                                 Max size 2 mb
@@ -3621,22 +3794,21 @@ const Registration = () => {
                           <div className="flex flex-col gap-2  mb-3">
                             <div className="flex flex-col gap-1">
                               <div className=" flex">
-                              <label
-                                htmlFor=""
-                                className=" flex gap-1 items-center"
-                              >
-                                Surat Pengukuhan Kena Pajak (SPKP) / Surat
-                            Keterangan Non PKP (Bagi Pengusaha Tidak Kena Pajak) {" "}
-                                {isError &&
-                                spkpFile === null ? (
-                                  <span className="text-red-400">
-                                    <PiWarningCircleLight />
-                                  </span>
-                                ) : (
-                                  "*"
-                                )}
-                              </label>
-                               
+                                <label
+                                  htmlFor=""
+                                  className=" flex gap-1 items-center"
+                                >
+                                  Surat Pengukuhan Kena Pajak (SPKP) / Surat
+                                  Keterangan Non PKP (Bagi Pengusaha Tidak Kena
+                                  Pajak){" "}
+                                  {isError && spkpFile === null ? (
+                                    <span className="text-red-400">
+                                      <PiWarningCircleLight />
+                                    </span>
+                                  ) : (
+                                    "*"
+                                  )}
+                                </label>
                               </div>
                               <div className="text-[10px] text-gray-400">
                                 Max size 2 mb
@@ -3656,20 +3828,19 @@ const Registration = () => {
                           <div className="flex flex-col gap-2  mb-3">
                             <div className="flex flex-col gap-1">
                               <div className=" flex">
-                              <label
-                                htmlFor=""
-                                className=" flex gap-1 items-center"
-                              >
-                                Nomer Induk Berusaha (NIB) {" "}
-                                {isError &&
-                                nibFile === null ? (
-                                  <span className="text-red-400">
-                                    <PiWarningCircleLight />
-                                  </span>
-                                ) : (
-                                  "*"
-                                )}
-                              </label>
+                                <label
+                                  htmlFor=""
+                                  className=" flex gap-1 items-center"
+                                >
+                                  Nomer Induk Berusaha (NIB){" "}
+                                  {isError && nibFile === null ? (
+                                    <span className="text-red-400">
+                                      <PiWarningCircleLight />
+                                    </span>
+                                  ) : (
+                                    "*"
+                                  )}
+                                </label>
                               </div>
                               <div className="text-[10px] text-gray-400">
                                 Max size 2 mb
@@ -3688,20 +3859,19 @@ const Registration = () => {
                           <div className="flex flex-col gap-2  mb-3">
                             <div className="flex flex-col gap-1">
                               <div className=" flex">
-                              <label
-                                htmlFor=""
-                                className=" flex gap-1 items-center"
-                              >
-                                Screenshot Rekening Perusahaan {" "}
-                                {isError &&
-                                spkpFile === null ? (
-                                  <span className="text-red-400">
-                                    <PiWarningCircleLight />
-                                  </span>
-                                ) : (
-                                  "*"
-                                )}
-                              </label>
+                                <label
+                                  htmlFor=""
+                                  className=" flex gap-1 items-center"
+                                >
+                                  Screenshot Rekening Perusahaan{" "}
+                                  {isError && spkpFile === null ? (
+                                    <span className="text-red-400">
+                                      <PiWarningCircleLight />
+                                    </span>
+                                  ) : (
+                                    "*"
+                                  )}
+                                </label>
                               </div>
                               <div className="text-[10px] text-gray-400">
                                 Max size 2 mb
@@ -3748,22 +3918,25 @@ const Registration = () => {
                           {isError && (
                             <div className="mt-10 mb-3">
                               <div className="w-fit flex gap-1 items-center text-[14px] bg-red-500 text-white py-3 px-5 ">
-                                
-                                <div>
-                                  Data Masih Belum Lengkap!
-                                </div>
+                                <div>{message}</div>
                               </div>
                             </div>
                           )}
                         </form>
                         <div className="flex gap-2 mt-20">
                           <div>
-                            <Checkbox />
+                            <Checkbox
+                              onChange={() =>
+                                setAggrement((prev) => (prev === 0 ? 1 : 0))
+                              }
+                              value="1"
+                              checked={aggrement === 1 ? true : false}
+                            />
                           </div>
                           <div className="w-[500px] text-[12px]">
                             Kami, yang bertanda tangan dibawah ini menyatakan
                             telah mengisi dengan sebenar-benarnya dan menyatakan
-                            telahmematuhi segala bentuk UU dan peraturan yang
+                            telah mematuhi segala bentuk UU dan peraturan yang
                             dibuat oleh Pemerintah Republik Indonesia, dalam
                             lingkup usaha kami yang kami jalakan selama menajadi
                             supplier/vendor aktif kepada PT Karya Prima Unggulan
@@ -3783,10 +3956,18 @@ const Registration = () => {
                               </button>
                               {activeStep === steps.length - 1 ? (
                                 <button
+                                  disabled={loading ? true : false}
                                   onClick={handleNext}
                                   className="bg-[#0077b6] text-white py-2 px-10 rounded-sm shadow-sm hover:bg-[#00b4d8]"
                                 >
-                                  Finish
+                                  {loading ? (
+                                    <CircularProgress
+                                      size={20}
+                                      sx={{ color: "white" }}
+                                    />
+                                  ) : (
+                                    "Finish"
+                                  )}
                                 </button>
                               ) : (
                                 <button
@@ -3811,10 +3992,18 @@ const Registration = () => {
 
                               {activeStep === steps.length - 1 ? (
                                 <button
+                                  disabled={loading ? true : false}
                                   onClick={handleNext}
                                   className="bg-[#0077b6] text-white py-2 px-10 rounded-sm shadow-sm hover:bg-[#00b4d8]"
                                 >
-                                  Finish
+                                  {loading ? (
+                                    <CircularProgress
+                                      size={20}
+                                      sx={{ color: "white" }}
+                                    />
+                                  ) : (
+                                    "Finish"
+                                  )}
                                 </button>
                               ) : (
                                 <button
@@ -3848,7 +4037,10 @@ const Registration = () => {
         </div>
       )}
       <Backdrop
-        sx={{ color: "#fff", zIndex: (theme) => theme.zIndex.drawer + 9999999999 }}
+        sx={{
+          color: "#fff",
+          zIndex: (theme) => theme.zIndex.drawer + 9999999999,
+        }}
         open={openBackdrop}
       >
         <CircularProgress color="inherit" />

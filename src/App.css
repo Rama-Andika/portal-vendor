@@ -81,6 +81,10 @@ input[type="email"]:focus {
   --tw-ring-color: transparent !important;
 }
 
+input[type="checkbox"]:focus {
+  --tw-ring-color: white !important;
+}
+
 textarea:focus {
   --tw-ring-color: transparent !important;
 }

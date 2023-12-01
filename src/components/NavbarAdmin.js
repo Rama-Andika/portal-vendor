@@ -25,16 +25,16 @@ const NavButton = ({ title, customFunc, icon, color, dotColor }) => (
   </button>
 );
 
-const Navbar = () => {
+const NavbarAdmin = () => {
   const unsplashimg = {
     src: "https://source.unsplash.com/1600x900/?random",
     alt: "random unsplash image",
   };
   const { setActiveMenu, screenSize, setScreenSize } = useStateContext();
   const [dropdown, setDropdown] = useState(false);
-  const [name, setName] = useState("");
 
   const dropDownSection = useRef();
+  const [name,setName] = useState("");
   const navigate = useNavigate();
 
   useEffect(() => {
@@ -49,23 +49,22 @@ const Navbar = () => {
   }, []);
 
   useEffect(() => {
-    fetch(`${api}api/portal-vendor/list/users`, {
+    fetch(`${api}api/portal-vendor/admin/login`,{
       method: "POST",
       body: JSON.stringify({
-        id: Cookies.get("id"),
-      }),
-    })
-      .then((response) => response.json())
-      .then((res) => {
-        if (res.data.length > 0) {
-          const data = res.data[0];
-          setName(data.username);
-        }
+        id: Cookies.get("admin_id")
       })
-      .catch((err) => {
-        console.log(err);
-      });
-  }, []);
+    }).then((response) => response.json())
+    .then((res) => {
+      if(res.data.length > 0){
+        const data = res.data[0]
+        setName(data.username)
+      }
+      
+    }).catch((err)=>{
+      console.log(err)
+    })
+  },[])
 
   useEffect(() => {
     if (screenSize <= 900) {
@@ -81,7 +80,7 @@ const Navbar = () => {
   };
 
   const logout = () => {
-    Cookies.remove("token");
+    Cookies.remove("admin_token");
     Cookies.remove("vendor_id");
     toast.success("Logout Successfully", {
       duration: 4000,
@@ -93,7 +92,7 @@ const Navbar = () => {
       },
     });
 
-    navigate("/");
+    navigate("/wh-smith");
   };
 
   return (
@@ -146,4 +145,4 @@ const Navbar = () => {
   );
 };
 
-export default Navbar;
+export default NavbarAdmin;

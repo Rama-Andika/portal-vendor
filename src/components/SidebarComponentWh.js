@@ -72,7 +72,7 @@ const SidebarComponentWh = () => {
                         key={index}
                         label={item.title}
                         icon={item.icon}
-                        open={item.title === "Vendor" ? true : false}
+                        open
                       >
                         {item.links.map((link, index) => (
                           <NavLink

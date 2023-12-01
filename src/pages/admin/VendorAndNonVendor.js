@@ -1,6 +1,6 @@
 import { useStateContext } from "../../contexts/ContextProvider";
 import AdminWhSmith from "../../layouts/AdminWhSmith";
-import { Backdrop, Fade, Modal, Pagination, Tooltip } from "@mui/material";
+import { Backdrop, Fade, Modal, Tooltip } from "@mui/material";
 import { DatePicker, LocalizationProvider } from "@mui/x-date-pickers";
 import { AdapterDayjs } from "@mui/x-date-pickers/AdapterDayjs";
 import { DemoContainer } from "@mui/x-date-pickers/internals/demo";
@@ -11,6 +11,7 @@ import { CgDanger } from "react-icons/cg";
 
 const VendorAndNonVendor = () => {
   const { screenSize } = useStateContext();
+  // eslint-disable-next-line no-unused-vars
   const [page, setPage] = useState(1);
   const [open, setOpen] = useState(false);
   const [term, setTerm] = useState("");
@@ -22,6 +23,7 @@ const VendorAndNonVendor = () => {
 
   const array = [1, 2, 3, 4];
 
+  // eslint-disable-next-line no-unused-vars
   const onChangePagination = (e, value) => {
     setPage(value);
   };
@@ -236,7 +238,7 @@ const VendorAndNonVendor = () => {
             </tbody>
           </table>
         </div>
-        <div className="mt-10">
+        {/* <div className="mt-10">
           <Pagination
             count={20}
             page={page}
@@ -245,7 +247,7 @@ const VendorAndNonVendor = () => {
             showLastButton
             size="small"
           />
-        </div>
+        </div> */}
 
         <div>
           <Modal
