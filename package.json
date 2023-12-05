@@ -1,7 +1,7 @@
 {
-  "name": "react-sidebar",
+  "name": "portal-vendor",
   "version": "0.1.0",
-  "homepage": "http://192.46.230.24/",
+  "homepage": "portal-vendor",
   "private": true,
   "dependencies": {
     "@bytescale/sdk": "^3.10.0",

@@ -13,6 +13,7 @@ import { FaCloudUploadAlt } from "react-icons/fa";
 import titleCase from "../../components/functions/TitleCase";
 import GetBase64 from "../../components/functions/GetBase64";
 import { useNavigate } from "react-router-dom";
+import isEmpty from "../../components/functions/CheckEmptyObject";
 
 const options = [
   { value: "cv", label: "CV", key: 1 },
@@ -92,6 +93,9 @@ const Profile = () => {
   const id = Cookies.get("vendor_id");
 
   const navigate = useNavigate();
+  const [isError, setIsError] = useState(false);
+  const [message, setMessage] = useState("");
+  const [loading, setLoading] = useState(false)
 
   const company_section = useRef();
   const [openBackdrop, setOpenBackdrop] = useState(false);
@@ -184,6 +188,7 @@ const Profile = () => {
           setNamaKontakKeuangan(data.nama_kontak_keuangan);
           setJabatanKeuangan(data.jabatan_keuangan);
           setTermPembayaran(data.term_pembayaran);
+          setPengembalianBarang(data.pengembalian_barang);
           setBank(data.bank);
           setRekening(data.no_rekening_bank);
           setNamaRekening(data.nama_rekening_bank);
@@ -210,109 +215,209 @@ const Profile = () => {
 
   const updateVendor = async () => {
     setOpenBackdrop(true);
-
-    const inititalValue = {
-      id: id,
-      nama: namaPerusahaan.trim(),
-      kode: kode.trim(),
-      tipe_perusahaan: tipePerusahaan.value,
-      tipe_perusahaan_lainnya: tipePerusahaanText.trim(),
-      alamat: alamat.trim(),
-      provinsi: provinsi.value,
-      kota: kota.trim(),
-      kode_pos: kodePos.trim(),
-      tipe_pembelian: tipePembelian.value,
-      status_pajak: statusPajak.value,
-      npwp: npwp.trim(),
-      website: website.trim(),
-      nama_pemilik: namaPemilikPerusahaan.trim(),
-      nama_penanggung_jawab: namaPenanggungJawab.trim(),
-      jabatan_penanggung_jawab: jabatanPenanggungJawab.trim(),
-      no_telp_kantor: noTelpKantor.trim(),
-      no_wa_purchase_order: whatsappPO.trim(),
-      email_korespondensi: emailKorespondensiPo.trim(),
-      nama_kontak: namaKontak.trim(),
-      jabatan_kontak: jabatan.trim(),
-      no_wa_keuangan: whatsappKeuangan.trim(),
-      email_korespondensi_keuangan: emailKorespondensiKeuangan.trim(),
-      nama_kontak_keuangan: namaKontakKeuangan.trim(),
-      jabatan_keuangan: jabatanKeuangan.trim(),
-      term_pembayaran: termPembayaran,
-      pengembalian_barang: pengembalianBarang.trim(),
-      bank: bank.trim(),
-      no_rekening_bank: nomorRekening.trim(),
-      nama_rekening_bank: namaRekening.trim(),
-      kantor_cabang_bank: kantorCabangBank.trim(),
-      metode_pengiriman: metodePengiriman.value,
-      rebate: rebate.trim(),
-      marketing_fee: marketingFee.trim(),
-      listing_fee: listingFee.trim(),
-      promotion_found: promotionFund,
-      file_npwp: npwpFile !== null ? npwpFile : null,
-      file_ktp_pemilik: ktpPemilikFile !== null ? ktpPemilikFile : null,
-      file_ktp_penanggung_jawab:
-        ktpPenanggungJawabFile !== null ? ktpPenanggungJawabFile : null,
-      file_spkp: spkpFile !== null ? spkpFile : null,
-      file_nib: nibFile !== null ? nibFile : null,
-      file_screenshot_rekening:
-        ssPerusahaanFile !== null ? ssPerusahaanFile : null,
-      file_sertikasi_bpom: sertifBpomFile !== null ? sertifBpomFile : null,
-      status: status,
-    };
-    if (Cookies.get("token") !== undefined) {
-      await fetch(`${api}api/portal-vendor/sign-up`, {
+    let isSave = false;
+    setLoading(true)
+    if (
+      kode.trim().length > 0 &&
+      namaPerusahaan.trim().length > 0 &&
+      alamat.trim().length > 0 &&
+      !isEmpty(provinsi) &&
+      kota.trim().length > 0 &&
+      kodePos.trim().length > 0 &&
+      !isEmpty(tipePembelian) &&
+      !isEmpty(statusPajak) &&
+      namaPemilikPerusahaan.trim().length > 0 &&
+      namaPenanggungJawab.trim().length > 0 &&
+      jabatanPenanggungJawab.trim().length > 0 &&
+      noTelpKantor.trim().length > 0 &&
+      whatsappPO.trim().length > 0 &&
+      namaKontak.trim().length > 0 &&
+      whatsappKeuangan.trim().length > 0 &&
+      namaKontakKeuangan.trim().length > 0 &&
+      jabatanKeuangan.trim().length > 0 &&
+      termPembayaran.toString().length > 0 &&
+      bank.trim().length > 0 &&
+      nomorRekening.trim().length > 0 &&
+      namaRekening.trim().length > 0 &&
+      kantorCabangBank.trim().length > 0 &&
+      !isEmpty(metodePengiriman) &&
+      pengembalianBarang.toString().length > 0
+    ) {
+      
+      fetch(`${api}api/portal-vendor/vendor/validation`, {
         method: "POST",
-        body: JSON.stringify(inititalValue),
+        body: JSON.stringify({
+          id: id,
+          name: namaPerusahaan.trim()
+        }),
       })
         .then((response) => response.json())
-        .then((res) => {
-          if (res.data === 0) {
-            fetchVendor();
+        .then(async (res) => {
+          setOpenBackdrop(false);
+          if (!res.data) {
+            setLoading(false)
             setOpenBackdrop(false);
-            toast.error("Update Failed!", {
-              position: "top-right",
-              style: {
-                borderRadius: "10px",
-                background: "#333",
-                color: "#fff",
-              },
-            });
+            isSave = false;
+            setIsError(true);
+            setMessage("Nama Perusahaan atau kode Sudah ada!");
           } else {
-            fetchVendor();
-            setOpenBackdrop(false);
-            toast.success("Update Success!", {
-              position: "top-right",
-              style: {
-                borderRadius: "10px",
-                background: "#333",
-                color: "#fff",
-              },
-            });
+            
+            if (statusPajak.value === "PKP") {
+              if (npwp.trim().length === 20) {
+                isSave = true;
+                setIsError(false);
+              } else {
+                isSave = false;
+                setMessage("Data Belum Lengkap!");
+                setIsError(true);
+              }
+            }
+
+            if (!isEmpty(tipePerusahaan)) {
+              if (tipePerusahaan.value === "lainnya") {
+                if (tipePerusahaanText.trim().length > 0) {
+                  isSave = true;
+                  setIsError(false);
+                } else {
+                  isSave = false;
+                  setMessage("Data Belum Lengkap!");
+                  setIsError(true);
+                }
+              } else {
+                isSave = true;
+                setIsError(false);
+              }
+            } else {
+              isSave = false;
+              setMessage("Data Belum Lengkap!");
+              setIsError(true);
+            }
+
+            if (isSave) {
+              const inititalValue = {
+                id: id,
+                nama: namaPerusahaan.trim(),
+                kode: kode.trim(),
+                tipe_perusahaan: tipePerusahaan.value,
+                tipe_perusahaan_lainnya: tipePerusahaanText.trim(),
+                alamat: alamat.trim(),
+                provinsi: provinsi.value,
+                kota: kota.trim(),
+                kode_pos: kodePos.trim(),
+                tipe_pembelian: tipePembelian.value,
+                status_pajak: statusPajak.value,
+                npwp: npwp.trim(),
+                website: website.trim(),
+                nama_pemilik: namaPemilikPerusahaan.trim(),
+                nama_penanggung_jawab: namaPenanggungJawab.trim(),
+                jabatan_penanggung_jawab: jabatanPenanggungJawab.trim(),
+                no_telp_kantor: noTelpKantor.trim(),
+                no_wa_purchase_order: whatsappPO.trim(),
+                email_korespondensi: emailKorespondensiPo.trim(),
+                nama_kontak: namaKontak.trim(),
+                jabatan_kontak: jabatan.trim(),
+                no_wa_keuangan: whatsappKeuangan.trim(),
+                email_korespondensi_keuangan: emailKorespondensiKeuangan.trim(),
+                nama_kontak_keuangan: namaKontakKeuangan.trim(),
+                jabatan_keuangan: jabatanKeuangan.trim(),
+                term_pembayaran: termPembayaran,
+                pengembalian_barang: pengembalianBarang,
+                bank: bank.trim(),
+                no_rekening_bank: nomorRekening.trim(),
+                nama_rekening_bank: namaRekening.trim(),
+                kantor_cabang_bank: kantorCabangBank.trim(),
+                metode_pengiriman: metodePengiriman.value,
+                rebate: rebate.trim(),
+                marketing_fee: marketingFee.trim(),
+                listing_fee: listingFee.trim(),
+                promotion_found: promotionFund,
+                file_npwp: npwpFile !== null ? npwpFile : null,
+                file_ktp_pemilik: ktpPemilikFile !== null ? ktpPemilikFile : null,
+                file_ktp_penanggung_jawab:
+                  ktpPenanggungJawabFile !== null ? ktpPenanggungJawabFile : null,
+                file_spkp: spkpFile !== null ? spkpFile : null,
+                file_nib: nibFile !== null ? nibFile : null,
+                file_screenshot_rekening:
+                  ssPerusahaanFile !== null ? ssPerusahaanFile : null,
+                file_sertikasi_bpom: sertifBpomFile !== null ? sertifBpomFile : null,
+                status: status,
+              };
+              if (Cookies.get("token") !== undefined) {
+                await fetch(`${api}api/portal-vendor/sign-up`, {
+                  method: "POST",
+                  body: JSON.stringify(inititalValue),
+                })
+                  .then((response) => response.json())
+                  .then((res) => {
+                    if (res.data === 0) {
+                      fetchVendor();
+                      setOpenBackdrop(false);
+                      toast.error("Update Failed!", {
+                        position: "top-right",
+                        style: {
+                          borderRadius: "10px",
+                          background: "#333",
+                          color: "#fff",
+                        },
+                      });
+                    } else {
+                      fetchVendor();
+                      setOpenBackdrop(false);
+                      toast.success("Update Success!", {
+                        position: "top-right",
+                        style: {
+                          borderRadius: "10px",
+                          background: "#333",
+                          color: "#fff",
+                        },
+                      });
+                    }
+                    setLoading(false)
+                  })
+                  .catch((err) => {
+                    setLoading(false)
+                    fetchVendor();
+                    setOpenBackdrop(false);
+                    toast.error("Update Failed!", {
+                      position: "top-right",
+                      style: {
+                        borderRadius: "10px",
+                        background: "#333",
+                        color: "#fff",
+                      },
+                    });
+                  });
+              } else {
+                navigate("/");
+                toast.error("Silahkan Login Terlebih Dahulu!", {
+                  position: "top-right",
+                  style: {
+                    borderRadius: "10px",
+                    background: "#333",
+                    color: "#fff",
+                  },
+                });
+              }
+            }
           }
         })
         .catch((err) => {
-          fetchVendor();
+          setLoading(false)
           setOpenBackdrop(false);
-          toast.error("Update Failed!", {
-            position: "top-right",
-            style: {
-              borderRadius: "10px",
-              background: "#333",
-              color: "#fff",
-            },
-          });
+          setMessage("Data Belum Lengkap!");
+          isSave = false;
+          console.log(err);
         });
     } else {
-      navigate("/");
-      toast.error("Silahkan Login Terlebih Dahulu!", {
-        position: "top-right",
-        style: {
-          borderRadius: "10px",
-          background: "#333",
-          color: "#fff",
-        },
-      });
+      setLoading(false)
+      setOpenBackdrop(false);
+      setIsError(true);
+      setMessage("Data Belum Lengkap!");
     }
+
+
+
+    
   };
 
   useEffect(() => {
@@ -1894,13 +1999,26 @@ const Profile = () => {
               </form>
             </div>
           </div>
+          {isError && (
+            <div className="bg-red-500 py-2 px-5 text-white w-fit">
+              {"Error (" + message + ")"}
+            </div>
+          )}
+
           <div className="flex justify-start max-[415px]:w-full py-4">
             <button
               type="button"
+              disabled={loading ? true : false}
               onClick={updateVendor}
-              className="py-3 max-[415px]:w-full px-10 rounded-sm shadow-sm bg-[#0077b6] text-white"
+              className={`py-3 max-[415px]:w-full px-10 rounded-sm shadow-sm  text-white 
+                bg-[#0077b6]
+              `}
             >
-              Simpan
+              {loading ? (
+                <CircularProgress size={20} sx={{ color: "white" }} />
+              ) : (
+                "LOGIN"
+              )}
             </button>
           </div>
         </div>

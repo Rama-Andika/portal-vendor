@@ -128,7 +128,7 @@ const Registration = () => {
         email.trim().length > 0 &&
         password.trim().length > 0 &&
         kode.trim().length > 0 &&
-        namaPerusahaan.trim().length &&
+        namaPerusahaan.trim().length > 0 &&
         alamat.trim().length > 0 &&
         !isEmpty(provinsi) &&
         kota.trim().length > 0 &&
@@ -883,7 +883,7 @@ const Registration = () => {
                         </label>
                         <div>:</div>
                       </div>
-                      <div className="w-1/2 relative flex gap-1 items-center">
+                      <div className="w-1/2 relative">
                         <input
                           value={password}
                           onChange={(e) => setPassword(e.target.value)}
@@ -901,7 +901,7 @@ const Registration = () => {
                         />
                         <div
                           onClick={() => setShowPassword((prev) => !prev)}
-                          className="cursor-pointer"
+                          className="cursor-pointer absolute top-[50%] right-[10px] translate-y-[-50%] "
                         >
                           {showPassword ? <FaEyeSlash /> : <FaEye />}{" "}
                         </div>
@@ -2443,7 +2443,7 @@ const Registration = () => {
                                 )}
                               </label>
                             </div>
-                            <div className="whitespace-nowrap flex gap-1 items-center">
+                            <div className="whitespace-nowrap relative">
                               <input
                                 value={password}
                                 onChange={(e) => setPassword(e.target.value)}
@@ -2461,7 +2461,7 @@ const Registration = () => {
                               />
                               <div
                                 onClick={() => setShowPassword((prev) => !prev)}
-                                className="cursor-pointer"
+                                className="cursor-pointer absolute top-[50%] right-[10px] translate-y-[-50%]"
                               >
                                 {showPassword ? <FaEyeSlash /> : <FaEye />}{" "}
                               </div>

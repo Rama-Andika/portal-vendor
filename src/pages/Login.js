@@ -8,6 +8,7 @@ import generateString from "../components/functions/GenerateRandomString";
 import { FaEye, FaEyeSlash } from "react-icons/fa";
 import { CircularProgress } from "@mui/material";
 
+const api = process.env.REACT_APP_BASEURL;
 const Login = () => {
   const navigate = useNavigate();
   const [username, setUsername] = useState("");
@@ -24,19 +25,18 @@ const Login = () => {
   const onSubmitLogin = async (e) => {
     setLoading(true);
     e.preventDefault();
-    const api = process.env.REACT_APP_BASEURL;
 
     await fetch(`${api}api/portal-vendor/list/users`, {
-      method: "GET",
+      method: "POST",
+      body: JSON.stringify({
+        username: username,
+        password: password,
+      }),
     })
       .then((response) => response.json())
       .then((data) => {
         setLoading(false);
-        // eslint-disable-next-line array-callback-return
-        const login = data.data.filter(
-          (user) => user.username === username && user.password === password
-        );
-        if (login.length > 0) {
+        if (data.data.length > 0) {
           toast.success("Login Success", {
             position: "top-right",
             style: {
@@ -45,9 +45,9 @@ const Login = () => {
               color: "#fff",
             },
           });
-          Cookies.set("id", login[0].id)
+          Cookies.set("id", data.data[0].id);
           Cookies.set("token", generateString(10));
-          Cookies.set("vendor_id", login[0].vendor_id);
+          Cookies.set("vendor_id", data.data[0].vendor_id);
           navigate(`/vendor/profile`);
           setLoading(false);
         } else {
@@ -76,7 +76,7 @@ const Login = () => {
   };
 
   useEffect(() => {
-    Cookies.remove("id")
+    Cookies.remove("id");
     Cookies.remove("token");
     Cookies.remove("vendor_id");
   }, []);
@@ -115,10 +115,10 @@ const Login = () => {
               <div className="mb-2 block">
                 <Label htmlFor="password1" value="Password" />
               </div>
-              <div className="flex gap-1 items-center">
+              <div className="relative">
                 <TextInput
                   id="password1"
-                  className="w-[95%]"
+                  className="w-full"
                   required
                   type={`${showPassword ? "text" : "password"}`}
                   value={password}
@@ -126,7 +126,7 @@ const Login = () => {
                 />
                 <div
                   onClick={() => setShowPassword((prev) => !prev)}
-                  className="cursor-pointer"
+                  className="cursor-pointer absolute top-[50%] right-[10px] translate-y-[-50%]"
                 >
                   {showPassword ? <FaEyeSlash /> : <FaEye />}{" "}
                 </div>
@@ -164,7 +164,11 @@ const Login = () => {
               className="bg-[#0077b6] py-3 text-white rounded-md shadow-sm "
               onClick={(e) => onSubmitLogin(e)}
             >
-              {loading ? <CircularProgress size={20} sx={{ color: "white"}} /> : "LOGIN"}
+              {loading ? (
+                <CircularProgress size={20} sx={{ color: "white" }} />
+              ) : (
+                "LOGIN"
+              )}
             </button>
           </form>
         </div>

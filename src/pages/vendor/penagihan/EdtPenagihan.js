@@ -30,6 +30,7 @@ import toast from "react-hot-toast";
 import { FaCloudUploadAlt } from "react-icons/fa";
 import titleCase from "../../../components/functions/TitleCase";
 import GetBase64 from "../../../components/functions/GetBase64";
+import Cookies from "js-cookie";
 
 const optionsTipePenagihan = [
   { value: "beli_putus", label: "Beli Putus", key: 0 },
@@ -879,51 +880,77 @@ const Penagihan = () => {
         return !isEmpty(faktur);
       }
     );
-
-    if (isSave) {
-      const initialValue = {
-        id: param.id,
-        vendor_id: vendorId,
-        no_request: nomerRequest,
-        tipe_penagihan: tipePenagihan.value,
-        tipe_pengiriman: tipePengiriman.value,
-        nomer_po: "PO" + nomerPo,
-        tanggal_po: dayjs(tanggalPo).format("YYYY-MM-DD HH:mm:ss"),
-        nomer_do: "DO" + nomerDo,
-        delivery_area: deliveryArea.value,
-        nomer_invoices: invoiceList,
-        tanggal_invoices: tanggalList,
-        nilai_invoices: nilaiInvoiceList,
-        is_pajak: isPajak.value,
-        nomer_seri_pajak: nomerSeriFakturPajakList,
-        start_date_periode: null,
-        end_date_periode: null,
-        created_at: createdAt,
-        updated_at: dayjs(new Date()).format("YYYY-MM-DD HH:mm:ss"),
-        po_file: purchaseOrderFile !== null ? purchaseOrderFile : null,
-        do_file: deliveryOrderFile !== null ? deliveryOrderFile : null,
-        invoice_file: invoiceFile !== null ? invoiceFile : null,
-        invoice_tambahan_file: invoiceTambahanList,
-        kwitansi_file: kwitansiFile !== null ? kwitansiFile : null,
-        faktur_pajak_file: fakturPajakFile !== null ? fakturPajakFile : null,
-        faktur_pajak_tambahan_file:
-          validationFakturPajakTambahan.length > 0
-            ? fakturPajakTambahanList
-            : null,
-        note_file: receivingNoteFile !== null ? receivingNoteFile : null,
-        resi_file: resiFile !== null ? resiFile : null,
-        scan_report_sales_file:
-          scanReportSalesFile !== null ? scanReportSalesFile : null,
-        status: "DRAFT",
-      };
-
-      await fetch(`${api}api/portal-vendor/invoice`, {
-        method: "POST",
-        body: JSON.stringify(initialValue),
-      })
-        .then((response) => response.json())
-        .then((res) => {
-          if (res.data === 0) {
+    
+    if(Cookies.get("token") !== undefined){
+      if (isSave) {
+        const initialValue = {
+          id: param.id,
+          vendor_id: vendorId,
+          no_request: nomerRequest,
+          tipe_penagihan: tipePenagihan.value,
+          tipe_pengiriman: tipePengiriman.value,
+          nomer_po: "PO" + nomerPo,
+          tanggal_po: dayjs(tanggalPo).format("YYYY-MM-DD HH:mm:ss"),
+          nomer_do: "DO" + nomerDo,
+          delivery_area: deliveryArea.value,
+          nomer_invoices: invoiceList,
+          tanggal_invoices: tanggalList,
+          nilai_invoices: nilaiInvoiceList,
+          is_pajak: isPajak.value,
+          nomer_seri_pajak: nomerSeriFakturPajakList,
+          start_date_periode: null,
+          end_date_periode: null,
+          created_at: createdAt,
+          updated_at: dayjs(new Date()).format("YYYY-MM-DD HH:mm:ss"),
+          po_file: purchaseOrderFile !== null ? purchaseOrderFile : null,
+          do_file: deliveryOrderFile !== null ? deliveryOrderFile : null,
+          invoice_file: invoiceFile !== null ? invoiceFile : null,
+          invoice_tambahan_file: invoiceTambahanList,
+          kwitansi_file: kwitansiFile !== null ? kwitansiFile : null,
+          faktur_pajak_file: fakturPajakFile !== null ? fakturPajakFile : null,
+          faktur_pajak_tambahan_file:
+            validationFakturPajakTambahan.length > 0
+              ? fakturPajakTambahanList
+              : null,
+          note_file: receivingNoteFile !== null ? receivingNoteFile : null,
+          resi_file: resiFile !== null ? resiFile : null,
+          scan_report_sales_file:
+            scanReportSalesFile !== null ? scanReportSalesFile : null,
+          status: "DRAFT",
+        };
+  
+        await fetch(`${api}api/portal-vendor/invoice`, {
+          method: "POST",
+          body: JSON.stringify(initialValue),
+        })
+          .then((response) => response.json())
+          .then((res) => {
+            if (res.data === 0) {
+              setOpenBackdrop(false);
+              toast.error("Penagihan update failed!", {
+                position: "top-right",
+                style: {
+                  borderRadius: "10px",
+                  background: "#333",
+                  color: "#fff",
+                },
+              });
+            } else {
+              setId(res.data);
+              setCreatedAt(res.data.created_at);
+              navigate("/vendor/monitoring");
+              setOpenBackdrop(false);
+              toast.success("Penagihan update success!", {
+                position: "top-right",
+                style: {
+                  borderRadius: "10px",
+                  background: "#333",
+                  color: "#fff",
+                },
+              });
+            }
+          })
+          .catch((err) => {
             setOpenBackdrop(false);
             toast.error("Penagihan update failed!", {
               position: "top-right",
@@ -933,35 +960,22 @@ const Penagihan = () => {
                 color: "#fff",
               },
             });
-          } else {
-            setId(res.data);
-            setCreatedAt(res.data.created_at);
-            navigate("/vendor/monitoring");
-            setOpenBackdrop(false);
-            toast.success("Penagihan update success!", {
-              position: "top-right",
-              style: {
-                borderRadius: "10px",
-                background: "#333",
-                color: "#fff",
-              },
-            });
-          }
-        })
-        .catch((err) => {
-          setOpenBackdrop(false);
-          toast.error("Penagihan update failed!", {
-            position: "top-right",
-            style: {
-              borderRadius: "10px",
-              background: "#333",
-              color: "#fff",
-            },
           });
-        });
-    } else {
-      setOpenBackdrop(false);
+      } else {
+        setOpenBackdrop(false);
+      }
+    }else{
+      navigate("/")
+      toast.error("Silahkan Login Terlebih Dahulu!", {
+        position: "top-right",
+        style: {
+          borderRadius: "10px",
+          background: "#333",
+          color: "#fff",
+        },
+      });
     }
+  
   };
 
   const saveDraft2 = async () => {
@@ -1016,52 +1030,77 @@ const Penagihan = () => {
       }
     );
 
-    if (isSave) {
-      const initialValue = {
-        id: param.id,
-        vendor_id: vendorId,
-        no_request: nomerRequest,
-        tipe_penagihan: tipePenagihan.value,
-        tipe_pengiriman: tipePengiriman.value,
-        nomer_po: "PO" + nomerPo,
-        tanggal_po: dayjs(tanggalPo).format("YYYY-MM-DD HH:mm:ss"),
-        nomer_do: "DO" + nomerDo,
-        delivery_area: deliveryArea.value,
-        nomer_invoices: invoiceList,
-        tanggal_invoices: tanggalList,
-        nilai_invoices: nilaiInvoiceList,
-        is_pajak: isPajak.value,
-        nomer_seri_pajak: nomerSeriFakturPajakList,
-        start_date_periode: dayjs(startDatePeriode).format(
-          "YYYY-MM-DD HH:mm:ss"
-        ),
-        end_date_periode: dayjs(endDatePeriode).format("YYYY-MM-DD HH:mm:ss"),
-        created_at: createdAt,
-        updated_at: dayjs(new Date()).format("YYYY-MM-DD HH:mm:ss"),
-        po_file: purchaseOrderFile !== null ? purchaseOrderFile : null,
-        do_file: deliveryOrderFile !== null ? deliveryOrderFile : null,
-        invoice_file: invoiceFile !== null ? invoiceFile : null,
-        invoice_tambahan_file: invoiceTambahanList,
-        kwitansi_file: kwitansiFile !== null ? kwitansiFile : null,
-        faktur_pajak_file: fakturPajakFile !== null ? fakturPajakFile : null,
-        faktur_pajak_tambahan_file:
-          validationFakturPajakTambahan.length > 0
-            ? fakturPajakTambahanList
-            : null,
-        note_file: receivingNoteFile !== null ? receivingNoteFile : null,
-        resi_file: resiFile !== null ? resiFile : null,
-        scan_report_sales_file:
-          scanReportSalesFile !== null ? scanReportSalesFile : null,
-        status: "DRAFT",
-      };
-
-      await fetch(`${api}api/portal-vendor/invoice`, {
-        method: "POST",
-        body: JSON.stringify(initialValue),
-      })
-        .then((response) => response.json())
-        .then((res) => {
-          if (res.data === 0) {
+    if(Cookies.get("token") !== undefined){
+      if (isSave) {
+        const initialValue = {
+          id: param.id,
+          vendor_id: vendorId,
+          no_request: nomerRequest,
+          tipe_penagihan: tipePenagihan.value,
+          tipe_pengiriman: tipePengiriman.value,
+          nomer_po: "PO" + nomerPo,
+          tanggal_po: dayjs(tanggalPo).format("YYYY-MM-DD HH:mm:ss"),
+          nomer_do: "DO" + nomerDo,
+          delivery_area: deliveryArea.value,
+          nomer_invoices: invoiceList,
+          tanggal_invoices: tanggalList,
+          nilai_invoices: nilaiInvoiceList,
+          is_pajak: isPajak.value,
+          nomer_seri_pajak: nomerSeriFakturPajakList,
+          start_date_periode: dayjs(startDatePeriode).format(
+            "YYYY-MM-DD HH:mm:ss"
+          ),
+          end_date_periode: dayjs(endDatePeriode).format("YYYY-MM-DD HH:mm:ss"),
+          created_at: createdAt,
+          updated_at: dayjs(new Date()).format("YYYY-MM-DD HH:mm:ss"),
+          po_file: purchaseOrderFile !== null ? purchaseOrderFile : null,
+          do_file: deliveryOrderFile !== null ? deliveryOrderFile : null,
+          invoice_file: invoiceFile !== null ? invoiceFile : null,
+          invoice_tambahan_file: invoiceTambahanList,
+          kwitansi_file: kwitansiFile !== null ? kwitansiFile : null,
+          faktur_pajak_file: fakturPajakFile !== null ? fakturPajakFile : null,
+          faktur_pajak_tambahan_file:
+            validationFakturPajakTambahan.length > 0
+              ? fakturPajakTambahanList
+              : null,
+          note_file: receivingNoteFile !== null ? receivingNoteFile : null,
+          resi_file: resiFile !== null ? resiFile : null,
+          scan_report_sales_file:
+            scanReportSalesFile !== null ? scanReportSalesFile : null,
+          status: "DRAFT",
+        };
+  
+        await fetch(`${api}api/portal-vendor/invoice`, {
+          method: "POST",
+          body: JSON.stringify(initialValue),
+        })
+          .then((response) => response.json())
+          .then((res) => {
+            if (res.data === 0) {
+              setOpenBackdrop(false);
+              toast.error("Penagihan update failed!", {
+                position: "top-right",
+                style: {
+                  borderRadius: "10px",
+                  background: "#333",
+                  color: "#fff",
+                },
+              });
+            } else {
+              setId(res.data);
+              navigate("/vendor/monitoring");
+              setOpenBackdrop(false);
+              toast.success("Penagihan update success!", {
+                position: "top-right",
+                style: {
+                  borderRadius: "10px",
+                  background: "#333",
+                  color: "#fff",
+                },
+              });
+            }
+          })
+          .catch((err) => {
             setOpenBackdrop(false);
             toast.error("Penagihan update failed!", {
               position: "top-right",
@@ -1071,34 +1110,23 @@ const Penagihan = () => {
                 color: "#fff",
               },
             });
-          } else {
-            setId(res.data);
-            navigate("/vendor/monitoring");
-            setOpenBackdrop(false);
-            toast.success("Penagihan update success!", {
-              position: "top-right",
-              style: {
-                borderRadius: "10px",
-                background: "#333",
-                color: "#fff",
-              },
-            });
-          }
-        })
-        .catch((err) => {
-          setOpenBackdrop(false);
-          toast.error("Penagihan update failed!", {
-            position: "top-right",
-            style: {
-              borderRadius: "10px",
-              background: "#333",
-              color: "#fff",
-            },
           });
-        });
-    } else {
-      setOpenBackdrop(false);
+      } else {
+        setOpenBackdrop(false);
+      }
+    }else{
+      navigate("/")
+      toast.error("Silahkan Login Terlebih Dahulu!", {
+        position: "top-right",
+        style: {
+          borderRadius: "10px",
+          background: "#333",
+          color: "#fff",
+        },
+      });
     }
+
+ 
   };
 
   const onSubmitButton = async () => {
@@ -1152,49 +1180,74 @@ const Penagihan = () => {
       }
     );
 
-    const initialValue = {
-      id: param.id,
-      vendor_id: vendorId,
-      no_request: nomerRequest,
-      tipe_penagihan: tipePenagihan.value,
-      tipe_pengiriman: tipePengiriman.value,
-      nomer_po: "PO" + nomerPo,
-      tanggal_po: dayjs(tanggalPo).format("YYYY-MM-DD HH:mm:ss"),
-      nomer_do: "DO" + nomerDo,
-      delivery_area: deliveryArea.value,
-      nomer_invoices: invoiceList,
-      tanggal_invoices: tanggalList,
-      nilai_invoices: nilaiInvoiceList,
-      is_pajak: isPajak.value,
-      nomer_seri_pajak: nomerSeriFakturPajakList,
-      start_date_periode: null,
-      end_date_periode: null,
-      created_at: createdAt,
-      updated_at: dayjs(new Date()).format("YYYY-MM-DD HH:mm:ss"),
-      po_file: purchaseOrderFile !== null ? purchaseOrderFile : null,
-        do_file: deliveryOrderFile !== null ? deliveryOrderFile : null,
-        invoice_file: invoiceFile !== null ? invoiceFile : null,
-        invoice_tambahan_file: invoiceTambahanList,
-        kwitansi_file: kwitansiFile !== null ? kwitansiFile : null,
-        faktur_pajak_file: fakturPajakFile !== null ? fakturPajakFile : null,
-        faktur_pajak_tambahan_file:
-          validationFakturPajakTambahan.length > 0
-            ? fakturPajakTambahanList
-            : null,
-        note_file: receivingNoteFile !== null ? receivingNoteFile : null,
-        resi_file: resiFile !== null ? resiFile : null,
-        scan_report_sales_file:
-          scanReportSalesFile !== null ? scanReportSalesFile : null,
-      status: "Waiting_for_approval",
-    };
-
-    await fetch(`${api}api/portal-vendor/invoice`, {
-      method: "POST",
-      body: JSON.stringify(initialValue),
-    })
-      .then((response) => response.json())
-      .then((res) => {
-        if (res.data === 0) {
+    if(Cookies.get("token") !== undefined){
+      const initialValue = {
+        id: param.id,
+        vendor_id: vendorId,
+        no_request: nomerRequest,
+        tipe_penagihan: tipePenagihan.value,
+        tipe_pengiriman: tipePengiriman.value,
+        nomer_po: "PO" + nomerPo,
+        tanggal_po: dayjs(tanggalPo).format("YYYY-MM-DD HH:mm:ss"),
+        nomer_do: "DO" + nomerDo,
+        delivery_area: deliveryArea.value,
+        nomer_invoices: invoiceList,
+        tanggal_invoices: tanggalList,
+        nilai_invoices: nilaiInvoiceList,
+        is_pajak: isPajak.value,
+        nomer_seri_pajak: nomerSeriFakturPajakList,
+        start_date_periode: null,
+        end_date_periode: null,
+        created_at: createdAt,
+        updated_at: dayjs(new Date()).format("YYYY-MM-DD HH:mm:ss"),
+        po_file: purchaseOrderFile !== null ? purchaseOrderFile : null,
+          do_file: deliveryOrderFile !== null ? deliveryOrderFile : null,
+          invoice_file: invoiceFile !== null ? invoiceFile : null,
+          invoice_tambahan_file: invoiceTambahanList,
+          kwitansi_file: kwitansiFile !== null ? kwitansiFile : null,
+          faktur_pajak_file: fakturPajakFile !== null ? fakturPajakFile : null,
+          faktur_pajak_tambahan_file:
+            validationFakturPajakTambahan.length > 0
+              ? fakturPajakTambahanList
+              : null,
+          note_file: receivingNoteFile !== null ? receivingNoteFile : null,
+          resi_file: resiFile !== null ? resiFile : null,
+          scan_report_sales_file:
+            scanReportSalesFile !== null ? scanReportSalesFile : null,
+        status: "Waiting_for_approval",
+      };
+  
+      await fetch(`${api}api/portal-vendor/invoice`, {
+        method: "POST",
+        body: JSON.stringify(initialValue),
+      })
+        .then((response) => response.json())
+        .then((res) => {
+          if (res.data === 0) {
+            setOpenBackdrop(false);
+            toast.error("Penagihan update failed!", {
+              position: "top-right",
+              style: {
+                borderRadius: "10px",
+                background: "#333",
+                color: "#fff",
+              },
+            });
+          } else {
+            setId(res.data);
+            navigate("/vendor/monitoring");
+            setOpenBackdrop(false);
+            toast.success("Penagihan update success!", {
+              position: "top-right",
+              style: {
+                borderRadius: "10px",
+                background: "#333",
+                color: "#fff",
+              },
+            });
+          }
+        })
+        .catch((err) => {
           setOpenBackdrop(false);
           toast.error("Penagihan update failed!", {
             position: "top-right",
@@ -1204,31 +1257,20 @@ const Penagihan = () => {
               color: "#fff",
             },
           });
-        } else {
-          setId(res.data);
-          navigate("/vendor/monitoring");
-          setOpenBackdrop(false);
-          toast.success("Penagihan update success!", {
-            position: "top-right",
-            style: {
-              borderRadius: "10px",
-              background: "#333",
-              color: "#fff",
-            },
-          });
-        }
-      })
-      .catch((err) => {
-        setOpenBackdrop(false);
-        toast.error("Penagihan update failed!", {
-          position: "top-right",
-          style: {
-            borderRadius: "10px",
-            background: "#333",
-            color: "#fff",
-          },
         });
+    }else{
+      navigate("/")
+      toast.error("Silahkan Login Terlebih Dahulu!", {
+        position: "top-right",
+        style: {
+          borderRadius: "10px",
+          background: "#333",
+          color: "#fff",
+        },
       });
+    }
+
+    
   };
 
   const onSubmitButton2 = async () => {
@@ -1282,49 +1324,74 @@ const Penagihan = () => {
       }
     );
 
-    const initialValue = {
-      id: param.id,
-      vendor_id: vendorId,
-      no_request: nomerRequest,
-      tipe_penagihan: tipePenagihan.value,
-      tipe_pengiriman: tipePengiriman.value,
-      nomer_po: "PO" + nomerPo,
-      tanggal_po: dayjs(tanggalPo).format("YYYY-MM-DD HH:mm:ss"),
-      nomer_do: "DO" + nomerDo,
-      delivery_area: deliveryArea.value,
-      nomer_invoices: invoiceList,
-      tanggal_invoices: tanggalList,
-      nilai_invoices: nilaiInvoiceList,
-      is_pajak: isPajak.value,
-      nomer_seri_pajak: nomerSeriFakturPajakList,
-      start_date_periode: dayjs(startDatePeriode).format("YYYY-MM-DD HH:mm:ss"),
-      end_date_periode: dayjs(endDatePeriode).format("YYYY-MM-DD HH:mm:ss"),
-      created_at: createdAt,
-      updated_at: dayjs(new Date()).format("YYYY-MM-DD HH:mm:ss"),
-      po_file: purchaseOrderFile !== null ? purchaseOrderFile : null,
-      do_file: deliveryOrderFile !== null ? deliveryOrderFile : null,
-      invoice_file: invoiceFile !== null ? invoiceFile : null,
-      invoice_tambahan_file: invoiceTambahanList,
-      kwitansi_file: kwitansiFile !== null ? kwitansiFile : null,
-      faktur_pajak_file: fakturPajakFile !== null ? fakturPajakFile : null,
-      faktur_pajak_tambahan_file:
-        validationFakturPajakTambahan.length > 0
-          ? fakturPajakTambahanList
-          : null,
-      note_file: receivingNoteFile !== null ? receivingNoteFile : null,
-      resi_file: resiFile !== null ? resiFile : null,
-      scan_report_sales_file:
-        scanReportSalesFile !== null ? scanReportSalesFile : null,
-      status: "Waiting_for_approval",
-    };
-
-    await fetch(`${api}api/portal-vendor/invoice`, {
-      method: "POST",
-      body: JSON.stringify(initialValue),
-    })
-      .then((response) => response.json())
-      .then((res) => {
-        if (res.data === 0) {
+    if(Cookies.get("token") !== undefined){
+      const initialValue = {
+        id: param.id,
+        vendor_id: vendorId,
+        no_request: nomerRequest,
+        tipe_penagihan: tipePenagihan.value,
+        tipe_pengiriman: tipePengiriman.value,
+        nomer_po: "PO" + nomerPo,
+        tanggal_po: dayjs(tanggalPo).format("YYYY-MM-DD HH:mm:ss"),
+        nomer_do: "DO" + nomerDo,
+        delivery_area: deliveryArea.value,
+        nomer_invoices: invoiceList,
+        tanggal_invoices: tanggalList,
+        nilai_invoices: nilaiInvoiceList,
+        is_pajak: isPajak.value,
+        nomer_seri_pajak: nomerSeriFakturPajakList,
+        start_date_periode: dayjs(startDatePeriode).format("YYYY-MM-DD HH:mm:ss"),
+        end_date_periode: dayjs(endDatePeriode).format("YYYY-MM-DD HH:mm:ss"),
+        created_at: createdAt,
+        updated_at: dayjs(new Date()).format("YYYY-MM-DD HH:mm:ss"),
+        po_file: purchaseOrderFile !== null ? purchaseOrderFile : null,
+        do_file: deliveryOrderFile !== null ? deliveryOrderFile : null,
+        invoice_file: invoiceFile !== null ? invoiceFile : null,
+        invoice_tambahan_file: invoiceTambahanList,
+        kwitansi_file: kwitansiFile !== null ? kwitansiFile : null,
+        faktur_pajak_file: fakturPajakFile !== null ? fakturPajakFile : null,
+        faktur_pajak_tambahan_file:
+          validationFakturPajakTambahan.length > 0
+            ? fakturPajakTambahanList
+            : null,
+        note_file: receivingNoteFile !== null ? receivingNoteFile : null,
+        resi_file: resiFile !== null ? resiFile : null,
+        scan_report_sales_file:
+          scanReportSalesFile !== null ? scanReportSalesFile : null,
+        status: "Waiting_for_approval",
+      };
+  
+      await fetch(`${api}api/portal-vendor/invoice`, {
+        method: "POST",
+        body: JSON.stringify(initialValue),
+      })
+        .then((response) => response.json())
+        .then((res) => {
+          if (res.data === 0) {
+            setOpenBackdrop(false);
+            toast.error("Penagihan update failed!", {
+              position: "top-right",
+              style: {
+                borderRadius: "10px",
+                background: "#333",
+                color: "#fff",
+              },
+            });
+          } else {
+            setId(res.data);
+            navigate("/vendor/monitoring");
+            setOpenBackdrop(false);
+            toast.success("Penagihan update success!", {
+              position: "top-right",
+              style: {
+                borderRadius: "10px",
+                background: "#333",
+                color: "#fff",
+              },
+            });
+          }
+        })
+        .catch((err) => {
           setOpenBackdrop(false);
           toast.error("Penagihan update failed!", {
             position: "top-right",
@@ -1334,31 +1401,20 @@ const Penagihan = () => {
               color: "#fff",
             },
           });
-        } else {
-          setId(res.data);
-          navigate("/vendor/monitoring");
-          setOpenBackdrop(false);
-          toast.success("Penagihan update success!", {
-            position: "top-right",
-            style: {
-              borderRadius: "10px",
-              background: "#333",
-              color: "#fff",
-            },
-          });
-        }
-      })
-      .catch((err) => {
-        setOpenBackdrop(false);
-        toast.error("Penagihan update failed!", {
-          position: "top-right",
-          style: {
-            borderRadius: "10px",
-            background: "#333",
-            color: "#fff",
-          },
         });
+    }else{
+      navigate("/")
+      toast.error("Silahkan Login Terlebih Dahulu!", {
+        position: "top-right",
+        style: {
+          borderRadius: "10px",
+          background: "#333",
+          color: "#fff",
+        },
       });
+    }
+
+    
   };
 
   const steps = ["Tipe Penagihan", "Billing", "Dokumen"];

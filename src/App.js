@@ -23,7 +23,7 @@ function App() {
   return (
     <div>
       <Toaster />
-      <BrowserRouter>
+      <BrowserRouter basename={"/portal-vendor"}>
         <Routes>
           {/* Dashboard */}
           <Route path="/" element={<Login />} />

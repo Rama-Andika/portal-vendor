@@ -124,47 +124,6 @@ const PendingTask = () => {
           });
         });
 
-        const customeHeaders = data.data.map((item, index) => {
-          let listTanggal;
-          let listNoPajak;
-          let total = 0;
-
-          listTanggal = item.tanggal_invoices.map((tanggal) => {
-            return dayjs(tanggal).format("DD/MM/YYYY");
-          });
-
-          let countNoPajak = 0;
-          listNoPajak = item.nomer_seri_pajak.map((nomer) => {
-            return nomer === null ? (countNoPajak -= 1) : (countNoPajak += 1);
-          });
-
-          // eslint-disable-next-line array-callback-return
-          item.nilai_invoices.map((nilai) => {
-            total += nilai;
-          });
-          return {
-            No: index + 1,
-            Supplier: item.vendor.nama,
-            "Tipe Penagihan": item.tipe_penagihan,
-            "No Purchase Order": item.nomer_po,
-            "Tanggal PO": dayjs(item.tanggal_po).format("DD/MM/YYYY"),
-            "No Delivery Order": item.nomer_do,
-            "Delivery Area": item.delivery_area,
-            "No Invoice": item.nomer_invoices.toString(),
-            "Tanggal Invoice": listTanggal[0],
-            "Nilai Invoice": total.toFixed(2),
-            "Termasuk Pajak": item.is_pajak === 0 ? "Ya" : "Tidak",
-            "No Faktur Pajak":
-              countNoPajak === listNoPajak.length ? listNoPajak.toString() : "",
-            "Periode Dari":
-              item.start_date_periode !== null ? item.start_date_periode : "",
-            "Periode Ke":
-              item.end_date_periode !== null ? item.end_date_periode : "",
-            Status: item.status,
-          };
-        });
-        setData(customeHeaders);
-
         setListPenagihan(data.data);
       })
       .catch((err) => {
@@ -199,44 +158,71 @@ const PendingTask = () => {
       isSave = true;
     }
 
-    if (isSave) {
-      const initialValue = {
-        id: item.id,
-        vendor_id: item.vendor_id,
-        no_request: item.no_request,
-        tipe_penagihan: item.tipe_penagihan,
-        tipe_pengiriman: item.tipe_pengiriman,
-        nomer_po: item.nomer_po,
-        tanggal_po: dayjs(item.tanggal_po).format("YYYY-MM-DD HH:mm:ss"),
-        nomer_do: item.nomer_do,
-        delivery_area: item.delivery_area,
-        nomer_invoices: item.nomer_invoices,
-        tanggal_invoices: item.tanggal_invoices,
-        nilai_invoices: item.nilai_invoices,
-        is_pajak: item.is_pajak,
-        nomer_seri_pajak: item.nomer_seri_pajak,
-        start_date_periode: dayjs(item.start_date_periode).format(
-          "YYYY-MM-DD HH:mm:ss"
-        ),
-        end_date_periode: dayjs(item.end_date_periode).format(
-          "YYYY-MM-DD HH:mm:ss"
-        ),
-        created_at: dayjs(item.created_at).format("YYYY-MM-DD HH:mm:ss"),
-        updated_at: dayjs(new Date()).format("YYYY-MM-DD HH:mm:ss"),
-        reason: item.reason,
-        status: item.status,
-      };
-
-      await fetch(`${api}api/portal-vendor/invoice`, {
-        method: "POST",
-        body: JSON.stringify(initialValue),
-      })
-        .then((response) => response.json())
-        .then((res) => {
-          if (res.data === 0) {
+    if(Cookies.get("admin_token") !== undefined){
+      if (isSave) {
+        const initialValue = {
+          id: item.id,
+          vendor_id: item.vendor_id,
+          no_request: item.no_request,
+          tipe_penagihan: item.tipe_penagihan,
+          tipe_pengiriman: item.tipe_pengiriman,
+          nomer_po: item.nomer_po,
+          tanggal_po: dayjs(item.tanggal_po).format("YYYY-MM-DD HH:mm:ss"),
+          nomer_do: item.nomer_do,
+          delivery_area: item.delivery_area,
+          nomer_invoices: item.nomer_invoices,
+          tanggal_invoices: item.tanggal_invoices,
+          nilai_invoices: item.nilai_invoices,
+          is_pajak: item.is_pajak,
+          nomer_seri_pajak: item.nomer_seri_pajak,
+          start_date_periode: dayjs(item.start_date_periode).format(
+            "YYYY-MM-DD HH:mm:ss"
+          ),
+          end_date_periode: dayjs(item.end_date_periode).format(
+            "YYYY-MM-DD HH:mm:ss"
+          ),
+          created_at: dayjs(item.created_at).format("YYYY-MM-DD HH:mm:ss"),
+          updated_at: dayjs(new Date()).format("YYYY-MM-DD HH:mm:ss"),
+          reason: item.reason,
+          status: item.status,
+        };
+  
+        await fetch(`${api}api/portal-vendor/invoice`, {
+          method: "POST",
+          body: JSON.stringify(initialValue),
+        })
+          .then((response) => response.json())
+          .then((res) => {
+            if (res.data === 0) {
+              setOpen(false);
+              fetchData();
+              setOpenBackdrop(false);
+              toast.error("Penagihan update failed!", {
+                position: "top-right",
+                style: {
+                  borderRadius: "10px",
+                  background: "#333",
+                  color: "#fff",
+                },
+              });
+            } else {
+              setOpen(false);
+              fetchData();
+              setOpenBackdrop(false);
+              toast.success("Penagihan update success!", {
+                position: "top-right",
+                style: {
+                  borderRadius: "10px",
+                  background: "#333",
+                  color: "#fff",
+                },
+              });
+            }
+          })
+          .catch((err) => {
+            setOpenBackdrop(false);
             setOpen(false);
             fetchData();
-            setOpenBackdrop(false);
             toast.error("Penagihan update failed!", {
               position: "top-right",
               style: {
@@ -245,36 +231,21 @@ const PendingTask = () => {
                 color: "#fff",
               },
             });
-          } else {
-            setOpen(false);
-            fetchData();
-            setOpenBackdrop(false);
-            toast.success("Penagihan update success!", {
-              position: "top-right",
-              style: {
-                borderRadius: "10px",
-                background: "#333",
-                color: "#fff",
-              },
-            });
-          }
-        })
-        .catch((err) => {
-          setOpenBackdrop(false);
-          setOpen(false);
-          fetchData();
-          toast.error("Penagihan update failed!", {
-            position: "top-right",
-            style: {
-              borderRadius: "10px",
-              background: "#333",
-              color: "#fff",
-            },
           });
+      } else {
+        setOpenBackdrop(false);
+        toast.error("Reason Masih Kosong!", {
+          position: "top-right",
+          style: {
+            borderRadius: "10px",
+            background: "#333",
+            color: "#fff",
+          },
         });
-    } else {
-      setOpenBackdrop(false);
-      toast.error("Reason Masih Kosong!", {
+      }
+    }else{
+      navigate("/wh-smith");
+      toast.error("Silahkan Login Terlebih Dahulu!", {
         position: "top-right",
         style: {
           borderRadius: "10px",
@@ -283,6 +254,8 @@ const PendingTask = () => {
         },
       });
     }
+
+    
   };
 
   return (

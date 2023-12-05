@@ -177,41 +177,55 @@ const VendorRegistrationList = () => {
     vendorDetail.file_nib = null;
     vendorDetail.file_screenshot_rekening = null;
     vendorDetail.file_sertifikasi_bpom = null;
-    await fetch(`${api}api/portal-vendor/sign-up`, {
-      method: "POST",
-      body: JSON.stringify(vendorDetail),
-    })
-      .then((response) => response.json())
-      .then((res) => {
-        if (res.data !== 0) {
-          setOpen(false);
-          fetchData();
-          setOpenBackdrop(false);
-          toast.success("Update Success!", {
-            position: "top-right",
-            style: {
-              borderRadius: "10px",
-              background: "#333",
-              color: "#fff",
-            },
-          });
-        } else {
-          setOpen(false);
-          fetchData();
-          setOpenBackdrop(false);
-          toast.error("Update Failed!", {
-            position: "top-right",
-            style: {
-              borderRadius: "10px",
-              background: "#333",
-              color: "#fff",
-            },
-          });
-        }
+
+    if(Cookies.get("admin_token") !== undefined){
+      await fetch(`${api}api/portal-vendor/sign-up`, {
+        method: "POST",
+        body: JSON.stringify(vendorDetail),
       })
-      .then((err) => {
-        setOpenBackdrop(false);
+        .then((response) => response.json())
+        .then((res) => {
+          if (res.data !== 0) {
+            setOpen(false);
+            fetchData();
+            setOpenBackdrop(false);
+            toast.success("Update Success!", {
+              position: "top-right",
+              style: {
+                borderRadius: "10px",
+                background: "#333",
+                color: "#fff",
+              },
+            });
+          } else {
+            setOpen(false);
+            fetchData();
+            setOpenBackdrop(false);
+            toast.error("Update Failed!", {
+              position: "top-right",
+              style: {
+                borderRadius: "10px",
+                background: "#333",
+                color: "#fff",
+              },
+            });
+          }
+        })
+        .then((err) => {
+          setOpenBackdrop(false);
+        });
+    }else{
+      navigate("/wh-smith");
+      toast.error("Silahkan Login Terlebih Dahulu!", {
+        position: "top-right",
+        style: {
+          borderRadius: "10px",
+          background: "#333",
+          color: "#fff",
+        },
       });
+    }
+   
   };
 
   const onClickDownload = (id) => {

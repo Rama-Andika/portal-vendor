@@ -109,19 +109,18 @@ const LoginWh = () => {
               <div className="mb-2 block">
                 <Label htmlFor="password1" value="Password" />
               </div>
-              <div className="flex gap-1 items-center">
+              <div className="relative">
                 <TextInput
                   id="password1"
+                  className="w-full"
+                  required
+                  type={`${showPassword ? "text" : "password"}`}
                   value={password}
                   onChange={(e) => setPassword(e.target.value)}
-                  required
-                  className="w-[95%]"
-                  type={`${showPassword ? "text" : "password"}`}
-                  onKeyDown={(evt) => evt.key === " " && evt.preventDefault()}
                 />
                 <div
                   onClick={() => setShowPassword((prev) => !prev)}
-                  className="cursor-pointer"
+                  className="cursor-pointer absolute top-[50%] right-[10px] translate-y-[-50%]"
                 >
                   {showPassword ? <FaEyeSlash /> : <FaEye />}{" "}
                 </div>

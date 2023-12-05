@@ -70,46 +70,6 @@ const ListingPenagihan = () => {
           });
         });
 
-        const customeHeaders = data.data.map((item, index) => {
-          let listTanggal;
-          let listNoPajak;
-          let total = 0;
-
-          listTanggal = item.tanggal_invoices.map((tanggal) => {
-            return dayjs(tanggal).format("DD/MM/YYYY");
-          });
-
-          let countNoPajak = 0;
-          listNoPajak = item.nomer_seri_pajak.map((nomer) => {
-            return nomer === null ? (countNoPajak -= 1) : (countNoPajak += 1);
-          });
-
-          // eslint-disable-next-line array-callback-return
-          item.nilai_invoices.map((nilai) => {
-            total += nilai;
-          });
-          return {
-            No: index + 1,
-            Supplier: item.vendor.nama,
-            "Tipe Penagihan": item.tipe_penagihan,
-            "No Purchase Order": item.nomer_po,
-            "Tanggal PO": dayjs(item.tanggal_po).format("DD/MM/YYYY"),
-            "No Delivery Order": item.nomer_do,
-            "Delivery Area": item.delivery_area,
-            "No Invoice": item.nomer_invoices.toString(),
-            "Tanggal Invoice": listTanggal[0],
-            "Nilai Invoice": total.toFixed(2),
-            "Termasuk Pajak": item.is_pajak === 0 ? "Ya" : "Tidak",
-            "No Faktur Pajak":
-              countNoPajak === listNoPajak.length ? listNoPajak.toString() : "",
-            "Periode Dari":
-              item.start_date_periode !== null ? item.start_date_periode : "",
-            "Periode Ke":
-              item.end_date_periode !== null ? item.end_date_periode : "",
-            Status: item.status,
-          };
-        });
-        setData(customeHeaders);
         setListPenagihan(data.data);
       })
       .catch((err) => {
