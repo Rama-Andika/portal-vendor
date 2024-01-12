@@ -1,6 +1,5 @@
 import { BsBuildings } from "react-icons/bs";
 import { useStateContext } from "../../../contexts/ContextProvider";
-import Admin from "../../../layouts/Admin";
 import { MdPayments } from "react-icons/md";
 import { HiOutlineDocumentText } from "react-icons/hi";
 import {
@@ -31,9 +30,10 @@ import { FaCloudUploadAlt } from "react-icons/fa";
 import titleCase from "../../../components/functions/TitleCase";
 import GetBase64 from "../../../components/functions/GetBase64";
 import Cookies from "js-cookie";
+import accountingNumber from "../../../components/functions/AccountingNumber";
 
 const optionsTipePenagihan = [
-  { value: "beli_putus", label: "Beli Putus", key: 0 },
+  { value: "beli putus", label: "Beli Putus", key: 0 },
   { value: "konsinyasi", label: "Konsinyasi", key: 1 },
 ];
 const optionsDeliveryArea = [
@@ -98,7 +98,7 @@ const Penagihan = () => {
   const [activeStep, setActiveStep] = useState(0);
 
   const [tipePenagihan, setTipePenagihan] = useState({
-    value: "beli_putus",
+    value: "beli putus",
     label: "Beli Putus",
     key: 0,
   });
@@ -186,7 +186,7 @@ const Penagihan = () => {
 
           setTipePenagihan({
             value: data.tipe_penagihan,
-            label: titleCase(data.tipe_penagihan, "_"),
+            label: titleCase(data.tipe_penagihan),
           });
           setNomerPo(data.nomer_po.split("PO")[1]);
           setTanggalPo(dayjs(data.tanggal_po));
@@ -202,7 +202,7 @@ const Penagihan = () => {
             return { value: dayjs(tanggal) };
           });
           const listNilaiInvoice = data.nilai_invoices.map((nilai) => {
-            return { value: nilai.toString() };
+            return { value:  accountingNumber(nilai.toString()) };
           });
 
           let arrayInvoiceTambahan = [];
@@ -248,6 +248,7 @@ const Penagihan = () => {
   };
 
   const handleNext = () => {
+
     let countNomerInvoice = 0;
     let countTanggalInvoice = 0;
     let countNilaiInvoice = 0;
@@ -269,7 +270,8 @@ const Penagihan = () => {
 
     // eslint-disable-next-line array-callback-return
     nilaiInvoice.map((nilai) => {
-      if (nilai.value.trim().length > 0) {
+      const value = nilai.value.replace(/\./g,"").split(",").join(".")
+      if (nilai.value.trim().length > 0 && !isNaN(value)) {
         countNilaiInvoice += 1;
       }
     });
@@ -340,7 +342,8 @@ const Penagihan = () => {
 
     // eslint-disable-next-line array-callback-return
     nilaiInvoice.map((nilai) => {
-      if (nilai.value.trim().length > 0) {
+      const value = nilai.value.replace(/\./g,"").split(",").join(".")
+      if (nilai.value.trim().length > 0 && !isNaN(value)) {
         countNilaiInvoice += 1;
       }
     });
@@ -551,7 +554,7 @@ const Penagihan = () => {
 
     setNilaiInvoice((s) => {
       const newArr = s.slice();
-      newArr[index].value = e.target.validity.valid ? e.target.value : "";
+      newArr[index].value = accountingNumber(e.target.value.split(".").join(""))
 
       return newArr;
     });
@@ -660,6 +663,36 @@ const Penagihan = () => {
         ];
       });
     }
+  };
+
+  const deleteInput = () => {
+    setNomerInvoice((array) => {
+      return array.filter((_, i) => i !== nomerInvoice.length - 1);
+    });
+
+    setNilaiInvoice((array) => {
+      return array.filter((_, i) => i !== nilaiInvoice.length - 1);
+    });
+
+    setTanggalInvoice((array) => {
+      return array.filter((_, i) => i !== tanggalInvoice.length - 1);
+    });
+
+    setTanggalInvoice2((array) => {
+      return array.filter((_, i) => i !== tanggalInvoice2.length - 1);
+    });
+
+    setInvoiceTambahan((array) => {
+      return array.filter((_, i) => i !== invoiceTambahan.length - 1);
+    });
+
+    setFakturPajakTambahan((array) => {
+      return array.filter((_, i) => i !== fakturPajakTambahan.length - 1);
+    });
+
+    setNomerSeriFakturPajak((array) => {
+      return array.filter((_, i) => i !== nomerSeriFakturPajak.length - 1);
+    });
   };
 
   // const addInvoiceTambahan = () => {
@@ -849,9 +882,9 @@ const Penagihan = () => {
 
     // eslint-disable-next-line array-callback-return
     const nilaiInvoiceList = nilaiInvoice.map((nilai) => {
-      if (nilai.value.trim().length > 0) {
-        return parseFloat(nilai.value);
-      }
+      const value = nilai.value.replace(/\./g,"").split(",").join(".")
+
+        return parseFloat(value);
     });
 
     // eslint-disable-next-line array-callback-return
@@ -998,9 +1031,9 @@ const Penagihan = () => {
 
     // eslint-disable-next-line array-callback-return
     const nilaiInvoiceList = nilaiInvoice.map((nilai) => {
-      if (nilai.value.trim().length > 0) {
-        return parseFloat(nilai.value);
-      }
+      const value = nilai.value.replace(/\./g,"").split(",").join(".")
+
+        return parseFloat(value);
     });
 
     // eslint-disable-next-line array-callback-return
@@ -1148,9 +1181,12 @@ const Penagihan = () => {
 
     // eslint-disable-next-line array-callback-return
     const nilaiInvoiceList = nilaiInvoice.map((nilai) => {
-      if (nilai.value.trim().length > 0) {
-        return parseFloat(nilai.value);
-      }
+      const value = nilai.value.replace(/\./g,"").split(",").join(".")
+
+        return parseFloat(value);
+      // if (nilai.value.trim().length > 0) {
+      //   return parseFloat(nilai.value);
+      // }
     });
 
     // eslint-disable-next-line array-callback-return
@@ -1292,9 +1328,9 @@ const Penagihan = () => {
 
     // eslint-disable-next-line array-callback-return
     const nilaiInvoiceList = nilaiInvoice.map((nilai) => {
-      if (nilai.value.trim().length > 0) {
-        return parseFloat(nilai.value);
-      }
+      const value = nilai.value.replace(/\./g,"").split(",").join(".")
+
+        return parseFloat(value);
     });
 
     // eslint-disable-next-line array-callback-return
@@ -1419,7 +1455,7 @@ const Penagihan = () => {
 
   const steps = ["Tipe Penagihan", "Billing", "Dokumen"];
   return (
-    <Admin>
+    <>
       <div
         className={`${
           screenSize < 768 ? "px-5 pt-20" : "px-10"
@@ -1465,6 +1501,7 @@ const Penagihan = () => {
                         <div>:</div>
                         <div className="w-[70%]">
                           <Select
+                          isDisabled={true}
                             value={tipePenagihan}
                             onChange={onChangeTipePenagihan}
                             className="whitespace-nowrap"
@@ -1648,16 +1685,31 @@ const Penagihan = () => {
                                 </div>
                               </div>
                             ))}
-                            <div
-                              onClick={addInput}
-                              className={`py-1 px-4 rounded-sm shadow-sm text-white bg-[#305496]  w-fit ${
-                                nomerInvoice.length === 4
-                                  ? "cursor-not-allowed"
-                                  : "cursor-pointer"
-                              } `}
-                            >
-                              Add row
-                            </div>
+                            <div className="flex items-center gap-5">
+                                {nomerInvoice.length > 1 && (
+                                  <div
+                                    onClick={deleteInput}
+                                    className={`py-1 px-4 rounded-sm shadow-sm text-white bg-red-500  w-fit ${
+                                      nomerInvoice.length === 4
+                                        ? "cursor-not-allowed"
+                                        : "cursor-pointer"
+                                    } `}
+                                  >
+                                    Delete row
+                                  </div>
+                                )}
+
+                                <div
+                                  onClick={addInput}
+                                  className={`py-1 px-4 rounded-sm shadow-sm text-white bg-[#305496]  w-fit ${
+                                    nomerInvoice.length === 4
+                                      ? "cursor-not-allowed"
+                                      : "cursor-pointer"
+                                  } `}
+                                >
+                                  Add row
+                                </div>
+                              </div>
                           </div>
 
                           <div className="mb-3">
@@ -1715,15 +1767,8 @@ const Penagihan = () => {
                                     <div>
                                       <input
                                         id={i}
-                                        type="number"
-                                        min={0}
-                                        max={999999999999}
-                                        step={0.01}
-                                        onKeyDown={(evt) =>
-                                          (evt.key === "e" ||
-                                            evt.key === "-") &&
-                                          evt.preventDefault()
-                                        }
+                                        type="text"
+                                      
                                         value={nilaiInvoice[i].value}
                                         onChange={onChangeNilaiInvoice}
                                         className="max-[821px]:w-[208px] w-[246.4px] h-[40px] border border-slate-300 rounded-sm focus:border focus:border-[#0077b6] bg-[#ddebf7]"
@@ -1981,16 +2026,31 @@ const Penagihan = () => {
                                 </div>
                               </div>
                             ))}
-                            <div
-                              onClick={addInput}
-                              className={`py-1 px-4 rounded-sm shadow-sm text-white bg-[#305496]  w-fit ${
-                                nomerInvoice.length === 4
-                                  ? "cursor-not-allowed"
-                                  : "cursor-pointer"
-                              } `}
-                            >
-                              Add row
-                            </div>
+                            <div className="flex items-center gap-5">
+                                {nomerInvoice.length > 1 && (
+                                  <div
+                                    onClick={deleteInput}
+                                    className={`py-1 px-4 rounded-sm shadow-sm text-white bg-red-500  w-fit ${
+                                      nomerInvoice.length === 4
+                                        ? "cursor-not-allowed"
+                                        : "cursor-pointer"
+                                    } `}
+                                  >
+                                    Delete row
+                                  </div>
+                                )}
+
+                                <div
+                                  onClick={addInput}
+                                  className={`py-1 px-4 rounded-sm shadow-sm text-white bg-[#305496]  w-fit ${
+                                    nomerInvoice.length === 4
+                                      ? "cursor-not-allowed"
+                                      : "cursor-pointer"
+                                  } `}
+                                >
+                                  Add row
+                                </div>
+                              </div>
                           </div>
 
                           <div className="mb-10">
@@ -2012,14 +2072,8 @@ const Penagihan = () => {
                                   <div>
                                     <input
                                       id={i}
-                                      type="number"
-                                      min={0}
-                                      max={999999999999}
-                                      step={0.01}
-                                      onKeyDown={(evt) =>
-                                        (evt.key === "e" || evt.key === "-") &&
-                                        evt.preventDefault()
-                                      }
+                                      type="text"
+                                 
                                       value={nilaiInvoice[i].value}
                                       onChange={onChangeNilaiInvoice}
                                       className="max-[821px]:w-[208px] w-[246.4px] h-[40px] border border-slate-300 rounded-sm focus:border focus:border-[#0077b6] bg-[#fff2cc]"
@@ -3128,7 +3182,7 @@ const Penagihan = () => {
                   {activeStep === steps.length - 1 ? (
                     <button
                       onClick={
-                        tipePenagihan.value === "beli_putus"
+                        tipePenagihan.value === "beli putus"
                           ? saveDraft
                           : saveDraft2
                       }
@@ -3152,7 +3206,7 @@ const Penagihan = () => {
                   {activeStep === steps.length - 1 ? (
                     <button
                       onClick={
-                        tipePenagihan.value === "beli_putus"
+                        tipePenagihan.value === "beli putus"
                           ? handleNext
                           : handleNext2
                       }
@@ -3163,7 +3217,7 @@ const Penagihan = () => {
                   ) : (
                     <button
                       onClick={
-                        tipePenagihan.value === "beli_putus"
+                        tipePenagihan.value === "beli putus"
                           ? handleNext
                           : handleNext2
                       }
@@ -3189,10 +3243,11 @@ const Penagihan = () => {
                           <form action="">
                             <div className="flex flex-col gap-2">
                               <div>
-                                <label htmlFor="">Penagihan</label>
+                                <label htmlFor="">Tipe Penagihan</label>
                               </div>
                               <div>
                                 <Select
+                                isDisabled={true}
                                   value={tipePenagihan}
                                   onChange={onChangeTipePenagihan}
                                   className="whitespace-nowrap"
@@ -3418,16 +3473,31 @@ const Penagihan = () => {
                                       </div>
                                     </div>
                                   ))}
+                                  <div className="flex items-center justify-between max-[357px]:flex-col max-[357px]:items-start max-[357px]:gap-2">
+                                {nomerInvoice.length > 1 && (
                                   <div
-                                    onClick={addInput}
-                                    className={`py-1 px-4 rounded-sm shadow-sm text-white bg-[#305496]  w-fit ${
+                                    onClick={deleteInput}
+                                    className={`py-1 px-4 text-center rounded-sm shadow-sm text-white bg-red-500 w-fit max-[357px]:w-full ${
                                       nomerInvoice.length === 4
                                         ? "cursor-not-allowed"
                                         : "cursor-pointer"
                                     } `}
                                   >
-                                    Add row
+                                    Delete row
                                   </div>
+                                )}
+
+                                <div
+                                  onClick={addInput}
+                                  className={`py-1 px-4 text-center rounded-sm shadow-sm text-white bg-[#305496]  w-fit max-[357px]:w-full ${
+                                    nomerInvoice.length === 4
+                                      ? "cursor-not-allowed"
+                                      : "cursor-pointer"
+                                  } `}
+                                >
+                                  Add row
+                                </div>
+                              </div>
                                 </div>
 
                                 <div className="mb-10">
@@ -3488,15 +3558,8 @@ const Penagihan = () => {
                                           <div>
                                             <input
                                               id={i}
-                                              type="number"
-                                              min={0}
-                                              max={999999999999}
-                                              step={0.01}
-                                              onKeyDown={(evt) =>
-                                                (evt.key === "e" ||
-                                                  evt.key === "-") &&
-                                                evt.preventDefault()
-                                              }
+                                              type="text"
+                                      
                                               value={nilaiInvoice[i].value}
                                               onChange={onChangeNilaiInvoice}
                                               className="max-[821px]:w-full w-[246.4px] h-[40px] border border-slate-300 rounded-sm focus:border focus:border-[#0077b6] bg-[#ddebf7]"
@@ -3777,16 +3840,31 @@ const Penagihan = () => {
                                       </div>
                                     </div>
                                   ))}
+                                  <div className="flex items-center justify-between max-[357px]:flex-col max-[357px]:items-start max-[357px]:gap-2">
+                                {nomerInvoice.length > 1 && (
                                   <div
-                                    onClick={addInput}
-                                    className={`py-1 px-4 rounded-sm shadow-sm text-white bg-[#305496]  w-fit ${
+                                    onClick={deleteInput}
+                                    className={`py-1 px-4 text-center rounded-sm shadow-sm text-white bg-red-500 w-fit max-[357px]:w-full ${
                                       nomerInvoice.length === 4
                                         ? "cursor-not-allowed"
                                         : "cursor-pointer"
                                     } `}
                                   >
-                                    Add row
+                                    Delete row
                                   </div>
+                                )}
+
+                                <div
+                                  onClick={addInput}
+                                  className={`py-1 px-4 text-center rounded-sm shadow-sm text-white bg-[#305496]  w-fit max-[357px]:w-full ${
+                                    nomerInvoice.length === 4
+                                      ? "cursor-not-allowed"
+                                      : "cursor-pointer"
+                                  } `}
+                                >
+                                  Add row
+                                </div>
+                              </div>
                                 </div>
 
                                 <div className="mb-10 mt-10">
@@ -3808,15 +3886,8 @@ const Penagihan = () => {
                                         <div>
                                           <input
                                             id={i}
-                                            type="number"
-                                            min={0}
-                                            max={999999999999}
-                                            step={0.01}
-                                            onKeyDown={(evt) =>
-                                              (evt.key === "e" ||
-                                                evt.key === "-") &&
-                                              evt.preventDefault()
-                                            }
+                                            type="text"
+                                       
                                             value={nilaiInvoice[i].value}
                                             onChange={onChangeNilaiInvoice}
                                             className="max-[821px]:w-full w-[246.4px] h-[40px] border border-slate-300 rounded-sm focus:border focus:border-[#0077b6] bg-[#fff2cc]"
@@ -3965,7 +4036,7 @@ const Penagihan = () => {
                                   <button
                                     disabled={activeStep === 0}
                                     onClick={
-                                      tipePenagihan.value === "beli_putus"
+                                      tipePenagihan.value === "beli putus"
                                         ? saveDraft
                                         : saveDraft2
                                     }
@@ -3989,7 +4060,7 @@ const Penagihan = () => {
 
                                 <button
                                   onClick={
-                                    tipePenagihan.value === "beli_putus"
+                                    tipePenagihan.value === "beli putus"
                                       ? handleNext
                                       : handleNext2
                                   }
@@ -4006,7 +4077,7 @@ const Penagihan = () => {
                                   <button
                                     disabled={activeStep === 0}
                                     onClick={
-                                      tipePenagihan.value === "beli_putus"
+                                      tipePenagihan.value === "beli putus"
                                         ? saveDraft
                                         : saveDraft2
                                     }
@@ -4030,7 +4101,7 @@ const Penagihan = () => {
 
                                 <button
                                   onClick={
-                                    tipePenagihan.value === "beli_putus"
+                                    tipePenagihan.value === "beli putus"
                                       ? handleNext
                                       : handleNext2
                                   }
@@ -4957,7 +5028,7 @@ const Penagihan = () => {
                                     <button
                                       disabled={activeStep === 0}
                                       onClick={
-                                        tipePenagihan.value === "beli_putus"
+                                        tipePenagihan.value === "beli putus"
                                           ? saveDraft
                                           : saveDraft2
                                       }
@@ -4981,7 +5052,7 @@ const Penagihan = () => {
 
                                   <button
                                     onClick={
-                                      tipePenagihan.value === "beli_putus"
+                                      tipePenagihan.value === "beli putus"
                                         ? handleNext
                                         : handleNext2
                                     }
@@ -4998,7 +5069,7 @@ const Penagihan = () => {
                                     <button
                                       disabled={activeStep === 0}
                                       onClick={
-                                        tipePenagihan.value === "beli_putus"
+                                        tipePenagihan.value === "beli putus"
                                           ? saveDraft
                                           : saveDraft2
                                       }
@@ -5022,7 +5093,7 @@ const Penagihan = () => {
 
                                   <button
                                     onClick={
-                                      tipePenagihan.value === "beli_putus"
+                                      tipePenagihan.value === "beli putus"
                                         ? handleNext
                                         : handleNext2
                                     }
@@ -5066,7 +5137,7 @@ const Penagihan = () => {
       >
         <CircularProgress color="inherit" />
       </Backdrop>
-    </Admin>
+    </>
   );
 };
 

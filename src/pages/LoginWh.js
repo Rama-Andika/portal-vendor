@@ -72,7 +72,7 @@ const LoginWh = () => {
 
   useEffect(() => {
     Cookies.remove("admin_token");
-    Cookies.remove("admin_token")
+    Cookies.remove("admin_id")
   }, []);
 
   return (
@@ -122,7 +122,7 @@ const LoginWh = () => {
                   onClick={() => setShowPassword((prev) => !prev)}
                   className="cursor-pointer absolute top-[50%] right-[10px] translate-y-[-50%]"
                 >
-                  {showPassword ? <FaEyeSlash /> : <FaEye />}{" "}
+                  {showPassword ? <FaEye /> : <FaEyeSlash />}{" "}
                 </div>
               </div>
             </div>

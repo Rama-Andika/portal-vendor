@@ -2,10 +2,10 @@ import {
   Backdrop,
   CircularProgress,
   Fade,
-  Modal
+  Modal,
+  Pagination,
 } from "@mui/material";
 import { useStateContext } from "../../contexts/ContextProvider";
-import AdminWhSmith from "../../layouts/AdminWhSmith";
 
 import { useEffect, useState } from "react";
 import titleCase from "../../components/functions/TitleCase";
@@ -14,13 +14,23 @@ import toast from "react-hot-toast";
 import { useNavigate } from "react-router-dom";
 import { PiFileZipDuotone } from "react-icons/pi";
 import isEmpty from "../../components/functions/CheckEmptyObject";
+import { IoMdEye } from "react-icons/io";
+import { HiMiniPencil } from "react-icons/hi2";
 
 const api = process.env.REACT_APP_BASEURL;
 const apiExport = process.env.REACT_APP_EXPORT_URL;
 const VendorList = () => {
   const { screenSize } = useStateContext();
   // eslint-disable-next-line no-unused-vars
+
+  //pagination state
+  const [, setTotal] = useState(0);
+  const [count, setCount] = useState(0);
+  const [limit, setLimit] = useState(0);
+  const [start, setStart] = useState(0);
   const [page, setPage] = useState(1);
+  //end pagination state
+
   const [open, setOpen] = useState(false);
   // eslint-disable-next-line no-unused-vars
   const [term, setTerm] = useState("");
@@ -38,11 +48,6 @@ const VendorList = () => {
   const handleOpen = () => setOpen(true);
   const handleClose = () => setOpen(false);
 
-  // eslint-disable-next-line no-unused-vars
-  const onChangePagination = (e, value) => {
-    setPage(value);
-  };
-
   // const onChangeTerm = (e) => {
   //   e.target.validity.valid ? setTerm(e.target.value) : setTerm("");
   // };
@@ -58,11 +63,48 @@ const VendorList = () => {
       .then((response) => response.json())
       .then((res) => {
         setOpenBackdrop(false);
+        setTotal(res.total);
+        setCount(Math.round(res.total / res.limit));
+        setLimit(res.limit);
         setListVendor(res.data);
       })
       .catch((err) => {
         setOpenBackdrop(false);
       });
+  };
+
+  // eslint-disable-next-line no-unused-vars
+  const onChangePagination = (e, value) => {
+    let parameter = {};
+    let limitTemp = limit;
+
+    if (value > page) {
+      limitTemp = limitTemp * value - limit;
+      parameter = { start: limitTemp };
+    } else {
+      limitTemp = limitTemp * value - limit;
+      parameter = { start: limitTemp };
+    }
+
+    if (name.trim().length > 0) {
+      parameter["name"] = name;
+    }
+
+    if (code.trim().length > 0) {
+      parameter["code"] = code;
+    }
+
+    if (email.trim().length > 0) {
+      parameter["email"] = email;
+    }
+
+    if (location.trim().length > 0) {
+      parameter["location"] = location;
+    }
+
+    setStart(limitTemp);
+    fetchData(parameter);
+    setPage(value);
   };
 
   useEffect(() => {
@@ -89,12 +131,28 @@ const VendorList = () => {
     fetchData(parameter);
   };
 
-  const onClickEdit = (item) => {
+  const onClickView = (item) => {
     if (Cookies.get("admin_token") !== undefined) {
       setVendorDetail(item);
       handleOpen();
     } else {
-      navigate("/wh-smith");
+      navigate("/admin");
+      toast.error("Silahkan Login Terlebih Dahulu!", {
+        position: "top-right",
+        style: {
+          borderRadius: "10px",
+          background: "#333",
+          color: "#fff",
+        },
+      });
+    }
+  };
+
+  const onClickEdit = (item) => {
+    if (Cookies.get("admin_token") !== undefined) {
+      navigate("/admin/vendor/edit", { state: { vendor_id: item.id } });
+    } else {
+      navigate("/admin");
       toast.error("Silahkan Login Terlebih Dahulu!", {
         position: "top-right",
         style: {
@@ -110,7 +168,7 @@ const VendorList = () => {
     if (Cookies.get("admin_token") !== undefined) {
       window.location = `${apiExport}fin/transactionact/portalvendorinvoicedownload.jsp?oid=${id}`;
     } else {
-      navigate("/wh-smith");
+      navigate("/admin");
       toast.error("Silahkan Login Terlebih Dahulu!", {
         position: "top-right",
         style: {
@@ -126,7 +184,7 @@ const VendorList = () => {
   //   handleOpen();
   // };
   return (
-    <AdminWhSmith>
+    <>
       <div
         className={`${
           screenSize < 768 ? "px-5 pt-20" : "px-10 pt-10"
@@ -134,7 +192,7 @@ const VendorList = () => {
       >
         <div className="mb-20">Vendor List</div>
         <div className="mb-5 w-[70%] max-[638px]:w-full">
-          <div className="mb-5 text-slate-400">Parameter Pencarian</div>
+          <div className="mb-5 text-slate-400">Searching Parameter</div>
           <div>
             <form onSubmit={(e) => onSearch(e)}>
               <div className="flex gap-5 items-center mb-5">
@@ -151,7 +209,7 @@ const VendorList = () => {
                   <div className="w-full relative">
                     <input
                       value={name}
-                      onChange={(e) => setName(e.target.value.trim())}
+                      onChange={(e) => setName(e.target.value)}
                       type="text"
                       name=""
                       id=""
@@ -172,7 +230,7 @@ const VendorList = () => {
                   <div className="w-full relative">
                     <input
                       value={code}
-                      onChange={(e) => setCode(e.target.value.trim())}
+                      onChange={(e) => setCode(e.target.value)}
                       type="text"
                       name=""
                       id=""
@@ -195,7 +253,7 @@ const VendorList = () => {
                   <div className="w-full relative">
                     <input
                       value={location}
-                      onChange={(e) => setLocation(e.target.value.trim())}
+                      onChange={(e) => setLocation(e.target.value)}
                       type="text"
                       name=""
                       id=""
@@ -236,7 +294,7 @@ const VendorList = () => {
             </form>
           </div>
         </div>
-        <div className="w-full overflow-x-auto shadow-md text-[14px]">
+        <div className="w-full overflow-auto max-h-[400px] shadow-md text-[14px]">
           <table className="w-full table-monitoring">
             <thead>
               <tr className="text-center whitespace-nowrap border-2 bg-[#eaf4f4]">
@@ -248,7 +306,6 @@ const VendorList = () => {
                 <td className="p-5 border">Location</td>
                 <td className="p-5 border">Contact Person</td>
                 <td className="p-5 border">Email</td>
-               
               </tr>
             </thead>
             <tbody>
@@ -261,21 +318,26 @@ const VendorList = () => {
                     <td className="p-5 border">
                       <div className="flex gap-2 items-center justify-center">
                         <div
-                          className={`cursor-pointer py-2 px-5 bg-gray-200 rounded-md`}
+                          className={`cursor-pointer rounded-md`}
+                          onClick={() => onClickView(item)}
+                        >
+                          <IoMdEye />
+                        </div>
+                        <div
+                          className={`cursor-pointer rounded-md`}
                           onClick={() => onClickEdit(item)}
                         >
-                          Detail
+                          <HiMiniPencil />
                         </div>
                       </div>
                     </td>
-                    <td className="p-5 border">{index + 1}</td>
+                    <td className="p-5 border">{start + index + 1}</td>
                     <td className="text-left p-5 border">{item.nama}</td>
                     <td className="p-5 border">{item.kode}</td>
                     <td className="p-5 border">{item.term_pembayaran}</td>
                     <td className="p-5 border">{titleCase(item.provinsi)}</td>
                     <td className="p-5 border">{item.no_wa_purchase_order}</td>
                     <td className="p-5 border">{item.email_korespondensi}</td>
-               
                   </tr>
                 ))
               ) : (
@@ -288,10 +350,10 @@ const VendorList = () => {
             </tbody>
           </table>
         </div>
-        {/* {listVendor.length > 0 && (
+        {listVendor.length > 0 && (
           <div className="mt-10">
             <Pagination
-              count={20}
+              count={count}
               page={page}
               onChange={onChangePagination}
               showFirstButton
@@ -299,9 +361,9 @@ const VendorList = () => {
               size="small"
             />
           </div>
-        )} */}
+        )}
 
-<div>
+        <div>
           <Modal
             aria-labelledby="transition-modal-title"
             aria-describedby="transition-modal-description"
@@ -485,9 +547,7 @@ const VendorList = () => {
                     className={` max-[402px]:flex-col items-center max-[402px]:items-start gap-2 mt-5 ${
                       vendorDetail.status === "APPROVED" ? "hidden" : "flex"
                     } `}
-                  >
-                    
-                  </div>
+                  ></div>
 
                   <div className="mt-5 flex max-[479px]:flex-col max-[479px]:items-start items-center gap-2 text-center justify-between">
                     <div
@@ -496,7 +556,6 @@ const VendorList = () => {
                     >
                       Back
                     </div>
-                    
                   </div>
                 </div>
               )}
@@ -513,7 +572,7 @@ const VendorList = () => {
       >
         <CircularProgress color="inherit" />
       </Backdrop>
-    </AdminWhSmith>
+    </>
   );
 };
 

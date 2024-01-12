@@ -1,6 +1,5 @@
 import { useStateContext } from "../../contexts/ContextProvider";
-import Admin from "../../layouts/Admin";
-import vendorImg from "../../assets/images/vendor.png";
+import vendorImg from "../../assets/images/company_landscape.jpg";
 import { useEffect, useRef, useState } from "react";
 import Select from "react-select";
 //import { MdKeyboardArrowDown } from "react-icons/md";
@@ -8,12 +7,14 @@ import ApiDataWilayahIndonesia from "../../api/ApiDataWilayahIndonesia";
 import { PiFileZipDuotone, PiWarningCircleLight } from "react-icons/pi";
 import toast from "react-hot-toast";
 import Cookies from "js-cookie";
-import { Backdrop, CircularProgress } from "@mui/material";
+import { Backdrop, CircularProgress, Fade, Modal } from "@mui/material";
 import { FaCloudUploadAlt } from "react-icons/fa";
 import titleCase from "../../components/functions/TitleCase";
 import GetBase64 from "../../components/functions/GetBase64";
 import { useNavigate } from "react-router-dom";
 import isEmpty from "../../components/functions/CheckEmptyObject";
+import { Viewer } from "@react-pdf-viewer/core";
+import "@react-pdf-viewer/core/lib/styles/index.css";
 
 const options = [
   { value: "cv", label: "CV", key: 1 },
@@ -56,6 +57,8 @@ const Profile = () => {
   const [npwp, setNpwp] = useState("");
   const [statusPajak, setStatusPajak] = useState({});
   const [status, setStatus] = useState("");
+  const [reason, setReason] = useState("");
+  const [vendorId, setVendorId] = useState("");
   const [website, setWebsite] = useState("");
   const [namaPemilikPerusahaan, setNamaPemilikPerusahaan] = useState("");
   const [namaPenanggungJawab, setNamaPenanggungJawab] = useState("");
@@ -81,24 +84,50 @@ const Profile = () => {
   const [marketingFee, setMarketingFee] = useState("");
   const [listingFee, setListingFee] = useState("");
   const [promotionFund, setPromotionFund] = useState("");
+  const [npwpFileUpload, setNpwpFileUpload] = useState("");
+  const [ktpPemilikFileUpload, setKtpPemilikFileUpload] = useState("");
+  const [ktpPenanggungJawabFileUpload, setKtpPenanggungJawabFileUpload] =
+    useState("");
+  const [spkpFileUpload, setSpkpFileUpload] = useState("");
+  const [nibFileUpload, setNibFileUpload] = useState("");
+  const [ssPerusahaanFileUpload, setSsPerusahaanFileUpload] = useState("");
+  const [sertifBpomFileUpload, setSertifBpomFileUpload] = useState("");
 
   const [npwpFile, setNpwpFile] = useState(null);
+  const [npwpFilePreview, setNpwpFilePreview] = useState(null);
+
   const [ktpPemilikFile, setKtpPemilikFIle] = useState(null);
+  const [ktpPemilikFilePreview, setKtpPemilikFilePreview] = useState(null);
+
   const [ktpPenanggungJawabFile, setKtpPenanggungJawabFile] = useState(null);
+  const [ktpPenanggungJawabFilePreview, setKtpPenanggungJawabFilePreview] =
+    useState(null);
+
   const [spkpFile, setSpkpFile] = useState(null);
+  const [spkpFilePreview, setSpkpFilePreview] = useState(null);
+
   const [nibFile, setNibFile] = useState(null);
+  const [nibFilePreview, setNibFilePreview] = useState(null);
+
   const [ssPerusahaanFile, setSsPerusahaanFile] = useState(null);
+  const [ssPerusahaanFilePreview, setSsPerusahaanFilePreview] = useState(null);
+
   const [sertifBpomFile, setSertifBpomFile] = useState(null);
+  const [sertifBpomFilePreview, setSertifBpomFilePreview] = useState(null);
 
   const id = Cookies.get("vendor_id");
 
   const navigate = useNavigate();
   const [isError, setIsError] = useState(false);
   const [message, setMessage] = useState("");
-  const [loading, setLoading] = useState(false)
+  const [loading, setLoading] = useState(false);
 
   const company_section = useRef();
   const [openBackdrop, setOpenBackdrop] = useState(false);
+
+  const [open, setOpen] = useState(false);
+  const handleOpen = () => setOpen(true);
+  const handleClose = () => setOpen(false);
 
   const customeStyles = {
     control: (baseStyles, state) => ({
@@ -204,6 +233,30 @@ const Profile = () => {
             data.promotion_found === 0 ? "" : data.promotion_found
           );
           setStatus(data.status);
+          setReason(data.reason);
+
+          setVendorId(data.vendor_id);
+          if (data.VENDOR_NPWP !== undefined) {
+            setNpwpFileUpload(data.VENDOR_NPWP);
+          }
+          if (data.VENDOR_PJ !== undefined) {
+            setKtpPenanggungJawabFileUpload(data.VENDOR_PJ);
+          }
+          if (data.VENDOR_NIB !== undefined) {
+            setNibFileUpload(data.VENDOR_NIB);
+          }
+          if (data.VENDOR_BPOM !== undefined) {
+            setSertifBpomFileUpload(data.VENDOR_BPOM);
+          }
+          if (data.VENDOR_REKENING !== undefined) {
+            setSsPerusahaanFileUpload(data.VENDOR_REKENING);
+          }
+          if (data.VENDOR_SPKP !== undefined) {
+            setSpkpFileUpload(data.VENDOR_SPKP);
+          }
+          if (data.VENDOR_KTP !== undefined) {
+            setKtpPemilikFileUpload(data.VENDOR_KTP);
+          }
         } else {
           setOpenBackdrop(false);
         }
@@ -216,9 +269,8 @@ const Profile = () => {
   const updateVendor = async () => {
     setOpenBackdrop(true);
     let isSave = false;
-    setLoading(true)
+    setLoading(true);
     if (
-      kode.trim().length > 0 &&
       namaPerusahaan.trim().length > 0 &&
       alamat.trim().length > 0 &&
       !isEmpty(provinsi) &&
@@ -243,25 +295,23 @@ const Profile = () => {
       !isEmpty(metodePengiriman) &&
       pengembalianBarang.toString().length > 0
     ) {
-      
       fetch(`${api}api/portal-vendor/vendor/validation`, {
         method: "POST",
         body: JSON.stringify({
           id: id,
-          name: namaPerusahaan.trim()
+          name: namaPerusahaan.trim(),
         }),
       })
         .then((response) => response.json())
         .then(async (res) => {
           setOpenBackdrop(false);
           if (!res.data) {
-            setLoading(false)
+            setLoading(false);
             setOpenBackdrop(false);
             isSave = false;
             setIsError(true);
-            setMessage("Nama Perusahaan atau kode Sudah ada!");
+            setMessage("Nama Perusahaan Sudah ada!");
           } else {
-            
             if (statusPajak.value === "PKP") {
               if (npwp.trim().length === 20) {
                 isSave = true;
@@ -332,15 +382,21 @@ const Profile = () => {
                 listing_fee: listingFee.trim(),
                 promotion_found: promotionFund,
                 file_npwp: npwpFile !== null ? npwpFile : null,
-                file_ktp_pemilik: ktpPemilikFile !== null ? ktpPemilikFile : null,
+                file_ktp_pemilik:
+                  ktpPemilikFile !== null ? ktpPemilikFile : null,
                 file_ktp_penanggung_jawab:
-                  ktpPenanggungJawabFile !== null ? ktpPenanggungJawabFile : null,
+                  ktpPenanggungJawabFile !== null
+                    ? ktpPenanggungJawabFile
+                    : null,
                 file_spkp: spkpFile !== null ? spkpFile : null,
                 file_nib: nibFile !== null ? nibFile : null,
                 file_screenshot_rekening:
                   ssPerusahaanFile !== null ? ssPerusahaanFile : null,
-                file_sertikasi_bpom: sertifBpomFile !== null ? sertifBpomFile : null,
+                file_sertikasi_bpom:
+                  sertifBpomFile !== null ? sertifBpomFile : null,
                 status: status,
+                reason: reason,
+                vendor_id: vendorId,
               };
               if (Cookies.get("token") !== undefined) {
                 await fetch(`${api}api/portal-vendor/sign-up`, {
@@ -372,10 +428,10 @@ const Profile = () => {
                         },
                       });
                     }
-                    setLoading(false)
+                    setLoading(false);
                   })
                   .catch((err) => {
-                    setLoading(false)
+                    setLoading(false);
                     fetchVendor();
                     setOpenBackdrop(false);
                     toast.error("Update Failed!", {
@@ -402,22 +458,18 @@ const Profile = () => {
           }
         })
         .catch((err) => {
-          setLoading(false)
+          setLoading(false);
           setOpenBackdrop(false);
           setMessage("Data Belum Lengkap!");
           isSave = false;
           console.log(err);
         });
     } else {
-      setLoading(false)
+      setLoading(false);
       setOpenBackdrop(false);
       setIsError(true);
       setMessage("Data Belum Lengkap!");
     }
-
-
-
-    
   };
 
   useEffect(() => {
@@ -464,6 +516,7 @@ const Profile = () => {
   const onChangeNpwpFile = (e) => {
     if (e.target.files[0] !== undefined) {
       if (e.target.files[0].size <= 2000000) {
+        setNpwpFilePreview(URL.createObjectURL(e.target.files[0]));
         GetBase64(e.target.files[0])
           .then((result) => {
             setNpwpFile(result);
@@ -480,6 +533,7 @@ const Profile = () => {
   const onChangeKtpPemilikFile = (e) => {
     if (e.target.files[0] !== undefined) {
       if (e.target.files[0].size <= 2000000) {
+        setKtpPemilikFilePreview(URL.createObjectURL(e.target.files[0]));
         GetBase64(e.target.files[0])
           .then((result) => {
             setKtpPemilikFIle(result);
@@ -496,6 +550,9 @@ const Profile = () => {
   const onChangeKtpPenanggungJawabFile = (e) => {
     if (e.target.files[0] !== undefined) {
       if (e.target.files[0].size <= 2000000) {
+        setKtpPenanggungJawabFilePreview(
+          URL.createObjectURL(e.target.files[0])
+        );
         GetBase64(e.target.files[0])
           .then((result) => {
             setKtpPenanggungJawabFile(result);
@@ -512,6 +569,7 @@ const Profile = () => {
   const onChangeSpkpFile = (e) => {
     if (e.target.files[0] !== undefined) {
       if (e.target.files[0].size <= 2000000) {
+        setSpkpFilePreview(URL.createObjectURL(e.target.files[0]));
         GetBase64(e.target.files[0])
           .then((result) => {
             setSpkpFile(result);
@@ -528,6 +586,7 @@ const Profile = () => {
   const onChangeNibFile = (e) => {
     if (e.target.files[0] !== undefined) {
       if (e.target.files[0].size <= 2000000) {
+        setNibFilePreview(URL.createObjectURL(e.target.files[0]));
         GetBase64(e.target.files[0])
           .then((result) => {
             setNibFile(result);
@@ -544,6 +603,7 @@ const Profile = () => {
   const onChangeSsRekeningFile = (e) => {
     if (e.target.files[0] !== undefined) {
       if (e.target.files[0].size <= 2000000) {
+        setSsPerusahaanFilePreview(URL.createObjectURL(e.target.files[0]));
         GetBase64(e.target.files[0])
           .then((result) => {
             setSsPerusahaanFile(result);
@@ -560,6 +620,7 @@ const Profile = () => {
   const onChangeBpomFile = (e) => {
     if (e.target.files[0] !== undefined) {
       if (e.target.files[0].size <= 2000000) {
+        setSertifBpomFilePreview(URL.createObjectURL(e.target.files[0]));
         GetBase64(e.target.files[0])
           .then((result) => {
             setSertifBpomFile(result);
@@ -639,7 +700,7 @@ const Profile = () => {
     if (Cookies.get("token") !== undefined) {
       window.location = `${apiExport}fin/transactionact/portalvendorinvoicedownload.jsp?oid=${id}`;
     } else {
-      navigate("/wh-smith");
+      navigate("/admin");
       toast.error("Silahkan Login Terlebih Dahulu!", {
         position: "top-right",
         style: {
@@ -660,21 +721,30 @@ const Profile = () => {
   // };
 
   return (
-    <Admin>
+    <>
+      <div
+        className="mt-[62px] max-[497px]:mt-[80px] bg-cover bg-center w-full max-[497px]:h-[200px] h-[400px] 
+          font-bold  text-[24px] max-[497px]:text-[12px] tracking-wide relative "
+      >
+        <img
+          className="w-full h-full object-cover absolute top-0 left-0 opacity-75"
+          src={vendorImg}
+          alt=""
+        />
+        <div className=" absolute top-[50%] left-[50%] translate-x-[-50%] translate-y-[-50%] h-[100px] whitespace-pre-wrap overflow-hidden">
+          {namaPerusahaan}
+        </div>
+      </div>
       <div
         className={`${
-          screenSize < 768 ? "px-5 pt-20" : "px-10"
+          screenSize < 768 ? "px-2 pt-5" : "px-10"
         } pt-20 font-roboto `}
       >
         <div className="bg-white px-3">
           <div className="flex flex-col items-center gap-5">
-            <div
-              className="bg-cover bg-center w-[300px] max-[497px]:w-[200px] max-[497px]:h-[200px] h-[300px]"
-              style={{ backgroundImage: `url(${vendorImg})` }}
-            ></div>
             <div className="w-full">
-              <div className="mt-10">
-                <div className="bg-white mb-3 font-semibold">
+              <div className="mt-0">
+                <div className="bg-white mb-3 text-[24px] font-semibold shadow-md py-2 ps-1">
                   <div>Company</div>
                 </div>
                 <div
@@ -686,25 +756,46 @@ const Profile = () => {
                       {screenSize > 612 ? (
                         <>
                           <div className="flex gap-2 items-center mb-3 w-full">
-                            <div className="whitespace-nowrap flex">
+                            <div className=" flex">
                               <label htmlFor="" className="w-72">
                                 Status
                               </label>
                               <div>:</div>
                             </div>
-                            <div className="w-full relative">
-                              <input
-                                value={status}
-                                disabled
-                                type="text"
-                                name=""
-                                id=""
-                                className="bg-gray-200 w-full h-[36px] border border-slate-300 rounded-sm focus:border focus:border-[#0077b6]  "
-                              />
-                            </div>
+                            {status === "RE_REGISTER" ? (
+                              <div className="flex items-center gap-1">
+                                <div className="w-full relative">
+                                  <input
+                                    value={titleCase(status, "_")}
+                                    disabled
+                                    type="text"
+                                    name=""
+                                    id=""
+                                    className="bg-gray-200 w-full h-[36px] border border-slate-300 rounded-sm focus:border focus:border-[#0077b6]  "
+                                  />
+                                </div>
+                                <div
+                                  className="cursor-pointer  underline text-[#0077b6]"
+                                  onClick={handleOpen}
+                                >
+                                  The Reason{" "}
+                                </div>
+                              </div>
+                            ) : (
+                              <div className="w-full relative">
+                                <input
+                                  value={titleCase(status, "_")}
+                                  disabled
+                                  type="text"
+                                  name=""
+                                  id=""
+                                  className="bg-gray-200 w-full h-[36px] border border-slate-300 rounded-sm focus:border focus:border-[#0077b6]  "
+                                />
+                              </div>
+                            )}
                           </div>
                           <div className="flex gap-2 items-center mb-3 w-full">
-                            <div className="whitespace-nowrap flex">
+                            <div className=" flex">
                               <label htmlFor="" className="w-72">
                                 Tipe Perusahaan
                               </label>
@@ -714,7 +805,7 @@ const Profile = () => {
                               <Select
                                 value={tipePerusahaan}
                                 onChange={(item) => setTipePerusahaan(item)}
-                                className="whitespace-nowrap"
+                                className=""
                                 options={options}
                                 noOptionsMessage={() => "Data not found"}
                                 styles={customeStyles}
@@ -738,7 +829,7 @@ const Profile = () => {
                             </div>
                           </div>
                           <div className="flex gap-2 items-center mb-3 w-full">
-                            <div className="whitespace-nowrap flex">
+                            <div className=" flex">
                               <label htmlFor="" className="w-72">
                                 Nama Perusahaan
                               </label>
@@ -748,7 +839,7 @@ const Profile = () => {
                               <input
                                 value={namaPerusahaan}
                                 onChange={(e) =>
-                                  setNamaPerusahaan(e.target.value)
+                                  setNamaPerusahaan(e.target.value.toUpperCase())
                                 }
                                 type="text"
                                 name=""
@@ -758,7 +849,7 @@ const Profile = () => {
                             </div>
                           </div>
                           <div className="flex gap-2 items-center mb-3 w-full">
-                            <div className="whitespace-nowrap flex">
+                            <div className=" flex">
                               <label htmlFor="" className="w-72">
                                 Kode
                               </label>
@@ -780,7 +871,7 @@ const Profile = () => {
                       ) : (
                         <>
                           <div className="flex flex-col gap-2 mb-3 w-full">
-                            <div className="whitespace-nowrap flex">
+                            <div className=" flex">
                               <label htmlFor="" className="w-72">
                                 Status
                               </label>
@@ -797,7 +888,7 @@ const Profile = () => {
                             </div>
                           </div>
                           <div className="flex flex-col gap-2 mb-3 w-full">
-                            <div className="whitespace-nowrap flex">
+                            <div className=" flex">
                               <label htmlFor="" className="w-72">
                                 Tipe Perusahaan
                               </label>
@@ -806,7 +897,7 @@ const Profile = () => {
                               <Select
                                 value={tipePerusahaan}
                                 onChange={(item) => setTipePerusahaan(item)}
-                                className="whitespace-nowrap"
+                                className=""
                                 options={options}
                                 noOptionsMessage={() => "Data not found"}
                                 styles={customeStyles}
@@ -830,7 +921,7 @@ const Profile = () => {
                             </div>
                           </div>
                           <div className="flex flex-col gap-2 mb-3 w-full">
-                            <div className="whitespace-nowrap flex">
+                            <div className=" flex">
                               <label htmlFor="" className="w-72">
                                 Nama Perusahaan
                               </label>
@@ -839,7 +930,7 @@ const Profile = () => {
                               <input
                                 value={namaPerusahaan}
                                 onChange={(e) =>
-                                  setNamaPerusahaan(e.target.value)
+                                  setNamaPerusahaan(e.target.value.toUpperCase())
                                 }
                                 type="text"
                                 name=""
@@ -849,7 +940,7 @@ const Profile = () => {
                             </div>
                           </div>
                           <div className="flex flex-col gap-2 mb-3 w-full">
-                            <div className="whitespace-nowrap flex">
+                            <div className=" flex">
                               <label htmlFor="" className="w-72">
                                 Kode
                               </label>
@@ -873,7 +964,7 @@ const Profile = () => {
                       {screenSize > 612 ? (
                         <>
                           <div className="flex gap-2 items-center mb-3 w-full">
-                            <div className="whitespace-nowrap flex">
+                            <div className=" flex">
                               <label htmlFor="" className="w-72">
                                 Provinsi
                               </label>
@@ -884,7 +975,7 @@ const Profile = () => {
                                 value={provinsi}
                                 onChange={onChangeProvinsi}
                                 options={optionProvinsi}
-                                className="whitespace-nowrap"
+                                className=""
                                 noOptionsMessage={() => "Provinsi not found"}
                                 styles={customeStyles}
                                 placeholder="Pilih Provinsi..."
@@ -893,7 +984,7 @@ const Profile = () => {
                             </div>
                           </div>
                           <div className="flex gap-2 items-center mb-3 w-full">
-                            <div className="whitespace-nowrap flex">
+                            <div className=" flex">
                               <label htmlFor="" className="w-72">
                                 Kota
                               </label>
@@ -914,7 +1005,7 @@ const Profile = () => {
                       ) : (
                         <>
                           <div className="flex gap-2 flex-col mb-3 w-full">
-                            <div className="whitespace-nowrap flex">
+                            <div className=" flex">
                               <label htmlFor="" className="w-72">
                                 Provinsi
                               </label>
@@ -924,7 +1015,7 @@ const Profile = () => {
                                 value={provinsi}
                                 onChange={onChangeProvinsi}
                                 options={optionProvinsi}
-                                className="whitespace-nowrap"
+                                className=""
                                 noOptionsMessage={() => "Provinsi not found"}
                                 styles={customeStyles}
                                 placeholder="Pilih Provinsi..."
@@ -933,7 +1024,7 @@ const Profile = () => {
                             </div>
                           </div>
                           <div className="flex gap-2 flex-col mb-3 w-full">
-                            <div className="whitespace-nowrap flex">
+                            <div className=" flex">
                               <label htmlFor="" className="w-72">
                                 Kota
                               </label>
@@ -957,7 +1048,7 @@ const Profile = () => {
                       {screenSize > 612 ? (
                         <>
                           <div className="flex gap-2 items-center mb-3 w-full">
-                            <div className="whitespace-nowrap flex">
+                            <div className=" flex">
                               <label htmlFor="" className="w-72">
                                 Kode Pos
                               </label>
@@ -976,7 +1067,7 @@ const Profile = () => {
                           </div>
 
                           <div className="flex gap-2 items-center mb-3 w-full">
-                            <div className="whitespace-nowrap flex">
+                            <div className=" flex">
                               <label htmlFor="" className="w-72">
                                 Tipe Pembelian
                               </label>
@@ -986,7 +1077,7 @@ const Profile = () => {
                               <Select
                                 value={tipePembelian}
                                 onChange={(item) => setTipePembelian(item)}
-                                className="whitespace-nowrap"
+                                className=""
                                 options={optionTipePembelian}
                                 noOptionsMessage={() => "Tipe not found"}
                                 styles={customeStyles}
@@ -999,7 +1090,7 @@ const Profile = () => {
                       ) : (
                         <>
                           <div className="flex gap-2 flex-col mb-3 w-full">
-                            <div className="whitespace-nowrap flex">
+                            <div className=" flex">
                               <label htmlFor="" className="w-72">
                                 Kode Pos
                               </label>
@@ -1017,7 +1108,7 @@ const Profile = () => {
                           </div>
 
                           <div className="flex gap-2 flex-col mb-3 w-full">
-                            <div className="whitespace-nowrap flex">
+                            <div className=" flex">
                               <label htmlFor="" className="w-72">
                                 Tipe Pembelian
                               </label>
@@ -1026,7 +1117,7 @@ const Profile = () => {
                               <Select
                                 value={tipePembelian}
                                 onChange={(item) => setTipePembelian(item)}
-                                className="whitespace-nowrap"
+                                className=""
                                 options={optionTipePembelian}
                                 noOptionsMessage={() => "Tipe not found"}
                                 styles={customeStyles}
@@ -1043,7 +1134,7 @@ const Profile = () => {
                       {screenSize > 612 ? (
                         <>
                           <div className="flex gap-2 items-center mb-3 w-full">
-                            <div className="whitespace-nowrap flex">
+                            <div className=" flex">
                               <label htmlFor="" className="w-72">
                                 Status Pajak
                               </label>
@@ -1051,7 +1142,7 @@ const Profile = () => {
                             </div>
                             <div className="w-full relative">
                               <Select
-                                className="whitespace-nowrap"
+                                className=""
                                 options={optionStatusPajak}
                                 value={statusPajak}
                                 onChange={onChangeStatusPajak}
@@ -1066,7 +1157,7 @@ const Profile = () => {
                           </div>
 
                           <div className="flex gap-2 items-center mb-3 w-full">
-                            <div className="whitespace-nowrap flex">
+                            <div className=" flex">
                               <label htmlFor="" className="w-72">
                                 NPWP
                               </label>
@@ -1088,14 +1179,14 @@ const Profile = () => {
                       ) : (
                         <>
                           <div className="flex gap-2 flex-col mb-3 w-full">
-                            <div className="whitespace-nowrap flex">
+                            <div className=" flex">
                               <label htmlFor="" className="w-72">
                                 Status Pajak
                               </label>
                             </div>
                             <div className="w-full relative">
                               <Select
-                                className="whitespace-nowrap"
+                                className=""
                                 options={optionStatusPajak}
                                 defaultValue={statusPajak}
                                 onChange={onChangeStatusPajak}
@@ -1110,7 +1201,7 @@ const Profile = () => {
                           </div>
 
                           <div className="flex flex-col gap-2 mb-3 w-full">
-                            <div className="whitespace-nowrap flex">
+                            <div className=" flex">
                               <label htmlFor="" className="w-72">
                                 NPWP
                               </label>
@@ -1133,7 +1224,7 @@ const Profile = () => {
 
                     {screenSize > 612 ? (
                       <div className="flex gap-2 items-center mb-3">
-                        <div className="whitespace-nowrap flex">
+                        <div className=" flex">
                           <label htmlFor="" className="w-72">
                             Website
                           </label>
@@ -1152,7 +1243,7 @@ const Profile = () => {
                       </div>
                     ) : (
                       <div className="flex flex-col gap-2 mb-3">
-                        <div className="whitespace-nowrap flex">
+                        <div className=" flex">
                           <label htmlFor="" className="w-72">
                             Website
                           </label>
@@ -1172,7 +1263,7 @@ const Profile = () => {
 
                     {screenSize > 612 ? (
                       <div className="flex gap-2 mb-3 w-full">
-                        <div className="whitespace-nowrap flex">
+                        <div className=" flex">
                           <label htmlFor="" className="w-72">
                             Alamat
                           </label>
@@ -1191,7 +1282,7 @@ const Profile = () => {
                       </div>
                     ) : (
                       <div className="flex flex-col gap-2 mb-3 w-full">
-                        <div className="whitespace-nowrap flex">
+                        <div className=" flex">
                           <label htmlFor="" className="w-72">
                             Alamat
                           </label>
@@ -1215,7 +1306,7 @@ const Profile = () => {
           </div>
 
           <div className="mt-2">
-            <div className="bg-white mb-3 font-semibold">
+            <div className="bg-white mb-3 text-[24px] font-semibold shadow-md py-2 ps-1">
               <div>Contact Person</div>
             </div>
             <div
@@ -1224,7 +1315,7 @@ const Profile = () => {
             >
               <form action="">
                 <div className="flex flex-col min-[612px]:flex-row gap-5 min-[612px]:gap-2 mb-3 w-full min-[612px]:items-center">
-                  <div className="whitespace-nowrap flex">
+                  <div className=" flex">
                     <label htmlFor="" className="w-72">
                       Nama Pemilik Perusahaan
                     </label>
@@ -1242,7 +1333,7 @@ const Profile = () => {
                   </div>
                 </div>
                 <div className="flex flex-col min-[612px]:flex-row gap-5 min-[612px]:gap-2 mb-3 w-full min-[612px]:items-center">
-                  <div className="whitespace-nowrap flex">
+                  <div className=" flex">
                     <label htmlFor="" className="w-72">
                       Nama Penanggung Jawab
                     </label>
@@ -1260,7 +1351,7 @@ const Profile = () => {
                   </div>
                 </div>
                 <div className="flex flex-col min-[612px]:flex-row gap-5 min-[612px]:gap-2 mb-3 w-full min-[612px]:items-center">
-                  <div className="whitespace-nowrap flex">
+                  <div className=" flex">
                     <label htmlFor="" className="w-72">
                       Jabatan Penanggung Jawab
                     </label>
@@ -1280,7 +1371,7 @@ const Profile = () => {
                   </div>
                 </div>
                 <div className="flex flex-col min-[612px]:flex-row gap-5 min-[612px]:gap-2 mb-3 w-full min-[612px]:items-center">
-                  <div className="whitespace-nowrap flex">
+                  <div className=" flex">
                     <label htmlFor="" className="w-72">
                       No. Telp Kantor
                     </label>
@@ -1301,7 +1392,7 @@ const Profile = () => {
                   Kontak Korenspondensi Notifikasi
                 </div>
                 <div className="flex flex-col min-[612px]:flex-row gap-5 min-[612px]:gap-2 mb-3 w-full min-[612px]:items-center mt-2">
-                  <div className="whitespace-nowrap flex">
+                  <div className="flex">
                     <label htmlFor="" className="w-72">
                       No Whatsapp Purchase Order (PO)
                     </label>
@@ -1320,7 +1411,7 @@ const Profile = () => {
                   </div>
                 </div>
                 <div className="flex flex-col min-[612px]:flex-row gap-5 min-[612px]:gap-2 mb-3 w-full min-[612px]:items-center">
-                  <div className="whitespace-nowrap flex">
+                  <div className=" flex">
                     <label htmlFor="" className="w-72">
                       Email Korespondensi PO
                     </label>
@@ -1338,7 +1429,7 @@ const Profile = () => {
                   </div>
                 </div>
                 <div className="flex flex-col min-[612px]:flex-row gap-5 min-[612px]:gap-2 mb-3 w-full min-[612px]:items-center">
-                  <div className="whitespace-nowrap flex">
+                  <div className=" flex">
                     <label htmlFor="" className="w-72">
                       Nama Kontak
                     </label>
@@ -1356,7 +1447,7 @@ const Profile = () => {
                   </div>
                 </div>
                 <div className="flex flex-col min-[612px]:flex-row gap-5 min-[612px]:gap-2 mb-3 w-full min-[612px]:items-center">
-                  <div className="whitespace-nowrap flex">
+                  <div className=" flex">
                     <label htmlFor="" className="w-72">
                       Jabatan
                     </label>
@@ -1374,7 +1465,7 @@ const Profile = () => {
                   </div>
                 </div>
                 <div className="flex flex-col min-[612px]:flex-row gap-5 min-[612px]:gap-2 mb-3 w-full min-[612px]:items-center mt-10">
-                  <div className="whitespace-nowrap flex">
+                  <div className=" flex">
                     <label htmlFor="" className="w-72">
                       No. Whatsapp Keuangan
                     </label>
@@ -1394,7 +1485,7 @@ const Profile = () => {
                   </div>
                 </div>
                 <div className="flex flex-col min-[612px]:flex-row gap-5 min-[612px]:gap-2 mb-3 w-full min-[612px]:items-center">
-                  <div className="whitespace-nowrap flex">
+                  <div className=" flex">
                     <label htmlFor="" className="w-72">
                       Email Korespondensi Keuangan
                     </label>
@@ -1414,7 +1505,7 @@ const Profile = () => {
                   </div>
                 </div>
                 <div className="flex flex-col min-[612px]:flex-row gap-5 min-[612px]:gap-2 mb-3 w-full min-[612px]:items-center">
-                  <div className="whitespace-nowrap flex">
+                  <div className=" flex">
                     <label htmlFor="" className="w-72">
                       Nama Kontak
                     </label>
@@ -1432,7 +1523,7 @@ const Profile = () => {
                   </div>
                 </div>
                 <div className="flex flex-col min-[612px]:flex-row gap-5 min-[612px]:gap-2 mb-3 w-full min-[612px]:items-center">
-                  <div className="whitespace-nowrap flex">
+                  <div className=" flex">
                     <label htmlFor="" className="w-72">
                       Jabatan
                     </label>
@@ -1454,7 +1545,7 @@ const Profile = () => {
           </div>
 
           <div className="mt-2">
-            <div className="bg-white mb-3 font-semibold">
+            <div className="bg-white mb-3 text-[24px] font-semibold shadow-md py-2 ps-1">
               <div>Payment</div>
             </div>
             <div
@@ -1464,7 +1555,7 @@ const Profile = () => {
               <form action="">
                 <div className="underline ">Detail Pembayaran</div>
                 <div className="flex flex-col min-[612px]:flex-row gap-5 min-[612px]:gap-2 mb-3 w-full min-[612px]:items-center mt-2">
-                  <div className="whitespace-nowrap flex">
+                  <div className=" flex">
                     <label htmlFor="" className="w-72">
                       Term
                     </label>
@@ -1484,7 +1575,7 @@ const Profile = () => {
                   </div>
                 </div>
                 <div className="flex flex-col min-[612px]:flex-row gap-5 min-[612px]:gap-2 mb-3 w-full min-[612px]:items-center">
-                  <div className="whitespace-nowrap flex">
+                  <div className=" flex">
                     <label htmlFor="" className="w-72">
                       Bank
                     </label>
@@ -1502,7 +1593,7 @@ const Profile = () => {
                   </div>
                 </div>
                 <div className="flex flex-col min-[612px]:flex-row gap-5 min-[612px]:gap-2 mb-3 w-full min-[612px]:items-center">
-                  <div className="whitespace-nowrap flex">
+                  <div className=" flex">
                     <label htmlFor="" className="w-72">
                       No. Rekening Bank
                     </label>
@@ -1520,7 +1611,7 @@ const Profile = () => {
                   </div>
                 </div>
                 <div className="flex flex-col min-[612px]:flex-row gap-5 min-[612px]:gap-2 mb-3 w-full min-[612px]:items-center">
-                  <div className="whitespace-nowrap flex">
+                  <div className=" flex">
                     <label htmlFor="" className="w-72">
                       Nama Rekening Bank
                     </label>
@@ -1538,7 +1629,7 @@ const Profile = () => {
                   </div>
                 </div>
                 <div className="flex flex-col min-[612px]:flex-row gap-5 min-[612px]:gap-2 mb-3 w-full min-[612px]:items-center">
-                  <div className="whitespace-nowrap flex">
+                  <div className=" flex">
                     <label htmlFor="" className="w-72">
                       Kantor Cabang Bank
                     </label>
@@ -1557,7 +1648,7 @@ const Profile = () => {
                   </div>
                 </div>
                 <div className="flex flex-col min-[612px]:flex-row gap-5 min-[612px]:gap-2 mb-3 w-full min-[612px]:items-center">
-                  <div className="whitespace-nowrap flex">
+                  <div className=" flex">
                     <label htmlFor="" className="w-72">
                       Metode Pengiriman
                     </label>
@@ -1576,7 +1667,7 @@ const Profile = () => {
                   </div>
                 </div>
                 <div className="flex flex-col min-[612px]:flex-row gap-5 min-[612px]:gap-2 mb-3 w-full min-[612px]:items-center mt-2">
-                  <div className="whitespace-nowrap flex">
+                  <div className=" flex">
                     <label htmlFor="" className="w-72">
                       Pengembalian Barang
                     </label>
@@ -1597,7 +1688,7 @@ const Profile = () => {
                 </div>
 
                 <div className="flex flex-col min-[612px]:flex-row gap-5 min-[612px]:gap-2 mb-3 w-full min-[612px]:items-center mt-10">
-                  <div className="whitespace-nowrap flex">
+                  <div className=" flex">
                     <label htmlFor="" className="w-72">
                       Rebate
                     </label>
@@ -1619,7 +1710,7 @@ const Profile = () => {
                   </div>
                 </div>
                 <div className="flex flex-col min-[612px]:flex-row gap-5 min-[612px]:gap-2 mb-3 w-full min-[612px]:items-center">
-                  <div className="whitespace-nowrap flex">
+                  <div className=" flex">
                     <label htmlFor="" className="w-72">
                       Marketing Fee
                     </label>
@@ -1641,7 +1732,7 @@ const Profile = () => {
                   </div>
                 </div>
                 <div className="flex flex-col min-[612px]:flex-row gap-5 min-[612px]:gap-2 mb-3 w-full min-[612px]:items-center">
-                  <div className="whitespace-nowrap flex">
+                  <div className=" flex">
                     <label htmlFor="" className="w-72">
                       Listing Fee
                     </label>
@@ -1663,7 +1754,7 @@ const Profile = () => {
                   </div>
                 </div>
                 <div className="flex flex-col min-[612px]:flex-row gap-5 min-[612px]:gap-2 mb-3 w-full min-[612px]:items-center">
-                  <div className="whitespace-nowrap flex">
+                  <div className=" flex">
                     <label htmlFor="" className="w-72">
                       Promotion Fund
                     </label>
@@ -1689,7 +1780,7 @@ const Profile = () => {
                 <button
                   type="button"
                   onClick={() => onClickDownload()}
-                  className="mt-5 max-[415px]:w-full rounded-sm py-2 px-5 text-white bg-[#d4a373] w-fit cursor-pointer flex gap-1 items-center"
+                  className="mt-5 max-[415px]:w-full rounded-md py-2 px-5 text-white bg-[#0077b6] w-fit cursor-pointer flex gap-1 items-center"
                 >
                   <div className="">
                     <PiFileZipDuotone />
@@ -1701,7 +1792,7 @@ const Profile = () => {
           </div>
 
           <div className="mt-2">
-            <div className="bg-white mb-3 font-semibold">
+            <div className="bg-white mb-3 text-[24px] font-semibold shadow-md py-2 ps-1">
               <div>Document</div>
             </div>
             <div
@@ -1722,7 +1813,7 @@ const Profile = () => {
                     </div>
                   </div>
 
-                  <div className="w-full relative">
+                  <div className=" relative">
                     <label htmlFor="upload-npwp" className="w-fit">
                       {npwpFile === null ? (
                         <div className="w-fit flex gap-1 items-center bg-blue-400 py-2 px-5 text-white hover:bg-blue-200 rounded-md">
@@ -1748,7 +1839,37 @@ const Profile = () => {
                       className="hidden w-full h-[36px] border border-slate-300 rounded-sm focus:border focus:border-[#0077b6]  "
                     />
                   </div>
+                  {npwpFileUpload.trim().length > 0 && (
+                    <a
+                      href={`${apiExport}fin/transactionact/view_portal_file.jsp?file=${npwpFileUpload}`}
+                      target="_blank"
+                      className="underline cursor-pointer text-blue-500"
+                      rel="noreferrer"
+                    >
+                      File terupload
+                    </a>
+                  )}
                 </div>
+                {npwpFile !== null &&
+                RegExp("\\bpdf\\b").test(npwpFile.split(",")[0]) ? (
+                  <div className="h-[500px] w-[500px] max-[612px]:w-full mb-5">
+                    <div className="h-full w-full">
+                      <Viewer fileUrl={npwpFilePreview} />
+                    </div>
+                  </div>
+                ) : (
+                  npwpFile !== null && (
+                    <div className="h-[500px] w-[400px] max-[612px]:w-full mb-5">
+                      <div className="h-full w-full">
+                        <img
+                          src={npwpFilePreview}
+                          alt="no"
+                          className="w-full h-full"
+                        />
+                      </div>
+                    </div>
+                  )
+                )}
                 <div className="flex flex-col min-[612px]:flex-row gap-5 min-[612px]:gap-2 mb-3 w-full min-[612px]:items-center">
                   <div className="flex flex-col gap-1">
                     <div className=" flex">
@@ -1761,7 +1882,7 @@ const Profile = () => {
                       Max size 2 mb
                     </div>
                   </div>
-                  <div className="w-full relative">
+                  <div className=" relative">
                     <label htmlFor="upload-ktppemilik" className="w-fit">
                       {ktpPemilikFile === null ? (
                         <div className="w-fit flex gap-1 items-center bg-blue-400 py-2 px-5 text-white hover:bg-blue-200 rounded-md">
@@ -1783,11 +1904,41 @@ const Profile = () => {
                       onChange={onChangeKtpPemilikFile}
                       type="file"
                       id="upload-ktppemilik"
-                      accept="image/jpg,.pdf"
+                      accept=".jpg,.pdf"
                       className="hidden w-full h-[36px] border border-slate-300 rounded-sm focus:border focus:border-[#0077b6]  "
                     />
                   </div>
+                  {ktpPemilikFileUpload.trim().length > 0 && (
+                    <a
+                      href={`${apiExport}fin/transactionact/view_portal_file.jsp?file=${ktpPemilikFileUpload}`}
+                      target="_blank"
+                      className="underline cursor-pointer text-blue-500"
+                      rel="noreferrer"
+                    >
+                      File terupload
+                    </a>
+                  )}
                 </div>
+                {ktpPemilikFile !== null &&
+                RegExp("\\bpdf\\b").test(ktpPemilikFile.split(",")[0]) ? (
+                  <div className="h-[500px] w-[500px] max-[612px]:w-full mb-5">
+                    <div className="h-full w-full">
+                      <Viewer fileUrl={ktpPemilikFilePreview} />
+                    </div>
+                  </div>
+                ) : (
+                  ktpPemilikFile !== null && (
+                    <div className="h-[500px] w-[400px] max-[612px]:w-full mb-5">
+                      <div className="h-full w-full">
+                        <img
+                          src={ktpPemilikFilePreview}
+                          alt="no"
+                          className="w-full h-full"
+                        />
+                      </div>
+                    </div>
+                  )
+                )}
                 <div className="flex flex-col min-[612px]:flex-row gap-5 min-[612px]:gap-2 mb-3 w-full min-[612px]:items-center">
                   <div className="flex flex-col gap-1">
                     <div className=" flex">
@@ -1800,7 +1951,7 @@ const Profile = () => {
                       Max size 2 mb
                     </div>
                   </div>
-                  <div className="w-full relative">
+                  <div className="relative">
                     <label
                       htmlFor="upload-ktppenanggungjawab"
                       className="w-fit"
@@ -1825,14 +1976,47 @@ const Profile = () => {
                       onChange={onChangeKtpPenanggungJawabFile}
                       type="file"
                       id="upload-ktppenanggungjawab"
-                      accept="image/jpg,.pdf"
+                      accept=".jpg,.pdf"
                       className="hidden w-full h-[36px] border border-slate-300 rounded-sm focus:border focus:border-[#0077b6]  "
                     />
                   </div>
+                  {ktpPenanggungJawabFileUpload.trim().length > 0 && (
+                    <a
+                      href={`${apiExport}fin/transactionact/view_portal_file.jsp?file=${ktpPenanggungJawabFileUpload}`}
+                      target="_blank"
+                      className="underline cursor-pointer text-blue-500"
+                      rel="noreferrer"
+                    >
+                      File terupload
+                    </a>
+                  )}
                 </div>
+                {ktpPenanggungJawabFile !== null &&
+                RegExp("\\bpdf\\b").test(
+                  ktpPenanggungJawabFile.split(",")[0]
+                ) ? (
+                  <div className="h-[500px] w-[500px] max-[612px]:w-full mb-5">
+                    <div className="h-full w-full">
+                      <Viewer fileUrl={ktpPenanggungJawabFilePreview} />
+                    </div>
+                  </div>
+                ) : (
+                  ktpPenanggungJawabFile !== null && (
+                    <div className="h-[500px] w-[400px] max-[612px]:w-full mb-5">
+                      <div className="h-full w-full">
+                        <img
+                          src={ktpPenanggungJawabFilePreview}
+                          alt="no"
+                          className="w-full h-full"
+                        />
+                      </div>
+                    </div>
+                  )
+                )}
+
                 <div className="flex flex-col min-[612px]:flex-row gap-5 min-[612px]:gap-2 mb-3 w-full min-[612px]:items-center">
                   <div className="flex flex-col gap-1">
-                    <div className="whitespace-nowrap flex">
+                    <div className=" flex">
                       <label htmlFor="" className="w-72 whitespace-pre-wrap">
                         Surat Pengukuhan Kena Pajak (SPKP) / Surat Keterangan
                         Non PKP (Bagi Pengusaha Tidak Kena Pajak)
@@ -1843,7 +2027,7 @@ const Profile = () => {
                       Max size 2 mb
                     </div>
                   </div>
-                  <div className="w-full relative">
+                  <div className=" relative">
                     <label htmlFor="upload-spkp" className="w-fit">
                       {spkpFile === null ? (
                         <div className="w-fit flex gap-1 items-center bg-blue-400 py-2 px-5 text-white hover:bg-blue-200 rounded-md">
@@ -1865,11 +2049,41 @@ const Profile = () => {
                       type="file"
                       onChange={onChangeSpkpFile}
                       id="upload-spkp"
-                      accept="image/jpg,.pdf"
+                      accept=".jpg,.pdf"
                       className="hidden w-full h-[36px] border border-slate-300 rounded-sm focus:border focus:border-[#0077b6]  "
                     />
                   </div>
+                  {spkpFileUpload.trim().length > 0 && (
+                    <a
+                      href={`${apiExport}fin/transactionact/view_portal_file.jsp?file=${spkpFileUpload}`}
+                      target="_blank"
+                      className="underline cursor-pointer text-blue-500"
+                      rel="noreferrer"
+                    >
+                      File terupload
+                    </a>
+                  )}
                 </div>
+                {spkpFile !== null &&
+                RegExp("\\bpdf\\b").test(spkpFile.split(",")[0]) ? (
+                  <div className="h-[500px] w-[500px] max-[612px]:w-full mb-5">
+                    <div className="h-full w-full">
+                      <Viewer fileUrl={spkpFilePreview} />
+                    </div>
+                  </div>
+                ) : (
+                  spkpFile !== null && (
+                    <div className="h-[500px] w-[400px] max-[612px]:w-full mb-5">
+                      <div className="h-full w-full">
+                        <img
+                          src={spkpFilePreview}
+                          alt="no"
+                          className="w-full h-full"
+                        />
+                      </div>
+                    </div>
+                  )
+                )}
 
                 <div className="flex flex-col min-[612px]:flex-row gap-5 min-[612px]:gap-2 mb-3 w-full min-[612px]:items-center">
                   <div className="flex flex-col gap-1">
@@ -1883,7 +2097,7 @@ const Profile = () => {
                       Max size 2 mb
                     </div>
                   </div>
-                  <div className="w-full relative">
+                  <div className=" relative">
                     <label htmlFor="upload-nib" className="w-fit">
                       {nibFile === null ? (
                         <div className="w-fit flex gap-1 items-center bg-blue-400 py-2 px-5 text-white hover:bg-blue-200 rounded-md">
@@ -1905,11 +2119,42 @@ const Profile = () => {
                       type="file"
                       onChange={onChangeNibFile}
                       id="upload-nib"
-                      accept="image/jpg,.pdf"
+                      accept=".jpg,.pdf"
                       className="hidden w-full h-[36px] border border-slate-300 rounded-sm focus:border focus:border-[#0077b6]  "
                     />
                   </div>
+                  {nibFileUpload.trim().length > 0 && (
+                    <a
+                      href={`${apiExport}fin/transactionact/view_portal_file.jsp?file=${nibFileUpload}`}
+                      target="_blank"
+                      className="underline cursor-pointer text-blue-500"
+                      rel="noreferrer"
+                    >
+                      File terupload
+                    </a>
+                  )}
                 </div>
+                {nibFile !== null &&
+                RegExp("\\bpdf\\b").test(nibFile.split(",")[0]) ? (
+                  <div className="h-[500px] w-[500px] max-[612px]:w-full mb-5">
+                    <div className="h-full w-full">
+                      <Viewer fileUrl={nibFilePreview} />
+                    </div>
+                  </div>
+                ) : (
+                  nibFile !== null && (
+                    <div className="h-[500px] w-[400px] max-[612px]:w-full mb-5">
+                      <div className="h-full w-full">
+                        <img
+                          src={nibFilePreview}
+                          alt="no"
+                          className="w-full h-full"
+                        />
+                      </div>
+                    </div>
+                  )
+                )}
+
                 <div className="flex flex-col min-[612px]:flex-row gap-5 min-[612px]:gap-2 mb-3 w-full min-[612px]:items-center">
                   <div className="flex flex-col gap-1">
                     <div className=" flex">
@@ -1922,7 +2167,7 @@ const Profile = () => {
                       Max size 2 mb
                     </div>
                   </div>
-                  <div className="w-full relative">
+                  <div className=" relative">
                     <label htmlFor="upload-ssperusahaan" className="w-fit">
                       {ssPerusahaanFile === null ? (
                         <div className="w-fit flex gap-1 items-center bg-blue-400 py-2 px-5 text-white hover:bg-blue-200 rounded-md">
@@ -1944,17 +2189,49 @@ const Profile = () => {
                       onChange={onChangeSsRekeningFile}
                       type="file"
                       id="upload-ssperusahaan"
-                      accept="image/jpg,.pdf"
+                      accept=".jpg,.pdf"
                       className="hidden w-full h-[36px] border border-slate-300 rounded-sm focus:border focus:border-[#0077b6]  "
                     />
                   </div>
+                  {ssPerusahaanFileUpload.trim().length > 0 && (
+                    <a
+                      href={`${apiExport}fin/transactionact/view_portal_file.jsp?file=${ssPerusahaanFileUpload}`}
+                      target="_blank"
+                      className="underline cursor-pointer text-blue-500"
+                      rel="noreferrer"
+                    >
+                      File terupload
+                    </a>
+                  )}
                 </div>
-                <div className="flex flex-col min-[612px]:flex-row gap-5 min-[612px]:gap-0 mb-3 w-full min-[612px]:items-center">
+                {ssPerusahaanFile !== null &&
+                RegExp("\\bpdf\\b").test(ssPerusahaanFile.split(",")[0]) ? (
+                  <div className="h-[500px] w-[500px] max-[612px]:w-full mb-5">
+                    <div className="h-full w-full">
+                      <Viewer fileUrl={ssPerusahaanFilePreview} />
+                    </div>
+                  </div>
+                ) : (
+                  ssPerusahaanFile !== null && (
+                    <div className="h-[500px] w-[400px] max-[612px]:w-full mb-5">
+                      <div className="h-full w-full">
+                        <img
+                          src={ssPerusahaanFilePreview}
+                          alt="no"
+                          className="w-full h-full"
+                        />
+                      </div>
+                    </div>
+                  )
+                )}
+
+                <div className="flex flex-col min-[612px]:flex-row gap-5 min-[612px]:gap-2 mb-3 w-full min-[612px]:items-center">
                   <div className="flex flex-col gap-1">
                     <div className=" flex">
                       <label htmlFor="" className="w-72">
                         Sertifikasi BPOM
                       </label>
+                      <div className="hidden min-[612px]:block">:</div>
                     </div>
                     <div className="text-[10px] text-gray-500">
                       Max size 1 mb
@@ -1966,10 +2243,8 @@ const Profile = () => {
                       <div>Untuk supplier makanan & minuman</div>
                     </div>
                   </div>
-                  <div className="hidden min-[612px]:block min-[612px]:mr-2">
-                    :
-                  </div>
-                  <div className="w-full relative">
+
+                  <div className=" relative">
                     <label htmlFor="upload-bpom" className="w-fit">
                       {sertifBpomFile === null ? (
                         <div className="w-fit flex gap-1 items-center bg-blue-400 py-2 px-5 text-white hover:bg-blue-200 rounded-md">
@@ -1991,11 +2266,41 @@ const Profile = () => {
                       onChange={onChangeBpomFile}
                       type="file"
                       id="upload-bpom"
-                      accept="image/jpg,.pdf"
+                      accept=".jpg,.pdf"
                       className="hidden w-full h-[36px] border border-slate-300 rounded-sm focus:border focus:border-[#0077b6]  "
                     />
                   </div>
+                  {sertifBpomFileUpload.trim().length > 0 && (
+                    <a
+                      href={`${apiExport}fin/transactionact/view_portal_file.jsp?file=${npwpFileUpload}`}
+                      target="_blank"
+                      className="underline cursor-pointer text-blue-500"
+                      rel="noreferrer"
+                    >
+                      File terupload
+                    </a>
+                  )}
                 </div>
+                {sertifBpomFile !== null &&
+                RegExp("\\bpdf\\b").test(sertifBpomFile.split(",")[0]) ? (
+                  <div className="h-[500px] w-[500px] max-[612px]:w-full mb-5">
+                    <div className="h-full w-full">
+                      <Viewer fileUrl={sertifBpomFilePreview} />
+                    </div>
+                  </div>
+                ) : (
+                  sertifBpomFile !== null && (
+                    <div className="h-[500px] w-[400px] max-[612px]:w-full mb-5">
+                      <div className="h-full w-full">
+                        <img
+                          src={sertifBpomFilePreview}
+                          alt="no"
+                          className="w-full h-full"
+                        />
+                      </div>
+                    </div>
+                  )
+                )}
               </form>
             </div>
           </div>
@@ -2005,23 +2310,65 @@ const Profile = () => {
             </div>
           )}
 
-          <div className="flex justify-start max-[415px]:w-full py-4">
-            <button
-              type="button"
-              disabled={loading ? true : false}
-              onClick={updateVendor}
-              className={`py-3 max-[415px]:w-full px-10 rounded-sm shadow-sm  text-white 
+          {status !== "APPROVED" && (
+            <div className="flex justify-start max-[415px]:w-full py-4">
+              <button
+                type="button"
+                disabled={loading ? true : false}
+                onClick={updateVendor}
+                className={`py-3 max-[415px]:w-full px-10 rounded-md shadow-sm  text-white 
                 bg-[#0077b6]
               `}
-            >
-              {loading ? (
-                <CircularProgress size={20} sx={{ color: "white" }} />
-              ) : (
-                "LOGIN"
-              )}
-            </button>
-          </div>
+              >
+                {loading ? (
+                  <CircularProgress size={20} sx={{ color: "white" }} />
+                ) : (
+                  "Simpan"
+                )}
+              </button>
+            </div>
+          )}
         </div>
+      </div>
+
+      <div>
+        <Modal
+          aria-labelledby="transition-modal-title"
+          aria-describedby="transition-modal-description"
+          open={open}
+          onClose={handleClose}
+          closeAfterTransition
+          slots={{ backdrop: Backdrop }}
+          slotProps={{
+            backdrop: {
+              timeout: 500,
+            },
+          }}
+        >
+          <Fade in={open}>
+            <div
+              className={`border-0 bg-white py-5 px-7 absolute top-[50%] left-1/2 translate-x-[-50%] translate-y-[-50%] h-[400px] overflow-y-auto z-[999999]  ${
+                screenSize <= 548 ? "w-[90%]" : "w-fit"
+              }`}
+            >
+              <div className="text-[20px] mb-5 font-semibold ">Reason</div>
+              <div className="flex flex-col gap-2"></div>
+
+              <div className="mt-5 flex flex-col gap-2">
+                <textarea value={reason} disabled cols="30" rows="5"></textarea>
+              </div>
+
+              <div className="mt-5 flex max-[479px]:flex-col max-[479px]:items-start items-center gap-2 text-center justify-between">
+                <div
+                  onClick={handleClose}
+                  className="rounded-md py-2 px-5 shadow-sm border border-gray-400 cursor-pointer max-[479px]:w-full"
+                >
+                  Back
+                </div>
+              </div>
+            </div>
+          </Fade>
+        </Modal>
       </div>
 
       <Backdrop
@@ -2033,7 +2380,7 @@ const Profile = () => {
       >
         <CircularProgress color="inherit" />
       </Backdrop>
-    </Admin>
+    </>
   );
 };
 

@@ -3,6 +3,7 @@
 import Navbar from "../components/Navbar";
 import SidebarComponent from "../components/SidebarComponent";
 import { useStateContext } from "../contexts/ContextProvider";
+import PrivateRoute from "../routes/PrivateRoute";
 
 const Admin = ({ children }) => {
   const { activeMenu, screenSize, setActiveMenu } = useStateContext();
@@ -40,7 +41,7 @@ const Admin = ({ children }) => {
           <Navbar />
         </div>
 
-        <div>{children}</div>
+        <div>{<PrivateRoute />}</div>
 
         {/* <Footer /> */}
       </div>

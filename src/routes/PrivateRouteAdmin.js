@@ -5,7 +5,7 @@ const PrivateRouteAdmin = () => {
   const token = Cookies.get("admin_token");
 
   if (!token) {
-    return <Navigate to="/wh-smith" />;
+    return <Navigate to="/admin" />;
   }
 
   return <Outlet/>;

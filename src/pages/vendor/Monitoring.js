@@ -1,6 +1,5 @@
 import { Backdrop, CircularProgress, Fade, Modal } from "@mui/material";
 import { useStateContext } from "../../contexts/ContextProvider";
-import Admin from "../../layouts/Admin";
 import { useEffect, useState } from "react";
 import { Link, useNavigate } from "react-router-dom";
 import Cookies from "js-cookie";
@@ -20,6 +19,8 @@ const srcStatusOptions = [
   { value: "DRAFT", label: "Draft", key: 1 },
   { value: "Waiting_for_approval", label: "Waiting", key: 1 },
 ];
+
+const api = process.env.REACT_APP_BASEURL;
 
 const Monitoring = () => {
   const [totalInvoice, setTotalInvoice] = useState([]);
@@ -58,30 +59,32 @@ const Monitoring = () => {
   // eslint-disable-next-line no-new-object
   const fetchData = async (parameter = new Object()) => {
     setOpenBackdrop(true);
-    parameter["vendor_id"] = vendorId;
-    const api = process.env.REACT_APP_BASEURL;
-
-    await fetch(`${api}api/portal-vendor/list/penagihan`, {
-      method: "POST",
-      body: JSON.stringify(parameter),
-    })
-      .then((response) => response.json())
-      .then((res) => {
-        // eslint-disable-next-line array-callback-return
-        res.data.map((data) => {
-          var total = 0;
-          data.nilai_invoices.map((nilai) => (total += nilai));
-          setTotalInvoice((prev) => {
-            return [...prev, total.toFixed(2)];
-          });
-        });
-
-        setListPenagihan(res.data);
-        setOpenBackdrop(false);
+    if (vendorId !== undefined) {
+      parameter["vendor_id"] = vendorId;
+      await fetch(`${api}api/portal-vendor/list/penagihan`, {
+        method: "POST",
+        body: JSON.stringify(parameter),
       })
-      .catch((err) => {
-        setOpenBackdrop(false);
-      });
+        .then((response) => response.json())
+        .then((res) => {
+          // eslint-disable-next-line array-callback-return
+          res.data.map((data) => {
+            var total = 0;
+            data.nilai_invoices.map((nilai) => (total += nilai));
+            setTotalInvoice((prev) => {
+              return [...prev, total.toFixed(2)];
+            });
+          });
+
+          setListPenagihan(res.data);
+          setOpenBackdrop(false);
+        })
+        .catch((err) => {
+          setOpenBackdrop(false);
+        });
+    } else {
+      setOpenBackdrop(false);
+    }
   };
 
   const handleOpen = () => setOpen(true);
@@ -145,7 +148,7 @@ const Monitoring = () => {
 
   return (
     <>
-      <Admin>
+      <>
         <div
           className={`${
             screenSize < 768 ? "px-5 pt-20" : "px-10"
@@ -153,7 +156,7 @@ const Monitoring = () => {
         >
           <div className="mb-20 max-[349px]:mb-5">Monitoring</div>
           <div className="mb-5 w-[80%] max-[638px]:w-full">
-            <div className="mb-5 text-slate-400">Parameter Pencarian</div>
+            <div className="mb-5 text-slate-400">Searching Parameter</div>
             <div>
               <form action="">
                 <div className="flex max-[1254px]:flex-col gap-5 items-center mb-5">
@@ -248,13 +251,14 @@ const Monitoring = () => {
               </form>
             </div>
           </div>
-          <div className="w-full mt-20">
+          <div className="w-full mt-20 mb-10">
             <div className="w-full overflow-x-auto shadow-md text-[14px]">
               <table className="w-full table-monitoring">
                 <thead>
                   <tr className="text-center whitespace-nowrap border-2 bg-[#eaf4f4]">
                     <td className="p-5 border">No Request </td>
                     <td className="p-5 border">Tanggal Submit</td>
+                    <td className="p-5 border">Tanggal Approved</td>
                     <td className="p-5 border">Nilai Penagihan</td>
                     <td className="p-5 border">Status Penagihan</td>
                     <td className="p-5 border">No Tukar Faktur</td>
@@ -274,6 +278,11 @@ const Monitoring = () => {
                       </td>
                       <td className="p-5 border">
                         {dayjs(item.created_at).format("DD/MM/YYYY")}
+                      </td>
+                      <td className="p-5 border">
+                        {item.status === "APPROVED"
+                          ? dayjs(item.updated_at).format("DD/MM/YYYY")
+                          : ""}
                       </td>
                       <td className="p-5 border">
                         Rp. {accountingNumber(totalInvoice[index])}
@@ -518,7 +527,7 @@ const Monitoring = () => {
             </Fade>
           </Modal>
         </div>
-      </Admin>
+      </>
       <Backdrop
         sx={{ color: "#fff", zIndex: (theme) => theme.zIndex.drawer + 99999 }}
         open={openBackdrop}

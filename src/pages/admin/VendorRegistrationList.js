@@ -1,6 +1,11 @@
-import { Backdrop, CircularProgress, Fade, Modal } from "@mui/material";
+import {
+  Backdrop,
+  CircularProgress,
+  Fade,
+  Modal,
+  Pagination,
+} from "@mui/material";
 import { useStateContext } from "../../contexts/ContextProvider";
-import AdminWhSmith from "../../layouts/AdminWhSmith";
 import { useEffect, useState } from "react";
 import isEmpty from "../../components/functions/CheckEmptyObject";
 import titleCase from "../../components/functions/TitleCase";
@@ -10,6 +15,7 @@ import { PiFileZipDuotone } from "react-icons/pi";
 import Cookies from "js-cookie";
 import { useNavigate } from "react-router-dom";
 
+
 const options = [
   { value: "APPROVED", label: "APPROVED", key: 0 },
   { value: "RE_REGISTER", label: "RE REGISTER", key: 1 },
@@ -18,7 +24,8 @@ const options = [
 const srcStatusOptions = [
   { value: 0, label: "All", key: 0 },
   { value: "APPROVED", label: "APPROVED", key: 0 },
-  { value: "RE_REGISTER", label: "PENDING", key: 1 },
+  { value: "RE_REGISTER", label: "RE REGISTER", key: 1 },
+  { value: "PENDING", label: "PENDING", key: 1 },
 ];
 
 const api = process.env.REACT_APP_BASEURL;
@@ -28,7 +35,13 @@ const VendorRegistrationList = () => {
   const { screenSize } = useStateContext();
   const [openBackdrop, setOpenBackdrop] = useState(false);
   // eslint-disable-next-line no-unused-vars
+  //pagination state
+  const [, setTotal] = useState(0);
+  const [count, setCount] = useState(0);
+  const [limit, setLimit] = useState(0);
+  const [start, setStart] = useState(0);
   const [page, setPage] = useState(1);
+  //end pagination state
   const [open, setOpen] = useState(false);
   const [status, setStatus] = useState({
     value: "APPROVED",
@@ -52,7 +65,8 @@ const VendorRegistrationList = () => {
   const handleOpen = () => setOpen(true);
   const handleClose = () => setOpen(false);
 
-  const fetchData = async (parameter) => {
+  // eslint-disable-next-line no-new-object
+  const fetchData = async (parameter = new Object()) => {
     setOpenBackdrop(true);
     await fetch(`${api}api/portal-vendor/list/vendors`, {
       method: "POST",
@@ -60,7 +74,11 @@ const VendorRegistrationList = () => {
     })
       .then((response) => response.json())
       .then((res) => {
+        console.log(res.data.length);
         if (res.data.length > 0) {
+          setTotal(res.total);
+          setCount(Math.round(res.total / res.limit));
+          setLimit(res.limit);
           setListVendor(res.data);
           let queryString = [];
           // eslint-disable-next-line array-callback-return
@@ -68,7 +86,8 @@ const VendorRegistrationList = () => {
             queryString[index] = data.id;
           });
           fetchUser(queryString);
-        }else{
+        } else {
+          setListVendor([]);
           setOpenBackdrop(false);
         }
       })
@@ -100,6 +119,31 @@ const VendorRegistrationList = () => {
 
   // eslint-disable-next-line no-unused-vars
   const onChangePagination = (e, value) => {
+    let parameter = {};
+    let limitTemp = limit;
+
+    if (value > page) {
+      limitTemp = limitTemp * value - limit;
+      parameter = { start: limitTemp };
+    } else {
+      limitTemp = limitTemp * value - limit;
+      parameter = { start: limitTemp };
+    }
+
+    if (srcName.trim().length > 0) {
+      parameter["name"] = srcName;
+    }
+
+    if (code.trim().length > 0) {
+      parameter["code"] = code;
+    }
+
+    if (srcStatus.value !== 0) {
+      parameter["status"] = srcStatus.value;
+    }
+
+    setStart(limitTemp);
+    fetchData(parameter);
     setPage(value);
   };
 
@@ -135,9 +179,10 @@ const VendorRegistrationList = () => {
   const onClickEdit = (item) => {
     if (Cookies.get("admin_token") !== undefined) {
       setVendorDetail(item);
+      setStatus({ value: item.status, label: item.status });
       handleOpen();
     } else {
-      navigate("/wh-smith");
+      navigate("/admin");
       toast.error("Silahkan Login Terlebih Dahulu!", {
         position: "top-right",
         style: {
@@ -164,12 +209,18 @@ const VendorRegistrationList = () => {
       parameter["status"] = srcStatus.value;
     }
 
+    setStart(0);
+    setPage(1);
     fetchData(parameter);
   };
 
   const onSubmitVendor = async (vendorDetail) => {
     //setOpenBackdrop(true);
+    // eslint-disable-next-line no-self-assign
     vendorDetail.status = status.value;
+    vendorDetail.reason =
+      status.value === "APPROVED" ? "" : vendorDetail.reason;
+    vendorDetail.kode = status.value === "APPROVED" ? vendorDetail.kode : "";
     vendorDetail.file_npwp = null;
     vendorDetail.file_ktp_pemilik = null;
     vendorDetail.file_ktp_penanggung_jawab = null;
@@ -178,44 +229,97 @@ const VendorRegistrationList = () => {
     vendorDetail.file_screenshot_rekening = null;
     vendorDetail.file_sertifikasi_bpom = null;
 
-    if(Cookies.get("admin_token") !== undefined){
-      await fetch(`${api}api/portal-vendor/sign-up`, {
-        method: "POST",
-        body: JSON.stringify(vendorDetail),
-      })
-        .then((response) => response.json())
-        .then((res) => {
-          if (res.data !== 0) {
-            setOpen(false);
-            fetchData();
-            setOpenBackdrop(false);
-            toast.success("Update Success!", {
-              position: "top-right",
-              style: {
-                borderRadius: "10px",
-                background: "#333",
-                color: "#fff",
-              },
-            });
-          } else {
-            setOpen(false);
-            fetchData();
-            setOpenBackdrop(false);
-            toast.error("Update Failed!", {
-              position: "top-right",
-              style: {
-                borderRadius: "10px",
-                background: "#333",
-                color: "#fff",
-              },
-            });
-          }
+    if (Cookies.get("admin_token") !== undefined) {
+      if (status.value === "APPROVED" && vendorDetail.kode.trim().length > 0) {
+        await fetch(`${api}api/portal-vendor/sign-up`, {
+          method: "POST",
+          body: JSON.stringify(vendorDetail),
         })
-        .then((err) => {
-          setOpenBackdrop(false);
+          .then((response) => response.json())
+          .then((res) => {
+            if (res.data !== 0) {
+              setOpen(false);
+              fetchData();
+              setOpenBackdrop(false);
+              toast.success("Update Success!", {
+                position: "top-right",
+                style: {
+                  borderRadius: "10px",
+                  background: "#333",
+                  color: "#fff",
+                },
+              });
+            } else {
+              setOpen(false);
+              fetchData();
+              setOpenBackdrop(false);
+              toast.error(
+                "Vendor belum terdaftar di Oxysystem atau kode salah!",
+                {
+                  position: "top-right",
+                  style: {
+                    borderRadius: "10px",
+                    background: "#333",
+                    color: "#fff",
+                  },
+                }
+              );
+            }
+          })
+          .catch((err) => {
+            setOpenBackdrop(false);
+          });
+      } else if (status.value !== "APPROVED") {
+        await fetch(`${api}api/portal-vendor/sign-up`, {
+          method: "POST",
+          body: JSON.stringify(vendorDetail),
+        })
+          .then((response) => response.json())
+          .then((res) => {
+            if (res.data !== 0) {
+              setOpen(false);
+              fetchData();
+              setOpenBackdrop(false);
+              toast.success("Update Success!", {
+                position: "top-right",
+                style: {
+                  borderRadius: "10px",
+                  background: "#333",
+                  color: "#fff",
+                },
+              });
+            } else {
+              setOpen(false);
+              fetchData();
+              setOpenBackdrop(false);
+              toast.error("Vendor belum terdaftar di Oxysystem!", {
+                position: "top-right",
+                style: {
+                  borderRadius: "10px",
+                  background: "#333",
+                  color: "#fff",
+                },
+              });
+            }
+          })
+          .catch((err) => {
+            setOpenBackdrop(false);
+          });
+      } else {
+        setOpen(false);
+        fetchData();
+        setOpenBackdrop(false);
+        toast.error("Kode tidak boleh kosong!", {
+          position: "top-right",
+          style: {
+            borderRadius: "10px",
+            background: "#333",
+            color: "#fff",
+          },
         });
-    }else{
-      navigate("/wh-smith");
+      }
+    } else {
+      navigate("/admin");
       toast.error("Silahkan Login Terlebih Dahulu!", {
         position: "top-right",
         style: {
@@ -225,14 +329,13 @@ const VendorRegistrationList = () => {
         },
       });
     }
-   
   };
 
   const onClickDownload = (id) => {
     if (Cookies.get("admin_token") !== undefined) {
       window.location = `${apiExport}fin/transactionact/portalvendorinvoicedownload.jsp?oid=${id}`;
     } else {
-      navigate("/wh-smith");
+      navigate("/admin");
       toast.error("Silahkan Login Terlebih Dahulu!", {
         position: "top-right",
         style: {
@@ -244,7 +347,7 @@ const VendorRegistrationList = () => {
     }
   };
   return (
-    <AdminWhSmith>
+    <>
       <div
         className={`${
           screenSize < 768 ? "px-5 pt-20" : "px-10 pt-10"
@@ -252,7 +355,7 @@ const VendorRegistrationList = () => {
       >
         <div className="mb-20 max-[349px]:mb-5">Vendor Registration List</div>
         <div className="mb-5 w-[70%] max-[638px]:w-full">
-          <div className="mb-5 text-slate-400">Parameter Pencarian</div>
+          <div className="mb-5 text-slate-400">Searching Parameter</div>
           <div>
             <form onSubmit={(e) => onSearch(e)}>
               <div className="flex max-[349px]:flex-col gap-5 items-center mb-5">
@@ -272,7 +375,7 @@ const VendorRegistrationList = () => {
                       type="text"
                       name=""
                       id=""
-                      onChange={(e) => setSrcName(e.target.value.trim())}
+                      onChange={(e) => setSrcName(e.target.value)}
                       className="w-full h-[32px] text-slate-400 border border-slate-300 rounded-sm focus:border focus:border-[#0077b6]  "
                     />
                   </div>
@@ -290,7 +393,7 @@ const VendorRegistrationList = () => {
                   <div className="w-full relative">
                     <input
                       value={code}
-                      onChange={(e) => setCode(e.target.value.trim())}
+                      onChange={(e) => setCode(e.target.value)}
                       type="text"
                       name=""
                       id=""
@@ -334,7 +437,7 @@ const VendorRegistrationList = () => {
             </form>
           </div>
         </div>
-        <div className="w-full overflow-x-auto shadow-md text-[14px]">
+        <div className="w-full overflow-auto shadow-md max-h-[400px] text-[14px]">
           <table className="w-full table-monitoring">
             <thead>
               <tr className="text-center whitespace-nowrap border-2 bg-[#eaf4f4]">
@@ -364,7 +467,7 @@ const VendorRegistrationList = () => {
                         </div>
                       </div>
                     </td>
-                    <td className="p-5 border">{index + 1}</td>
+                    <td className="p-5 border">{start + index + 1}</td>
                     <td className="text-left p-5 border">{item.nama}</td>
                     <td className="p-5 border">{item.kode}</td>
 
@@ -373,7 +476,9 @@ const VendorRegistrationList = () => {
                         ? listUser[index].password
                         : ""}
                     </td>
-                    <td className="p-5 border">{item.status}</td>
+                    <td className="p-5 border">
+                      {titleCase(item.status, "_")}
+                    </td>
                     <td className="p-5 border">
                       {item.status === "APPROVED" ? "✓" : "✕"}
                     </td>
@@ -390,10 +495,10 @@ const VendorRegistrationList = () => {
           </table>
         </div>
 
-        {/* {listVendor.length > 0 && (
+        {listVendor.length > 0 && (
           <div className="mt-10">
             <Pagination
-              count={100}
+              count={count}
               page={page}
               onChange={onChangePagination}
               showFirstButton
@@ -401,7 +506,7 @@ const VendorRegistrationList = () => {
               size="small"
             />
           </div>
-        )} */}
+        )}
 
         <div>
           <Modal
@@ -434,7 +539,7 @@ const VendorRegistrationList = () => {
                         :
                       </div>
                       <div className="w-[240px] whitespace-nowrap overflow-ellipsis overflow-hidden">
-                        {titleCase(vendorDetail.nama)}
+                        {vendorDetail.nama}
                       </div>
                     </div>
                     <div className="flex max-[549px]:flex-col max-[549px]:items-start items-center gap-2">
@@ -583,47 +688,87 @@ const VendorRegistrationList = () => {
                     </button>
                   </div>
 
-                  <div
-                    className={` max-[402px]:flex-col items-center max-[402px]:items-start gap-2 mt-5 ${
-                      vendorDetail.status === "APPROVED" ? "hidden" : "flex"
-                    } `}
-                  >
-                    <div className="w-[100px]">Set status to</div>
-                    <div className="max-[402px]:w-full">
-                      <Select
-                        value={status}
-                        onChange={onChangeStatus}
-                        className="whitespace-nowrap"
-                        options={options}
-                        noOptionsMessage={() => "Data not found"}
-                        styles={customeStyles}
-                        required
-                      />
-                    </div>
-                  </div>
+                  {vendorDetail.status !== "APPROVED" ? (
+                    <>
+                      <div
+                        className={` max-[402px]:flex-col items-center max-[402px]:items-start gap-2 mt-5 flex
+                      `}
+                      >
+                        <div className="w-[100px]">Set status to</div>
+                        <div className="max-[402px]:w-full">
+                          <Select
+                            value={status}
+                            onChange={onChangeStatus}
+                            className="whitespace-nowrap"
+                            options={options}
+                            noOptionsMessage={() => "Data not found"}
+                            styles={customeStyles}
+                            required
+                          />
+                        </div>
+                      </div>
+                      {status.value === "RE_REGISTER" && (
+                        <div className="mt-5 flex flex-col gap-2">
+                          <label htmlFor="">Reason</label>
+                          <textarea
+                            value={vendorDetail.reason}
+                            onChange={(e) =>
+                              setVendorDetail({
+                                ...vendorDetail,
+                                reason: e.target.value,
+                              })
+                            }
+                            cols="30"
+                            rows="5"
+                          ></textarea>
+                        </div>
+                      )}
+                      {status.value === "APPROVED" && (
+                        <div className="mt-5 flex flex-col gap-2">
+                          <label htmlFor="">Code</label>
+                          <input
+                            type="text"
+                            value={vendorDetail.kode}
+                            onChange={(e) =>
+                              setVendorDetail({
+                                ...vendorDetail,
+                                kode: e.target.value,
+                              })
+                            }
+                          ></input>
+                        </div>
+                      )}
 
-                  <div className="mt-5 flex max-[479px]:flex-col max-[479px]:items-start items-center gap-2 text-center justify-between">
-                    <div
-                      onClick={handleClose}
-                      className="rounded-md py-2 px-5 shadow-sm border border-gray-400 cursor-pointer max-[479px]:w-full"
-                    >
-                      Back
+                      <div className="mt-5 flex max-[479px]:flex-col max-[479px]:items-start items-center gap-2 text-center justify-between">
+                        <div
+                          onClick={handleClose}
+                          className="rounded-md py-2 px-5 shadow-sm border border-gray-400 cursor-pointer max-[479px]:w-full"
+                        >
+                          Back
+                        </div>
+                        <button
+                          type="button"
+                          disabled={
+                            vendorDetail.status === "APPROVED" ? true : false
+                          }
+                          onClick={() => onSubmitVendor(vendorDetail)}
+                          className={`rounded-md py-2 px-5 shadow-sm bg-[#0077b6] text-white max-[479px]:w-full cursor-pointer block
+                        `}
+                        >
+                          Submit
+                        </button>
+                      </div>
+                    </>
+                  ) : (
+                    <div className="mt-5 flex justify-end  gap-2 text-center">
+                      <div
+                        onClick={handleClose}
+                        className="rounded-md py-2 px-5 shadow-sm border border-gray-400 cursor-pointer max-[479px]:w-full"
+                      >
+                        Back
+                      </div>
                     </div>
-                    <button
-                      type="button"
-                      disabled={
-                        vendorDetail.status === "APPROVED" ? true : false
-                      }
-                      onClick={() => onSubmitVendor(vendorDetail)}
-                      className={`rounded-md py-2 px-5 shadow-sm bg-[#0077b6] text-white max-[479px]:w-full ${
-                        vendorDetail.status === "APPROVED"
-                          ? "cursor-not-allowed hidden"
-                          : "cursor-pointer block"
-                      } `}
-                    >
-                      Submit
-                    </button>
-                  </div>
+                  )}
                 </div>
               )}
             </Fade>
@@ -639,7 +784,7 @@ const VendorRegistrationList = () => {
       >
         <CircularProgress color="inherit" />
       </Backdrop>
-    </AdminWhSmith>
+    </>
   );
 };
 

@@ -1,14 +1,18 @@
 import { DatePicker, LocalizationProvider } from "@mui/x-date-pickers";
 import { useStateContext } from "../../contexts/ContextProvider";
-import AdminWhSmith from "../../layouts/AdminWhSmith";
 import { AdapterDayjs } from "@mui/x-date-pickers/AdapterDayjs";
 import { DemoContainer } from "@mui/x-date-pickers/internals/demo";
 import { useEffect, useState } from "react";
 import dayjs from "dayjs";
-import { Backdrop, CircularProgress } from "@mui/material";
+import { Backdrop, CircularProgress, Fade, Modal } from "@mui/material";
 import { RiFileExcel2Line } from "react-icons/ri";
 import titleCase from "../../components/functions/TitleCase";
 import accountingNumber from "../../components/functions/AccountingNumber";
+import { useNavigate } from "react-router-dom";
+import toast from "react-hot-toast";
+import Cookies from "js-cookie";
+import isEmpty from "../../components/functions/CheckEmptyObject";
+import { PiFileZipDuotone } from "react-icons/pi";
 
 const api = process.env.REACT_APP_BASEURL;
 const apiExport = process.env.REACT_APP_EXPORT_URL;
@@ -26,6 +30,13 @@ const ListingPenagihan = () => {
   // eslint-disable-next-line no-unused-vars
   const [data, setData] = useState([]);
   const [ignoreDate, setIgnoreDate] = useState(1);
+  const [open, setOpen] = useState(false);
+
+  const navigate = useNavigate();
+  const handleOpen = () => setOpen(true);
+  const handleClose = () => setOpen(false);
+
+  const [penagihanDetail, setPenagihanDetail] = useState({});
 
   useEffect(() => {
     window.scrollTo(0, 0);
@@ -50,8 +61,6 @@ const ListingPenagihan = () => {
 
   const fetchData = async (parameter) => {
     setOpenBackdrop(true);
-
-    
 
     await fetch(`${api}api/portal-vendor/list/penagihan`, {
       method: "POST",
@@ -92,8 +101,25 @@ const ListingPenagihan = () => {
     fetchData(parameter);
   };
 
+  const onClikOpen = (item) => {
+    if (Cookies.get("admin_token") !== undefined) {
+      handleOpen();
+      setPenagihanDetail(item);
+    } else {
+      toast.error("Silahkan Login Terlebih Dahulu!", {
+        position: "top-right",
+        style: {
+          borderRadius: "10px",
+          background: "#333",
+          color: "#fff",
+        },
+      });
+      navigate("/adminh");
+    }
+  };
+
   return (
-    <AdminWhSmith>
+    <>
       <div
         className={`${
           screenSize < 768 ? "px-5 pt-20" : "px-10 pt-10"
@@ -101,7 +127,7 @@ const ListingPenagihan = () => {
       >
         <div className="mb-20">Listing Penagihan</div>
         <div className="mb-5 w-[80%] max-[638px]:w-full">
-          <div className="mb-5 text-slate-400">Parameter Pencarian</div>
+          <div className="mb-5 text-slate-400">Searching Parameter</div>
           <div>
             <form action="">
               <div className="flex max-[1254px]:flex-col gap-5 items-center mb-5">
@@ -118,7 +144,7 @@ const ListingPenagihan = () => {
                   <div className="w-full">
                     <input
                       value={vendorName}
-                      onChange={(e) => setVendorName(e.target.value.trim())}
+                      onChange={(e) => setVendorName(e.target.value)}
                       type="text"
                       name=""
                       id=""
@@ -205,7 +231,7 @@ const ListingPenagihan = () => {
                 <td className="p-5 border">Nilai Penagihan (Rp)</td>
                 <td className="p-5 border">Status</td>
                 <td className="p-5 border">Update Terakhir</td>
-          
+                <td className="p-5 border">Action</td>
               </tr>
             </thead>
             <tbody>
@@ -229,7 +255,14 @@ const ListingPenagihan = () => {
                     <td className="p-5 border">
                       {dayjs(item.updated_at).format("DD/MM/YYYY HH:mm:ss")}
                     </td>
-                    
+                    <td
+                      onClick={() => onClikOpen(item)}
+                      className="p-5 border cursor-pointer"
+                    >
+                      <div className="py-2 px-1 rounded-lg bg-gray-200">
+                        Detail
+                      </div>
+                    </td>
                   </tr>
                 ))
               ) : (
@@ -263,17 +296,202 @@ const ListingPenagihan = () => {
             </a>
 
             {/* <div className="mt-10">
-              <Pagination
-                count={20}
-                page={page}
-                onChange={onChangePagination}
-                showFirstButton
-                showLastButton
-                size="small"
-              />
-            </div> */}
+            <Pagination
+              count={20}
+              page={page}
+              onChange={onChangePagination}
+              showFirstButton
+              showLastButton
+              size="small"
+            />
+          </div> */}
           </>
         )}
+      </div>
+      <div>
+        <Modal
+          aria-labelledby="transition-modal-title"
+          aria-describedby="transition-modal-description"
+          open={open}
+          onClose={handleClose}
+          closeAfterTransition
+          slots={{ backdrop: Backdrop }}
+          slotProps={{
+            backdrop: {
+              timeout: 500,
+            },
+          }}
+        >
+          <Fade in={open}>
+            {!isEmpty(penagihanDetail) && (
+              <div
+                className={`border-0 bg-white py-5 px-7 absolute top-[50%] left-1/2 translate-x-[-50%] translate-y-[-50%] h-[400px] overflow-y-auto z-[999999]  ${
+                  screenSize <= 548 ? "w-[90%]" : "w-fit"
+                }`}
+              >
+                <div className="text-[20px] mb-5 font-semibold ">Detail</div>
+                <div className="flex flex-col gap-2">
+                  <div className="flex max-[549px]:flex-col max-[549px]:items-start items-center gap-2">
+                    <div className="w-[270px] whitespace-nowrap font-bold">
+                      Supplier
+                    </div>
+                    <div className="max-[549px]:hidden min-[550px]:block">
+                      :
+                    </div>
+                    <div className="w-[240px] whitespace-nowrap overflow-ellipsis overflow-hidden">
+                      {penagihanDetail.vendor.nama}
+                    </div>
+                  </div>
+                  <div className="flex max-[549px]:flex-col max-[549px]:items-start items-center gap-2">
+                    <div className="w-[270px] whitespace-nowrap font-bold">
+                      Tipe Penagihan
+                    </div>
+                    <div className="max-[549px]:hidden min-[550px]:block">
+                      :
+                    </div>
+                    <div className="w-[240px] whitespace-nowrap overflow-ellipsis overflow-hidden">
+                      {titleCase(penagihanDetail.tipe_penagihan)}
+                    </div>
+                  </div>
+                  <div className="flex max-[549px]:flex-col max-[549px]:items-start items-center gap-2">
+                    <div className="w-[270px] whitespace-nowrap font-bold">
+                      No Purchase Order (PO)
+                    </div>
+                    <div className="max-[549px]:hidden min-[550px]:block">
+                      :
+                    </div>
+                    <div className="w-[240px] whitespace-nowrap overflow-ellipsis overflow-hidden">
+                      {penagihanDetail.nomer_po}
+                    </div>
+                  </div>
+                  <div className="flex max-[549px]:flex-col max-[549px]:items-start items-center gap-2">
+                    <div className="w-[270px] whitespace-nowrap font-bold">
+                      Tanggal PO
+                    </div>
+                    <div className="max-[549px]:hidden min-[550px]:block">
+                      :
+                    </div>
+                    <div className="w-[240px] whitespace-nowrap overflow-ellipsis overflow-hidden">
+                      {dayjs(penagihanDetail.tanggal_po).format("DD/MM/YYYY")}
+                    </div>
+                  </div>
+                  <div className="flex max-[549px]:flex-col max-[549px]:items-start items-center gap-2">
+                    <div className="w-[270px] whitespace-nowrap font-bold">
+                      No Delivery Order (DO)
+                    </div>
+                    <div className="max-[549px]:hidden min-[550px]:block">
+                      :
+                    </div>
+                    <div className="w-[240px] whitespace-nowrap overflow-ellipsis overflow-hidden">
+                      {penagihanDetail.nomer_do}
+                    </div>
+                  </div>
+                  <div className="flex max-[549px]:flex-col max-[549px]:items-start items-center gap-2">
+                    <div className="w-[270px] whitespace-nowrap font-bold">
+                      Delivery Area
+                    </div>
+                    <div className="max-[549px]:hidden min-[550px]:block">
+                      :
+                    </div>
+                    <div className="w-[240px] whitespace-nowrap overflow-ellipsis overflow-hidden">
+                      {titleCase(penagihanDetail.delivery_area)}
+                    </div>
+                  </div>
+                  <div className="flex max-[549px]:flex-col max-[549px]:items-start  gap-2">
+                    <div className="w-[270px] whitespace-nowrap font-bold">
+                      No Invoice
+                    </div>
+                    <div className="max-[549px]:hidden min-[550px]:block">
+                      :
+                    </div>
+                    <div className="flex flex-col gap-1">
+                      {penagihanDetail.nomer_invoices.map((nomer) => (
+                        <div className="w-[240px] whitespace-nowrap overflow-ellipsis overflow-hidden">
+                          {nomer}
+                        </div>
+                      ))}
+                    </div>
+                  </div>
+                  <div className="flex max-[549px]:flex-col max-[549px]:items-start gap-2">
+                    <div className="w-[270px] whitespace-nowrap font-bold">
+                      Tanggal Invoice
+                    </div>
+                    <div className="max-[549px]:hidden min-[550px]:block">
+                      :
+                    </div>
+                    <div className="flex flex-col gap-1">
+                      {penagihanDetail.tanggal_invoices.map((tanggal) => (
+                        <div className="w-[240px] whitespace-nowrap overflow-ellipsis overflow-hidden">
+                          {dayjs(tanggal).format("DD/MM/YYYY")}
+                        </div>
+                      ))}
+                    </div>
+                  </div>
+                  <div className="flex max-[549px]:flex-col max-[549px]:items-start gap-2">
+                    <div className="w-[270px] whitespace-nowrap font-bold">
+                      Nilai Invoice
+                    </div>
+                    <div className="max-[549px]:hidden min-[550px]:block">
+                      :
+                    </div>
+                    <div className="flex flex-col gap-1">
+                      {penagihanDetail.nilai_invoices.map((nilai) => (
+                        <div className="w-[240px] whitespace-nowrap overflow-ellipsis overflow-hidden">
+                          Rp. {accountingNumber(nilai)}
+                        </div>
+                      ))}
+                    </div>
+                  </div>
+                  <div className="flex max-[549px]:flex-col max-[549px]:items-start items-center gap-2">
+                    <div className="w-[270px] whitespace-nowrap font-bold">
+                      Apakah Barang Termasuk Pajak
+                    </div>
+                    <div className="max-[549px]:hidden min-[550px]:block">
+                      :
+                    </div>
+                    <div className="w-[240px] whitespace-nowrap overflow-ellipsis overflow-hidden">
+                      {penagihanDetail.is_pajak === 0 ? "Tidak" : "Ya"}
+                    </div>
+                  </div>
+                  <div className="flex max-[549px]:flex-col max-[549px]:items-start gap-2 mb-5">
+                    <div className="w-[270px] whitespace-nowrap font-bold">
+                      No Seri Faktur Pajak
+                    </div>
+                    <div className="max-[549px]:hidden min-[550px]:block">
+                      :
+                    </div>
+                    <div className="flex flex-col gap-1">
+                      {penagihanDetail.nomer_seri_pajak.map((nilai) => (
+                        <div className="w-[240px] whitespace-nowrap overflow-ellipsis overflow-hidden">
+                          {nilai}
+                        </div>
+                      ))}
+                    </div>
+                  </div>
+                </div>
+
+                <a
+                  href={`${apiExport}fin/transactionact/portalvendorinvoicedownload.jsp?oid=${penagihanDetail.id}`}
+                  className="mt-5 rounded-sm py-2 px-5 text-white bg-[#d4a373] w-fit cursor-pointer flex gap-1 items-center"
+                >
+                  <div>
+                    <PiFileZipDuotone />
+                  </div>
+                  <div>Download</div>
+                </a>
+
+                <div className="mt-5 flex max-[479px]:flex-col max-[479px]:items-start items-center gap-2 text-center justify-end">
+                  <div
+                    onClick={handleClose}
+                    className="rounded-md py-2 px-5 shadow-sm border border-gray-400 cursor-pointer max-[479px]:w-full"
+                  >
+                    Back
+                  </div>
+                </div>
+              </div>
+            )}
+          </Fade>
+        </Modal>
       </div>
       <Backdrop
         sx={{
@@ -284,7 +502,7 @@ const ListingPenagihan = () => {
       >
         <CircularProgress color="inherit" />
       </Backdrop>
-    </AdminWhSmith>
+    </>
   );
 };
 

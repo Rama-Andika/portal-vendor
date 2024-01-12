@@ -92,7 +92,7 @@ const NavbarAdmin = () => {
       },
     });
 
-    navigate("/wh-smith");
+    navigate("/admin");
   };
 
   return (

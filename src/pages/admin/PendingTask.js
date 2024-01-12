@@ -1,6 +1,6 @@
 import { DatePicker, LocalizationProvider } from "@mui/x-date-pickers";
 import { useStateContext } from "../../contexts/ContextProvider";
-import AdminWhSmith from "../../layouts/AdminWhSmith";
+
 import { AdapterDayjs } from "@mui/x-date-pickers/AdapterDayjs";
 import { DemoContainer } from "@mui/x-date-pickers/internals/demo";
 import { useEffect, useState } from "react";
@@ -100,7 +100,7 @@ const PendingTask = () => {
           color: "#fff",
         },
       });
-      navigate("/wh-smith");
+      navigate("/admin");
     }
   };
 
@@ -154,11 +154,18 @@ const PendingTask = () => {
       } else {
         isSave = false;
       }
-    } else {
+    } else if (item.status === "APPROVED"){
+      if(item.note.trim().length > 0 && item.due_date !== null){
+        isSave = true;
+      }else{
+        isSave = false;
+      }
+    } 
+    else {
       isSave = true;
     }
 
-    if(Cookies.get("admin_token") !== undefined){
+    if (Cookies.get("admin_token") !== undefined) {
       if (isSave) {
         const initialValue = {
           id: item.id,
@@ -185,8 +192,10 @@ const PendingTask = () => {
           updated_at: dayjs(new Date()).format("YYYY-MM-DD HH:mm:ss"),
           reason: item.reason,
           status: item.status,
+          note: item.note,
+          due_date: dayjs(item.due_date).format("YYYY-MM-DD HH:mm:ss"),
         };
-  
+
         await fetch(`${api}api/portal-vendor/invoice`, {
           method: "POST",
           body: JSON.stringify(initialValue),
@@ -234,7 +243,7 @@ const PendingTask = () => {
           });
       } else {
         setOpenBackdrop(false);
-        toast.error("Reason Masih Kosong!", {
+        toast.error("Ada data yang masih kosong!", {
           position: "top-right",
           style: {
             borderRadius: "10px",
@@ -243,8 +252,8 @@ const PendingTask = () => {
           },
         });
       }
-    }else{
-      navigate("/wh-smith");
+    } else {
+      navigate("/admin");
       toast.error("Silahkan Login Terlebih Dahulu!", {
         position: "top-right",
         style: {
@@ -254,12 +263,10 @@ const PendingTask = () => {
         },
       });
     }
-
-    
   };
 
   return (
-    <AdminWhSmith>
+    <>
       <div
         className={`${
           screenSize < 768 ? "px-5 pt-20" : "px-10 pt-10"
@@ -267,7 +274,7 @@ const PendingTask = () => {
       >
         <div className="mb-20 max-[349px]:mb-5">Pending Task</div>
         <div className="mb-5 w-[70%] max-[638px]:w-full">
-          <div className="mb-5 text-slate-400">Parameter Pencarian</div>
+          <div className="mb-5 text-slate-400">Searching Parameter</div>
           <div>
             <form action="">
               <div className="flex max-[1254px]:flex-col gap-5 items-center mb-5">
@@ -284,7 +291,7 @@ const PendingTask = () => {
                   <div className="w-full">
                     <input
                       value={name}
-                      onChange={(e) => setName(e.target.value.trim())}
+                      onChange={(e) => setName(e.target.value)}
                       type="text"
                       name=""
                       id=""
@@ -653,6 +660,48 @@ const PendingTask = () => {
                     </div>
                   )}
 
+                  {penagihanDetail.status === "APPROVED" && (
+                    <>
+                      <div className="mt-5 flex flex-col gap-2">
+                        <label htmlFor="">Note</label>
+                        <textarea
+                          value={penagihanDetail.note}
+                          onChange={(e) =>
+                            setPenagihanDetail({
+                              ...penagihanDetail,
+                              note: e.target.value,
+                            })
+                          }
+                          cols="30"
+                          rows="5"
+                        ></textarea>
+                      </div>
+
+                      <div className="mt-5 flex flex-col gap-2">
+                        <label htmlFor="">Due Date</label>
+                        <LocalizationProvider dateAdapter={AdapterDayjs}>
+                          <DemoContainer components={["DatePicker"]}>
+                            <DatePicker
+                              className="w-full"
+                              value={
+                                penagihanDetail.due_date !== null
+                                  ? dayjs(penagihanDetail.due_date)
+                                  : dayjs(new Date())
+                              }
+                              onChange={(value) =>
+                                setPenagihanDetail({
+                                  ...penagihanDetail,
+                                  due_date: value,
+                                })
+                              }
+                              slotProps={{ textField: { size: "small" } }}
+                            />
+                          </DemoContainer>
+                        </LocalizationProvider>
+                      </div>
+                    </>
+                  )}
+
                   <div className="mt-5 flex max-[479px]:flex-col max-[479px]:items-start items-center gap-2 text-center justify-between">
                     <div
                       onClick={handleClose}
@@ -682,7 +731,7 @@ const PendingTask = () => {
       >
         <CircularProgress color="inherit" />
       </Backdrop>
-    </AdminWhSmith>
+    </>
   );
 };
 

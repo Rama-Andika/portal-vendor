@@ -1,6 +1,5 @@
 import { BsBuildings } from "react-icons/bs";
 import { useStateContext } from "../../../contexts/ContextProvider";
-import Admin from "../../../layouts/Admin";
 import { MdPayments } from "react-icons/md";
 import { HiOutlineDocumentText } from "react-icons/hi";
 import {
@@ -31,9 +30,12 @@ import Cookies from "js-cookie";
 import { FaCloudUploadAlt } from "react-icons/fa";
 
 import GetBase64 from "../../../components/functions/GetBase64";
+import { Viewer } from "@react-pdf-viewer/core";
+import titleCase from "../../../components/functions/TitleCase";
+import accountingNumber from "../../../components/functions/AccountingNumber";
 
 const optionsTipePenagihan = [
-  { value: "beli_putus", label: "Beli Putus", key: 0 },
+  { value: "beli putus", label: "Beli Putus", key: 0 },
   { value: "konsinyasi", label: "Konsinyasi", key: 1 },
 ];
 const optionsDeliveryArea = [
@@ -83,7 +85,7 @@ const Penagihan = () => {
   const [activeStep, setActiveStep] = useState(0);
 
   const [tipePenagihan, setTipePenagihan] = useState({
-    value: "beli_putus",
+    value: "beli putus",
     label: "Beli Putus",
     key: 0,
   });
@@ -102,7 +104,11 @@ const Penagihan = () => {
   const [nomerInvoice, setNomerInvoice] = useState(inputArr);
   const [nilaiInvoice, setNilaiInvoice] = useState(inputNilaiInvoice);
   const [invoiceTambahan, setInvoiceTambahan] = useState([]);
+  const [invoicePreviewTambahan, setInvoicePreviewTambahan] = useState([]);
   const [fakturPajakTambahan, setFakturPajakTambahan] = useState([]);
+  const [fakturPajakPreviewTambahan, setFakturPajakPreviewTambahan] = useState(
+    []
+  );
   const [tipePengiriman, setTipePengiriman] = useState({
     value: 0,
     label: "Drop Box Gudang PT KPU",
@@ -121,6 +127,19 @@ const Penagihan = () => {
   const [receivingNoteFile, setReceivingNoteFile] = useState(null);
   const [resiFile, setResiFile] = useState(null);
   const [scanReportSalesFile, setScanReportSalesFile] = useState(null);
+
+  const [purchaseOrderPreviewFile, setPurchaseOrderPreviewFile] =
+    useState(null);
+  const [deliveryOrderPreviewFile, setDeliveryOrderPreviewFile] =
+    useState(null);
+  const [invoicePreviewFile, setInvoicePreviewFile] = useState(null);
+  const [kwitansiPreviewFile, setKwitansiPreviewFile] = useState(null);
+  const [fakturPajakPreviewFile, setFakturPajakPreviewFile] = useState(null);
+  const [receivingNotePreviewFile, setReceivingNotePreviewFile] =
+    useState(null);
+  const [resiPreviewFile, setResiPreviewFile] = useState(null);
+  const [scanReportSalesPreviewFile, setScanReportSalesPreviewFile] =
+    useState(null);
   // eslint-disable-next-line no-unused-vars
   const [createdAt, setCreatedAt] = useState();
   // eslint-disable-next-line no-unused-vars
@@ -145,12 +164,14 @@ const Penagihan = () => {
     })
       .then((response) => response.json())
       .then((res) => {
-   
-        if(res.data.length > 0){
+        if (res.data.length > 0) {
+          setTipePenagihan({
+            value: res.data[0].tipe_pembelian,
+            label: titleCase(res.data[0].tipe_pembelian),
+          });
           setVendors(res.data[0]);
         }
         setOpenBackdrop(false);
-        
       })
       .then((err) => {
         setOpenBackdrop(false);
@@ -161,7 +182,7 @@ const Penagihan = () => {
     let countNomerInvoice = 0;
     let countTanggalInvoice = 0;
     let countNilaiInvoice = 0;
-    let countInvoiceTambahan = 0
+    let countInvoiceTambahan = 0;
 
     // eslint-disable-next-line array-callback-return
     nomerInvoice.map((invoice) => {
@@ -179,25 +200,28 @@ const Penagihan = () => {
 
     // eslint-disable-next-line array-callback-return
     nilaiInvoice.map((nilai) => {
-      if (nilai.value.trim().length > 0) {
+      const value = nilai.value.replace(/\./g, "").split(",").join(".");
+      if (nilai.value.trim().length > 0 && !isNaN(value)) {
         countNilaiInvoice += 1;
       }
     });
 
-    const invoiceTambahanArray =  invoiceTambahan.filter((invoice)=>{
-      return !isEmpty(invoice)
+    const invoiceTambahanArray = invoiceTambahan.filter((invoice) => {
+      return !isEmpty(invoice);
     });
 
-    const fakturPajakTambahanArray =  fakturPajakTambahan.filter((invoice)=>{
-      return !isEmpty(invoice)
+    const fakturPajakTambahanArray = fakturPajakTambahan.filter((invoice) => {
+      return !isEmpty(invoice);
     });
 
     // eslint-disable-next-line array-callback-return
-    nomerInvoice.map((invoice) =>{
-      if(!isEmpty(invoice)){
-        countInvoiceTambahan += 1
+    nomerInvoice.map((invoice) => {
+      if (!isEmpty(invoice)) {
+        countInvoiceTambahan += 1;
       }
-    })
+    });
+
+    console.log("invoice " + nomerInvoice.length);
 
     if (activeStep === 0) {
       setActiveStep((prevActiveStep) => prevActiveStep + 1);
@@ -234,7 +258,10 @@ const Penagihan = () => {
         receivingNoteFile !== null
       ) {
         if (vendors.status_pajak === "PKP") {
-          if (fakturPajakFile !== null && countInvoiceTambahan - 1 === fakturPajakTambahanArray.length) {
+          if (
+            fakturPajakFile !== null &&
+            countInvoiceTambahan - 1 === fakturPajakTambahanArray.length
+          ) {
             setIsError(false);
           } else {
             return setIsError(true);
@@ -264,22 +291,22 @@ const Penagihan = () => {
     let countNomerInvoice = 0;
     let countTanggalInvoice = 0;
     let countNilaiInvoice = 0;
-    let countInvoiceTambahan = 0
+    let countInvoiceTambahan = 0;
 
-    const invoiceTambahanArray =  invoiceTambahan.filter((invoice)=>{
-       return !isEmpty(invoice)
-     });
-
-     const fakturPajakTambahanArray =  fakturPajakTambahan.filter((invoice)=>{
-      return !isEmpty(invoice)
+    const invoiceTambahanArray = invoiceTambahan.filter((invoice) => {
+      return !isEmpty(invoice);
     });
- 
-     // eslint-disable-next-line array-callback-return
-     nomerInvoice.map((invoice) =>{
-       if(!isEmpty(invoice)){
-         countInvoiceTambahan += 1
-       }
-     })
+
+    const fakturPajakTambahanArray = fakturPajakTambahan.filter((invoice) => {
+      return !isEmpty(invoice);
+    });
+
+    // eslint-disable-next-line array-callback-return
+    nomerInvoice.map((invoice) => {
+      if (!isEmpty(invoice)) {
+        countInvoiceTambahan += 1;
+      }
+    });
 
     // eslint-disable-next-line array-callback-return
     nomerInvoice.map((invoice) => {
@@ -297,7 +324,8 @@ const Penagihan = () => {
 
     // eslint-disable-next-line array-callback-return
     nilaiInvoice.map((nilai) => {
-      if (nilai.value.trim().length > 0) {
+      const value = nilai.value.replace(/\./g, "").split(",").join(".");
+      if (nilai.value.trim().length > 0 && !isNaN(value)) {
         countNilaiInvoice += 1;
       }
     });
@@ -338,7 +366,10 @@ const Penagihan = () => {
         scanReportSalesFile !== null
       ) {
         if (vendors.status_pajak === "PKP") {
-          if (fakturPajakFile !== null && countInvoiceTambahan - 1 === fakturPajakTambahanArray.length) {
+          if (
+            fakturPajakFile !== null &&
+            countInvoiceTambahan - 1 === fakturPajakTambahanArray.length
+          ) {
             setIsError(false);
           } else {
             return setIsError(true);
@@ -518,7 +549,9 @@ const Penagihan = () => {
 
     setNilaiInvoice((s) => {
       const newArr = s.slice();
-      newArr[index].value = e.target.validity.valid ? e.target.value : "";
+      newArr[index].value = accountingNumber(
+        e.target.value.split(".").join("")
+      );
 
       return newArr;
     });
@@ -544,31 +577,45 @@ const Penagihan = () => {
     setIsPajak(item);
   };
 
-  const onChangeInvoiceTambahan = (e,index) => {
+  const onChangeInvoiceTambahan = (e, index) => {
     e.preventDefault();
 
     const invoiceTambahanCopy = [...invoiceTambahan];
-    GetBase64(e.target.files[0])
-      .then((result) => {
-        invoiceTambahanCopy[index].file = result
-        setInvoiceTambahan(invoiceTambahanCopy);
-      })
-      .catch((err) => {
-        console.log(err);
-      });
+    const invoiceTambahanPreviewCopy = [...invoicePreviewTambahan];
+    if (e.target.files[0].size <= 2000000) {
+      invoiceTambahanPreviewCopy[index] = URL.createObjectURL(
+        e.target.files[0]
+      );
+      setInvoicePreviewTambahan(invoiceTambahanPreviewCopy);
+      GetBase64(e.target.files[0])
+        .then((result) => {
+          invoiceTambahanCopy[index].file = result;
+          setInvoiceTambahan(invoiceTambahanCopy);
+        })
+        .catch((err) => {
+          console.log(err);
+        });
+    }
   };
 
-  const onChangeFakturPajakTambahan = (e,index) => {
+  const onChangeFakturPajakTambahan = (e, index) => {
     e.preventDefault();
     const fakturPajakTambahanCopy = [...fakturPajakTambahan];
-    GetBase64(e.target.files[0])
-      .then((result) => {
-        fakturPajakTambahanCopy[index].file = result
-        setFakturPajakTambahan(fakturPajakTambahanCopy);
-      })
-      .catch((err) => {
-        console.log(err);
-      });
+    const fakturPajakTambahanPreviewCopy = [...fakturPajakPreviewTambahan];
+    if (e.target.files[0].size <= 2000000) {
+      fakturPajakTambahanPreviewCopy[index] = URL.createObjectURL(
+        e.target.files[0]
+      );
+      setFakturPajakPreviewTambahan(fakturPajakTambahanPreviewCopy);
+      GetBase64(e.target.files[0])
+        .then((result) => {
+          fakturPajakTambahanCopy[index].file = result;
+          setFakturPajakTambahan(fakturPajakTambahanCopy);
+        })
+        .catch((err) => {
+          console.log(err);
+        });
+    }
   };
 
   const onChangeTipePengiriman = (item) => {
@@ -580,7 +627,7 @@ const Penagihan = () => {
   };
 
   const addInput = () => {
-    if (nomerInvoice.length < 4) {
+    if (nomerInvoice.length < 5) {
       setNomerInvoice((s) => {
         return [
           ...s,
@@ -608,7 +655,6 @@ const Penagihan = () => {
         return [...s, {}];
       });
 
-  
       setInvoiceTambahan((s) => {
         return [...s, {}];
       });
@@ -626,8 +672,37 @@ const Penagihan = () => {
           },
         ];
       });
-      
     }
+  };
+
+  const deleteInput = () => {
+    setNomerInvoice((array) => {
+      return array.filter((_, i) => i !== nomerInvoice.length - 1);
+    });
+
+    setNilaiInvoice((array) => {
+      return array.filter((_, i) => i !== nilaiInvoice.length - 1);
+    });
+
+    setTanggalInvoice((array) => {
+      return array.filter((_, i) => i !== tanggalInvoice.length - 1);
+    });
+
+    setTanggalInvoice2((array) => {
+      return array.filter((_, i) => i !== tanggalInvoice2.length - 1);
+    });
+
+    setInvoiceTambahan((array) => {
+      return array.filter((_, i) => i !== invoiceTambahan.length - 1);
+    });
+
+    setFakturPajakTambahan((array) => {
+      return array.filter((_, i) => i !== fakturPajakTambahan.length - 1);
+    });
+
+    setNomerSeriFakturPajak((array) => {
+      return array.filter((_, i) => i !== nomerSeriFakturPajak.length - 1);
+    });
   };
 
   // const addInvoiceTambahan = () => {
@@ -672,6 +747,7 @@ const Penagihan = () => {
   const onChangePurchaseOrderFile = (e) => {
     if (e.target.files[0] !== undefined) {
       if (e.target.files[0].size <= 2000000) {
+        setPurchaseOrderPreviewFile(URL.createObjectURL(e.target.files[0]));
         GetBase64(e.target.files[0])
           .then((result) => {
             setPurchaseOrderFile(result);
@@ -688,6 +764,7 @@ const Penagihan = () => {
   const onChangeDeliveryOrderFile = (e) => {
     if (e.target.files[0] !== undefined) {
       if (e.target.files[0].size <= 2000000) {
+        setDeliveryOrderPreviewFile(URL.createObjectURL(e.target.files[0]));
         GetBase64(e.target.files[0])
           .then((result) => {
             setDeliveryOrderFile(result);
@@ -704,6 +781,7 @@ const Penagihan = () => {
   const onChangeInvoiceFile = (e) => {
     if (e.target.files[0] !== undefined) {
       if (e.target.files[0].size <= 2000000) {
+        setInvoicePreviewFile(URL.createObjectURL(e.target.files[0]));
         GetBase64(e.target.files[0])
           .then((result) => {
             setInvoiceFile(result);
@@ -720,6 +798,7 @@ const Penagihan = () => {
   const onChangeKwitansiFile = (e) => {
     if (e.target.files[0] !== undefined) {
       if (e.target.files[0].size <= 2000000) {
+        setKwitansiPreviewFile(URL.createObjectURL(e.target.files[0]));
         GetBase64(e.target.files[0])
           .then((result) => {
             setKwitansiFile(result);
@@ -736,6 +815,7 @@ const Penagihan = () => {
   const onChangeFakturPajakFile = (e) => {
     if (e.target.files[0] !== undefined) {
       if (e.target.files[0].size <= 2000000) {
+        setFakturPajakPreviewFile(URL.createObjectURL(e.target.files[0]));
         GetBase64(e.target.files[0])
           .then((result) => {
             setFakturPajakFile(result);
@@ -752,6 +832,7 @@ const Penagihan = () => {
   const onChangeScanReportSalesFile = (e) => {
     if (e.target.files[0] !== undefined) {
       if (e.target.files[0].size <= 2000000) {
+        setScanReportSalesPreviewFile(URL.createObjectURL(e.target.files[0]));
         GetBase64(e.target.files[0])
           .then((result) => {
             setScanReportSalesFile(result);
@@ -768,6 +849,7 @@ const Penagihan = () => {
   const onChangeReceivingNoteFile = (e) => {
     if (e.target.files[0] !== undefined) {
       if (e.target.files[0].size <= 2000000) {
+        setReceivingNotePreviewFile(URL.createObjectURL(e.target.files[0]));
         GetBase64(e.target.files[0])
           .then((result) => {
             setReceivingNoteFile(result);
@@ -784,6 +866,7 @@ const Penagihan = () => {
   const onChangeResiBuktiPengirimanFile = (e) => {
     if (e.target.files[0] !== undefined) {
       if (e.target.files[0].size <= 2000000) {
+        setResiPreviewFile(URL.createObjectURL(e.target.files[0]));
         GetBase64(e.target.files[0])
           .then((result) => {
             setResiFile(result);
@@ -800,24 +883,23 @@ const Penagihan = () => {
   const saveDraft = async () => {
     setOpenBackdrop(true);
     let isSave = false;
-    let countInvoiceTambahan = 0
+    let countInvoiceTambahan = 0;
 
-   const invoiceTambahanArray =  invoiceTambahan.filter((invoice)=>{
-      return !isEmpty(invoice)
+    const invoiceTambahanArray = invoiceTambahan.filter((invoice) => {
+      return !isEmpty(invoice);
     });
 
-    const fakturPajakTambahanArray =  fakturPajakTambahan.filter((invoice)=>{
-      return !isEmpty(invoice)
+    const fakturPajakTambahanArray = fakturPajakTambahan.filter((invoice) => {
+      return !isEmpty(invoice);
     });
 
     // eslint-disable-next-line array-callback-return
-    nomerInvoice.map((invoice) =>{
-      if(!isEmpty(invoice)){
-        countInvoiceTambahan += 1
+    nomerInvoice.map((invoice) => {
+      if (!isEmpty(invoice)) {
+        countInvoiceTambahan += 1;
       }
-    })
+    });
 
-  
     if (
       countInvoiceTambahan - 1 === invoiceTambahanArray.length &&
       purchaseOrderFile !== null &&
@@ -827,7 +909,10 @@ const Penagihan = () => {
       receivingNoteFile !== null
     ) {
       if (vendors.status_pajak === "PKP") {
-        if (fakturPajakFile !== null && countInvoiceTambahan - 1 === fakturPajakTambahanArray.length) {
+        if (
+          fakturPajakFile !== null &&
+          countInvoiceTambahan - 1 === fakturPajakTambahanArray.length
+        ) {
           setIsError(false);
           isSave = true;
         } else {
@@ -839,7 +924,7 @@ const Penagihan = () => {
         isSave = true;
       }
 
-      if(isSave){
+      if (isSave) {
         if (tipePengiriman.value === 1) {
           if (resiFile !== null) {
             setIsError(false);
@@ -853,7 +938,6 @@ const Penagihan = () => {
           isSave = true;
         }
       }
-      
     } else {
       setIsError(true);
       isSave = false;
@@ -875,9 +959,9 @@ const Penagihan = () => {
 
     // eslint-disable-next-line array-callback-return
     const nilaiInvoiceList = nilaiInvoice.map((nilai) => {
-      if (nilai.value.trim().length > 0) {
-        return parseFloat(nilai.value);
-      }
+      const value = nilai.value.replace(/\./g, "").split(",").join(".");
+
+      return parseFloat(value);
     });
 
     // eslint-disable-next-line array-callback-return
@@ -901,44 +985,48 @@ const Penagihan = () => {
       }
     });
 
-    const validationFakturPajakTambahan = fakturPajakTambahan.filter((faktur) => {
-      return !isEmpty(faktur)
-    });
+    const validationFakturPajakTambahan = fakturPajakTambahan.filter(
+      (faktur) => {
+        return !isEmpty(faktur);
+      }
+    );
 
-    if(Cookies.get("token") !== undefined){
+    if (Cookies.get("token") !== undefined) {
       if (isSave) {
         let lastItem;
         let counter = 1;
-  
+
         const currDate = new Date();
         const month = dayjs(currDate).month();
         const year = dayjs(currDate).year();
-  
+
         await fetch(`${api}api/portal-vendor/list/penagihan`)
           .then((response) => response.json())
           .then((res) => {
             lastItem = res.data[res.data.length - 1];
           })
           .catch((err) => console.log(err));
-  
+
         if (lastItem !== undefined) {
           if (lastItem.no_request !== undefined) {
             counter = parseInt(lastItem.no_request.split("/")[0]) + 1;
-            if((month+1) !== lastItem.no_request.split("/")[1]){
+            if (
+              parseInt(month + 1) !==
+              parseInt(lastItem.no_request.split("/")[1])
+            ) {
               counter = 1;
             }
           }
         }
-  
+
         let formattedNumber = counter.toLocaleString("en-US", {
           minimumIntegerDigits: 9,
           useGrouping: false,
         });
-  
-        
+
         const noRequest = formattedNumber + "/" + (month + 1) + "/" + year;
         setNomerRequest(noRequest);
-  
+
         if (id === 0) {
           const initialValue = {
             id: id,
@@ -959,20 +1047,21 @@ const Penagihan = () => {
             end_date_periode: null,
             created_at: dayjs(new Date()).format("YYYY-MM-DD HH:mm:ss"),
             updated_at: dayjs(new Date()).format("YYYY-MM-DD HH:mm:ss"),
-            po_file:
-              purchaseOrderFile !== null && purchaseOrderFile,
-            do_file:
-              deliveryOrderFile !== null && deliveryOrderFile,
+            po_file: purchaseOrderFile !== null && purchaseOrderFile,
+            do_file: deliveryOrderFile !== null && deliveryOrderFile,
             invoice_file: invoiceFile !== null && invoiceFile,
             invoice_tambahan_file: invoiceTambahanList,
             kwitansi_file: kwitansiFile !== null && kwitansiFile,
             faktur_pajak_file:
               fakturPajakFile !== null ? fakturPajakFile : null,
-            faktur_pajak_tambahan_file: validationFakturPajakTambahan.length > 0 ? fakturPajakTambahanList : null,
+            faktur_pajak_tambahan_file:
+              validationFakturPajakTambahan.length > 0
+                ? fakturPajakTambahanList
+                : null,
             note_file: receivingNoteFile !== null ? receivingNoteFile : null,
-            resi_file:
-              resiFile !== null ? resiFile : null,
-            scan_report_sales_file: scanReportSalesFile !== null ? scanReportSalesFile : null,
+            resi_file: resiFile !== null ? resiFile : null,
+            scan_report_sales_file:
+              scanReportSalesFile !== null ? scanReportSalesFile : null,
             status: "DRAFT",
           };
           await fetch(`${api}api/portal-vendor/invoice`, {
@@ -1036,10 +1125,8 @@ const Penagihan = () => {
             end_date_periode: null,
             created_at: createdAt,
             updated_at: dayjs(new Date()).format("YYYY-MM-DD HH:mm:ss"),
-            po_file:
-              purchaseOrderFile !== null && purchaseOrderFile,
-            do_file:
-              deliveryOrderFile !== null && deliveryOrderFile,
+            po_file: purchaseOrderFile !== null && purchaseOrderFile,
+            do_file: deliveryOrderFile !== null && deliveryOrderFile,
             invoice_file: invoiceFile !== null && invoiceFile,
             invoice_tambahan_file: invoiceTambahanList,
             kwitansi_file: kwitansiFile !== null && kwitansiFile,
@@ -1047,9 +1134,9 @@ const Penagihan = () => {
               fakturPajakFile !== null ? fakturPajakFile : null,
             faktur_pajak_tambahan_file: fakturPajakTambahanList,
             note_file: receivingNoteFile !== null ? receivingNoteFile : null,
-            resi_file:
-              resiFile !== null ? resiFile : null,
-            scan_report_sales_file: scanReportSalesFile !== null ? scanReportSalesFile : null,
+            resi_file: resiFile !== null ? resiFile : null,
+            scan_report_sales_file:
+              scanReportSalesFile !== null ? scanReportSalesFile : null,
             status: "DRAFT",
           };
           await fetch(`${api}api/portal-vendor/invoice`, {
@@ -1070,7 +1157,7 @@ const Penagihan = () => {
                 });
               } else {
                 setId(res.data);
-  
+
                 setOpenBackdrop(false);
                 toast.success("Penagihan update success!", {
                   position: "top-right",
@@ -1097,8 +1184,8 @@ const Penagihan = () => {
       } else {
         setOpenBackdrop(false);
       }
-    }else{
-      navigate("/")
+    } else {
+      navigate("/");
       toast.error("Silahkan Login Terlebih Dahulu!", {
         position: "top-right",
         style: {
@@ -1108,30 +1195,28 @@ const Penagihan = () => {
         },
       });
     }
-
-    
   };
 
   const saveDraft2 = async () => {
     setOpenBackdrop(true);
     let isSave = false;
-    let countInvoiceTambahan = 0
+    let countInvoiceTambahan = 0;
 
-    const invoiceTambahanArray =  invoiceTambahan.filter((invoice)=>{
-       return !isEmpty(invoice)
-     });
-
-     const fakturPajakTambahanArray =  fakturPajakTambahan.filter((invoice)=>{
-      return !isEmpty(invoice)
+    const invoiceTambahanArray = invoiceTambahan.filter((invoice) => {
+      return !isEmpty(invoice);
     });
- 
-     // eslint-disable-next-line array-callback-return
-     nomerInvoice.map((invoice) =>{
-       if(!isEmpty(invoice)){
-         countInvoiceTambahan += 1
-       }
-     })
- 
+
+    const fakturPajakTambahanArray = fakturPajakTambahan.filter((invoice) => {
+      return !isEmpty(invoice);
+    });
+
+    // eslint-disable-next-line array-callback-return
+    nomerInvoice.map((invoice) => {
+      if (!isEmpty(invoice)) {
+        countInvoiceTambahan += 1;
+      }
+    });
+
     if (
       countInvoiceTambahan - 1 === invoiceTambahanArray.length &&
       purchaseOrderFile !== null &&
@@ -1141,7 +1226,10 @@ const Penagihan = () => {
       scanReportSalesFile !== null
     ) {
       if (vendors.status_pajak === "PKP") {
-        if (fakturPajakFile !== null && countInvoiceTambahan - 1 === fakturPajakTambahanArray.length) {
+        if (
+          fakturPajakFile !== null &&
+          countInvoiceTambahan - 1 === fakturPajakTambahanArray.length
+        ) {
           setIsError(false);
           isSave = true;
         } else {
@@ -1153,7 +1241,7 @@ const Penagihan = () => {
         isSave = true;
       }
 
-      if(isSave){
+      if (isSave) {
         if (tipePengiriman.value === 1) {
           if (resiFile !== null) {
             setIsError(false);
@@ -1188,9 +1276,9 @@ const Penagihan = () => {
 
     // eslint-disable-next-line array-callback-return
     const nilaiInvoiceList = nilaiInvoice.map((nilai) => {
-      if (nilai.value.trim().length > 0) {
-        return parseFloat(nilai.value);
-      }
+      const value = nilai.value.replace(/\./g, "").split(",").join(".");
+
+      return parseFloat(value);
     });
 
     // eslint-disable-next-line array-callback-return
@@ -1214,44 +1302,48 @@ const Penagihan = () => {
       }
     });
 
-    const validationFakturPajakTambahan = fakturPajakTambahan.filter((faktur) => {
-      return !isEmpty(faktur)
-    });
+    const validationFakturPajakTambahan = fakturPajakTambahan.filter(
+      (faktur) => {
+        return !isEmpty(faktur);
+      }
+    );
 
-    if(Cookies.get("token")){
+    if (Cookies.get("token")) {
       if (isSave) {
         let lastItem;
         let counter = 1;
-  
+
         const currDate = new Date();
         const month = dayjs(currDate).month();
         const year = dayjs(currDate).year();
-  
+
         await fetch(`${api}api/portal-vendor/list/penagihan`)
           .then((response) => response.json())
           .then((res) => {
             lastItem = res.data[res.data.length - 1];
           })
           .catch((err) => console.log(err));
-  
+
         if (lastItem !== undefined) {
           if (lastItem.no_request !== undefined) {
             counter = parseInt(lastItem.no_request.split("/")[0]) + 1;
-            if((month+1) !== lastItem.no_request.split("/")[1]){
+            if (
+              parseInt(month + 1) !==
+              parseInt(lastItem.no_request.split("/")[1])
+            ) {
               counter = 1;
             }
           }
         }
-  
-  
+
         let formattedNumber = counter.toLocaleString("en-US", {
           minimumIntegerDigits: 9,
           useGrouping: false,
         });
-  
+
         const noRequest = formattedNumber + "/" + (month + 1) + "/" + year;
         setNomerRequest(noRequest);
-  
+
         if (id === 0) {
           const initialValue = {
             id: id,
@@ -1268,27 +1360,32 @@ const Penagihan = () => {
             nilai_invoices: nilaiInvoiceList,
             is_pajak: isPajak.value,
             nomer_seri_pajak: nomerSeriFakturPajakList,
-            start_date_periode: dayjs(startDatePeriode).format("YYYY-MM-DD HH:mm:ss"),
-            end_date_periode: dayjs(endDatePeriode).format("YYYY-MM-DD HH:mm:ss"),
+            start_date_periode: dayjs(startDatePeriode).format(
+              "YYYY-MM-DD HH:mm:ss"
+            ),
+            end_date_periode: dayjs(endDatePeriode).format(
+              "YYYY-MM-DD HH:mm:ss"
+            ),
             created_at: dayjs(new Date()).format("YYYY-MM-DD HH:mm:ss"),
             updated_at: dayjs(new Date()).format("YYYY-MM-DD HH:mm:ss"),
-            po_file:
-              purchaseOrderFile !== null && purchaseOrderFile,
-            do_file:
-              deliveryOrderFile !== null && deliveryOrderFile,
+            po_file: purchaseOrderFile !== null && purchaseOrderFile,
+            do_file: deliveryOrderFile !== null && deliveryOrderFile,
             invoice_file: invoiceFile !== null && invoiceFile,
             invoice_tambahan_file: invoiceTambahanList,
             kwitansi_file: kwitansiFile !== null && kwitansiFile,
             faktur_pajak_file:
               fakturPajakFile !== null ? fakturPajakFile : null,
-            faktur_pajak_tambahan_file: validationFakturPajakTambahan.length > 0 ? fakturPajakTambahanList : null,
+            faktur_pajak_tambahan_file:
+              validationFakturPajakTambahan.length > 0
+                ? fakturPajakTambahanList
+                : null,
             note_file: receivingNoteFile !== null ? receivingNoteFile : null,
-            resi_file:
-              resiFile !== null ? resiFile : null,
-            scan_report_sales_file: scanReportSalesFile !== null ? scanReportSalesFile : null,
+            resi_file: resiFile !== null ? resiFile : null,
+            scan_report_sales_file:
+              scanReportSalesFile !== null ? scanReportSalesFile : null,
             status: "DRAFT",
           };
-  
+
           await fetch(`${api}api/portal-vendor/invoice`, {
             method: "POST",
             body: JSON.stringify(initialValue),
@@ -1346,14 +1443,16 @@ const Penagihan = () => {
             nilai_invoices: nilaiInvoiceList,
             is_pajak: isPajak.value,
             nomer_seri_pajak: nomerSeriFakturPajakList,
-            start_date_periode: dayjs(startDatePeriode).format("YYYY-MM-DD HH:mm:ss"),
-            end_date_periode: dayjs(endDatePeriode).format("YYYY-MM-DD HH:mm:ss"),
+            start_date_periode: dayjs(startDatePeriode).format(
+              "YYYY-MM-DD HH:mm:ss"
+            ),
+            end_date_periode: dayjs(endDatePeriode).format(
+              "YYYY-MM-DD HH:mm:ss"
+            ),
             created_at: dayjs(new Date()).format("YYYY-MM-DD HH:mm:ss"),
             updated_at: dayjs(new Date()).format("YYYY-MM-DD HH:mm:ss"),
-            po_file:
-              purchaseOrderFile !== null && purchaseOrderFile,
-            do_file:
-              deliveryOrderFile !== null && deliveryOrderFile,
+            po_file: purchaseOrderFile !== null && purchaseOrderFile,
+            do_file: deliveryOrderFile !== null && deliveryOrderFile,
             invoice_file: invoiceFile !== null && invoiceFile,
             invoice_tambahan_file: invoiceTambahanList,
             kwitansi_file: kwitansiFile !== null && kwitansiFile,
@@ -1361,12 +1460,12 @@ const Penagihan = () => {
               fakturPajakFile !== null ? fakturPajakFile : null,
             faktur_pajak_tambahan_file: fakturPajakTambahanList,
             note_file: receivingNoteFile !== null ? receivingNoteFile : null,
-            resi_file:
-              resiFile !== null ? resiFile : null,
-            scan_report_sales_file: scanReportSalesFile !== null ? scanReportSalesFile : null,
+            resi_file: resiFile !== null ? resiFile : null,
+            scan_report_sales_file:
+              scanReportSalesFile !== null ? scanReportSalesFile : null,
             status: "DRAFT",
           };
-  
+
           await fetch(`${api}api/portal-vendor/invoice`, {
             method: "POST",
             body: JSON.stringify(initialValue),
@@ -1385,7 +1484,7 @@ const Penagihan = () => {
                 });
               } else {
                 setId(res.data);
-  
+
                 setOpenBackdrop(false);
                 toast.success("Penagihan update success!", {
                   position: "top-right",
@@ -1412,8 +1511,8 @@ const Penagihan = () => {
       } else {
         setOpenBackdrop(false);
       }
-    }else{
-      navigate("/")
+    } else {
+      navigate("/");
       toast.error("Silahkan Login Terlebih Dahulu!", {
         position: "top-right",
         style: {
@@ -1423,17 +1522,16 @@ const Penagihan = () => {
         },
       });
     }
-
-    
   };
 
   const onSubmitButton = async () => {
     setOpenBackdrop(true);
     let lastItem;
     let counter = 1;
+
     const currDate = new Date();
-      const month = dayjs(currDate).month();
-      const year = dayjs(currDate).year();
+    const month = dayjs(currDate).month();
+    const year = dayjs(currDate).year();
 
     await fetch(`${api}api/portal-vendor/list/penagihan`)
       .then((response) => response.json())
@@ -1445,18 +1543,18 @@ const Penagihan = () => {
     if (lastItem !== undefined) {
       if (lastItem.no_request !== undefined) {
         counter = parseInt(lastItem.no_request.split("/")[0]) + 1;
-        if((month+1) !== lastItem.no_request.split("/")[1]){
+        if (
+          parseInt(month + 1) !== parseInt(lastItem.no_request.split("/")[1])
+        ) {
           counter = 1;
         }
       }
     }
 
-
     let formattedNumber = counter.toLocaleString("en-US", {
       minimumIntegerDigits: 9,
       useGrouping: false,
     });
-
 
     const noRequest = formattedNumber + "/" + (month + 1) + "/" + year;
 
@@ -1476,9 +1574,9 @@ const Penagihan = () => {
 
     // eslint-disable-next-line array-callback-return
     const nilaiInvoiceList = nilaiInvoice.map((nilai) => {
-      if (nilai.value.trim().length > 0) {
-        return parseFloat(nilai.value);
-      }
+      const value = nilai.value.replace(/\./g, "").split(",").join(".");
+
+      return parseFloat(value);
     });
 
     // eslint-disable-next-line array-callback-return
@@ -1502,11 +1600,13 @@ const Penagihan = () => {
       }
     });
 
-    const validationFakturPajakTambahan = fakturPajakTambahan.filter((faktur) => {
-      return !isEmpty(faktur)
-    });
+    const validationFakturPajakTambahan = fakturPajakTambahan.filter(
+      (faktur) => {
+        return !isEmpty(faktur);
+      }
+    );
 
-    if(Cookies.get("token") !== undefined){
+    if (Cookies.get("token") !== undefined) {
       if (id !== 0) {
         const initialValue = {
           id: id,
@@ -1527,23 +1627,23 @@ const Penagihan = () => {
           end_date_periode: null,
           created_at: dayjs(new Date()).format("YYYY-MM-DD HH:mm:ss"),
           updated_at: dayjs(new Date()).format("YYYY-MM-DD HH:mm:ss"),
-          po_file:
-            purchaseOrderFile !== null && purchaseOrderFile,
-          do_file:
-            deliveryOrderFile !== null && deliveryOrderFile,
+          po_file: purchaseOrderFile !== null && purchaseOrderFile,
+          do_file: deliveryOrderFile !== null && deliveryOrderFile,
           invoice_file: invoiceFile !== null && invoiceFile,
           invoice_tambahan_file: invoiceTambahanList,
           kwitansi_file: kwitansiFile !== null && kwitansiFile,
-          faktur_pajak_file:
-            fakturPajakFile !== null ? fakturPajakFile : null,
-          faktur_pajak_tambahan_file: validationFakturPajakTambahan.length > 0 ? fakturPajakTambahanList : null,
+          faktur_pajak_file: fakturPajakFile !== null ? fakturPajakFile : null,
+          faktur_pajak_tambahan_file:
+            validationFakturPajakTambahan.length > 0
+              ? fakturPajakTambahanList
+              : null,
           note_file: receivingNoteFile !== null ? receivingNoteFile : null,
-          resi_file:
-            resiFile !== null ? resiFile : null,
-          scan_report_sales_file: scanReportSalesFile !== null ? scanReportSalesFile : null,
+          resi_file: resiFile !== null ? resiFile : null,
+          scan_report_sales_file:
+            scanReportSalesFile !== null ? scanReportSalesFile : null,
           status: "Waiting_for_approval",
         };
-  
+
         await fetch(`${api}api/portal-vendor/invoice`, {
           method: "POST",
           body: JSON.stringify(initialValue),
@@ -1562,7 +1662,7 @@ const Penagihan = () => {
               });
             } else {
               setId(res.data);
-  
+
               setOpenBackdrop(false);
               toast.success("Penagihan update success!", {
                 position: "top-right",
@@ -1606,23 +1706,20 @@ const Penagihan = () => {
           end_date_periode: null,
           created_at: dayjs(new Date()).format("YYYY-MM-DD HH:mm:ss"),
           updated_at: dayjs(new Date()).format("YYYY-MM-DD HH:mm:ss"),
-          po_file:
-            purchaseOrderFile !== null && purchaseOrderFile,
-          do_file:
-            deliveryOrderFile !== null && deliveryOrderFile,
+          po_file: purchaseOrderFile !== null && purchaseOrderFile,
+          do_file: deliveryOrderFile !== null && deliveryOrderFile,
           invoice_file: invoiceFile !== null && invoiceFile,
           invoice_tambahan_file: invoiceTambahanList,
           kwitansi_file: kwitansiFile !== null && kwitansiFile,
-          faktur_pajak_file:
-            fakturPajakFile !== null ? fakturPajakFile : null,
+          faktur_pajak_file: fakturPajakFile !== null ? fakturPajakFile : null,
           faktur_pajak_tambahan_file: fakturPajakTambahanList,
           note_file: receivingNoteFile !== null ? receivingNoteFile : null,
-          resi_file:
-            resiFile !== null ? resiFile : null,
-          scan_report_sales_file: scanReportSalesFile !== null ? scanReportSalesFile : null,
+          resi_file: resiFile !== null ? resiFile : null,
+          scan_report_sales_file:
+            scanReportSalesFile !== null ? scanReportSalesFile : null,
           status: "Waiting_for_approval",
         };
-  
+
         await fetch(`${api}api/portal-vendor/invoice`, {
           method: "POST",
           body: JSON.stringify(initialValue),
@@ -1641,7 +1738,7 @@ const Penagihan = () => {
               });
             } else {
               setId(res.data.id);
-  
+
               setOpenBackdrop(false);
               toast.success("Penagihan Create success!", {
                 position: "top-right",
@@ -1666,8 +1763,8 @@ const Penagihan = () => {
             });
           });
       }
-    }else{
-      navigate("/")
+    } else {
+      navigate("/");
       toast.error("Silahkan Login Terlebih Dahulu!", {
         position: "top-right",
         style: {
@@ -1677,17 +1774,17 @@ const Penagihan = () => {
         },
       });
     }
-
-    
   };
 
   const onSubmitButton2 = async () => {
-    let lastItem;
     setOpenBackdrop(true);
+
+    let lastItem;
     let counter = 1;
+
     const currDate = new Date();
-      const month = dayjs(currDate).month();
-      const year = dayjs(currDate).year();
+    const month = dayjs(currDate).month();
+    const year = dayjs(currDate).year();
 
     await fetch(`${api}api/portal-vendor/list/penagihan`)
       .then((response) => response.json())
@@ -1699,7 +1796,9 @@ const Penagihan = () => {
     if (lastItem !== undefined) {
       if (lastItem.no_request !== undefined) {
         counter = parseInt(lastItem.no_request.split("/")[0]) + 1;
-        if((month+1) !== lastItem.no_request.split("/")[1]){
+        if (
+          parseInt(month + 1) !== parseInt(lastItem.no_request.split("/")[1])
+        ) {
           counter = 1;
         }
       }
@@ -1709,8 +1808,6 @@ const Penagihan = () => {
       minimumIntegerDigits: 9,
       useGrouping: false,
     });
-
-    
 
     const noRequest = formattedNumber + "/" + (month + 1) + "/" + year;
 
@@ -1730,9 +1827,9 @@ const Penagihan = () => {
 
     // eslint-disable-next-line array-callback-return
     const nilaiInvoiceList = nilaiInvoice.map((nilai) => {
-      if (nilai.value.trim().length > 0) {
-        return parseFloat(nilai.value);
-      }
+      const value = nilai.value.replace(/\./g, "").split(",").join(".");
+
+      return parseFloat(value);
     });
 
     // eslint-disable-next-line array-callback-return
@@ -1756,11 +1853,13 @@ const Penagihan = () => {
       }
     });
 
-    const validationFakturPajakTambahan = fakturPajakTambahan.filter((faktur) => {
-      return !isEmpty(faktur)
-    });
+    const validationFakturPajakTambahan = fakturPajakTambahan.filter(
+      (faktur) => {
+        return !isEmpty(faktur);
+      }
+    );
 
-    if(Cookies.get("token") !== undefined){
+    if (Cookies.get("token") !== undefined) {
       if (id !== 0) {
         const initialValue = {
           id: id,
@@ -1777,27 +1876,29 @@ const Penagihan = () => {
           nilai_invoices: nilaiInvoiceList,
           is_pajak: isPajak.value,
           nomer_seri_pajak: nomerSeriFakturPajakList,
-          start_date_periode: dayjs(startDatePeriode).format("YYYY-MM-DD HH:mm:ss"),
+          start_date_periode: dayjs(startDatePeriode).format(
+            "YYYY-MM-DD HH:mm:ss"
+          ),
           end_date_periode: dayjs(endDatePeriode).format("YYYY-MM-DD HH:mm:ss"),
           created_at: dayjs(new Date()).format("YYYY-MM-DD HH:mm:ss"),
           updated_at: dayjs(new Date()).format("YYYY-MM-DD HH:mm:ss"),
-          po_file:
-            purchaseOrderFile !== null && purchaseOrderFile,
-          do_file:
-            deliveryOrderFile !== null && deliveryOrderFile,
+          po_file: purchaseOrderFile !== null && purchaseOrderFile,
+          do_file: deliveryOrderFile !== null && deliveryOrderFile,
           invoice_file: invoiceFile !== null && invoiceFile,
           invoice_tambahan_file: invoiceTambahanList,
           kwitansi_file: kwitansiFile !== null && kwitansiFile,
-          faktur_pajak_file:
-            fakturPajakFile !== null ? fakturPajakFile : null,
-          faktur_pajak_tambahan_file: validationFakturPajakTambahan.length > 0 ? fakturPajakTambahanList : null,
+          faktur_pajak_file: fakturPajakFile !== null ? fakturPajakFile : null,
+          faktur_pajak_tambahan_file:
+            validationFakturPajakTambahan.length > 0
+              ? fakturPajakTambahanList
+              : null,
           note_file: receivingNoteFile !== null ? receivingNoteFile : null,
-          resi_file:
-            resiFile !== null ? resiFile : null,
-          scan_report_sales_file: scanReportSalesFile !== null ? scanReportSalesFile : null,
+          resi_file: resiFile !== null ? resiFile : null,
+          scan_report_sales_file:
+            scanReportSalesFile !== null ? scanReportSalesFile : null,
           status: "Waiting_for_approval",
         };
-  
+
         await fetch(`${api}api/portal-vendor/invoice`, {
           method: "POST",
           body: JSON.stringify(initialValue),
@@ -1816,7 +1917,7 @@ const Penagihan = () => {
               });
             } else {
               setId(res.data.id);
-  
+
               setOpenBackdrop(false);
               toast.success("Penagihan update success!", {
                 position: "top-right",
@@ -1860,23 +1961,20 @@ const Penagihan = () => {
           end_date_periode: null,
           created_at: dayjs(new Date()).format("YYYY-MM-DD HH:mm:ss"),
           updated_at: dayjs(new Date()).format("YYYY-MM-DD HH:mm:ss"),
-          po_file:
-            purchaseOrderFile !== null && purchaseOrderFile,
-          do_file:
-            deliveryOrderFile !== null && deliveryOrderFile,
+          po_file: purchaseOrderFile !== null && purchaseOrderFile,
+          do_file: deliveryOrderFile !== null && deliveryOrderFile,
           invoice_file: invoiceFile !== null && invoiceFile,
           invoice_tambahan_file: invoiceTambahanList,
           kwitansi_file: kwitansiFile !== null && kwitansiFile,
-          faktur_pajak_file:
-            fakturPajakFile !== null ? fakturPajakFile : null,
+          faktur_pajak_file: fakturPajakFile !== null ? fakturPajakFile : null,
           faktur_pajak_tambahan_file: fakturPajakTambahanList,
           note_file: receivingNoteFile !== null ? receivingNoteFile : null,
-          resi_file:
-            resiFile !== null ? resiFile : null,
-          scan_report_sales_file: scanReportSalesFile !== null ? scanReportSalesFile : null,
+          resi_file: resiFile !== null ? resiFile : null,
+          scan_report_sales_file:
+            scanReportSalesFile !== null ? scanReportSalesFile : null,
           status: "Waiting_for_approval",
         };
-  
+
         await fetch(`${api}api/portal-vendor/invoice`, {
           method: "POST",
           body: JSON.stringify(initialValue),
@@ -1895,7 +1993,7 @@ const Penagihan = () => {
               });
             } else {
               setId(res.data.id);
-  
+
               setOpenBackdrop(false);
               toast.success("Penagihan Create success!", {
                 position: "top-right",
@@ -1920,8 +2018,8 @@ const Penagihan = () => {
             });
           });
       }
-    }else{
-      navigate("/")
+    } else {
+      navigate("/");
       toast.error("Silahkan Login Terlebih Dahulu!", {
         position: "top-right",
         style: {
@@ -1931,8 +2029,6 @@ const Penagihan = () => {
         },
       });
     }
-
-    
   };
 
   const steps = ["Tipe Penagihan", "Billing", "Dokumen"];
@@ -1993,8 +2089,8 @@ const Penagihan = () => {
   //   }
   // };
   return (
-    <Admin>
-      { !isEmpty(vendors) && vendors.status === "APPROVED" ? (
+    <>
+      {!isEmpty(vendors) && vendors.status === "APPROVED" ? (
         <div
           className={`${
             screenSize < 768 ? "px-5 pt-20" : "px-10"
@@ -2040,6 +2136,7 @@ const Penagihan = () => {
                           <div>:</div>
                           <div className="w-[70%]">
                             <Select
+                              isDisabled={true}
                               value={tipePenagihan}
                               onChange={onChangeTipePenagihan}
                               className="whitespace-nowrap"
@@ -2232,15 +2329,30 @@ const Penagihan = () => {
                                   </div>
                                 </div>
                               ))}
-                              <div
-                                onClick={addInput}
-                                className={`py-1 px-4 rounded-sm shadow-sm text-white bg-[#305496]  w-fit ${
-                                  nomerInvoice.length === 4
-                                    ? "cursor-not-allowed"
-                                    : "cursor-pointer"
-                                } `}
-                              >
-                                Add row
+                              <div className="flex items-center gap-5">
+                                {nomerInvoice.length > 1 && (
+                                  <div
+                                    onClick={deleteInput}
+                                    className={`py-1 px-4 rounded-sm shadow-sm text-white bg-red-500  w-fit ${
+                                      nomerInvoice.length === 4
+                                        ? "cursor-not-allowed"
+                                        : "cursor-pointer"
+                                    } `}
+                                  >
+                                    Delete row
+                                  </div>
+                                )}
+
+                                <div
+                                  onClick={addInput}
+                                  className={`py-1 px-4 rounded-sm shadow-sm text-white bg-[#305496]  w-fit ${
+                                    nomerInvoice.length === 5
+                                      ? "cursor-not-allowed"
+                                      : "cursor-pointer"
+                                  } `}
+                                >
+                                  Add row
+                                </div>
                               </div>
                             </div>
 
@@ -2299,16 +2411,7 @@ const Penagihan = () => {
                                       <div>
                                         <input
                                           id={i}
-                                          type="number"
-                                          min={0}
-                                          max={999999999999}
-                                          step={0.01}
-                                          onKeyDown={(evt) =>
-                                            (evt.key === "e" ||
-                                              evt.key === "-" ||
-                                              evt.key === " ") &&
-                                            evt.preventDefault()
-                                          }
+                                          type="text"
                                           value={nilaiInvoice[i].value}
                                           onChange={onChangeNilaiInvoice}
                                           className="max-[821px]:w-[208px] w-[246.4px] h-[40px] border border-slate-300 rounded-sm focus:border focus:border-[#0077b6] bg-[#ddebf7]"
@@ -2574,15 +2677,30 @@ const Penagihan = () => {
                                   </div>
                                 </div>
                               ))}
-                              <div
-                                onClick={addInput}
-                                className={`py-1 px-4 rounded-sm shadow-sm text-white bg-[#305496]  w-fit ${
-                                  nomerInvoice.length === 4
-                                    ? "cursor-not-allowed"
-                                    : "cursor-pointer"
-                                } `}
-                              >
-                                Add row
+                              <div className="flex items-center gap-5">
+                                {nomerInvoice.length > 1 && (
+                                  <div
+                                    onClick={deleteInput}
+                                    className={`py-1 px-4 rounded-sm shadow-sm text-white bg-red-500  w-fit ${
+                                      nomerInvoice.length === 4
+                                        ? "cursor-not-allowed"
+                                        : "cursor-pointer"
+                                    } `}
+                                  >
+                                    Delete row
+                                  </div>
+                                )}
+
+                                <div
+                                  onClick={addInput}
+                                  className={`py-1 px-4 rounded-sm shadow-sm text-white bg-[#305496]  w-fit ${
+                                    nomerInvoice.length === 5
+                                      ? "cursor-not-allowed"
+                                      : "cursor-pointer"
+                                  } `}
+                                >
+                                  Add row
+                                </div>
                               </div>
                             </div>
 
@@ -2607,16 +2725,7 @@ const Penagihan = () => {
                                     <div>
                                       <input
                                         id={i}
-                                        type="number"
-                                        min={0}
-                                        max={999999999999}
-                                        step={0.01}
-                                        onKeyDown={(evt) =>
-                                          (evt.key === "e" ||
-                                            evt.key === "-" ||
-                                            evt.key === " ") &&
-                                          evt.preventDefault()
-                                        }
+                                        type="text"
                                         value={nilaiInvoice[i].value}
                                         onChange={onChangeNilaiInvoice}
                                         className="max-[821px]:w-[208px] w-[246.4px] h-[40px] border border-slate-300 rounded-sm focus:border focus:border-[#0077b6] bg-[#fff2cc]"
@@ -2817,6 +2926,30 @@ const Penagihan = () => {
                                   <div>*)</div>
                                 </div>
                               </div>
+                              {purchaseOrderFile !== null &&
+                              RegExp("\\bpdf\\b").test(
+                                purchaseOrderFile.split(",")[0]
+                              ) ? (
+                                <div className="h-[500px] w-[500px] mb-5">
+                                  <div className="h-full w-full">
+                                    <Viewer
+                                      fileUrl={purchaseOrderPreviewFile}
+                                    />
+                                  </div>
+                                </div>
+                              ) : (
+                                purchaseOrderFile !== null && (
+                                  <div className="h-[500px] w-[400px] mb-5">
+                                    <div className="h-full w-full">
+                                      <img
+                                        src={purchaseOrderFile}
+                                        alt="no"
+                                        className="w-full h-full"
+                                      />
+                                    </div>
+                                  </div>
+                                )
+                              )}
 
                               <div className="flex items-center gap-3 mb-3">
                                 <div className="flex flex-col gap-1">
@@ -2863,6 +2996,30 @@ const Penagihan = () => {
                                   <div>*)</div>
                                 </div>
                               </div>
+                              {deliveryOrderFile !== null &&
+                              RegExp("\\bpdf\\b").test(
+                                deliveryOrderFile.split(",")[0]
+                              ) ? (
+                                <div className="h-[500px] w-[500px] mb-5">
+                                  <div className="h-full w-full">
+                                    <Viewer
+                                      fileUrl={deliveryOrderPreviewFile}
+                                    />
+                                  </div>
+                                </div>
+                              ) : (
+                                deliveryOrderFile !== null && (
+                                  <div className="h-[500px] w-[400px] mb-5">
+                                    <div className="h-full w-full">
+                                      <img
+                                        src={deliveryOrderPreviewFile}
+                                        alt="no"
+                                        className="w-full h-full"
+                                      />
+                                    </div>
+                                  </div>
+                                )
+                              )}
                               <div className="flex items-center gap-3 mb-3">
                                 <div className="flex flex-col gap-1">
                                   <div className="w-[350px]">
@@ -2906,59 +3063,115 @@ const Penagihan = () => {
                                   <div>*)</div>
                                 </div>
                               </div>
-                              <div className="mb-10">
-                                {invoiceTambahan.map((item, i) => (
-                                  <div key={i}>
-                                    <div className="flex items-center gap-3 mb-3">
-                                      <div className="flex flex-col gap-1">
-                                        {i === 0 ? (
-                                          <div className="w-[350px]">
-                                            Invoice Tambahan
-                                          </div>
-                                        ) : (
-                                          <div className="w-[350px]">
-                                            Invoice Tambahan {i + 1}
-                                          </div>
-                                        )}
-                                        <div className="text-[10px] text-gray-500">
-                                          Max size 2 mb
-                                        </div>
-                                      </div>
-
-                                      <div>:</div>
-                                      <div className="flex items-center gap-1">
-                                        <div>
-                                          <label htmlFor={`invoice_${i}`} className="w-fit">
-                                            {isEmpty(invoiceTambahan[i]) ? (
-                                              <div className="w-fit flex gap-1 items-center bg-blue-400 py-2 px-5 text-white hover:bg-blue-200 rounded-md">
-                                                <span>
-                                                  <FaCloudUploadAlt />
-                                                </span>
-                                                <div>Upload</div>
-                                              </div>
-                                            ) : (
-                                              <div className="w-fit flex gap-1 items-center bg-blue-400 py-2 px-5 text-white hover:bg-blue-200 rounded-md">
-                                                <span>
-                                                  <FaCloudUploadAlt />
-                                                </span>
-                                                <div>1 File</div>
-                                              </div>
-                                            )}
-                                          </label>
-                                          <input
-                                            type="file"
-                                            id={`invoice_${i}`}
-                                            onChange={(e) => onChangeInvoiceTambahan(e,i)}
-                                            accept=".jpg,.pdf"
-                                            className="hidden w-full h-[40px] border border-slate-300 rounded-sm focus:border focus:border-[#0077b6]  "
-                                          />
-                                        </div>
-                                      </div>
-                                      <div></div>
+                              {invoiceFile !== null &&
+                              RegExp("\\bpdf\\b").test(
+                                invoiceFile.split(",")[0]
+                              ) ? (
+                                <div className="h-[500px] w-[500px] mb-5">
+                                  <div className="h-full w-full">
+                                    <Viewer fileUrl={invoicePreviewFile} />
+                                  </div>
+                                </div>
+                              ) : (
+                                invoiceFile !== null && (
+                                  <div className="h-[500px] w-[400px] mb-5">
+                                    <div className="h-full w-full">
+                                      <img
+                                        src={invoicePreviewFile}
+                                        alt="no"
+                                        className="w-full h-full"
+                                      />
                                     </div>
                                   </div>
+                                )
+                              )}
+                              <div className="mb-10">
+                                {invoiceTambahan.map((item, i) => (
+                                  <>
+                                    <div key={i}>
+                                      <div className="flex items-center gap-3 mb-3">
+                                        <div className="flex flex-col gap-1">
+                                          {i === 0 ? (
+                                            <div className="w-[350px]">
+                                              Invoice Tambahan
+                                            </div>
+                                          ) : (
+                                            <div className="w-[350px]">
+                                              Invoice Tambahan {i + 1}
+                                            </div>
+                                          )}
+                                          <div className="text-[10px] text-gray-500">
+                                            Max size 2 mb
+                                          </div>
+                                        </div>
+
+                                        <div>:</div>
+                                        <div className="flex items-center gap-1">
+                                          <div>
+                                            <label
+                                              htmlFor={`invoice_${i}`}
+                                              className="w-fit"
+                                            >
+                                              {isEmpty(invoiceTambahan[i]) ? (
+                                                <div className="w-fit flex gap-1 items-center bg-blue-400 py-2 px-5 text-white hover:bg-blue-200 rounded-md">
+                                                  <span>
+                                                    <FaCloudUploadAlt />
+                                                  </span>
+                                                  <div>Upload</div>
+                                                </div>
+                                              ) : (
+                                                <div className="w-fit flex gap-1 items-center bg-blue-400 py-2 px-5 text-white hover:bg-blue-200 rounded-md">
+                                                  <span>
+                                                    <FaCloudUploadAlt />
+                                                  </span>
+                                                  <div>1 File</div>
+                                                </div>
+                                              )}
+                                            </label>
+                                            <input
+                                              type="file"
+                                              id={`invoice_${i}`}
+                                              onChange={(e) =>
+                                                onChangeInvoiceTambahan(e, i)
+                                              }
+                                              accept=".jpg,.pdf"
+                                              className="hidden w-full h-[40px] border border-slate-300 rounded-sm focus:border focus:border-[#0077b6]  "
+                                            />
+                                          </div>
+                                        </div>
+                                        <div></div>
+                                      </div>
+                                    </div>
+                                    <div>
+                                      {!isEmpty(invoiceTambahan[i]) &&
+                                      RegExp("\\bpdf\\b").test(
+                                        invoiceTambahan[i].file.split(",")[0]
+                                      ) ? (
+                                        <div className="h-[500px] w-[500px] mb-5">
+                                          <div className="h-full w-full">
+                                            <Viewer
+                                              fileUrl={
+                                                invoicePreviewTambahan[i]
+                                              }
+                                            />
+                                          </div>
+                                        </div>
+                                      ) : (
+                                        !isEmpty(invoiceTambahan[i]) && (
+                                          <div className="h-[500px] w-[400px] mb-5">
+                                            <div className="h-full w-full">
+                                              <img
+                                                src={invoicePreviewTambahan[i]}
+                                                alt="no"
+                                                className="w-full h-full"
+                                              />
+                                            </div>
+                                          </div>
+                                        )
+                                      )}
+                                    </div>
+                                  </>
                                 ))}
-                             
                               </div>
                               <div className="flex items-center gap-3 mb-10">
                                 <div className="flex flex-col gap-1 w-[350px]">
@@ -3006,6 +3219,28 @@ const Penagihan = () => {
                                   <div>*)</div>
                                 </div>
                               </div>
+                              {kwitansiFile !== null &&
+                              RegExp("\\bpdf\\b").test(
+                                kwitansiFile.split(",")[0]
+                              ) ? (
+                                <div className="h-[500px] w-[500px] mb-5">
+                                  <div className="h-full w-full">
+                                    <Viewer fileUrl={kwitansiPreviewFile} />
+                                  </div>
+                                </div>
+                              ) : (
+                                kwitansiFile !== null && (
+                                  <div className="h-[500px] w-[400px] mb-5">
+                                    <div className="h-full w-full">
+                                      <img
+                                        src={kwitansiPreviewFile}
+                                        alt="no"
+                                        className="w-full h-full"
+                                      />
+                                    </div>
+                                  </div>
+                                )
+                              )}
                               {vendors.status_pajak === "PKP" && (
                                 <>
                                   <div className="flex items-center gap-3 mb-3">
@@ -3051,6 +3286,30 @@ const Penagihan = () => {
                                       <div>*)</div>
                                     </div>
                                   </div>
+                                  {fakturPajakFile !== null &&
+                                  RegExp("\\bpdf\\b").test(
+                                    fakturPajakFile.split(",")[0]
+                                  ) ? (
+                                    <div className="h-[500px] w-[500px] mb-5">
+                                      <div className="h-full w-full">
+                                        <Viewer
+                                          fileUrl={fakturPajakPreviewFile}
+                                        />
+                                      </div>
+                                    </div>
+                                  ) : (
+                                    fakturPajakFile !== null && (
+                                      <div className="h-[500px] w-[400px] mb-5">
+                                        <div className="h-full w-full">
+                                          <img
+                                            src={fakturPajakPreviewFile}
+                                            alt="no"
+                                            className="w-full h-full"
+                                          />
+                                        </div>
+                                      </div>
+                                    )
+                                  )}
                                   <div className="mb-10">
                                     {fakturPajakTambahan.map((item, i) => (
                                       <div key={i}>
@@ -3098,7 +3357,12 @@ const Penagihan = () => {
                                               <input
                                                 type="file"
                                                 id={`pajak_${i}`}
-                                                onChange={(e) => onChangeFakturPajakTambahan(e,i)}
+                                                onChange={(e) =>
+                                                  onChangeFakturPajakTambahan(
+                                                    e,
+                                                    i
+                                                  )
+                                                }
                                                 accept=".jpg,.pdf"
                                                 className="hidden w-full h-[40px] border border-slate-300 rounded-sm focus:border focus:border-[#0077b6]  "
                                               />
@@ -3108,7 +3372,6 @@ const Penagihan = () => {
                                         </div>
                                       </div>
                                     ))}
-                                 
                                   </div>
                                 </>
                               )}
@@ -3156,6 +3419,30 @@ const Penagihan = () => {
                                   <div>*)</div>
                                 </div>
                               </div>
+                              {receivingNoteFile !== null &&
+                              RegExp("\\bpdf\\b").test(
+                                receivingNoteFile.split(",")[0]
+                              ) ? (
+                                <div className="h-[500px] w-[500px] mb-5">
+                                  <div className="h-full w-full">
+                                    <Viewer
+                                      fileUrl={receivingNotePreviewFile}
+                                    />
+                                  </div>
+                                </div>
+                              ) : (
+                                receivingNoteFile !== null && (
+                                  <div className="h-[500px] w-[400px] mb-5">
+                                    <div className="h-full w-full">
+                                      <img
+                                        src={receivingNotePreviewFile}
+                                        alt="no"
+                                        className="w-full h-full"
+                                      />
+                                    </div>
+                                  </div>
+                                )
+                              )}
                               <div>
                                 <div className="italic">
                                   Dokumen asli (hardcopy) sudah di kirimkan ke
@@ -3239,6 +3526,28 @@ const Penagihan = () => {
                                     )}
                                   </div>
                                 </div>
+                                {resiFile !== null &&
+                                RegExp("\\bpdf\\b").test(
+                                  resiFile.split(",")[0]
+                                ) ? (
+                                  <div className="h-[500px] w-[500px] mb-5">
+                                    <div className="h-full w-full">
+                                      <Viewer fileUrl={resiPreviewFile} />
+                                    </div>
+                                  </div>
+                                ) : (
+                                  resiFile !== null && (
+                                    <div className="h-[500px] w-[400px] mb-5">
+                                      <div className="h-full w-full">
+                                        <img
+                                          src={resiPreviewFile}
+                                          alt="no"
+                                          className="w-full h-full"
+                                        />
+                                      </div>
+                                    </div>
+                                  )
+                                )}
                                 {/* <div
                                   id="btn-upload"
                                   onClick={uploadFile}
@@ -3303,6 +3612,30 @@ const Penagihan = () => {
                                   <div>*)</div>
                                 </div>
                               </div>
+                              {purchaseOrderFile !== null &&
+                              RegExp("\\bpdf\\b").test(
+                                purchaseOrderFile.split(",")[0]
+                              ) ? (
+                                <div className="h-[500px] w-[500px] mb-5">
+                                  <div className="h-full w-full">
+                                    <Viewer
+                                      fileUrl={purchaseOrderPreviewFile}
+                                    />
+                                  </div>
+                                </div>
+                              ) : (
+                                purchaseOrderFile !== null && (
+                                  <div className="h-[500px] w-[400px] mb-5">
+                                    <div className="h-full w-full">
+                                      <img
+                                        src={purchaseOrderPreviewFile}
+                                        alt="no"
+                                        className="w-full h-full"
+                                      />
+                                    </div>
+                                  </div>
+                                )
+                              )}
                               <div className="flex items-center gap-3 mb-3">
                                 <div className="flex flex-col gap-1">
                                   <div className="w-[350px]">
@@ -3348,6 +3681,30 @@ const Penagihan = () => {
                                   <div>*)</div>
                                 </div>
                               </div>
+                              {deliveryOrderFile !== null &&
+                              RegExp("\\bpdf\\b").test(
+                                deliveryOrderFile.split(",")[0]
+                              ) ? (
+                                <div className="h-[500px] w-[500px] mb-5">
+                                  <div className="h-full w-full">
+                                    <Viewer
+                                      fileUrl={deliveryOrderPreviewFile}
+                                    />
+                                  </div>
+                                </div>
+                              ) : (
+                                deliveryOrderFile !== null && (
+                                  <div className="h-[500px] w-[400px] mb-5">
+                                    <div className="h-full w-full">
+                                      <img
+                                        src={deliveryOrderPreviewFile}
+                                        alt="no"
+                                        className="w-full h-full"
+                                      />
+                                    </div>
+                                  </div>
+                                )
+                              )}
                               <div className="flex items-center gap-3 mb-3">
                                 <div className="flex flex-col gap-1">
                                   <div className="w-[350px]">
@@ -3391,6 +3748,28 @@ const Penagihan = () => {
                                   <div>*)</div>
                                 </div>
                               </div>
+                              {invoiceFile !== null &&
+                              RegExp("\\bpdf\\b").test(
+                                invoiceFile.split(",")[0]
+                              ) ? (
+                                <div className="h-[500px] w-[500px] mb-5">
+                                  <div className="h-full w-full">
+                                    <Viewer fileUrl={invoicePreviewFile} />
+                                  </div>
+                                </div>
+                              ) : (
+                                invoiceFile !== null && (
+                                  <div className="h-[500px] w-[400px] mb-5">
+                                    <div className="h-full w-full">
+                                      <img
+                                        src={invoicePreviewFile}
+                                        alt="no"
+                                        className="w-full h-full"
+                                      />
+                                    </div>
+                                  </div>
+                                )
+                              )}
                               <div className="mb-10">
                                 {invoiceTambahan.map((item, i) => (
                                   <div key={i}>
@@ -3414,7 +3793,10 @@ const Penagihan = () => {
                                       <div>:</div>
                                       <div className="flex items-center gap-1">
                                         <div>
-                                          <label htmlFor={`invoice_${i}`} className="w-fit">
+                                          <label
+                                            htmlFor={`invoice_${i}`}
+                                            className="w-fit"
+                                          >
                                             {isEmpty(invoiceTambahan[i]) ? (
                                               <div className="w-fit flex gap-1 items-center bg-[#fff2cc] py-2 px-5 hover:bg-yellow-100 rounded-md">
                                                 <span>
@@ -3434,7 +3816,9 @@ const Penagihan = () => {
                                           <input
                                             type="file"
                                             id={`invoice_${i}`}
-                                            onChange={(e) => onChangeInvoiceTambahan(e,i)}
+                                            onChange={(e) =>
+                                              onChangeInvoiceTambahan(e, i)
+                                            }
                                             accept=".jpg,.pdf"
                                             className="hidden w-full h-[40px] border border-slate-300 rounded-sm focus:border focus:border-[#0077b6]  "
                                           />
@@ -3444,7 +3828,6 @@ const Penagihan = () => {
                                     </div>
                                   </div>
                                 ))}
-                              
                               </div>
                               <div className="flex items-center gap-3 mb-10">
                                 <div className="flex flex-col gap-1 w-[350px] ">
@@ -3491,6 +3874,28 @@ const Penagihan = () => {
                                   <div>*)</div>
                                 </div>
                               </div>
+                              {kwitansiFile !== null &&
+                              RegExp("\\bpdf\\b").test(
+                                kwitansiFile.split(",")[0]
+                              ) ? (
+                                <div className="h-[500px] w-[500px] mb-5">
+                                  <div className="h-full w-full">
+                                    <Viewer fileUrl={kwitansiPreviewFile} />
+                                  </div>
+                                </div>
+                              ) : (
+                                kwitansiFile !== null && (
+                                  <div className="h-[500px] w-[400px] mb-5">
+                                    <div className="h-full w-full">
+                                      <img
+                                        src={kwitansiPreviewFile}
+                                        alt="no"
+                                        className="w-full h-full"
+                                      />
+                                    </div>
+                                  </div>
+                                )
+                              )}
                               {vendors.status_pajak === "PKP" && (
                                 <>
                                   <div className="flex items-center gap-3 mb-3">
@@ -3536,6 +3941,30 @@ const Penagihan = () => {
                                       <div>*)</div>
                                     </div>
                                   </div>
+                                  {fakturPajakFile !== null &&
+                                  RegExp("\\bpdf\\b").test(
+                                    fakturPajakFile.split(",")[0]
+                                  ) ? (
+                                    <div className="h-[500px] w-[500px] mb-5">
+                                      <div className="h-full w-full">
+                                        <Viewer
+                                          fileUrl={fakturPajakPreviewFile}
+                                        />
+                                      </div>
+                                    </div>
+                                  ) : (
+                                    fakturPajakFile !== null && (
+                                      <div className="h-[500px] w-[400px] mb-5">
+                                        <div className="h-full w-full">
+                                          <img
+                                            src={fakturPajakPreviewFile}
+                                            alt="no"
+                                            className="w-full h-full"
+                                          />
+                                        </div>
+                                      </div>
+                                    )
+                                  )}
                                   <div className="mb-10">
                                     {fakturPajakTambahan.map((item, i) => (
                                       <div key={i}>
@@ -3583,7 +4012,12 @@ const Penagihan = () => {
                                               <input
                                                 type="file"
                                                 id={`pajak_${i}`}
-                                                onChange={(e) => onChangeFakturPajakTambahan(e,i)}
+                                                onChange={(e) =>
+                                                  onChangeFakturPajakTambahan(
+                                                    e,
+                                                    i
+                                                  )
+                                                }
                                                 accept=".jpg,.pdf"
                                                 className="hidden w-full h-[40px] border border-slate-300 rounded-sm focus:border focus:border-[#0077b6]  "
                                               />
@@ -3593,7 +4027,6 @@ const Penagihan = () => {
                                         </div>
                                       </div>
                                     ))}
-                                
                                   </div>
                                 </>
                               )}
@@ -3641,6 +4074,30 @@ const Penagihan = () => {
                                   <div>*)</div>
                                 </div>
                               </div>
+                              {scanReportSalesFile !== null &&
+                              RegExp("\\bpdf\\b").test(
+                                scanReportSalesFile.split(",")[0]
+                              ) ? (
+                                <div className="h-[500px] w-[500px] mb-5">
+                                  <div className="h-full w-full">
+                                    <Viewer
+                                      fileUrl={scanReportSalesPreviewFile}
+                                    />
+                                  </div>
+                                </div>
+                              ) : (
+                                scanReportSalesFile !== null && (
+                                  <div className="h-[500px] w-[400px] mb-5">
+                                    <div className="h-full w-full">
+                                      <img
+                                        src={scanReportSalesPreviewFile}
+                                        alt="no"
+                                        className="w-full h-full"
+                                      />
+                                    </div>
+                                  </div>
+                                )
+                              )}
                               <div>
                                 <div className="italic">
                                   Dokumen asli (hardcopy) sudah di kirimkan ke
@@ -3721,6 +4178,28 @@ const Penagihan = () => {
                                     )}
                                   </div>
                                 </div>
+                                {resiFile !== null &&
+                                RegExp("\\bpdf\\b").test(
+                                  resiFile.split(",")[0]
+                                ) ? (
+                                  <div className="h-[500px] w-[500px] mb-5">
+                                    <div className="h-full w-full">
+                                      <Viewer fileUrl={resiPreviewFile} />
+                                    </div>
+                                  </div>
+                                ) : (
+                                  resiFile !== null && (
+                                    <div className="h-[500px] w-[400px] mb-5">
+                                      <div className="h-full w-full">
+                                        <img
+                                          src={resiPreviewFile}
+                                          alt="no"
+                                          className="w-full h-full"
+                                        />
+                                      </div>
+                                    </div>
+                                  )
+                                )}
                                 {isError && (
                                   <div className="mt-10 mb-3">
                                     <div className="w-fit flex gap-1 items-center text-[14px] bg-red-500 text-white py-3 px-5 ">
@@ -3747,7 +4226,7 @@ const Penagihan = () => {
                     {activeStep === steps.length - 1 ? (
                       <button
                         onClick={
-                          tipePenagihan.value === "beli_putus"
+                          tipePenagihan.value === "beli putus"
                             ? saveDraft
                             : saveDraft2
                         }
@@ -3771,7 +4250,7 @@ const Penagihan = () => {
                     {activeStep === steps.length - 1 ? (
                       <button
                         onClick={
-                          tipePenagihan.value === "beli_putus"
+                          tipePenagihan.value === "beli putus"
                             ? handleNext
                             : handleNext2
                         }
@@ -3782,7 +4261,7 @@ const Penagihan = () => {
                     ) : (
                       <button
                         onClick={
-                          tipePenagihan.value === "beli_putus"
+                          tipePenagihan.value === "beli putus"
                             ? handleNext
                             : handleNext2
                         }
@@ -3808,10 +4287,11 @@ const Penagihan = () => {
                             <form action="">
                               <div className="flex flex-col gap-2">
                                 <div>
-                                  <label htmlFor="">Penagihan</label>
+                                  <label htmlFor="">Tipe Penagihan</label>
                                 </div>
                                 <div>
                                   <Select
+                                    isDisabled={true}
                                     value={tipePenagihan}
                                     onChange={onChangeTipePenagihan}
                                     className="whitespace-nowrap"
@@ -4047,15 +4527,30 @@ const Penagihan = () => {
                                         </div>
                                       </div>
                                     ))}
-                                    <div
-                                      onClick={addInput}
-                                      className={`py-1 px-4 rounded-sm shadow-sm text-white bg-[#305496]  w-fit ${
-                                        nomerInvoice.length === 4
-                                          ? "cursor-not-allowed"
-                                          : "cursor-pointer"
-                                      } `}
-                                    >
-                                      Add row
+                                    <div className="flex items-center justify-between max-[357px]:flex-col max-[357px]:items-start max-[357px]:gap-2">
+                                      {nomerInvoice.length > 1 && (
+                                        <div
+                                          onClick={deleteInput}
+                                          className={`py-1 px-4 text-center rounded-sm shadow-sm text-white bg-red-500 w-fit max-[357px]:w-full ${
+                                            nomerInvoice.length === 4
+                                              ? "cursor-not-allowed"
+                                              : "cursor-pointer"
+                                          } `}
+                                        >
+                                          Delete row
+                                        </div>
+                                      )}
+
+                                      <div
+                                        onClick={addInput}
+                                        className={`py-1 px-4 text-center rounded-sm shadow-sm text-white bg-[#305496]  w-fit max-[357px]:w-full ${
+                                          nomerInvoice.length === 5
+                                            ? "cursor-not-allowed"
+                                            : "cursor-pointer"
+                                        } `}
+                                      >
+                                        Add row
+                                      </div>
                                     </div>
                                   </div>
 
@@ -4117,16 +4612,7 @@ const Penagihan = () => {
                                             <div>
                                               <input
                                                 id={i}
-                                                type="number"
-                                                min={0}
-                                                max={999999999999}
-                                                step={0.01}
-                                                onKeyDown={(evt) =>
-                                                  (evt.key === "e" ||
-                                                    evt.key === "-" ||
-                                                    evt.key === " ") &&
-                                                  evt.preventDefault()
-                                                }
+                                                type="text"
                                                 value={nilaiInvoice[i].value}
                                                 onChange={onChangeNilaiInvoice}
                                                 className="max-[821px]:w-full w-[246.4px] h-[40px] border border-slate-300 rounded-sm focus:border focus:border-[#0077b6] bg-[#ddebf7]"
@@ -4414,15 +4900,30 @@ const Penagihan = () => {
                                         </div>
                                       </div>
                                     ))}
-                                    <div
-                                      onClick={addInput}
-                                      className={`py-1 px-4 rounded-sm shadow-sm text-white bg-[#305496]  w-fit ${
-                                        nomerInvoice.length === 4
-                                          ? "cursor-not-allowed"
-                                          : "cursor-pointer"
-                                      } `}
-                                    >
-                                      Add row
+                                    <div className="flex items-center justify-between max-[357px]:flex-col max-[357px]:items-start max-[357px]:gap-2">
+                                      {nomerInvoice.length > 1 && (
+                                        <div
+                                          onClick={deleteInput}
+                                          className={`py-1 px-4 text-center rounded-sm shadow-sm text-white bg-red-500 w-fit max-[357px]:w-full ${
+                                            nomerInvoice.length === 4
+                                              ? "cursor-not-allowed"
+                                              : "cursor-pointer"
+                                          } `}
+                                        >
+                                          Delete row
+                                        </div>
+                                      )}
+
+                                      <div
+                                        onClick={addInput}
+                                        className={`py-1 px-4 text-center rounded-sm shadow-sm text-white bg-[#305496]  w-fit max-[357px]:w-full ${
+                                          nomerInvoice.length === 5
+                                            ? "cursor-not-allowed"
+                                            : "cursor-pointer"
+                                        } `}
+                                      >
+                                        Add row
+                                      </div>
                                     </div>
                                   </div>
 
@@ -4445,16 +4946,7 @@ const Penagihan = () => {
                                           <div>
                                             <input
                                               id={i}
-                                              type="number"
-                                              min={0}
-                                              max={999999999999}
-                                              step={0.01}
-                                              onKeyDown={(evt) =>
-                                                (evt.key === "e" ||
-                                                  evt.key === "-" ||
-                                                  evt.key === " ") &&
-                                                evt.preventDefault()
-                                              }
+                                              type="text"
                                               value={nilaiInvoice[i].value}
                                               onChange={onChangeNilaiInvoice}
                                               className="max-[821px]:w-full w-[246.4px] h-[40px] border border-slate-300 rounded-sm focus:border focus:border-[#0077b6] bg-[#fff2cc]"
@@ -4605,7 +5097,7 @@ const Penagihan = () => {
                                     <button
                                       disabled={activeStep === 0}
                                       onClick={
-                                        tipePenagihan.value === "beli_putus"
+                                        tipePenagihan.value === "beli putus"
                                           ? saveDraft
                                           : saveDraft2
                                       }
@@ -4629,7 +5121,7 @@ const Penagihan = () => {
 
                                   <button
                                     onClick={
-                                      tipePenagihan.value === "beli_putus"
+                                      tipePenagihan.value === "beli putus"
                                         ? handleNext
                                         : handleNext2
                                     }
@@ -4646,7 +5138,7 @@ const Penagihan = () => {
                                     <button
                                       disabled={activeStep === 0}
                                       onClick={
-                                        tipePenagihan.value === "beli_putus"
+                                        tipePenagihan.value === "beli putus"
                                           ? saveDraft
                                           : saveDraft2
                                       }
@@ -4670,7 +5162,7 @@ const Penagihan = () => {
 
                                   <button
                                     onClick={
-                                      tipePenagihan.value === "beli_putus"
+                                      tipePenagihan.value === "beli putus"
                                         ? handleNext
                                         : handleNext2
                                     }
@@ -4730,6 +5222,30 @@ const Penagihan = () => {
                                         />
                                       </div>
                                     </div>
+                                    {purchaseOrderFile !== null &&
+                                    RegExp("\\bpdf\\b").test(
+                                      purchaseOrderFile.split(",")[0]
+                                    ) ? (
+                                      <div className="h-[500px] w-full mb-5">
+                                        <div className="h-full w-full">
+                                          <Viewer
+                                            fileUrl={purchaseOrderPreviewFile}
+                                          />
+                                        </div>
+                                      </div>
+                                    ) : (
+                                      purchaseOrderFile !== null && (
+                                        <div className="h-[300px] w-full mb-5">
+                                          <div className="h-full w-full">
+                                            <img
+                                              src={purchaseOrderPreviewFile}
+                                              alt="no"
+                                              className="w-full h-full"
+                                            />
+                                          </div>
+                                        </div>
+                                      )
+                                    )}
                                     <div className="flex flex-col gap-3 mb-3">
                                       <div className="flex flex-col gap-1">
                                         <div className="">
@@ -4771,6 +5287,30 @@ const Penagihan = () => {
                                         />
                                       </div>
                                     </div>
+                                    {deliveryOrderFile !== null &&
+                                    RegExp("\\bpdf\\b").test(
+                                      deliveryOrderFile.split(",")[0]
+                                    ) ? (
+                                      <div className="h-[500px] w-full mb-5">
+                                        <div className="h-full w-full">
+                                          <Viewer
+                                            fileUrl={deliveryOrderPreviewFile}
+                                          />
+                                        </div>
+                                      </div>
+                                    ) : (
+                                      deliveryOrderFile !== null && (
+                                        <div className="h-[300px] w-full mb-5">
+                                          <div className="h-full w-full">
+                                            <img
+                                              src={deliveryOrderPreviewFile}
+                                              alt="no"
+                                              className="w-full h-full"
+                                            />
+                                          </div>
+                                        </div>
+                                      )
+                                    )}
                                     <div className="flex flex-col gap-3 mb-3">
                                       <div className="flex flex-col gap-1">
                                         <div className="w-[350px]">
@@ -4811,6 +5351,30 @@ const Penagihan = () => {
                                         />
                                       </div>
                                     </div>
+                                    {invoiceFile !== null &&
+                                    RegExp("\\bpdf\\b").test(
+                                      invoiceFile.split(",")[0]
+                                    ) ? (
+                                      <div className="h-[500px] w-full mb-5">
+                                        <div className="h-full w-full">
+                                          <Viewer
+                                            fileUrl={invoicePreviewFile}
+                                          />
+                                        </div>
+                                      </div>
+                                    ) : (
+                                      invoiceFile !== null && (
+                                        <div className="h-[300px] w-full mb-5">
+                                          <div className="h-full w-full">
+                                            <img
+                                              src={invoicePreviewFile}
+                                              alt="no"
+                                              className="w-full h-full"
+                                            />
+                                          </div>
+                                        </div>
+                                      )
+                                    )}
                                     <div className="mb-10">
                                       {invoiceTambahan.map((item, i) => (
                                         <div key={i}>
@@ -4852,7 +5416,9 @@ const Penagihan = () => {
                                               <input
                                                 type="file"
                                                 id={`invoice_${i}`}
-                                                onChange={(e) => onChangeInvoiceTambahan(e,i)}
+                                                onChange={(e) =>
+                                                  onChangeInvoiceTambahan(e, i)
+                                                }
                                                 accept=".jpg,.pdf"
                                                 className="hidden w-full h-[40px] border border-slate-300 rounded-sm focus:border focus:border-[#0077b6] "
                                               />
@@ -4860,7 +5426,6 @@ const Penagihan = () => {
                                           </div>
                                         </div>
                                       ))}
-                                    
                                     </div>
                                     <div className="flex flex-col gap-3 mb-10">
                                       <div className="flex flex-col gap-1">
@@ -4908,6 +5473,30 @@ const Penagihan = () => {
                                         />
                                       </div>
                                     </div>
+                                    {kwitansiFile !== null &&
+                                    RegExp("\\bpdf\\b").test(
+                                      kwitansiFile.split(",")[0]
+                                    ) ? (
+                                      <div className="h-[500px] w-full mb-5">
+                                        <div className="h-full w-full">
+                                          <Viewer
+                                            fileUrl={kwitansiPreviewFile}
+                                          />
+                                        </div>
+                                      </div>
+                                    ) : (
+                                      kwitansiFile !== null && (
+                                        <div className="h-[300px] w-full mb-5">
+                                          <div className="h-full w-full">
+                                            <img
+                                              src={kwitansiPreviewFile}
+                                              alt="no"
+                                              className="w-full h-full"
+                                            />
+                                          </div>
+                                        </div>
+                                      )
+                                    )}
                                     {vendors.status_pajak === "PKP" && (
                                       <>
                                         <div className="flex flex-col gap-3 mb-3">
@@ -4950,6 +5539,30 @@ const Penagihan = () => {
                                             />
                                           </div>
                                         </div>
+                                        {fakturPajakFile !== null &&
+                                        RegExp("\\bpdf\\b").test(
+                                          fakturPajakFile.split(",")[0]
+                                        ) ? (
+                                          <div className="h-[500px] w-full mb-5">
+                                            <div className="h-full w-full">
+                                              <Viewer
+                                                fileUrl={fakturPajakPreviewFile}
+                                              />
+                                            </div>
+                                          </div>
+                                        ) : (
+                                          fakturPajakFile !== null && (
+                                            <div className="h-[300px] w-full mb-5">
+                                              <div className="h-full w-full">
+                                                <img
+                                                  src={fakturPajakPreviewFile}
+                                                  alt="no"
+                                                  className="w-full h-full"
+                                                />
+                                              </div>
+                                            </div>
+                                          )
+                                        )}
                                         <div className="mb-10">
                                           {fakturPajakTambahan.map(
                                             (item, i) => (
@@ -4997,7 +5610,12 @@ const Penagihan = () => {
                                                     <input
                                                       type="file"
                                                       id={`pajak_${i}`}
-                                                      onChange={(e) => onChangeFakturPajakTambahan(e,i)}
+                                                      onChange={(e) =>
+                                                        onChangeFakturPajakTambahan(
+                                                          e,
+                                                          i
+                                                        )
+                                                      }
                                                       accept=".jpg,.pdf"
                                                       className="hidden w-full h-[40px] border border-slate-300 rounded-sm focus:border focus:border-[#0077b6]  "
                                                     />
@@ -5006,7 +5624,6 @@ const Penagihan = () => {
                                               </div>
                                             )
                                           )}
-                                       
                                         </div>
                                       </>
                                     )}
@@ -5051,6 +5668,30 @@ const Penagihan = () => {
                                         />
                                       </div>
                                     </div>
+                                    {receivingNoteFile !== null &&
+                                    RegExp("\\bpdf\\b").test(
+                                      receivingNoteFile.split(",")[0]
+                                    ) ? (
+                                      <div className="h-[500px] w-full mb-5">
+                                        <div className="h-full w-full">
+                                          <Viewer
+                                            fileUrl={receivingNotePreviewFile}
+                                          />
+                                        </div>
+                                      </div>
+                                    ) : (
+                                      receivingNoteFile !== null && (
+                                        <div className="h-[300px] w-full mb-5">
+                                          <div className="h-full w-full">
+                                            <img
+                                              src={receivingNotePreviewFile}
+                                              alt="no"
+                                              className="w-full h-full"
+                                            />
+                                          </div>
+                                        </div>
+                                      )
+                                    )}
                                     <div>
                                       <div className="italic">
                                         Dokumen asli (hardcopy) sudah di
@@ -5124,6 +5765,28 @@ const Penagihan = () => {
                                           />
                                         </div>
                                       </div>
+                                      {resiFile !== null &&
+                                      RegExp("\\bpdf\\b").test(
+                                        resiFile.split(",")[0]
+                                      ) ? (
+                                        <div className="h-[500px] w-full mb-5">
+                                          <div className="h-full w-full">
+                                            <Viewer fileUrl={resiPreviewFile} />
+                                          </div>
+                                        </div>
+                                      ) : (
+                                        resiFile !== null && (
+                                          <div className="h-[300px] w-full mb-5">
+                                            <div className="h-full w-full">
+                                              <img
+                                                src={resiPreviewFile}
+                                                alt="no"
+                                                className="w-full h-full"
+                                              />
+                                            </div>
+                                          </div>
+                                        )
+                                      )}
                                       {isError && (
                                         <div className="mt-10 mb-3">
                                           <div className="w-fit flex gap-1 items-center text-[14px] bg-red-500 text-white py-3 px-5 ">
@@ -5178,6 +5841,30 @@ const Penagihan = () => {
                                         />
                                       </div>
                                     </div>
+                                    {purchaseOrderFile !== null &&
+                                    RegExp("\\bpdf\\b").test(
+                                      purchaseOrderFile.split(",")[0]
+                                    ) ? (
+                                      <div className="h-[500px] w-full mb-5">
+                                        <div className="h-full w-full">
+                                          <Viewer
+                                            fileUrl={purchaseOrderPreviewFile}
+                                          />
+                                        </div>
+                                      </div>
+                                    ) : (
+                                      purchaseOrderFile !== null && (
+                                        <div className="h-[300px] w-full mb-5">
+                                          <div className="h-full w-full">
+                                            <img
+                                              src={purchaseOrderPreviewFile}
+                                              alt="no"
+                                              className="w-full h-full"
+                                            />
+                                          </div>
+                                        </div>
+                                      )
+                                    )}
                                     <div className="flex flex-col gap-3 mb-3">
                                       <div className="flex flex-col gap-1">
                                         <div>
@@ -5219,6 +5906,30 @@ const Penagihan = () => {
                                         />
                                       </div>
                                     </div>
+                                    {deliveryOrderFile !== null &&
+                                    RegExp("\\bpdf\\b").test(
+                                      deliveryOrderFile.split(",")[0]
+                                    ) ? (
+                                      <div className="h-[500px] w-full mb-5">
+                                        <div className="h-full w-full">
+                                          <Viewer
+                                            fileUrl={deliveryOrderPreviewFile}
+                                          />
+                                        </div>
+                                      </div>
+                                    ) : (
+                                      deliveryOrderFile !== null && (
+                                        <div className="h-[300px] w-full mb-5">
+                                          <div className="h-full w-full">
+                                            <img
+                                              src={deliveryOrderPreviewFile}
+                                              alt="no"
+                                              className="w-full h-full"
+                                            />
+                                          </div>
+                                        </div>
+                                      )
+                                    )}
                                     <div className="flex flex-col gap-3 mb-3">
                                       <div className="flex flex-col gap-1">
                                         <div className="w-[350px]">
@@ -5259,6 +5970,30 @@ const Penagihan = () => {
                                         />
                                       </div>
                                     </div>
+                                    {invoiceFile !== null &&
+                                    RegExp("\\bpdf\\b").test(
+                                      invoiceFile.split(",")[0]
+                                    ) ? (
+                                      <div className="h-[500px] w-full mb-5">
+                                        <div className="h-full w-full">
+                                          <Viewer
+                                            fileUrl={invoicePreviewFile}
+                                          />
+                                        </div>
+                                      </div>
+                                    ) : (
+                                      invoiceFile !== null && (
+                                        <div className="h-[300px] w-full mb-5">
+                                          <div className="h-full w-full">
+                                            <img
+                                              src={invoicePreviewFile}
+                                              alt="no"
+                                              className="w-full h-full"
+                                            />
+                                          </div>
+                                        </div>
+                                      )
+                                    )}
                                     <div className="mb-10">
                                       {invoiceTambahan.map((item, i) => (
                                         <div key={i}>
@@ -5300,7 +6035,9 @@ const Penagihan = () => {
                                               <input
                                                 type="file"
                                                 id={`invoice_${i}`}
-                                                onChange={(e) => onChangeInvoiceTambahan(e,i)}
+                                                onChange={(e) =>
+                                                  onChangeInvoiceTambahan(e, i)
+                                                }
                                                 accept=".jpg,.pdf"
                                                 className="hidden w-full h-[40px] border border-slate-300 rounded-sm focus:border focus:border-[#0077b6]  "
                                               />
@@ -5308,7 +6045,6 @@ const Penagihan = () => {
                                           </div>
                                         </div>
                                       ))}
-                                    
                                     </div>
                                     <div className="flex flex-col gap-3 mb-10">
                                       <div className="flex flex-col gap-1">
@@ -5356,6 +6092,30 @@ const Penagihan = () => {
                                         />
                                       </div>
                                     </div>
+                                    {kwitansiFile !== null &&
+                                    RegExp("\\bpdf\\b").test(
+                                      kwitansiFile.split(",")[0]
+                                    ) ? (
+                                      <div className="h-[500px] w-full mb-5">
+                                        <div className="h-full w-full">
+                                          <Viewer
+                                            fileUrl={kwitansiPreviewFile}
+                                          />
+                                        </div>
+                                      </div>
+                                    ) : (
+                                      kwitansiFile !== null && (
+                                        <div className="h-[300px] w-full mb-5">
+                                          <div className="h-full w-full">
+                                            <img
+                                              src={kwitansiPreviewFile}
+                                              alt="no"
+                                              className="w-full h-full"
+                                            />
+                                          </div>
+                                        </div>
+                                      )
+                                    )}
                                     {vendors.status_pajak === "PKP" && (
                                       <>
                                         <div className="flex flex-col gap-3 mb-3">
@@ -5398,6 +6158,30 @@ const Penagihan = () => {
                                             />
                                           </div>
                                         </div>
+                                        {fakturPajakFile !== null &&
+                                        RegExp("\\bpdf\\b").test(
+                                          fakturPajakFile.split(",")[0]
+                                        ) ? (
+                                          <div className="h-[500px] w-full mb-5">
+                                            <div className="h-full w-full">
+                                              <Viewer
+                                                fileUrl={fakturPajakPreviewFile}
+                                              />
+                                            </div>
+                                          </div>
+                                        ) : (
+                                          fakturPajakFile !== null && (
+                                            <div className="h-[300px] w-full mb-5">
+                                              <div className="h-full w-full">
+                                                <img
+                                                  src={fakturPajakPreviewFile}
+                                                  alt="no"
+                                                  className="w-full h-full"
+                                                />
+                                              </div>
+                                            </div>
+                                          )
+                                        )}
                                         <div className="mb-10">
                                           {fakturPajakTambahan.map(
                                             (item, i) => (
@@ -5445,7 +6229,12 @@ const Penagihan = () => {
                                                     <input
                                                       type="file"
                                                       id={`pajak_${i}`}
-                                                      onChange={(e) => onChangeFakturPajakTambahan(e,i)}
+                                                      onChange={(e) =>
+                                                        onChangeFakturPajakTambahan(
+                                                          e,
+                                                          i
+                                                        )
+                                                      }
                                                       accept=".jpg,.pdf"
                                                       className="hidden w-full h-[40px] border border-slate-300 rounded-sm focus:border focus:border-[#0077b6]  "
                                                     />
@@ -5454,7 +6243,6 @@ const Penagihan = () => {
                                               </div>
                                             )
                                           )}
-                                       
                                         </div>
                                       </>
                                     )}
@@ -5499,6 +6287,30 @@ const Penagihan = () => {
                                         />
                                       </div>
                                     </div>
+                                    {scanReportSalesFile !== null &&
+                                    RegExp("\\bpdf\\b").test(
+                                      scanReportSalesFile.split(",")[0]
+                                    ) ? (
+                                      <div className="h-[500px] w-full mb-5">
+                                        <div className="h-full w-full">
+                                          <Viewer
+                                            fileUrl={scanReportSalesPreviewFile}
+                                          />
+                                        </div>
+                                      </div>
+                                    ) : (
+                                      scanReportSalesFile !== null && (
+                                        <div className="h-[300px] w-full mb-5">
+                                          <div className="h-full w-full">
+                                            <img
+                                              src={scanReportSalesPreviewFile}
+                                              alt="no"
+                                              className="w-full h-full"
+                                            />
+                                          </div>
+                                        </div>
+                                      )
+                                    )}
                                     <div>
                                       <div className="italic">
                                         Dokumen asli (hardcopy) sudah di
@@ -5574,6 +6386,28 @@ const Penagihan = () => {
                                           />
                                         </div>
                                       </div>
+                                      {resiFile !== null &&
+                                      RegExp("\\bpdf\\b").test(
+                                        resiFile.split(",")[0]
+                                      ) ? (
+                                        <div className="h-[500px] w-full mb-5">
+                                          <div className="h-full w-full">
+                                            <Viewer fileUrl={resiPreviewFile} />
+                                          </div>
+                                        </div>
+                                      ) : (
+                                        resiFile !== null && (
+                                          <div className="h-[300px] w-full mb-5">
+                                            <div className="h-full w-full">
+                                              <img
+                                                src={resiPreviewFile}
+                                                alt="no"
+                                                className="w-full h-full"
+                                              />
+                                            </div>
+                                          </div>
+                                        )
+                                      )}
                                       {isError && (
                                         <div className="mt-10 mb-3">
                                           <div className="w-fit flex gap-1 items-center text-[14px] bg-red-500 text-white py-3 px-5 ">
@@ -5595,7 +6429,7 @@ const Penagihan = () => {
                                       <button
                                         disabled={activeStep === 0}
                                         onClick={
-                                          tipePenagihan.value === "beli_putus"
+                                          tipePenagihan.value === "beli putus"
                                             ? saveDraft
                                             : saveDraft2
                                         }
@@ -5621,7 +6455,7 @@ const Penagihan = () => {
 
                                     <button
                                       onClick={
-                                        tipePenagihan.value === "beli_putus"
+                                        tipePenagihan.value === "beli putus"
                                           ? handleNext
                                           : handleNext2
                                       }
@@ -5638,7 +6472,7 @@ const Penagihan = () => {
                                       <button
                                         disabled={activeStep === 0}
                                         onClick={
-                                          tipePenagihan.value === "beli_putus"
+                                          tipePenagihan.value === "beli putus"
                                             ? saveDraft
                                             : saveDraft2
                                         }
@@ -5664,7 +6498,7 @@ const Penagihan = () => {
 
                                     <button
                                       onClick={
-                                        tipePenagihan.value === "beli_putus"
+                                        tipePenagihan.value === "beli putus"
                                           ? handleNext
                                           : handleNext2
                                       }
@@ -5728,7 +6562,7 @@ const Penagihan = () => {
       >
         <CircularProgress color="inherit" />
       </Backdrop>
-    </Admin>
+    </>
   );
 };
 

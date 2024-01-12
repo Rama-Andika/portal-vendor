@@ -1,4 +1,4 @@
-import React from "react";
+import React, { useEffect } from "react";
 import { SiShopware } from "react-icons/si";
 import { MdOutlineCancel } from "react-icons/md";
 
@@ -6,15 +6,53 @@ import { linksWh } from "../data/dummy";
 import { Link, NavLink } from "react-router-dom";
 import { useStateContext } from "../contexts/ContextProvider";
 import { Sidebar } from "flowbite-react";
+import { PiMonitorLight } from "react-icons/pi";
+import { FaBuilding } from "react-icons/fa";
+import { HiCash } from "react-icons/hi";
 
 const SidebarComponentWh = () => {
-  const { activeMenu, setActiveMenu, screenSize } = useStateContext();
+  const { activeMenu, setActiveMenu, screenSize, setOpenSidebar } =
+    useStateContext();
 
-  const handleCloseSidebar = () => {
+  const handleCloseSidebar = (i) => {
     if (activeMenu && screenSize <= 900) {
       setActiveMenu(false);
     }
+
+    // if (openSidebar.length > 0) {
+    //   let arr;
+    //   const list = openSidebar.map((item, index) => {
+    //     if (i === index) {
+    //       arr = item === false ? true : item;
+    //     } else {S
+    //       arr = item;
+    //     }
+
+    //     return arr;
+    //   });
+
+    //   console.log(list);
+    // }
   };
+
+  useEffect(() => {
+    console.log("sidebar")
+    if (linksWh.length > 0) {
+      let arr;
+      const list = linksWh.map((item, i) => {
+        if (i === 1) {
+          arr = true;
+        } else {
+          arr = false;
+        }
+        return arr;
+      });
+
+      setOpenSidebar(list);
+    }
+
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, []);
 
   const activeLink =
     "flex items-center gap-3 pt-3 pl-[40px] pb-2.5 rounded-lg text-white text=md ";
@@ -35,7 +73,7 @@ const SidebarComponentWh = () => {
         <>
           <div className="flex justify-between items-center ">
             <Link
-              to="/"
+              to="/admin"
               onClick={handleCloseSidebar}
               className="items-center gap-3 mt-4 flex text-xl font-extrabold tracking-tight dark:text-white text-slate-900"
             >
@@ -49,62 +87,108 @@ const SidebarComponentWh = () => {
             <Sidebar aria-label="Sidebar with multi-level dropdown example ">
               <Sidebar.Items>
                 <Sidebar.ItemGroup>
-                  {linksWh.map((item, index) =>
-                    item.links.length === 0 ? (
-                      <NavLink
-                        key={index}
-                        style={({ isActive }) => ({
-                          backgroundColor: isActive ? "#0077b6" : "",
-                        })}
-                        to={`/${item.name.toLowerCase().split(" ").join("-")}`}
-                        onClick={handleCloseSidebar}
-                        className={({ isActive }) =>
-                          isActive ? activeLink : normalLink
-                        }
-                      >
-                        <div className="ms-[-30px] flex items-center gap-2 ">
-                          <div className="text-[24px]">{item.icon}</div>
-                          <div>{item.title}</div>
-                        </div>
-                      </NavLink>
-                    ) : (
-                      <Sidebar.Collapse
-                        key={index}
-                        label={item.title}
-                        icon={item.icon}
-                        open
-                      >
-                        {item.links.map((link, index) => (
-                          <NavLink
-                            key={index}
-                            style={({ isActive }) => ({
-                              backgroundColor: isActive ? "#0077b6" : "",
-                            })}
-                            to={`/${
-                              link.name2 !== undefined
-                                ? `admin/${link.name2}/${link.name
-                                    .toLowerCase()
-                                    .split(" ")
-                                    .join("-")}`
-                                : `admin/${link.name
-                                    .toLowerCase()
-                                    .split(" ")
-                                    .join("-")}`
-                            }`}
-                            onClick={handleCloseSidebar}
-                            className={({ isActive }) =>
-                              isActive ? activeLink : normalLink
-                            }
-                          >
-                            {link.icon}
-                            <span className="capitalize whitespace-nowrap text-[14px]">
-                              {link.name}
-                            </span>
-                          </NavLink>
-                        ))}
-                      </Sidebar.Collapse>
-                    )
-                  )}
+                  <Sidebar.Collapse
+                    label="Payment Monitor"
+                    icon={PiMonitorLight}
+                    open={false}
+                  >
+                    <NavLink
+                      style={({ isActive }) => ({
+                        backgroundColor: isActive ? "#0077b6" : "",
+                      })}
+                      to={`/admin/vendor-&-non-vendor`}
+                      onClick={() => handleCloseSidebar()}
+                      className={({ isActive }) =>
+                        isActive ? activeLink : normalLink
+                      }
+                    >
+                      <FaBuilding />
+                      <span className="capitalize whitespace-nowrap text-[14px]">
+                        vendor & non vendor
+                      </span>
+                    </NavLink>
+                    <NavLink
+                      style={({ isActive }) => ({
+                        backgroundColor: isActive ? "#0077b6" : "",
+                      })}
+                      to={`/admin/cod`}
+                      onClick={() => handleCloseSidebar()}
+                      className={({ isActive }) =>
+                        isActive ? activeLink : normalLink
+                      }
+                    >
+                      <HiCash />
+                      <span className="capitalize whitespace-nowrap text-[14px]">
+                        COD
+                      </span>
+                    </NavLink>
+                  </Sidebar.Collapse>
+                  <Sidebar.Collapse
+                    label="Vendor"
+                    icon={PiMonitorLight}
+                    open
+                  >
+                    <NavLink
+                      style={({ isActive }) => ({
+                        backgroundColor: isActive ? "#0077b6" : "",
+                      })}
+                      to={`/admin/vendor/registration-list`}
+                      onClick={() => handleCloseSidebar()}
+                      className={({ isActive }) =>
+                        isActive ? activeLink : normalLink
+                      }
+                    >
+                      <FaBuilding />
+                      <span className="capitalize whitespace-nowrap text-[14px]">
+                        Registration List
+                      </span>
+                    </NavLink>
+                    <NavLink
+                      style={({ isActive }) => ({
+                        backgroundColor: isActive ? "#0077b6" : "",
+                      })}
+                      to={`/admin/vendor/vendor-list`}
+                      onClick={() => handleCloseSidebar()}
+                      className={({ isActive }) =>
+                        isActive ? activeLink : normalLink
+                      }
+                    >
+                      <HiCash />
+                      <span className="capitalize whitespace-nowrap text-[14px]">
+                        Vendor List
+                      </span>
+                    </NavLink>
+                    <NavLink
+                      style={({ isActive }) => ({
+                        backgroundColor: isActive ? "#0077b6" : "",
+                      })}
+                      to={`/admin/vendor/pending-task`}
+                      onClick={() => handleCloseSidebar()}
+                      className={({ isActive }) =>
+                        isActive ? activeLink : normalLink
+                      }
+                    >
+                      <HiCash />
+                      <span className="capitalize whitespace-nowrap text-[14px]">
+                        Pending Task
+                      </span>
+                    </NavLink>
+                    <NavLink
+                      style={({ isActive }) => ({
+                        backgroundColor: isActive ? "#0077b6" : "",
+                      })}
+                      to={`/admin/vendor/listing-penagihan`}
+                      onClick={() => handleCloseSidebar()}
+                      className={({ isActive }) =>
+                        isActive ? activeLink : normalLink
+                      }
+                    >
+                      <HiCash />
+                      <span className="capitalize whitespace-nowrap text-[14px]">
+                        Listing Penagihan
+                      </span>
+                    </NavLink>
+                  </Sidebar.Collapse>
                 </Sidebar.ItemGroup>
               </Sidebar.Items>
             </Sidebar>

@@ -27,6 +27,8 @@ import isEmpty from "../../components/functions/CheckEmptyObject";
 import toast from "react-hot-toast";
 import { FaEye, FaEyeSlash } from "react-icons/fa";
 import GetBase64 from "../../components/functions/GetBase64";
+import { Viewer } from "@react-pdf-viewer/core";
+import "@react-pdf-viewer/core/lib/styles/index.css";
 
 const steps = ["Company Profile", "Contact Person", "Payment", "Document"];
 const options = [
@@ -68,7 +70,6 @@ const Registration = () => {
   const [tipePerusahaan, setTipePerusahaan] = useState({});
   const [tipePerusahaanText, setTipePerusahaanText] = useState("");
   const [namaPerusahaan, setNamaPerusahaan] = useState("");
-  const [kode, setKode] = useState("");
   const [alamat, setAlamat] = useState("");
   const [provinsi, setProvinsi] = useState({});
   const [kota, setKota] = useState("");
@@ -107,12 +108,26 @@ const Registration = () => {
   const [promotionFund, setPromotionFund] = useState("");
 
   const [npwpFile, setNpwpFile] = useState(null);
+  const [npwpFilePreview, setNpwpFilePreview] = useState(null);
+
   const [ktpPemilikFile, setKtpPemilikFIle] = useState(null);
+  const [ktpPemilikFilePreview, setKtpPemilikFilePreview] = useState(null);
+
   const [ktpPenanggungJawabFile, setKtpPenanggungJawabFile] = useState(null);
+  const [ktpPenanggungJawabFilePreview, setKtpPenanggungJawabFilePreview] =
+    useState(null);
+
   const [spkpFile, setSpkpFile] = useState(null);
+  const [spkpFilePreview, setSpkpFilePreview] = useState(null);
+
   const [nibFile, setNibFile] = useState(null);
+  const [nibFilePreview, setNibFilePreview] = useState(null);
+
   const [ssPerusahaanFile, setSsPerusahaanFile] = useState(null);
+  const [ssPerusahaanFilePreview, setSsPerusahaanFilePreview] = useState(null);
+
   const [sertifBpomFile, setSertifBpomFile] = useState(null);
+  const [sertifBpomFilePreview, setSertifBpomFilePreview] = useState(null);
 
   const [isError, setIsError] = useState(false);
   const [message, setMessage] = useState("");
@@ -122,12 +137,12 @@ const Registration = () => {
   const navigate = useNavigate();
 
   const handleNext = () => {
+    setLoading(true);
     if (activeStep === 0) {
       if (
         username.trim().length > 0 &&
         email.trim().length > 0 &&
         password.trim().length > 0 &&
-        kode.trim().length > 0 &&
         namaPerusahaan.trim().length > 0 &&
         alamat.trim().length > 0 &&
         !isEmpty(provinsi) &&
@@ -139,6 +154,7 @@ const Registration = () => {
         if (!isValidEmail(email)) {
           setIsError(true);
           setMessage("Email Tidak Valid!");
+          setLoading(false);
         } else {
           fetch(`${api}api/portal-vendor/user/validation`, {
             method: "POST",
@@ -152,61 +168,69 @@ const Registration = () => {
               if (!res.data) {
                 setIsError(true);
                 setMessage("Username atau Email Sudah ada!");
+                setLoading(false);
               } else {
                 fetch(`${api}api/portal-vendor/vendor/validation`, {
                   method: "POST",
                   body: JSON.stringify({
-                    name: namaPerusahaan,
-                    code: kode
+                    name: namaPerusahaan.trim(),
                   }),
                 })
-                  .then((response) => response.json())
-                  .then((res) => {
-                    if (!res.data) {
-                      setIsError(true);
-                      setMessage("Nama Perusahaan atau kode Sudah ada!");
-                    } else {
-                      if (statusPajak.value === "PKP") {
-                        if (npwp.trim().length === 20) {
-                          setIsError(false);
-                        } else {
-                          setMessage("Data Belum Lengkap!");
-                          return setIsError(true);
-                        }
-                      }
-
-                      if (!isEmpty(tipePerusahaan)) {
-                        if (tipePerusahaan.value === "lainnya") {
-                          if (tipePerusahaanText.trim().length > 0) {
-                            setIsError(false);
-                            setActiveStep(
-                              (prevActiveStep) => prevActiveStep + 1
-                            );
-                          } else {
-                            setMessage("Data Belum Lengkap!");
-                            setIsError(true);
-                          }
-                        } else {
-                          setIsError(false);
-                          setActiveStep((prevActiveStep) => prevActiveStep + 1);
-                        }
+                .then((response) => response.json())
+                .then(async (res) => {
+                  if (!res.data) {
+                    setIsError(true);
+                    setMessage("Nama Perusahaan Sudah ada!")
+                  }
+                  else{
+                    if (statusPajak.value === "PKP") {
+                      if (npwp.trim().length === 21) {
+                        setIsError(false);
                       } else {
                         setMessage("Data Belum Lengkap!");
-                        setIsError(true);
+                        setLoading(false);
+                        return setIsError(true);
                       }
                     }
-                  }).catch((err) => {
-                    console.log(err)
-                  });
+    
+                    if (!isEmpty(tipePerusahaan)) {
+                      if (tipePerusahaan.value === "lainnya") {
+                        if (tipePerusahaanText.trim().length > 0) {
+                          setIsError(false);
+                          setActiveStep((prevActiveStep) => prevActiveStep + 1);
+                        } else {
+                          setMessage("Data Belum Lengkap!");
+                          setIsError(true);
+                        }
+                      } else {
+                        setIsError(false);
+                        setActiveStep((prevActiveStep) => prevActiveStep + 1);
+                      }
+                    } else {
+                      setMessage("Data Belum Lengkap!");
+                      setIsError(true);
+                    }
+                  }
+                  setLoading(false);
+                })
+                .catch((err) => {
+                  setLoading(false);
+                  setMessage("Terjadi Kesalahan!");
+                  setIsError(true)
+                  console.log(err);
+                });
+                
               }
             })
             .catch((err) => {
               console.log(err);
+              setLoading(false);
             });
         }
       } else {
         setMessage("Data Belum Lengkap!");
         setIsError(true);
+        setLoading(false)
       }
     } else if (activeStep === 1) {
       if (
@@ -218,12 +242,15 @@ const Registration = () => {
         namaKontak.trim().length > 0 &&
         whatsappKeuangan.trim().length > 0 &&
         namaKontakKeuangan.trim().length > 0 &&
-        jabatanKeuangan.trim().length > 0
+        jabatanKeuangan.trim().length > 0 &&
+        emailKorespondensiPo.trim().length > 0
       ) {
         setIsError(false);
         setActiveStep((prevActiveStep) => prevActiveStep + 1);
+        setLoading(false)
       } else {
         setIsError(true);
+        setLoading(false)
         setMessage("Data Belum Lengkap!");
       }
     } else if (activeStep === 2) {
@@ -237,9 +264,11 @@ const Registration = () => {
         pengembalianBarang.trim().length > 0
       ) {
         setIsError(false);
+        setLoading(false)
         setActiveStep((prevActiveStep) => prevActiveStep + 1);
       } else {
         setIsError(true);
+        setLoading(false)
         setMessage("Data Belum Lengkap!");
       }
     } else if (activeStep === 3) {
@@ -258,7 +287,9 @@ const Registration = () => {
           setIsError(false);
           saveVendor();
         }
+        setLoading(false)
       } else {
+        setLoading(false)
         setIsError(true);
         setMessage(
           "File yang bertanda *) tidak boleh kosong atau maksimal size file adalah 2 mb!"
@@ -383,7 +414,6 @@ const Registration = () => {
       email: email,
       password: password,
       nama: namaPerusahaan.trim(),
-      kode: kode.trim(),
       tipe_perusahaan: tipePerusahaan.value,
       tipe_perusahaan_lainnya: tipePerusahaanText.trim(),
       alamat: alamat.trim(),
@@ -554,7 +584,6 @@ const Registration = () => {
         /(\d{0,1})?(\d{0,2})?(\d{0,3})?(\d{0,3})?(\d{0,1})?(\d{0,3})?(\d{0,3})$/
       );
 
-
       var nilai = [
         match[1] && "0",
         match[2],
@@ -642,6 +671,7 @@ const Registration = () => {
   const onChangeNpwpFile = (e) => {
     if (e.target.files[0] !== undefined) {
       if (e.target.files[0].size <= 2000000) {
+        setNpwpFilePreview(URL.createObjectURL(e.target.files[0]));
         GetBase64(e.target.files[0])
           .then((result) => {
             setNpwpFile(result);
@@ -658,6 +688,7 @@ const Registration = () => {
   const onChangeKtpPemilikFile = (e) => {
     if (e.target.files[0] !== undefined) {
       if (e.target.files[0].size <= 2000000) {
+        setKtpPemilikFilePreview(URL.createObjectURL(e.target.files[0]));
         GetBase64(e.target.files[0])
           .then((result) => {
             setKtpPemilikFIle(result);
@@ -674,6 +705,9 @@ const Registration = () => {
   const onChangeKtpPenanggungJawabFile = (e) => {
     if (e.target.files[0] !== undefined) {
       if (e.target.files[0].size <= 2000000) {
+        setKtpPenanggungJawabFilePreview(
+          URL.createObjectURL(e.target.files[0])
+        );
         GetBase64(e.target.files[0])
           .then((result) => {
             setKtpPenanggungJawabFile(result);
@@ -690,6 +724,7 @@ const Registration = () => {
   const onChangeSpkpFile = (e) => {
     if (e.target.files[0] !== undefined) {
       if (e.target.files[0].size <= 2000000) {
+        setSpkpFilePreview(URL.createObjectURL(e.target.files[0]));
         GetBase64(e.target.files[0])
           .then((result) => {
             setSpkpFile(result);
@@ -706,6 +741,7 @@ const Registration = () => {
   const onChangeNibFile = (e) => {
     if (e.target.files[0] !== undefined) {
       if (e.target.files[0].size <= 2000000) {
+        setNibFilePreview(URL.createObjectURL(e.target.files[0]));
         GetBase64(e.target.files[0])
           .then((result) => {
             setNibFile(result);
@@ -722,6 +758,7 @@ const Registration = () => {
   const onChangeSsRekeningFile = (e) => {
     if (e.target.files[0] !== undefined) {
       if (e.target.files[0].size <= 2000000) {
+        setSsPerusahaanFilePreview(URL.createObjectURL(e.target.files[0]));
         GetBase64(e.target.files[0])
           .then((result) => {
             setSsPerusahaanFile(result);
@@ -738,9 +775,11 @@ const Registration = () => {
   const onChangeBpomFile = (e) => {
     if (e.target.files[0] !== undefined) {
       if (e.target.files[0].size <= 2000000) {
+        setSertifBpomFilePreview(URL.createObjectURL(e.target.files[0]));
         GetBase64(e.target.files[0])
           .then((result) => {
             setSertifBpomFile(result);
+      
           })
           .catch((err) => {
             setSertifBpomFile(null);
@@ -769,7 +808,7 @@ const Registration = () => {
   }
 
   return (
-    <div className={`font-roboto pt-20 px-10 `}>
+    <div className={`font-roboto pt-20 px-10 max-[581px]:px-0 `}>
       {screenSize > 580 ? (
         <div className="w-full">
           <Stepper
@@ -822,8 +861,7 @@ const Registration = () => {
                             evt.key === " " && evt.preventDefault()
                           }
                           type="text"
-                          name=""
-                          id=""
+                         
                           className={`w-full h-[36px] rounded-sm focus:border focus:border-[#0077b6] ${
                             isError && username.trim().length === 0
                               ? "border-red-400"
@@ -857,8 +895,7 @@ const Registration = () => {
                             evt.key === " " && evt.preventDefault()
                           }
                           type="email"
-                          name=""
-                          id=""
+                       
                           className={`w-full h-[36px] rounded-sm focus:border focus:border-[#0077b6] ${
                             isError && email.trim().length === 0
                               ? "border-red-400"
@@ -891,8 +928,7 @@ const Registration = () => {
                             evt.key === " " && evt.preventDefault()
                           }
                           type={`${showPassword ? "text" : "password"}`}
-                          name=""
-                          id=""
+                         
                           className={`w-full h-[36px] rounded-sm focus:border focus:border-[#0077b6] ${
                             isError && password.trim().length === 0
                               ? "border-red-400"
@@ -903,7 +939,7 @@ const Registration = () => {
                           onClick={() => setShowPassword((prev) => !prev)}
                           className="cursor-pointer absolute top-[50%] right-[10px] translate-y-[-50%] "
                         >
-                          {showPassword ? <FaEyeSlash /> : <FaEye />}{" "}
+                          {showPassword ? <FaEye /> : <FaEyeSlash />}{" "}
                         </div>
                         <div className="absolute right-[-20px] top-0">
                           {isError && password.trim().length === 0 ? (
@@ -950,8 +986,7 @@ const Registration = () => {
                                 setTipePerusahaanText(e.target.value)
                               }
                               type="text"
-                              name=""
-                              id=""
+                            
                               placeholder="Tulis tipe perusahaan..."
                               className={`w-full h-[36px] border border-slate-300 rounded-sm focus:border focus:border-[#0077b6] ${
                                 isError &&
@@ -984,10 +1019,9 @@ const Registration = () => {
                       <div className="w-1/2 relative">
                         <input
                           value={namaPerusahaan}
-                          onChange={(e) => setNamaPerusahaan(e.target.value)}
+                          onChange={(e) => setNamaPerusahaan(e.target.value.toUpperCase())}
                           type="text"
-                          name=""
-                          id=""
+                          
                           className={`w-full h-[36px] rounded-sm focus:border focus:border-[#0077b6] ${
                             isError && namaPerusahaan.trim().length === 0
                               ? "border-red-400"
@@ -1005,37 +1039,7 @@ const Registration = () => {
                         </div>
                       </div>
                     </div>
-                    <div className="flex gap-2 items-center mb-3">
-                      <div className="whitespace-nowrap flex">
-                        <label htmlFor="" className="w-36">
-                          Kode
-                        </label>
-                        <div>:</div>
-                      </div>
-                      <div className="w-1/2 relative">
-                        <input
-                          value={kode}
-                          onChange={(e) => setKode(e.target.value)}
-                          type="text"
-                          name=""
-                          id=""
-                          className={`w-full h-[36px] rounded-sm focus:border focus:border-[#0077b6] ${
-                            isError && kode.trim().length === 0
-                              ? "border-red-400"
-                              : "border-slate-300"
-                          } `}
-                        />
-                        <div className="absolute right-[-20px] top-0">
-                          {isError && kode.trim().length === 0 ? (
-                            <div className="text-red-500">
-                              <PiWarningCircleLight />
-                            </div>
-                          ) : (
-                            "*)"
-                          )}
-                        </div>
-                      </div>
-                    </div>
+
                     <div className="flex gap-2 mb-3">
                       <div className="whitespace-nowrap flex">
                         <label htmlFor="" className="w-36">
@@ -1048,8 +1052,7 @@ const Registration = () => {
                           rows={5}
                           value={alamat}
                           onChange={(e) => setAlamat(e.target.value)}
-                          name=""
-                          id=""
+                       
                           className={`w-full borderrounded-sm focus:border focus:border-[#0077b6] ${
                             isError && alamat.trim().length === 0
                               ? "border-red-400"
@@ -1107,8 +1110,7 @@ const Registration = () => {
                           value={kota}
                           onChange={(e) => setKota(e.target.value)}
                           type="text"
-                          name=""
-                          id=""
+                          
                           className={`w-full h-[36px] rounded-sm focus:border focus:border-[#0077b6] ${
                             isError && kota.trim().length === 0
                               ? "border-red-400"
@@ -1138,8 +1140,7 @@ const Registration = () => {
                           value={kodePos}
                           onChange={(e) => setKodePos(e.target.value)}
                           type="text"
-                          name=""
-                          id=""
+                          
                           className={`w-full h-[36px] rounded-sm focus:border focus:border-[#0077b6] ${
                             isError && kodePos.trim().length === 0
                               ? "border-red-400"
@@ -1226,7 +1227,7 @@ const Registration = () => {
                           <div>
                             <PiWarningCircleLight />
                           </div>
-                          <div>Harus 15 digit</div>
+                          <div>Harus 16 digit</div>
                         </div>
                       </div>
                       <div className="mr-2">:</div>
@@ -1235,8 +1236,7 @@ const Registration = () => {
                         <input
                           maxLength={21}
                           type="text"
-                          name=""
-                          id=""
+                        
                           className={`w-full h-[36px] rounded-sm focus:border focus:border-[#0077b6] ${
                             isError &&
                             statusPajak.value === "PKP" &&
@@ -1249,7 +1249,7 @@ const Registration = () => {
                         />
                         {statusPajak.value === "PKP" ? (
                           <div className="absolute right-[-20px] top-0">
-                            {isError && npwp.trim().length !== 20 ? (
+                            {isError && npwp.trim().length !== 21 ? (
                               <div className="text-red-500">
                                 <PiWarningCircleLight />
                               </div>
@@ -1274,8 +1274,7 @@ const Registration = () => {
                           value={website}
                           onChange={(e) => setWebsite(e.target.value)}
                           type="text"
-                          name=""
-                          id=""
+                          
                           className="w-full h-[36px] border border-slate-300 rounded-sm focus:border focus:border-[#0077b6]  "
                         />
                       </div>
@@ -1314,8 +1313,7 @@ const Registration = () => {
                             setNamaPemilikPerusahaan(e.target.value)
                           }
                           type="text"
-                          name=""
-                          id=""
+                         
                           className={`w-full h-[36px] rounded-sm focus:border focus:border-[#0077b6] ${
                             isError && namaPemilikPerusahaan.trim().length === 0
                               ? "border-red-400"
@@ -1348,8 +1346,7 @@ const Registration = () => {
                             setNamaPenanggungJawab(e.target.value)
                           }
                           type="text"
-                          name=""
-                          id=""
+                        
                           className={`w-full h-[36px] rounded-sm focus:border focus:border-[#0077b6] ${
                             isError && namaPenanggungJawab.trim().length === 0
                               ? "border-red-400"
@@ -1382,8 +1379,7 @@ const Registration = () => {
                             setJabatanPenanggungJawab(e.target.value)
                           }
                           type="text"
-                          name=""
-                          id=""
+                       
                           className={`w-full h-[36px] rounded-sm focus:border focus:border-[#0077b6] ${
                             isError &&
                             jabatanPenanggungJawab.trim().length === 0
@@ -1415,8 +1411,7 @@ const Registration = () => {
                           value={noTelpKantor}
                           onChange={(e) => onChangeNoTelpKantor(e)}
                           type="text"
-                          name=""
-                          id=""
+                         
                           pattern="[0-9]*"
                           className={`w-full h-[36px] rounded-sm focus:border focus:border-[#0077b6] ${
                             isError && noTelpKantor.trim().length === 0
@@ -1449,8 +1444,7 @@ const Registration = () => {
                         <input
                           type="text"
                           pattern="[0-9]*"
-                          name=""
-                          id=""
+                        
                           value={whatsappPO}
                           onChange={(e) => onChangeWhatsappPO(e)}
                           className={`w-full h-[36px]  rounded-sm focus:border focus:border-[#0077b6] ${
@@ -1484,10 +1478,23 @@ const Registration = () => {
                             setEmailKorespondensiPo(e.target.value)
                           }
                           type="email"
-                          name=""
-                          id=""
-                          className="w-full h-[36px] border border-slate-300 rounded-sm focus:border focus:border-[#0077b6]  "
+                         
+                          className={`w-full h-[36px]  rounded-sm focus:border focus:border-[#0077b6] ${
+                            isError && emailKorespondensiPo.trim().length === 0
+                              ? "border-red-400"
+                              : "border-slate-300"
+                          }  `}
                         />
+                        <div className="absolute right-[-20px] top-0">
+                          {isError &&
+                          emailKorespondensiPo.trim().length === 0 ? (
+                            <div className="text-red-500">
+                              <PiWarningCircleLight />
+                            </div>
+                          ) : (
+                            "*)"
+                          )}
+                        </div>
                       </div>
                     </div>
                     <div className="flex gap-2 items-center mb-3">
@@ -1502,8 +1509,7 @@ const Registration = () => {
                           value={namaKontak}
                           onChange={(e) => setNamaKontak(e.target.value)}
                           type="text"
-                          name=""
-                          id=""
+                          
                           className={`w-full h-[36px] rounded-sm focus:border focus:border-[#0077b6]  ${
                             isError && namaKontak.trim().length === 0
                               ? "border-red-400"
@@ -1533,8 +1539,7 @@ const Registration = () => {
                           value={jabatan}
                           onChange={(e) => setJabatan(e.target.value)}
                           type="text"
-                          name=""
-                          id=""
+                          
                           className="w-full h-[36px] border border-slate-300 rounded-sm focus:border focus:border-[#0077b6]  "
                         />
                       </div>
@@ -1552,8 +1557,7 @@ const Registration = () => {
                           maxLength={20}
                           pattern="[0-9]*"
                           type="text"
-                          name=""
-                          id=""
+                         
                           value={whatsappKeuangan}
                           onChange={(e) => onChangeWhatsappKeuangan(e)}
                           className={`w-full h-[36px] rounded-sm focus:border focus:border-[#0077b6] ${
@@ -1587,8 +1591,7 @@ const Registration = () => {
                             setEmailKorespondensiKeuangan(e.target.value)
                           }
                           type="email"
-                          name=""
-                          id=""
+                          
                           className="w-full h-[36px] border border-slate-300 rounded-sm focus:border focus:border-[#0077b6]  "
                         />
                       </div>
@@ -1608,8 +1611,7 @@ const Registration = () => {
                           }
                           maxLength={20}
                           type="text"
-                          name=""
-                          id=""
+                         
                           className={`w-full h-[36px] rounded-sm focus:border focus:border-[#0077b6] ${
                             isError && namaKontakKeuangan.trim().length === 0
                               ? "border-red-400"
@@ -1640,8 +1642,7 @@ const Registration = () => {
                           onChange={(e) => setJabatanKeuangan(e.target.value)}
                           maxLength={20}
                           type="text"
-                          name=""
-                          id=""
+                          
                           className={`w-full h-[36px] rounded-sm focus:border focus:border-[#0077b6] ${
                             isError && jabatanKeuangan.trim().length === 0
                               ? "border-red-400"
@@ -1694,8 +1695,7 @@ const Registration = () => {
                         <input
                           type="text"
                           pattern="[0-9]*"
-                          name=""
-                          id=""
+                        
                           value={termPembayaran}
                           onChange={onChangeTermPembayaran}
                           className={`w-full h-[36px] rounded-sm focus:border focus:border-[#0077b6] ${
@@ -1728,8 +1728,7 @@ const Registration = () => {
                           value={bank}
                           onChange={(e) => setBank(e.target.value)}
                           type="text"
-                          name=""
-                          id=""
+                          
                           className={`w-full h-[36px]  rounded-sm focus:border focus:border-[#0077b6] ${
                             isError && bank.trim().length === 0
                               ? "border-red-400"
@@ -1759,8 +1758,7 @@ const Registration = () => {
                           value={nomorRekening}
                           onChange={(e) => setRekening(e.target.value)}
                           type="text"
-                          name=""
-                          id=""
+                         
                           className={`w-full h-[36px] rounded-sm focus:border focus:border-[#0077b6] ${
                             isError && nomorRekening.trim().length === 0
                               ? "border-red-400"
@@ -1790,8 +1788,7 @@ const Registration = () => {
                           value={namaRekening}
                           onChange={(e) => setNamaRekening(e.target.value)}
                           type="text"
-                          name=""
-                          id=""
+                          
                           className={`w-full h-[36px] rounded-sm focus:border focus:border-[#0077b6] ${
                             isError && namaRekening.trim().length === 0
                               ? "border-red-400"
@@ -1822,8 +1819,7 @@ const Registration = () => {
                           value={kantorCabangBank}
                           onChange={(e) => setKantorCabangBank(e.target.value)}
                           type="text"
-                          name=""
-                          id=""
+                          
                           className={`w-full h-[36px] rounded-sm focus:border focus:border-[#0077b6] ${
                             isError && kantorCabangBank.trim().length === 0
                               ? "border-red-400"
@@ -1880,8 +1876,7 @@ const Registration = () => {
                         <input
                           type="text"
                           pattern="[0-9]*"
-                          name=""
-                          id=""
+                          
                           value={pengembalianBarang}
                           onChange={onChangePengembalianBarang}
                           className={`w-full h-[36px] rounded-sm focus:border focus:border-[#0077b6] ${
@@ -2038,7 +2033,7 @@ const Registration = () => {
                         <input
                           type="file"
                           onChange={onChangeNpwpFile}
-                          id="upload-npwp"
+                       
                           accept=".jpg,.pdf"
                           className={`w-full h-[36px] border rounded-sm focus:border focus:border-[#0077b6] ${
                             isError && npwpFile === null
@@ -2057,6 +2052,27 @@ const Registration = () => {
                         </div>
                       </div>
                     </div>
+                    {npwpFile !== null &&
+                    RegExp("\\bpdf\\b").test(npwpFile.split(",")[0]) ? (
+                      <div className="h-[500px] w-[500px] mb-5">
+                        <div className="h-full w-full">
+                          <Viewer fileUrl={npwpFilePreview} />
+                        </div>
+                      </div>
+                    ) : (
+                      npwpFile !== null && (
+                        <div className="h-[500px] w-[400px] mb-5">
+                          <div className="h-full w-full">
+                            <img
+                              src={npwpFilePreview}
+                              alt="no"
+                              className="w-full h-full"
+                            />
+                          </div>
+                        </div>
+                      )
+                    )}
+
                     <div className="flex gap-2 items-center mb-3">
                       <div className="flex flex-col gap-1">
                         <div className="whitespace-nowrap flex">
@@ -2073,7 +2089,7 @@ const Registration = () => {
                         <input
                           type="file"
                           onChange={onChangeKtpPemilikFile}
-                          id="upload-npwp"
+                         
                           accept=".jpg,.pdf"
                           className={` w-full h-[36px] border rounded-sm focus:border focus:border-[#0077b6] ${
                             isError && ktpPemilikFile === null
@@ -2092,6 +2108,27 @@ const Registration = () => {
                         </div>
                       </div>
                     </div>
+                    {ktpPemilikFile !== null &&
+                    RegExp("\\bpdf\\b").test(ktpPemilikFile.split(",")[0]) ? (
+                      <div className="h-[500px] w-[500px] mb-5">
+                        <div className="h-full w-full">
+                          <Viewer fileUrl={ktpPemilikFilePreview} />
+                        </div>
+                      </div>
+                    ) : (
+                      ktpPemilikFile !== null && (
+                        <div className="h-[500px] w-[400px] mb-5">
+                          <div className="h-full w-full">
+                            <img
+                              src={ktpPemilikFilePreview}
+                              alt="no"
+                              className="w-full h-full"
+                            />
+                          </div>
+                        </div>
+                      )
+                    )}
+
                     <div className="flex gap-2 items-center mb-3">
                       <div className="flex flex-col gap-1">
                         <div className="whitespace-nowrap flex">
@@ -2108,7 +2145,7 @@ const Registration = () => {
                         <input
                           type="file"
                           onChange={onChangeKtpPenanggungJawabFile}
-                          id="upload-npwp"
+                         
                           accept=".jpg,.pdf"
                           className={` w-full h-[36px] border rounded-sm focus:border focus:border-[#0077b6] ${
                             isError && ktpPenanggungJawabFile === null
@@ -2127,6 +2164,29 @@ const Registration = () => {
                         </div>
                       </div>
                     </div>
+                    {ktpPenanggungJawabFile !== null &&
+                    RegExp("\\bpdf\\b").test(
+                      ktpPenanggungJawabFile.split(",")[0]
+                    ) ? (
+                      <div className="h-[500px] w-[500px] mb-5">
+                        <div className="h-full w-full">
+                          <Viewer fileUrl={ktpPenanggungJawabFilePreview} />
+                        </div>
+                      </div>
+                    ) : (
+                      ktpPenanggungJawabFile !== null && (
+                        <div className="h-[500px] w-[400px] mb-5">
+                          <div className="h-full w-full">
+                            <img
+                              src={ktpPenanggungJawabFilePreview}
+                              alt="no"
+                              className="w-full h-full"
+                            />
+                          </div>
+                        </div>
+                      )
+                    )}
+
                     <div className="flex gap-2 items-center mb-3">
                       <div className="flex flex-col gap-1">
                         <div className="whitespace-nowrap flex items-center">
@@ -2147,7 +2207,7 @@ const Registration = () => {
                         <input
                           type="file"
                           onChange={onChangeSpkpFile}
-                          id="upload-npwp"
+                         
                           accept=".jpg,.pdf"
                           className={` w-full h-[36px] border rounded-sm focus:border focus:border-[#0077b6] ${
                             isError && spkpFile === null
@@ -2166,6 +2226,26 @@ const Registration = () => {
                         </div>
                       </div>
                     </div>
+                    {spkpFile !== null &&
+                    RegExp("\\bpdf\\b").test(spkpFile.split(",")[0]) ? (
+                      <div className="h-[500px] w-[500px] mb-5">
+                        <div className="h-full w-full">
+                          <Viewer fileUrl={spkpFilePreview} />
+                        </div>
+                      </div>
+                    ) : (
+                      spkpFile !== null && (
+                        <div className="h-[500px] w-[400px] mb-5">
+                          <div className="h-full w-full">
+                            <img
+                              src={spkpFilePreview}
+                              alt="no"
+                              className="w-full h-full"
+                            />
+                          </div>
+                        </div>
+                      )
+                    )}
 
                     <div className="flex gap-2 items-center mb-3">
                       <div className="flex flex-col gap-1">
@@ -2184,7 +2264,7 @@ const Registration = () => {
                           type="file"
                           onChange={onChangeNibFile}
                           accept=".jpg,.pdf"
-                          id="upload-npwp"
+                    
                           className={` w-full h-[36px] border rounded-sm focus:border focus:border-[#0077b6] ${
                             isError && nibFile === null
                               ? "border-red-400"
@@ -2202,6 +2282,27 @@ const Registration = () => {
                         </div>
                       </div>
                     </div>
+                    {nibFile !== null &&
+                    RegExp("\\bpdf\\b").test(nibFile.split(",")[0]) ? (
+                      <div className="h-[500px] w-[500px] mb-5">
+                        <div className="h-full w-full">
+                          <Viewer fileUrl={nibFilePreview} />
+                        </div>
+                      </div>
+                    ) : (
+                      nibFile !== null && (
+                        <div className="h-[500px] w-[400px] mb-5">
+                          <div className="h-full w-full">
+                            <img
+                              src={nibFilePreview}
+                              alt="no"
+                              className="w-full h-full"
+                            />
+                          </div>
+                        </div>
+                      )
+                    )}
+
                     <div className="flex gap-2 items-center mb-3">
                       <div className="flex flex-col gap-1">
                         <div className="whitespace-nowrap flex">
@@ -2218,7 +2319,7 @@ const Registration = () => {
                         <input
                           type="file"
                           onChange={onChangeSsRekeningFile}
-                          id="upload-npwp"
+                        
                           accept=".jpg,.pdf"
                           className={` w-full h-[36px] border rounded-sm focus:border focus:border-[#0077b6] ${
                             isError && ssPerusahaanFile === null
@@ -2237,6 +2338,27 @@ const Registration = () => {
                         </div>
                       </div>
                     </div>
+                    {ssPerusahaanFile !== null &&
+                    RegExp("\\bpdf\\b").test(ssPerusahaanFile.split(",")[0]) ? (
+                      <div className="h-[500px] w-[500px] mb-5">
+                        <div className="h-full w-full">
+                          <Viewer fileUrl={ssPerusahaanFilePreview} />
+                        </div>
+                      </div>
+                    ) : (
+                      ssPerusahaanFile !== null && (
+                        <div className="h-[500px] w-[400px] mb-5">
+                          <div className="h-full w-full">
+                            <img
+                              src={ssPerusahaanFilePreview}
+                              alt="no"
+                              className="w-full h-full"
+                            />
+                          </div>
+                        </div>
+                      )
+                    )}
+
                     <div className="flex items-center mb-3">
                       <div className="flex flex-col gap-1">
                         <div className="whitespace-nowrap flex">
@@ -2260,12 +2382,32 @@ const Registration = () => {
                         <input
                           type="file"
                           onChange={onChangeBpomFile}
-                          id="upload-npwp"
+                         
                           accept=".jpg,.pdf"
                           className=" w-full h-[36px] border border-slate-300 rounded-sm focus:border focus:border-[#0077b6]  "
                         />
                       </div>
                     </div>
+                    {sertifBpomFile !== null &&
+                    RegExp("\\bpdf\\b").test(sertifBpomFile.split(",")[0]) ? (
+                      <div className="h-[500px] w-[500px] mb-5">
+                        <div className="h-full w-full">
+                          <Viewer fileUrl={sertifBpomFilePreview} />
+                        </div>
+                      </div>
+                    ) : (
+                      sertifBpomFile !== null && (
+                        <div className="h-[500px] w-[400px] mb-5">
+                          <div className="h-full w-full">
+                            <img
+                              src={sertifBpomFilePreview}
+                              alt="no"
+                              className="w-full h-full"
+                            />
+                          </div>
+                        </div>
+                      )
+                    )}
                   </form>
                   <div className="flex gap-2 mt-20">
                     <div>
@@ -2334,9 +2476,14 @@ const Registration = () => {
                 ) : (
                   <button
                     onClick={handleNext}
+                    disabled={loading ? true : false}
                     className="bg-[#0077b6] text-white py-2 px-10 rounded-sm shadow-sm hover:bg-[#00b4d8]"
                   >
-                    Next
+                    {loading ? (
+                      <CircularProgress size={20} sx={{ color: "white" }} />
+                    ) : (
+                      "Next"
+                    )}
                   </button>
                 )}
               </div>
@@ -2348,7 +2495,7 @@ const Registration = () => {
           <Stepper activeStep={activeStep} orientation="vertical">
             {steps.map((item, index) => {
               return (
-                <Step key={index}>
+                <Step key={index} className="ps-5">
                   <StepLabel>{item}</StepLabel>
                   <StepContent>
                     {activeStep === 0 ? (
@@ -2382,8 +2529,7 @@ const Registration = () => {
                                 }
                                 onChange={(e) => setUsername(e.target.value)}
                                 type="text"
-                                name=""
-                                id=""
+                               
                                 className={`w-full h-[36px] rounded-sm focus:border focus:border-[#0077b6] ${
                                   isError && username.trim().length === 0
                                     ? "border-red-400"
@@ -2417,8 +2563,7 @@ const Registration = () => {
                                   evt.key === " " && evt.preventDefault()
                                 }
                                 type="email"
-                                name=""
-                                id=""
+                               
                                 className={`w-full h-[36px] rounded-sm focus:border focus:border-[#0077b6] ${
                                   isError && email.trim().length === 0
                                     ? "border-red-400"
@@ -2451,8 +2596,8 @@ const Registration = () => {
                                   evt.key === " " && evt.preventDefault()
                                 }
                                 type={`${showPassword ? "text" : "password"}`}
-                                name=""
-                                id=""
+                               
+                              
                                 className={`w-full h-[36px] rounded-sm focus:border focus:border-[#0077b6] ${
                                   isError && password.trim().length === 0
                                     ? "border-red-400"
@@ -2463,7 +2608,7 @@ const Registration = () => {
                                 onClick={() => setShowPassword((prev) => !prev)}
                                 className="cursor-pointer absolute top-[50%] right-[10px] translate-y-[-50%]"
                               >
-                                {showPassword ? <FaEyeSlash /> : <FaEye />}{" "}
+                                {showPassword ? <FaEye /> : <FaEyeSlash />}{" "}
                               </div>
                             </div>
                           </div>
@@ -2500,8 +2645,7 @@ const Registration = () => {
                                     setTipePerusahaanText(e.target.value)
                                   }
                                   type="text"
-                                  name=""
-                                  id=""
+                                  
                                   placeholder="Tulis tipe perusahaan..."
                                   className={`w-full h-[36px] rounded-sm focus:border focus:border-[#0077b6] ${
                                     isError &&
@@ -2534,11 +2678,10 @@ const Registration = () => {
                               <input
                                 value={namaPerusahaan}
                                 onChange={(e) =>
-                                  setNamaPerusahaan(e.target.value)
+                                  setNamaPerusahaan(e.target.value.toUpperCase())
                                 }
                                 type="text"
-                                name=""
-                                id=""
+                               
                                 className={`w-full h-[36px] rounded-sm focus:border focus:border-[#0077b6] ${
                                   isError && namaPerusahaan.trim().length === 0
                                     ? "border-red-400"
@@ -2547,37 +2690,7 @@ const Registration = () => {
                               />
                             </div>
                           </div>
-                          <div className="flex flex-col gap-2 mb-3">
-                            <div className="whitespace-nowrap flex">
-                              <label
-                                htmlFor=""
-                                className="w-36 flex gap-1 items-center"
-                              >
-                                Kode{" "}
-                                {isError && kode.trim().length === 0 ? (
-                                  <span className="text-red-400">
-                                    <PiWarningCircleLight />
-                                  </span>
-                                ) : (
-                                  "*"
-                                )}
-                              </label>
-                            </div>
-                            <div className="whitespace-nowrap">
-                              <input
-                                value={kode}
-                                onChange={(e) => setKode(e.target.value)}
-                                type="text"
-                                name=""
-                                id=""
-                                className={`w-full h-[36px] rounded-sm focus:border focus:border-[#0077b6] ${
-                                  isError && kode.trim().length === 0
-                                    ? "border-red-400"
-                                    : "border-x-slate-300"
-                                } `}
-                              />
-                            </div>
-                          </div>
+
                           <div className="flex flex-col gap-2 mb-3">
                             <div className="whitespace-nowrap flex">
                               <label
@@ -2599,8 +2712,7 @@ const Registration = () => {
                                 rows={5}
                                 value={alamat}
                                 onChange={(e) => setAlamat(e.target.value)}
-                                name=""
-                                id=""
+                               
                                 className={`w-full rounded-sm focus:border focus:border-[#0077b6] ${
                                   isError && alamat.trim().length === 0
                                     ? "border-red-400"
@@ -2658,8 +2770,7 @@ const Registration = () => {
                                 value={kota}
                                 onChange={(e) => setKota(e.target.value)}
                                 type="text"
-                                name=""
-                                id=""
+                                
                                 className={`w-full h-[36px] border rounded-sm focus:border focus:border-[#0077b6] ${
                                   isError && kota.trim().length === 0
                                     ? "border-red-400"
@@ -2689,8 +2800,7 @@ const Registration = () => {
                                 value={kodePos}
                                 onChange={(e) => setKodePos(e.target.value)}
                                 type="text"
-                                name=""
-                                id=""
+                              
                                 className={`w-full h-[36px] border rounded-sm focus:border focus:border-[#0077b6] ${
                                   isError && kodePos.trim().length === 0
                                     ? "border-red-400"
@@ -2766,7 +2876,7 @@ const Registration = () => {
                                     className="w-36 flex gap-1 items-center"
                                   >
                                     NPWP{" "}
-                                    {isError && npwp.trim().length === 0 ? (
+                                    {isError && npwp.trim().length !== 21 ? (
                                       <span className="text-red-400">
                                         <PiWarningCircleLight />
                                       </span>
@@ -2785,7 +2895,7 @@ const Registration = () => {
                                 <div>
                                   <PiWarningCircleLight />
                                 </div>
-                                <div>Harus 15 digit</div>
+                                <div>Harus 16 digit</div>
                               </div>
                             </div>
                             <div className=" relative">
@@ -2793,11 +2903,10 @@ const Registration = () => {
                                 type="text"
                                 pattern="[0-9]*"
                                 maxLength={21}
-                                name=""
-                                id=""
+                               
                                 className={`w-full h-[36px] rounded-sm focus:border focus:border-[#0077b6] ${
                                   isError &&
-                                  npwp.trim().length === 0 &&
+                                  npwp.trim().length !== 21 &&
                                   statusPajak.value === "PKP"
                                     ? "border-red-400"
                                     : "border-slate-300"
@@ -2818,8 +2927,7 @@ const Registration = () => {
                                 value={website}
                                 onChange={(e) => setWebsite(e.target.value)}
                                 type="text"
-                                name=""
-                                id=""
+                               
                                 className="w-full h-[36px] border border-slate-300 rounded-sm focus:border focus:border-[#0077b6]  "
                               />
                             </div>
@@ -2845,32 +2953,29 @@ const Registration = () => {
 
                               <button
                                 onClick={handleNext}
+                                disabled={loading ? true : false}
                                 className="bg-[#0077b6] text-white py-2 px-10 rounded-sm shadow-sm hover:bg-[#00b4d8]"
                               >
-                                {activeStep === steps.length - 1
-                                  ? "Finish"
-                                  : "Next"}
+                                Next
                               </button>
                             </>
                           ) : (
                             <>
-                              <button
-                                disabled={activeStep === 0}
-                                onClick={handleBack}
-                                className={`border border-[#00b4d8] px-10 py-2 hover:bg-slate-200 ${
-                                  activeStep === 0 && "cursor-not-allowed"
-                                } `}
-                              >
-                                Back
-                              </button>
+                              <Link to="/">
+                                <button
+                                  onClick={handleBack}
+                                  className={`border border-[#00b4d8] px-10 py-2 hover:bg-slate-200 w-full`}
+                                >
+                                  Back
+                                </button>
+                              </Link>
 
                               <button
                                 onClick={handleNext}
+                                disabled={loading ? true : false}
                                 className="bg-[#0077b6] text-white py-2 px-10 rounded-sm shadow-sm hover:bg-[#00b4d8]"
                               >
-                                {activeStep === steps.length - 1
-                                  ? "Finish"
-                                  : "Next"}
+                                Next
                               </button>
                             </>
                           )}
@@ -2907,8 +3012,7 @@ const Registration = () => {
                                   setNamaPemilikPerusahaan(e.target.value)
                                 }
                                 type="text"
-                                name=""
-                                id=""
+                               
                                 className={`w-full h-[36px] rounded-sm focus:border focus:border-[#0077b6] ${
                                   isError &&
                                   namaPemilikPerusahaan.trim().length === 0
@@ -2942,8 +3046,7 @@ const Registration = () => {
                                   setNamaPenanggungJawab(e.target.value)
                                 }
                                 type="text"
-                                name=""
-                                id=""
+                               
                                 className={`w-full h-[36px] rounded-sm focus:border focus:border-[#0077b6] ${
                                   isError &&
                                   namaPenanggungJawab.trim().length === 0
@@ -2977,8 +3080,7 @@ const Registration = () => {
                                   setJabatanPenanggungJawab(e.target.value)
                                 }
                                 type="text"
-                                name=""
-                                id=""
+                             
                                 className={`w-full h-[36px] rounded-sm focus:border focus:border-[#0077b6] ${
                                   isError &&
                                   jabatanPenanggungJawab.trim().length === 0
@@ -3011,8 +3113,7 @@ const Registration = () => {
                                   setNoTelpKantor(e.target.value)
                                 }
                                 type="text"
-                                name=""
-                                id=""
+                               
                                 className={`w-full h-[36px] border rounded-sm focus:border focus:border-[#0077b6] ${
                                   isError && noTelpKantor.trim().length === 0
                                     ? "border-red-400"
@@ -3044,8 +3145,7 @@ const Registration = () => {
                               <input
                                 type="text"
                                 pattern="[0-9]*"
-                                name=""
-                                id=""
+                                
                                 value={whatsappPO}
                                 onChange={(e) => onChangeWhatsappPO(e)}
                                 className={`w-full h-[36px] rounded-sm focus:border focus:border-[#0077b6] ${
@@ -3069,8 +3169,7 @@ const Registration = () => {
                                   setEmailKorespondensiPo(e.target.value)
                                 }
                                 type="email"
-                                name=""
-                                id=""
+                               
                                 className="w-full h-[36px] border border-slate-300 rounded-sm focus:border focus:border-[#0077b6]  "
                               />
                             </div>
@@ -3096,8 +3195,7 @@ const Registration = () => {
                                 value={namaKontak}
                                 onChange={(e) => setNamaKontak(e.target.value)}
                                 type="text"
-                                name=""
-                                id=""
+                              
                                 className={`w-full h-[36px] rounded-sm focus:border focus:border-[#0077b6] ${
                                   isError && namaKontak.trim().length === 0
                                     ? "border-red-400"
@@ -3117,8 +3215,7 @@ const Registration = () => {
                                 value={jabatan}
                                 onChange={(e) => setJabatan(e.target.value)}
                                 type="text"
-                                name=""
-                                id=""
+                              
                                 className="w-full h-[36px] border border-slate-300 rounded-sm focus:border focus:border-[#0077b6]  "
                               />
                             </div>
@@ -3145,8 +3242,7 @@ const Registration = () => {
                                 type="text"
                                 pattern="[0-9]*"
                                 maxLength={15}
-                                name=""
-                                id=""
+                               
                                 value={whatsappKeuangan}
                                 onChange={(e) => onChangeWhatsappKeuangan(e)}
                                 className={`w-full h-[36px] rounded-sm focus:border focus:border-[#0077b6] ${
@@ -3171,8 +3267,7 @@ const Registration = () => {
                                   setEmailKorespondensiKeuangan(e.target.value)
                                 }
                                 type="email"
-                                name=""
-                                id=""
+                               
                                 className="w-full h-[36px] border border-slate-300 rounded-sm focus:border focus:border-[#0077b6]  "
                               />
                             </div>
@@ -3201,8 +3296,7 @@ const Registration = () => {
                                   setNamaKontakKeuangan(e.target.value)
                                 }
                                 type="text"
-                                name=""
-                                id=""
+                              
                                 className={`w-full h-[36px] rounded-sm focus:border focus:border-[#0077b6] ${
                                   isError &&
                                   namaKontakKeuangan.trim().length === 0
@@ -3236,8 +3330,7 @@ const Registration = () => {
                                   setJabatanKeuangan(e.target.value)
                                 }
                                 type="text"
-                                name=""
-                                id=""
+                                
                                 className={`w-full h-[36px] rounded-sm focus:border focus:border-[#0077b6] ${
                                   isError && jabatanKeuangan.trim().length === 0
                                     ? "border-red-400"
@@ -3258,7 +3351,6 @@ const Registration = () => {
                           {screenSize > 348 ? (
                             <>
                               <button
-                                disabled={activeStep === 0}
                                 onClick={handleBack}
                                 className={`ms-2 border border-[#00b4d8] px-10 py-2 hover:bg-slate-200 ${
                                   activeStep === 0 && "cursor-not-allowed"
@@ -3269,17 +3361,15 @@ const Registration = () => {
 
                               <button
                                 onClick={handleNext}
+                                disabled={loading ? true : false}
                                 className="bg-[#0077b6] text-white py-2 px-10 rounded-sm shadow-sm hover:bg-[#00b4d8]"
                               >
-                                {activeStep === steps.length - 1
-                                  ? "Finish"
-                                  : "Next"}
+                                Next
                               </button>
                             </>
                           ) : (
                             <>
                               <button
-                                disabled={activeStep === 0}
                                 onClick={handleBack}
                                 className={`border border-[#00b4d8] px-10 py-2 hover:bg-slate-200 ${
                                   activeStep === 0 && "cursor-not-allowed"
@@ -3290,11 +3380,10 @@ const Registration = () => {
 
                               <button
                                 onClick={handleNext}
+                                disabled={loading ? true : false}
                                 className="bg-[#0077b6] text-white py-2 px-10 rounded-sm shadow-sm hover:bg-[#00b4d8]"
                               >
-                                {activeStep === steps.length - 1
-                                  ? "Finish"
-                                  : "Next"}
+                                Next
                               </button>
                             </>
                           )}
@@ -3332,8 +3421,7 @@ const Registration = () => {
                               <input
                                 type="text"
                                 pattern="[0-9]*"
-                                name=""
-                                id=""
+                               
                                 value={termPembayaran}
                                 onChange={onChangeTermPembayaran}
                                 className={`w-full h-[36px] rounded-sm focus:border focus:border-[#0077b6]  ${
@@ -3366,8 +3454,7 @@ const Registration = () => {
                                 value={bank}
                                 onChange={(e) => setBank(e.target.value)}
                                 type="text"
-                                name=""
-                                id=""
+                             
                                 className={`w-full h-[36px] rounded-sm focus:border focus:border-[#0077b6] ${
                                   isError && bank.trim().length === 0
                                     ? "border-red-400"
@@ -3398,8 +3485,8 @@ const Registration = () => {
                                 value={nomorRekening}
                                 onChange={(e) => setRekening(e.target.value)}
                                 type="text"
-                                name=""
-                                id=""
+                                
+                              
                                 className={`w-full h-[36px] rounded-sm focus:border focus:border-[#0077b6] ${
                                   isError && nomorRekening.trim().length === 0
                                     ? "border-red-400"
@@ -3431,8 +3518,7 @@ const Registration = () => {
                                   setNamaRekening(e.target.value)
                                 }
                                 type="text"
-                                name=""
-                                id=""
+                               
                                 className={`w-full h-[36px] rounded-sm focus:border focus:border-[#0077b6] ${
                                   isError && namaRekening.trim().length === 0
                                     ? "border-red-400"
@@ -3466,8 +3552,7 @@ const Registration = () => {
                                   setKantorCabangBank(e.target.value)
                                 }
                                 type="text"
-                                name=""
-                                id=""
+                                
                                 className={`w-full h-[36px] rounded-sm focus:border focus:border-[#0077b6] ${
                                   isError &&
                                   kantorCabangBank.trim().length === 0
@@ -3527,8 +3612,7 @@ const Registration = () => {
                               <input
                                 type="text"
                                 pattern="[0-9]*"
-                                name=""
-                                id=""
+                               
                                 value={pengembalianBarang}
                                 onChange={onChangePengembalianBarang}
                                 className={`w-full h-[36px] rounded-sm focus:border focus:border-[#0077b6] ${
@@ -3638,7 +3722,6 @@ const Registration = () => {
                           {screenSize > 348 ? (
                             <>
                               <button
-                                disabled={activeStep === 0}
                                 onClick={handleBack}
                                 className={`ms-2 border border-[#00b4d8] px-10 py-2 hover:bg-slate-200 ${
                                   activeStep === 0 && "cursor-not-allowed"
@@ -3649,17 +3732,15 @@ const Registration = () => {
 
                               <button
                                 onClick={handleNext}
+                                disabled={loading ? true : false}
                                 className="bg-[#0077b6] text-white py-2 px-10 rounded-sm shadow-sm hover:bg-[#00b4d8]"
                               >
-                                {activeStep === steps.length - 1
-                                  ? "Finish"
-                                  : "Next"}
+                                Next
                               </button>
                             </>
                           ) : (
                             <>
                               <button
-                                disabled={activeStep === 0}
                                 onClick={handleBack}
                                 className={`border border-[#00b4d8] px-10 py-2 hover:bg-slate-200 ${
                                   activeStep === 0 && "cursor-not-allowed"
@@ -3670,11 +3751,10 @@ const Registration = () => {
 
                               <button
                                 onClick={handleNext}
+                                disabled={loading ? true : false}
                                 className="bg-[#0077b6] text-white py-2 px-10 rounded-sm shadow-sm hover:bg-[#00b4d8]"
                               >
-                                {activeStep === steps.length - 1
-                                  ? "Finish"
-                                  : "Next"}
+                                Next
                               </button>
                             </>
                           )}
@@ -3722,12 +3802,32 @@ const Registration = () => {
                               <input
                                 type="file"
                                 onChange={onChangeNpwpFile}
-                                id="upload-npwp"
-                                accept="image/jpg,.pdf"
+                               
+                                accept="image/jpeg,.pdf"
                                 className=" w-full h-[36px] border border-slate-300 rounded-sm focus:border focus:border-[#0077b6]  "
                               />
                             </div>
                           </div>
+                          {npwpFile !== null &&
+                          RegExp("\\bpdf\\b").test(npwpFile.split(",")[0]) ? (
+                            <div className="h-[500px] w-full mb-5">
+                              <div className="h-full w-full">
+                                <Viewer fileUrl={npwpFilePreview} />
+                              </div>
+                            </div>
+                          ) : (
+                            npwpFile !== null && (
+                              <div className="h-[300px] w-full mb-5">
+                                <div className="h-full w-full">
+                                  <img
+                                    src={npwpFilePreview}
+                                    alt="no"
+                                    className="w-full h-full"
+                                  />
+                                </div>
+                              </div>
+                            )
+                          )}
                           <div className="flex flex-col gap-2 mb-3">
                             <div className="flex flex-col gap-1">
                               <div className=" flex">
@@ -3753,12 +3853,35 @@ const Registration = () => {
                               <input
                                 type="file"
                                 onChange={onChangeKtpPemilikFile}
-                                id="upload-npwp"
+                            
                                 accept="image/jpg,.pdf"
                                 className=" w-full h-[36px] border border-slate-300 rounded-sm focus:border focus:border-[#0077b6]  "
                               />
                             </div>
                           </div>
+                          {ktpPemilikFile !== null &&
+                          RegExp("\\bpdf\\b").test(
+                            ktpPemilikFile.split(",")[0]
+                          ) ? (
+                            <div className="h-[500px] w-full mb-5">
+                              <div className="h-full w-full">
+                                <Viewer fileUrl={ktpPemilikFilePreview} />
+                              </div>
+                            </div>
+                          ) : (
+                            ktpPemilikFile !== null && (
+                              <div className="h-[300px] w-full mb-5">
+                                <div className="h-full w-full">
+                                  <img
+                                    src={ktpPemilikFilePreview}
+                                    alt="no"
+                                    className="w-full h-full"
+                                  />
+                                </div>
+                              </div>
+                            )
+                          )}
+
                           <div className="flex flex-col gap-2  mb-3">
                             <div className="flex flex-col gap-1">
                               <div className=" flex">
@@ -3785,12 +3908,37 @@ const Registration = () => {
                               <input
                                 type="file"
                                 onChange={onChangeKtpPenanggungJawabFile}
-                                id="upload-npwp"
+                              
                                 accept="image/jpg,.pdf"
                                 className=" w-full h-[36px] border border-slate-300 rounded-sm focus:border focus:border-[#0077b6]  "
                               />
                             </div>
                           </div>
+                          {ktpPenanggungJawabFile !== null &&
+                          RegExp("\\bpdf\\b").test(
+                            ktpPenanggungJawabFile.split(",")[0]
+                          ) ? (
+                            <div className="h-[500px] w-full mb-5">
+                              <div className="h-full w-full">
+                                <Viewer
+                                  fileUrl={ktpPenanggungJawabFilePreview}
+                                />
+                              </div>
+                            </div>
+                          ) : (
+                            ktpPenanggungJawabFile !== null && (
+                              <div className="h-[300px] w-full mb-5">
+                                <div className="h-full w-full">
+                                  <img
+                                    src={ktpPenanggungJawabFilePreview}
+                                    alt="no"
+                                    className="w-full h-full"
+                                  />
+                                </div>
+                              </div>
+                            )
+                          )}
+
                           <div className="flex flex-col gap-2  mb-3">
                             <div className="flex flex-col gap-1">
                               <div className=" flex">
@@ -3818,12 +3966,32 @@ const Registration = () => {
                               <input
                                 type="file"
                                 onChange={onChangeSpkpFile}
-                                id="upload-npwp"
+                               
                                 accept="image/jpg,.pdf"
                                 className=" w-full h-[36px] border border-slate-300 rounded-sm focus:border focus:border-[#0077b6]  "
                               />
                             </div>
                           </div>
+                          {spkpFile !== null &&
+                          RegExp("\\bpdf\\b").test(spkpFile.split(",")[0]) ? (
+                            <div className="h-[500px] w-full mb-5">
+                              <div className="h-full w-full">
+                                <Viewer fileUrl={spkpFilePreview} />
+                              </div>
+                            </div>
+                          ) : (
+                            spkpFile !== null && (
+                              <div className="h-[300px] w-full mb-5">
+                                <div className="h-full w-full">
+                                  <img
+                                    src={spkpFilePreview}
+                                    alt="no"
+                                    className="w-full h-full"
+                                  />
+                                </div>
+                              </div>
+                            )
+                          )}
 
                           <div className="flex flex-col gap-2  mb-3">
                             <div className="flex flex-col gap-1">
@@ -3851,11 +4019,32 @@ const Registration = () => {
                                 type="file"
                                 onChange={onChangeNibFile}
                                 accept="image/jpg,.pdf"
-                                id="upload-npwp"
+                              
                                 className=" w-full h-[36px] border border-slate-300 rounded-sm focus:border focus:border-[#0077b6]  "
                               />
                             </div>
                           </div>
+                          {nibFile !== null &&
+                          RegExp("\\bpdf\\b").test(nibFile.split(",")[0]) ? (
+                            <div className="h-[500px] w-full mb-5">
+                              <div className="h-full w-full">
+                                <Viewer fileUrl={nibFilePreview} />
+                              </div>
+                            </div>
+                          ) : (
+                            nibFile !== null && (
+                              <div className="h-[300px] w-full mb-5">
+                                <div className="h-full w-full">
+                                  <img
+                                    src={nibFilePreview}
+                                    alt="no"
+                                    className="w-full h-full"
+                                  />
+                                </div>
+                              </div>
+                            )
+                          )}
+
                           <div className="flex flex-col gap-2  mb-3">
                             <div className="flex flex-col gap-1">
                               <div className=" flex">
@@ -3881,12 +4070,35 @@ const Registration = () => {
                               <input
                                 type="file"
                                 onChange={onChangeSsRekeningFile}
-                                id="upload-npwp"
+                            
                                 accept="image/jpg,.pdf"
                                 className=" w-full h-[36px] border border-slate-300 rounded-sm focus:border focus:border-[#0077b6]  "
                               />
                             </div>
                           </div>
+                          {ssPerusahaanFile !== null &&
+                          RegExp("\\bpdf\\b").test(
+                            ssPerusahaanFile.split(",")[0]
+                          ) ? (
+                            <div className="h-[500px] w-full mb-5">
+                              <div className="h-full w-full">
+                                <Viewer fileUrl={ssPerusahaanFilePreview} />
+                              </div>
+                            </div>
+                          ) : (
+                            ssPerusahaanFile !== null && (
+                              <div className="h-[300px] w-full mb-5">
+                                <div className="h-full w-full">
+                                  <img
+                                    src={ssPerusahaanFilePreview}
+                                    alt="no"
+                                    className="w-full h-full"
+                                  />
+                                </div>
+                              </div>
+                            )
+                          )}
+
                           <div className="flex flex-col gap-2  mb-3">
                             <div className="flex flex-col">
                               <div className=" flex">
@@ -3909,12 +4121,35 @@ const Registration = () => {
                               <input
                                 type="file"
                                 onChange={onChangeBpomFile}
-                                id="upload-npwp"
+                              
                                 accept="image/jpg,.pdf"
                                 className=" w-full h-[36px] border border-slate-300 rounded-sm focus:border focus:border-[#0077b6]  "
                               />
                             </div>
                           </div>
+                          {sertifBpomFile !== null &&
+                          RegExp("\\bpdf\\b").test(
+                            sertifBpomFile.split(",")[0]
+                          ) ? (
+                            <div className="h-[500px] w-full mb-5">
+                              <div className="h-full w-full">
+                                <Viewer fileUrl={sertifBpomFilePreview} />
+                              </div>
+                            </div>
+                          ) : (
+                            sertifBpomFile !== null && (
+                              <div className="h-[300px] w-full mb-5">
+                                <div className="h-full w-full">
+                                  <img
+                                    src={sertifBpomFilePreview}
+                                    alt="no"
+                                    className="w-full h-full"
+                                  />
+                                </div>
+                              </div>
+                            )
+                          )}
+
                           {isError && (
                             <div className="mt-10 mb-3">
                               <div className="w-fit flex gap-1 items-center text-[14px] bg-red-500 text-white py-3 px-5 ">
@@ -3954,29 +4189,21 @@ const Registration = () => {
                               >
                                 Back
                               </button>
-                              {activeStep === steps.length - 1 ? (
-                                <button
-                                  disabled={loading ? true : false}
-                                  onClick={handleNext}
-                                  className="bg-[#0077b6] text-white py-2 px-10 rounded-sm shadow-sm hover:bg-[#00b4d8]"
-                                >
-                                  {loading ? (
-                                    <CircularProgress
-                                      size={20}
-                                      sx={{ color: "white" }}
-                                    />
-                                  ) : (
-                                    "Finish"
-                                  )}
-                                </button>
-                              ) : (
-                                <button
-                                  onClick={handleNext}
-                                  className="bg-[#0077b6] text-white py-2 px-10 rounded-sm shadow-sm hover:bg-[#00b4d8]"
-                                >
-                                  Next
-                                </button>
-                              )}
+
+                              <button
+                                disabled={loading ? true : false}
+                                onClick={handleNext}
+                                className="bg-[#0077b6] text-white py-2 px-10 rounded-sm shadow-sm hover:bg-[#00b4d8]"
+                              >
+                                {loading ? (
+                                  <CircularProgress
+                                    size={20}
+                                    sx={{ color: "white" }}
+                                  />
+                                ) : (
+                                  "Finish"
+                                )}
+                              </button>
                             </>
                           ) : (
                             <>
@@ -3990,29 +4217,20 @@ const Registration = () => {
                                 Back
                               </button>
 
-                              {activeStep === steps.length - 1 ? (
-                                <button
-                                  disabled={loading ? true : false}
-                                  onClick={handleNext}
-                                  className="bg-[#0077b6] text-white py-2 px-10 rounded-sm shadow-sm hover:bg-[#00b4d8]"
-                                >
-                                  {loading ? (
-                                    <CircularProgress
-                                      size={20}
-                                      sx={{ color: "white" }}
-                                    />
-                                  ) : (
-                                    "Finish"
-                                  )}
-                                </button>
-                              ) : (
-                                <button
-                                  onClick={handleNext}
-                                  className="bg-[#0077b6] text-white py-2 px-10 rounded-sm shadow-sm hover:bg-[#00b4d8]"
-                                >
-                                  Next
-                                </button>
-                              )}
+                              <button
+                                disabled={loading ? true : false}
+                                onClick={handleNext}
+                                className="bg-[#0077b6] text-white py-2 px-10 rounded-sm shadow-sm hover:bg-[#00b4d8]"
+                              >
+                                {loading ? (
+                                  <CircularProgress
+                                    size={20}
+                                    sx={{ color: "white" }}
+                                  />
+                                ) : (
+                                  "Finish"
+                                )}
+                              </button>
                             </>
                           )}
                         </div>

@@ -1,11 +1,11 @@
 import React from "react";
 import { SiShopware } from "react-icons/si";
 import { MdOutlineCancel } from "react-icons/md";
-
-import { links } from "../data/dummy";
 import { Link, NavLink } from "react-router-dom";
 import { useStateContext } from "../contexts/ContextProvider";
 import { Sidebar } from "flowbite-react";
+import { LiaFileInvoiceSolid } from "react-icons/lia";
+import { FiShoppingBag } from "react-icons/fi";
 
 const SidebarComponent = () => {
   const { activeMenu, setActiveMenu, screenSize } = useStateContext();
@@ -22,7 +22,6 @@ const SidebarComponent = () => {
     "flex items-center gap-3 pt-3 pl-[40px] pb-2.5 rounded-lg text-md text-gray-700 dark:text-gray-200 dark:hover:text-black hover:bg-light-gray";
   return (
     <div className="ml-3 h-screen md:overflow-hidden overflow-auto md:hover:overflow-auto pb-10 relative">
-      
       <div>
         <button
           type="button"
@@ -50,60 +49,59 @@ const SidebarComponent = () => {
             <Sidebar aria-label="Sidebar with multi-level dropdown example ">
               <Sidebar.Items>
                 <Sidebar.ItemGroup>
-                  {links.map((item, index) =>
-                    item.links.length === 0 ? (
-                      <NavLink
-                        key={index}
-                        style={({ isActive }) => ({
-                          backgroundColor: isActive ? "#0077b6" : "",
-                        })}
-                        to={`/vendor/${item.name.toLowerCase().split(" ").join("-")} `}
-                        onClick={handleCloseSidebar}
-                        className={({ isActive }) =>
-                          isActive ? activeLink : normalLink
-                        }
-                      >
-                        <div className="ms-[-30px] flex items-center gap-3 ">
-                          <div className="text-[24px]">{item.icon}</div>
-                          <div>{item.title}</div>
-                        </div>
-                      </NavLink>
-                    ) : (
-                      <Sidebar.Collapse
-                        key={index}
-                        label={item.title}
-                        icon={item.icon}
-                        open
-                      >
-                        {item.links.map((link, index) => (
-                          <NavLink
-                            key={index}
-                            style={({ isActive }) => ({
-                              backgroundColor: isActive ? "#0077b6" : "",
-                            })}
-                            to={`/${
-                              link.name2 !== undefined
-                                ? `vendor/${link.name2}/${link.name
-                                    .toLowerCase()
-                                    .split(" ")
-                                    .join("-")}`
-                                : `vendor/${link.name
-                                    .toLowerCase()
-                                    .split(" ")
-                                    .join("-")}`
-                            }`}
-                            onClick={handleCloseSidebar}
-                            className={({ isActive }) =>
-                              isActive ? activeLink : normalLink
-                            }
-                          >
-                            {link.icon}
-                            <span className="capitalize">{link.name}</span>
-                          </NavLink>
-                        ))}
-                      </Sidebar.Collapse>
-                    )
-                  )}
+                <Sidebar.Collapse
+                    label="Company"
+                    icon={FiShoppingBag}
+                    open
+                  >
+                    <NavLink
+                     
+                      style={({ isActive }) => ({
+                        backgroundColor: isActive ? "#0077b6" : "",
+                      })}
+                      to={`/vendor/profile`}
+                      onClick={handleCloseSidebar}
+                      className={({ isActive }) =>
+                        isActive ? activeLink : normalLink
+                      }
+                    >
+                    
+                      Profile
+                    </NavLink>
+                  </Sidebar.Collapse>
+                  <NavLink
+                  
+                    style={({ isActive }) => ({
+                      backgroundColor: isActive ? "#0077b6" : "",
+                    })}
+                    to={`/vendor/penagihan `}
+                    onClick={handleCloseSidebar}
+                    className={({ isActive }) =>
+                      isActive ? activeLink : normalLink
+                    }
+                  >
+                    <div className="ms-[-30px] flex items-center gap-3 ">
+                      <div className="text-[24px]"><LiaFileInvoiceSolid/></div>
+                      <div>Penagihan</div>
+                    </div>
+                  </NavLink>
+                  <NavLink
+                  
+                  style={({ isActive }) => ({
+                    backgroundColor: isActive ? "#0077b6" : "",
+                  })}
+                  to={`/vendor/monitoring `}
+                  onClick={handleCloseSidebar}
+                  className={({ isActive }) =>
+                    isActive ? activeLink : normalLink
+                  }
+                >
+                  <div className="ms-[-30px] flex items-center gap-3 ">
+                    <div className="text-[24px]"><LiaFileInvoiceSolid/></div>
+                    <div>Monitoring</div>
+                  </div>
+                </NavLink>
+                  
                 </Sidebar.ItemGroup>
               </Sidebar.Items>
             </Sidebar>

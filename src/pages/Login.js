@@ -128,7 +128,7 @@ const Login = () => {
                   onClick={() => setShowPassword((prev) => !prev)}
                   className="cursor-pointer absolute top-[50%] right-[10px] translate-y-[-50%]"
                 >
-                  {showPassword ? <FaEyeSlash /> : <FaEye />}{" "}
+                  {showPassword ? <FaEye /> : <FaEyeSlash />}{" "}
                 </div>
               </div>
             </div>
@@ -143,7 +143,7 @@ const Login = () => {
                 </div>
               </div>
 
-              <Link to="/wh-smith">
+              <Link to="/admin">
                 <div className="text-[12px] text-slate-400 cursor-pointer hover:text-blue-400 hover:underline">
                   Login sebagai WH Smith
                 </div>

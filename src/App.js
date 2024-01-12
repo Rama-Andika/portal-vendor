@@ -6,8 +6,6 @@ import LoginWh from "./pages/LoginWh";
 import VendorAndNonVendor from "./pages/admin/VendorAndNonVendor";
 import Cod from "./pages/admin/Cod";
 import Profile from "./pages/vendor/Profile";
-import UploadFile from "./pages/vendor/UploadFile";
-import InvoiceRecords from "./pages/vendor/InvoiceRecords";
 import VendorRegistrationList from "./pages/admin/VendorRegistrationList";
 import VendorList from "./pages/admin/VendorList";
 import PendingTask from "./pages/admin/PendingTask";
@@ -16,55 +14,57 @@ import Penagihan from "./pages/vendor/penagihan/Penagihan";
 import Monitoring from "./pages/vendor/Monitoring";
 import EdtPenagihan from "./pages/vendor/penagihan/EdtPenagihan";
 import { Toaster } from "react-hot-toast";
-import PrivateRoute from "./routes/PrivateRoute";
-import PrivateRouteAdmin from "./routes/PrivateRouteAdmin";
+import AdminWhSmith from "./layouts/AdminWhSmith";
+import Admin from "./layouts/Admin";
+import { Worker } from "@react-pdf-viewer/core";
+import VendorEdit from "./pages/admin/VendorEdit";
 
 function App() {
   return (
-    <div>
+    <>
       <Toaster />
-      <BrowserRouter basename={"/portal-vendor"}>
-        <Routes>
-          {/* Dashboard */}
-          <Route path="/" element={<Login />} />
-          <Route element={<PrivateRoute />}>
-            <Route path="vendor/profile" element={<Profile />} />
-            <Route
-              path="vendor/invoice/upload-invoice"
-              element={<UploadFile />}
-            />
-            <Route path="vendor/invoice/records" element={<InvoiceRecords />} />
-            <Route path="vendor/penagihan" element={<Penagihan />} />
-            <Route
-              path="vendor/penagihan/edit/:id"
-              element={<EdtPenagihan />}
-            />
-            <Route path="vendor/monitoring" element={<Monitoring />} />
-          </Route>
+      <Worker workerUrl="https://unpkg.com/pdfjs-dist@3.4.120/build/pdf.worker.min.js">
+        <BrowserRouter basename={"/portal-vendor"}>
+          <Routes>
+            <Route path="/" element={<Login />} />
+            <Route element={<Admin />}>
+              <Route path="vendor/profile" element={<Profile />} />
+              <Route path="vendor/penagihan" element={<Penagihan />} />
+              <Route
+                path="vendor/penagihan/edit/:id"
+                element={<EdtPenagihan />}
+              />
+              <Route path="vendor/monitoring" element={<Monitoring />} />
+            </Route>
 
-          <Route path="/wh-smith" element={<LoginWh />} />
-          <Route path="/registration" element={<Registration />} />
+            <Route path="/admin" element={<LoginWh />} />
+            <Route path="/registration" element={<Registration />} />
 
-          <Route element={<PrivateRouteAdmin />}>
-            <Route
-              path="admin/vendor-&-non-vendor"
-              element={<VendorAndNonVendor />}
-            />
-            <Route path="admin/cod" element={<Cod />} />
-            <Route
-              path="admin/vendor/registration-list"
-              element={<VendorRegistrationList />}
-            />
-            <Route path="admin/vendor/vendor-list" element={<VendorList />} />
-            <Route path="admin/vendor/pending-task" element={<PendingTask />} />
-            <Route
-              path="admin/vendor/listing-penagihan"
-              element={<ListingPenagihan />}
-            />
-          </Route>
-        </Routes>
-      </BrowserRouter>
-    </div>
+            <Route element={<AdminWhSmith />}>
+              <Route
+                path="admin/vendor-&-non-vendor"
+                element={<VendorAndNonVendor />}
+              />
+              <Route path="admin/cod" element={<Cod />} />
+              <Route
+                path="admin/vendor/registration-list"
+                element={<VendorRegistrationList />}
+              />
+              <Route path="admin/vendor/vendor-list" element={<VendorList />} />
+              <Route
+                path="admin/vendor/pending-task"
+                element={<PendingTask />}
+              />
+              <Route
+                path="admin/vendor/listing-penagihan"
+                element={<ListingPenagihan />}
+              />
+              <Route path="admin/vendor/edit" element={<VendorEdit />} />
+            </Route>
+          </Routes>
+        </BrowserRouter>
+      </Worker>
+    </>
   );
 }
 
