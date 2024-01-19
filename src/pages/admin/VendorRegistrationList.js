@@ -59,7 +59,9 @@ const VendorRegistrationList = () => {
 
   const [listVendor, setListVendor] = useState([]);
   const [vendorDetail, setVendorDetail] = useState({});
+
   const [listUser, setListUser] = useState([]);
+  const [userDetail, setUserDetail] = useState({})
 
   const navigate = useNavigate();
   const handleOpen = () => setOpen(true);
@@ -176,8 +178,9 @@ const VendorRegistrationList = () => {
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, []);
 
-  const onClickEdit = (item) => {
+  const onClickEdit = (item, user) => {
     if (Cookies.get("admin_token") !== undefined) {
+      setUserDetail(user)
       setVendorDetail(item);
       setStatus({ value: item.status, label: item.status });
       handleOpen();
@@ -445,7 +448,6 @@ const VendorRegistrationList = () => {
                 <td className="p-5 border">No</td>
                 <td className="p-5 border">Supplier Name</td>
                 <td className="p-5 border">Supplier Code</td>
-                <td className="p-5 border">Password</td>
                 <td className="p-5 border">Status</td>
                 <td className="p-5 border">Check List</td>
               </tr>
@@ -461,7 +463,7 @@ const VendorRegistrationList = () => {
                       <div className="flex gap-2 items-center justify-center">
                         <div
                           className={`cursor-pointer py-2 px-5 bg-gray-200 rounded-md`}
-                          onClick={() => onClickEdit(item)}
+                          onClick={() => onClickEdit(item, listUser[index])}
                         >
                           Detail
                         </div>
@@ -470,12 +472,6 @@ const VendorRegistrationList = () => {
                     <td className="p-5 border">{start + index + 1}</td>
                     <td className="text-left p-5 border">{item.nama}</td>
                     <td className="p-5 border">{item.kode}</td>
-
-                    <td className="p-5 border">
-                      {listUser[index] !== undefined
-                        ? listUser[index].password
-                        : ""}
-                    </td>
                     <td className="p-5 border">
                       {titleCase(item.status, "_")}
                     </td>
@@ -540,6 +536,17 @@ const VendorRegistrationList = () => {
                       </div>
                       <div className="w-[240px] whitespace-nowrap overflow-ellipsis overflow-hidden">
                         {vendorDetail.nama}
+                      </div>
+                    </div>
+                    <div className="flex max-[549px]:flex-col max-[549px]:items-start items-center gap-2">
+                      <div className="w-[270px] whitespace-nowrap font-bold">
+                        Username
+                      </div>
+                      <div className="max-[549px]:hidden min-[550px]:block">
+                        :
+                      </div>
+                      <div className="w-[240px] whitespace-nowrap overflow-ellipsis overflow-hidden">
+                        {userDetail.username}
                       </div>
                     </div>
                     <div className="flex max-[549px]:flex-col max-[549px]:items-start items-center gap-2">

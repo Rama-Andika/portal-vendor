@@ -1,6 +1,6 @@
 /* eslint-disable no-new-object */
 import { useStateContext } from "../../contexts/ContextProvider";
-import { CircularProgress, Pagination } from "@mui/material";
+import { Backdrop, CircularProgress, Fade, Modal, Pagination } from "@mui/material";
 import { DatePicker, LocalizationProvider } from "@mui/x-date-pickers";
 import { AdapterDayjs } from "@mui/x-date-pickers/AdapterDayjs";
 import { DemoContainer } from "@mui/x-date-pickers/internals/demo";
@@ -32,6 +32,12 @@ const Cod = () => {
   const [supplier, setSupplier] = useState("");
   const [number, setNumber] = useState("");
 
+  //modal
+  const [open, setOpen] = useState(false);
+  const handleOpen = () => setOpen(true);
+  const handleClose = () => setOpen(false);
+  const [memoDetail, setMemoDetail] = useState("")
+
   // eslint-disable-next-line no-unused-vars
   const [cashOutDate, setCashOutDate] = useState([]);
   const [otherBankNo, setOtherBankNo] = useState([]);
@@ -50,6 +56,7 @@ const Cod = () => {
       .then((response) => response.json())
       .then((res) => {
         if (res.data.length > 0) {
+          console.log(res.data)
           setTotal(res.total);
           setCount(Math.round(res.total / res.limit));
           setLimit(res.limit);
@@ -444,6 +451,11 @@ const Cod = () => {
   const onChangeAccount = (item) => {
     setSrcAccount(item);
   };
+
+  const onClickSeeDetailMemo = (memo) => {
+    setMemoDetail(memo)
+    handleOpen()
+  }
   return (
     <div
       className={`${
@@ -612,7 +624,7 @@ const Cod = () => {
                       item.total !== undefined ? item.total : 0
                     )}
                   </td>
-                  <td className="p-5 border">{item.bank_out}</td>
+                  <td className="p-5 border">{item.bank_out !== undefined ? item.bank_out : ""}</td>
                   <td className="p-5 border">
                     <div>
                       <LocalizationProvider dateAdapter={AdapterDayjs}>
@@ -630,11 +642,15 @@ const Cod = () => {
                     </div>
                   </td>
                   <td className="p-5 border">
-                    {item.bank_out_transfer.map((bank) =>
-                      item.bank_out_transfer.length > 1
-                        ? bank.bank + ", "
-                        : bank.bank
-                    )}
+                    {item.bank_out_transfer !== undefined
+                      ? item.bank_out_transfer.map((bank, i) =>
+                          item.bank_out_transfer.length > 1
+                            ? item.bank_out_transfer.length - 1 === i
+                              ? bank.bank
+                              : bank.bank + ", "
+                            : bank.bank
+                        )
+                      : ""}
                   </td>
                   <td className="p-5 border">
                     <div>
@@ -671,14 +687,17 @@ const Cod = () => {
                     </div>
                   </td>
                   <td className="p-5 border">
-                    <div>
+                    <div className="flex gap-2 items-center">
                       <input
                         value={memo[index]}
+                        className="disabled:bg-gray-200"
+                        disabled
                         onChange={(e) => onChangeMemo(e, index)}
                         type="text"
                         name=""
                         id=""
                       />
+                      <div onClick={() => onClickSeeDetailMemo(memo[index])} className="underline text-blue-400 cursor-pointer">See detail</div>
                     </div>
                   </td>
                   <td className="p-5 border">{item.name_preparer}</td>
@@ -688,19 +707,21 @@ const Cod = () => {
                       : dayjs(new Date()).format("MMM DD, YYYY")}
                   </td>
                   <td className="p-5 border">{item.journal_number}</td>
-                  <td className="p-5 border"><LocalizationProvider dateAdapter={AdapterDayjs}>
-                        <DemoContainer components={["DatePicker"]}>
-                          <DatePicker
+                  <td className="p-5 border">
+                    <LocalizationProvider dateAdapter={AdapterDayjs}>
+                      <DemoContainer components={["DatePicker"]}>
+                        <DatePicker
                           disabled
-                            className="w-full"
-                            value={cashOutDate[index]}
-                            onChange={(value) =>
-                              onChangeCashOutDate(value, index)
-                            }
-                            slotProps={{ textField: { size: "small" } }}
-                          />
-                        </DemoContainer>
-                      </LocalizationProvider></td>
+                          className="w-full"
+                          value={cashOutDate[index]}
+                          onChange={(value) =>
+                            onChangeCashOutDate(value, index)
+                          }
+                          slotProps={{ textField: { size: "small" } }}
+                        />
+                      </DemoContainer>
+                    </LocalizationProvider>
+                  </td>
                   <td className="p-5 border">
                     <div>
                       <input
@@ -749,6 +770,35 @@ const Cod = () => {
           />
         </div>
       )}
+
+      <div>
+        <Modal
+          aria-labelledby="transition-modal-title"
+          aria-describedby="transition-modal-description"
+          open={open}
+          onClose={handleClose}
+          closeAfterTransition
+          slots={{ backdrop: Backdrop }}
+          slotProps={{
+            backdrop: {
+              timeout: 500,
+            },
+          }}
+        >
+          <Fade in={open}>
+            <div
+              className={`border-0 bg-white  py-5 px-7 absolute top-[50%] left-1/2 translate-x-[-50%] translate-y-[-50%] h-[400px] overflow-y-auto z-[999999]  ${
+                screenSize <= 548 ? "w-[90%]" : "w-[50%]"
+              }`}
+            >
+              <div className="text-[20px] mb-5 font-semibold ">Memo</div>
+              <div>
+                {memoDetail}
+              </div>
+            </div>
+          </Fade>
+        </Modal>
+      </div>
 
       {/* <div>
         <Modal

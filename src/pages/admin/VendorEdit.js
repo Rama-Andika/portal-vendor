@@ -45,6 +45,9 @@ const VendorEdit = () => {
   const { screenSize } = useStateContext();
   const [optionProvinsi, setOptionProvinsi] = useState([]);
 
+  //user
+  const [username, setUsername] = useState("")
+
   const [tipePerusahaan, setTipePerusahaan] = useState({});
   const [tipePerusahaanText, setTipePerusahaanText] = useState("");
   const [namaPerusahaan, setNamaPerusahaan] = useState("");
@@ -266,6 +269,26 @@ const VendorEdit = () => {
       });
   };
 
+  const fetchUser = async () => {
+    const arr = [state.vendor_id]
+    fetch(`${api}api/portal-vendor/list/users`, {
+      method: "POST",
+      body: JSON.stringify({
+        vendor_id: arr,
+      }),
+    })
+      .then((response) => response.json())
+      .then((res) => {
+        if (res.data.length > 0) {
+          const data = res.data[0];
+          setUsername(data.username);
+        }
+      })
+      .catch((err) => {
+        console.log(err);
+      });
+  };
+
   const updateVendor = async () => {
     setOpenBackdrop(true);
     let isSave = false;
@@ -476,6 +499,7 @@ const VendorEdit = () => {
     window.scrollTo(0, 0);
     fetchProvince();
     fetchVendor();
+    fetchUser();
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, []);
 
@@ -797,6 +821,26 @@ const VendorEdit = () => {
                           <div className="flex gap-2 items-center mb-3 w-full">
                             <div className=" flex">
                               <label htmlFor="" className="w-72">
+                                Username
+                              </label>
+                              <div>:</div>
+                            </div>
+
+                            <div className="w-full relative">
+                              <input
+                                value={username}
+                                disabled
+                                type="text"
+                                name=""
+                                id=""
+                                className="bg-gray-200 w-full h-[36px] border border-slate-300 rounded-sm focus:border focus:border-[#0077b6]  "
+                              />
+                            </div>
+                          </div>
+                          
+                          <div className="flex gap-2 items-center mb-3 w-full">
+                            <div className=" flex">
+                              <label htmlFor="" className="w-72">
                                 Tipe Perusahaan
                               </label>
                               <div>:</div>
@@ -886,6 +930,25 @@ const VendorEdit = () => {
                                 className="bg-gray-200 w-full h-[36px] border border-slate-300 rounded-sm focus:border focus:border-[#0077b6]  "
                               />
                             </div>
+                          </div>
+                          <div className="flex flex-col gap-2 mb-3 w-full">
+                            <div className=" flex">
+                              <label htmlFor="" className="w-72">
+                                Username
+                              </label>
+                            </div>
+                            
+                              <div className="w-full relative">
+                                <input
+                                  value={username}
+                                  disabled
+                                  type="text"
+                                  name=""
+                                  id=""
+                                  className="bg-gray-200 w-full h-[36px] border border-slate-300 rounded-sm focus:border focus:border-[#0077b6]  "
+                                />
+                              </div>
+                            
                           </div>
                           <div className="flex flex-col gap-2 mb-3 w-full">
                             <div className=" flex">

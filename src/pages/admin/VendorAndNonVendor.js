@@ -68,7 +68,7 @@ const VendorAndNonVendor = () => {
           setCheckBox(check);
 
           const listOutStandingDate = res.data.map((item) => {
-            let date = dayjs(item.tanggal_tt).add(item.due_date, "day");
+            let date = dayjs(item.tanggal_tt);
             let outstanding_date = date.subtract(3, "day");
             return outstanding_date;
           });
@@ -649,7 +649,7 @@ const VendorAndNonVendor = () => {
             <tr className="text-center whitespace-nowrap border-2 bg-[#eaf4f4]">
               <td className="p-5 border">No</td>
               <td className="p-5 border">Vendor & Non Vendor</td>
-              <td className="p-5 border">Date</td>
+              <td className="p-5 border">Create Date</td>
               <td className="p-5 border">Month</td>
               <td className="p-5 w-8 border">Name Preparer</td>
               <td className="p-5 border">PR Number</td>

@@ -44,6 +44,9 @@ const VendorList = () => {
   const [listVendor, setListVendor] = useState([]);
   const [vendorDetail, setVendorDetail] = useState({});
 
+  const [listUser, setListUser] = useState([]);
+  const [userDetail, setUserDetail] = useState({})
+
   const navigate = useNavigate();
   const handleOpen = () => setOpen(true);
   const handleClose = () => setOpen(false);
@@ -67,6 +70,34 @@ const VendorList = () => {
         setCount(Math.round(res.total / res.limit));
         setLimit(res.limit);
         setListVendor(res.data);
+
+        let queryString = [];
+        // eslint-disable-next-line array-callback-return
+        res.data.map((data, index) => {
+          queryString[index] = data.id;
+        });
+        fetchUser(queryString);
+      })
+      .catch((err) => {
+        setOpenBackdrop(false);
+      });
+  };
+
+  const fetchUser = async (query) => {
+    await fetch(`${api}api/portal-vendor/list/users`, {
+      method: "POST",
+      body: JSON.stringify({
+        vendor_id: query,
+      }),
+    })
+      .then((response) => response.json())
+      .then((res) => {
+        if (res.data.length > 0) {
+          setOpenBackdrop(false);
+          setListUser(res.data);
+        } else {
+          setOpenBackdrop(false);
+        }
       })
       .catch((err) => {
         setOpenBackdrop(false);
@@ -110,6 +141,7 @@ const VendorList = () => {
   useEffect(() => {
     window.scrollTo(0, 0);
     fetchData();
+  // eslint-disable-next-line react-hooks/exhaustive-deps
   }, []);
 
   const onSearch = (e) => {
@@ -131,8 +163,9 @@ const VendorList = () => {
     fetchData(parameter);
   };
 
-  const onClickView = (item) => {
+  const onClickView = (item, user) => {
     if (Cookies.get("admin_token") !== undefined) {
+      setUserDetail(user)
       setVendorDetail(item);
       handleOpen();
     } else {
@@ -319,7 +352,7 @@ const VendorList = () => {
                       <div className="flex gap-2 items-center justify-center">
                         <div
                           className={`cursor-pointer rounded-md`}
-                          onClick={() => onClickView(item)}
+                          onClick={() => onClickView(item, listUser[index])}
                         >
                           <IoMdEye />
                         </div>
@@ -395,6 +428,17 @@ const VendorList = () => {
                       </div>
                       <div className="w-[240px] whitespace-nowrap overflow-ellipsis overflow-hidden">
                         {titleCase(vendorDetail.nama)}
+                      </div>
+                    </div>
+                    <div className="flex max-[549px]:flex-col max-[549px]:items-start items-center gap-2">
+                      <div className="w-[270px] whitespace-nowrap font-bold">
+                        Username
+                      </div>
+                      <div className="max-[549px]:hidden min-[550px]:block">
+                        :
+                      </div>
+                      <div className="w-[240px] whitespace-nowrap overflow-ellipsis overflow-hidden">
+                        {userDetail.username}
                       </div>
                     </div>
                     <div className="flex max-[549px]:flex-col max-[549px]:items-start items-center gap-2">

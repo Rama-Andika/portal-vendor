@@ -45,6 +45,9 @@ const Profile = () => {
   const { screenSize } = useStateContext();
   const [optionProvinsi, setOptionProvinsi] = useState([]);
 
+  //username
+  const [username, setUsername] = useState("");
+
   const [tipePerusahaan, setTipePerusahaan] = useState({});
   const [tipePerusahaanText, setTipePerusahaanText] = useState("");
   const [namaPerusahaan, setNamaPerusahaan] = useState("");
@@ -157,6 +160,25 @@ const Profile = () => {
 
       setOptionProvinsi(provinsiValue);
     });
+  };
+
+  const fetchUser = async () => {
+    fetch(`${api}api/portal-vendor/list/users`, {
+      method: "POST",
+      body: JSON.stringify({
+        id: Cookies.get("id"),
+      }),
+    })
+      .then((response) => response.json())
+      .then((res) => {
+        if (res.data.length > 0) {
+          const data = res.data[0];
+          setUsername(data.username);
+        }
+      })
+      .catch((err) => {
+        console.log(err);
+      });
   };
 
   const fetchVendor = async () => {
@@ -476,6 +498,7 @@ const Profile = () => {
     window.scrollTo(0, 0);
     fetchProvince();
     fetchVendor();
+    fetchUser();
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, []);
 
@@ -797,6 +820,25 @@ const Profile = () => {
                           <div className="flex gap-2 items-center mb-3 w-full">
                             <div className=" flex">
                               <label htmlFor="" className="w-72">
+                                Username
+                              </label>
+                              <div>:</div>
+                            </div>
+
+                            <div className="w-full relative">
+                              <input
+                                value={username}
+                                disabled
+                                type="text"
+                                name=""
+                                id=""
+                                className="bg-gray-200 w-full h-[36px] border border-slate-300 rounded-sm focus:border focus:border-[#0077b6]  "
+                              />
+                            </div>
+                          </div>
+                          <div className="flex gap-2 items-center mb-3 w-full">
+                            <div className=" flex">
+                              <label htmlFor="" className="w-72">
                                 Tipe Perusahaan
                               </label>
                               <div>:</div>
@@ -839,7 +881,9 @@ const Profile = () => {
                               <input
                                 value={namaPerusahaan}
                                 onChange={(e) =>
-                                  setNamaPerusahaan(e.target.value.toUpperCase())
+                                  setNamaPerusahaan(
+                                    e.target.value.toUpperCase()
+                                  )
                                 }
                                 type="text"
                                 name=""
@@ -876,16 +920,56 @@ const Profile = () => {
                                 Status
                               </label>
                             </div>
-                            <div className="w-full relative">
-                              <input
-                                value={status}
-                                disabled
-                                type="text"
-                                name=""
-                                id=""
-                                className="bg-gray-200 w-full h-[36px] border border-slate-300 rounded-sm focus:border focus:border-[#0077b6]  "
-                              />
+                            {status === "RE_REGISTER" ? (
+                              <div className="flex flex-col gap-1">
+                                <div className="w-full relative">
+                                  <input
+                                    value={status}
+                                    disabled
+                                    type="text"
+                                    name=""
+                                    id=""
+                                    className="bg-gray-200 w-full h-[36px] border border-slate-300 rounded-sm focus:border focus:border-[#0077b6]  "
+                                  />
+                                </div>
+                                <div
+                                  className="cursor-pointer  underline text-[#0077b6]"
+                                  onClick={handleOpen}
+                                >
+                                  The Reason{" "}
+                                </div>
+                              </div>
+                            ) : (
+                              <div className="w-full relative">
+                                <input
+                                  value={status}
+                                  disabled
+                                  type="text"
+                                  name=""
+                                  id=""
+                                  className="bg-gray-200 w-full h-[36px] border border-slate-300 rounded-sm focus:border focus:border-[#0077b6]  "
+                                />
+                              </div>
+                            )}
+                          </div>
+                          <div className="flex flex-col gap-2 mb-3 w-full">
+                            <div className=" flex">
+                              <label htmlFor="" className="w-72">
+                                Username
+                              </label>
                             </div>
+                            
+                              <div className="w-full relative">
+                                <input
+                                  value={username}
+                                  disabled
+                                  type="text"
+                                  name=""
+                                  id=""
+                                  className="bg-gray-200 w-full h-[36px] border border-slate-300 rounded-sm focus:border focus:border-[#0077b6]  "
+                                />
+                              </div>
+                            
                           </div>
                           <div className="flex flex-col gap-2 mb-3 w-full">
                             <div className=" flex">
@@ -930,7 +1014,9 @@ const Profile = () => {
                               <input
                                 value={namaPerusahaan}
                                 onChange={(e) =>
-                                  setNamaPerusahaan(e.target.value.toUpperCase())
+                                  setNamaPerusahaan(
+                                    e.target.value.toUpperCase()
+                                  )
                                 }
                                 type="text"
                                 name=""

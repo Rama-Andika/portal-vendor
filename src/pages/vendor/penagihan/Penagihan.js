@@ -152,6 +152,7 @@ const Penagihan = () => {
   const [nomerRequest, setNomerRequest] = useState("");
   const navigate = useNavigate();
   const vendorId = Cookies.get("vendor_id");
+  const userId = Cookies.get("id");
   const [vendors, setVendors] = useState({});
 
   const fetchvendor = async () => {
@@ -1063,6 +1064,7 @@ const Penagihan = () => {
             scan_report_sales_file:
               scanReportSalesFile !== null ? scanReportSalesFile : null,
             status: "DRAFT",
+            user_id: userId,
           };
           await fetch(`${api}api/portal-vendor/invoice`, {
             method: "POST",
@@ -1138,6 +1140,7 @@ const Penagihan = () => {
             scan_report_sales_file:
               scanReportSalesFile !== null ? scanReportSalesFile : null,
             status: "DRAFT",
+            user_id: userId,
           };
           await fetch(`${api}api/portal-vendor/invoice`, {
             method: "POST",
@@ -1384,6 +1387,7 @@ const Penagihan = () => {
             scan_report_sales_file:
               scanReportSalesFile !== null ? scanReportSalesFile : null,
             status: "DRAFT",
+            user_id: userId,
           };
 
           await fetch(`${api}api/portal-vendor/invoice`, {
@@ -1464,6 +1468,7 @@ const Penagihan = () => {
             scan_report_sales_file:
               scanReportSalesFile !== null ? scanReportSalesFile : null,
             status: "DRAFT",
+            user_id: userId,
           };
 
           await fetch(`${api}api/portal-vendor/invoice`, {
@@ -1642,6 +1647,7 @@ const Penagihan = () => {
           scan_report_sales_file:
             scanReportSalesFile !== null ? scanReportSalesFile : null,
           status: "Waiting_for_approval",
+          user_id: userId,
         };
 
         await fetch(`${api}api/portal-vendor/invoice`, {
@@ -1718,6 +1724,7 @@ const Penagihan = () => {
           scan_report_sales_file:
             scanReportSalesFile !== null ? scanReportSalesFile : null,
           status: "Waiting_for_approval",
+          user_id: userId,
         };
 
         await fetch(`${api}api/portal-vendor/invoice`, {
@@ -1897,6 +1904,7 @@ const Penagihan = () => {
           scan_report_sales_file:
             scanReportSalesFile !== null ? scanReportSalesFile : null,
           status: "Waiting_for_approval",
+          user_id: userId,
         };
 
         await fetch(`${api}api/portal-vendor/invoice`, {
@@ -1973,6 +1981,7 @@ const Penagihan = () => {
           scan_report_sales_file:
             scanReportSalesFile !== null ? scanReportSalesFile : null,
           status: "Waiting_for_approval",
+          user_id: userId,
         };
 
         await fetch(`${api}api/portal-vendor/invoice`, {
