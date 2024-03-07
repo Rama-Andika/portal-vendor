@@ -53,6 +53,7 @@ const optionsTipePengiriman = [
 ];
 
 const api = process.env.REACT_APP_BASEURL;
+const apiExport = process.env.REACT_APP_EXPORT_URL;
 const Penagihan = () => {
   const inputArr = [
     {
@@ -129,13 +130,22 @@ const Penagihan = () => {
     inputNoSeriFakturPajak
   );
   const [purchaseOrderFile, setPurchaseOrderFile] = useState(null);
+  const [purchaseOrderFileUpload, setPurchaseOrderFileUpload] = useState(null);
   const [deliveryOrderFile, setDeliveryOrderFile] = useState(null);
+  const [deliveryOrderFileUpload, setDeliveryOrderFileUpload] = useState(null);
   const [invoiceFile, setInvoiceFile] = useState(null);
+  const [invoiceFileUpload, setInvoiceFileUpload] = useState([]);
   const [kwitansiFile, setKwitansiFile] = useState(null);
+  const [kwitansiFileUpload, setKwitansiFileUpload] = useState(null);
   const [fakturPajakFile, setFakturPajakFile] = useState(null);
+  const [fakturPajakFileUpload, setFakturPajakFileUpload] = useState(null);
   const [receivingNoteFile, setReceivingNoteFile] = useState(null);
+  const [receivingNoteFileUpload, setReceivingNoteFileUpload] = useState(null);
   const [resiFile, setResiFile] = useState(null);
+  const [resiFileUpload, setResiFileUpload] = useState(null);
   const [scanReportSalesFile, setScanReportSalesFile] = useState(null);
+  const [scanReportSalesFileUpload, setScanReportSalesFileUpload] =
+    useState(null);
   const [createdAt, setCreatedAt] = useState();
   // eslint-disable-next-line no-unused-vars
   const [updatedAt, setUpdatedAt] = useState();
@@ -152,6 +162,7 @@ const Penagihan = () => {
   const param = useParams();
   const [vendors, setVendors] = useState({});
   const location = useLocation();
+  const userId = Cookies.get("id");
 
   const fetchvendor = async () => {
     setOpenBackdrop(true);
@@ -195,6 +206,8 @@ const Penagihan = () => {
             value: data.delivery_area,
             label: titleCase(data.delivery_area),
           });
+
+          setTipePengiriman(optionsTipePengiriman[data.tipe_pengiriman]);
           const listInvoice = data.nomer_invoices.map((invoice) => {
             return { type: "text", value: invoice, id: 0 };
           });
@@ -202,7 +215,7 @@ const Penagihan = () => {
             return { value: dayjs(tanggal) };
           });
           const listNilaiInvoice = data.nilai_invoices.map((nilai) => {
-            return { value:  accountingNumber(nilai.toString()) };
+            return { value: accountingNumber(nilai.toString()) };
           });
 
           let arrayInvoiceTambahan = [];
@@ -241,6 +254,22 @@ const Penagihan = () => {
           setCreatedAt(data.created_at);
           setUpdatedAt(data.updated_at);
           setOpenBackdrop(false);
+          setPurchaseOrderFileUpload(data.file_po ? data.file_po : "");
+          setDeliveryOrderFileUpload(data.file_do ? data.file_do : "");
+          setKwitansiFileUpload(data.file_kwitansi ? data.file_kwitansi : "");
+          setReceivingNoteFileUpload(data.file_note ? data.file_note : "");
+          setResiFileUpload(data.file_resi ? data.file_resi : "");
+          setScanReportSalesFileUpload(data.file_scan ? data.file_scan : "");
+
+          const _invoiceFiles = data.file_invoices?.map((file) => {
+            return file;
+          });
+          setInvoiceFileUpload(_invoiceFiles);
+
+          const _fakturPajakFiles = data.file_faktur_pajak?.map((file) => {
+            return file;
+          });
+          setFakturPajakFileUpload(_fakturPajakFiles);
           setInvoiceTambahan(arrayInvoiceTambahan);
           setFakturPajakTambahan(arrayFakturPajakTambahan);
         }
@@ -248,7 +277,6 @@ const Penagihan = () => {
   };
 
   const handleNext = () => {
-
     let countNomerInvoice = 0;
     let countTanggalInvoice = 0;
     let countNilaiInvoice = 0;
@@ -270,7 +298,7 @@ const Penagihan = () => {
 
     // eslint-disable-next-line array-callback-return
     nilaiInvoice.map((nilai) => {
-      const value = nilai.value.replace(/\./g,"").split(",").join(".")
+      const value = nilai.value.replace(/\./g, "").split(",").join(".");
       if (nilai.value.trim().length > 0 && !isNaN(value)) {
         countNilaiInvoice += 1;
       }
@@ -342,7 +370,7 @@ const Penagihan = () => {
 
     // eslint-disable-next-line array-callback-return
     nilaiInvoice.map((nilai) => {
-      const value = nilai.value.replace(/\./g,"").split(",").join(".")
+      const value = nilai.value.replace(/\./g, "").split(",").join(".");
       if (nilai.value.trim().length > 0 && !isNaN(value)) {
         countNilaiInvoice += 1;
       }
@@ -389,8 +417,7 @@ const Penagihan = () => {
         setIsError(true);
       }
     } else if (activeStep === 2) {
-     
-        onSubmitButton2();
+      onSubmitButton2();
     }
   };
 
@@ -554,7 +581,9 @@ const Penagihan = () => {
 
     setNilaiInvoice((s) => {
       const newArr = s.slice();
-      newArr[index].value = accountingNumber(e.target.value.split(".").join(""))
+      newArr[index].value = accountingNumber(
+        e.target.value.split(".").join("")
+      );
 
       return newArr;
     });
@@ -585,13 +614,12 @@ const Penagihan = () => {
     const invoiceTambahanCopy = [...invoiceTambahan];
     GetBase64(e.target.files[0])
       .then((result) => {
-        invoiceTambahanCopy[index].file = result
+        invoiceTambahanCopy[index].file = result;
         setInvoiceTambahan(invoiceTambahanCopy);
       })
       .catch((err) => {
         console.log(err);
       });
-    
   };
 
   const onChangeFakturPajakTambahan = (e, index) => {
@@ -600,7 +628,7 @@ const Penagihan = () => {
     const fakturPajakTambahanCopy = [...fakturPajakTambahan];
     GetBase64(e.target.files[0])
       .then((result) => {
-        fakturPajakTambahanCopy[index].file = result
+        fakturPajakTambahanCopy[index].file = result;
         setFakturPajakTambahan(fakturPajakTambahanCopy);
       })
       .catch((err) => {
@@ -882,9 +910,9 @@ const Penagihan = () => {
 
     // eslint-disable-next-line array-callback-return
     const nilaiInvoiceList = nilaiInvoice.map((nilai) => {
-      const value = nilai.value.replace(/\./g,"").split(",").join(".")
+      const value = nilai.value.replace(/\./g, "").split(",").join(".");
 
-        return parseFloat(value);
+      return parseFloat(value);
     });
 
     // eslint-disable-next-line array-callback-return
@@ -913,8 +941,8 @@ const Penagihan = () => {
         return !isEmpty(faktur);
       }
     );
-    
-    if(Cookies.get("token") !== undefined){
+
+    if (Cookies.get("token") !== undefined) {
       if (isSave) {
         const initialValue = {
           id: param.id,
@@ -950,8 +978,9 @@ const Penagihan = () => {
           scan_report_sales_file:
             scanReportSalesFile !== null ? scanReportSalesFile : null,
           status: "DRAFT",
+          user_id: userId,
         };
-  
+
         await fetch(`${api}api/portal-vendor/invoice`, {
           method: "POST",
           body: JSON.stringify(initialValue),
@@ -997,8 +1026,8 @@ const Penagihan = () => {
       } else {
         setOpenBackdrop(false);
       }
-    }else{
-      navigate("/")
+    } else {
+      navigate("/");
       toast.error("Silahkan Login Terlebih Dahulu!", {
         position: "top-right",
         style: {
@@ -1008,7 +1037,6 @@ const Penagihan = () => {
         },
       });
     }
-  
   };
 
   const saveDraft2 = async () => {
@@ -1031,9 +1059,9 @@ const Penagihan = () => {
 
     // eslint-disable-next-line array-callback-return
     const nilaiInvoiceList = nilaiInvoice.map((nilai) => {
-      const value = nilai.value.replace(/\./g,"").split(",").join(".")
+      const value = nilai.value.replace(/\./g, "").split(",").join(".");
 
-        return parseFloat(value);
+      return parseFloat(value);
     });
 
     // eslint-disable-next-line array-callback-return
@@ -1063,7 +1091,7 @@ const Penagihan = () => {
       }
     );
 
-    if(Cookies.get("token") !== undefined){
+    if (Cookies.get("token") !== undefined) {
       if (isSave) {
         const initialValue = {
           id: param.id,
@@ -1101,8 +1129,9 @@ const Penagihan = () => {
           scan_report_sales_file:
             scanReportSalesFile !== null ? scanReportSalesFile : null,
           status: "DRAFT",
+          user_id: userId,
         };
-  
+
         await fetch(`${api}api/portal-vendor/invoice`, {
           method: "POST",
           body: JSON.stringify(initialValue),
@@ -1147,8 +1176,8 @@ const Penagihan = () => {
       } else {
         setOpenBackdrop(false);
       }
-    }else{
-      navigate("/")
+    } else {
+      navigate("/");
       toast.error("Silahkan Login Terlebih Dahulu!", {
         position: "top-right",
         style: {
@@ -1158,8 +1187,6 @@ const Penagihan = () => {
         },
       });
     }
-
- 
   };
 
   const onSubmitButton = async () => {
@@ -1181,9 +1208,9 @@ const Penagihan = () => {
 
     // eslint-disable-next-line array-callback-return
     const nilaiInvoiceList = nilaiInvoice.map((nilai) => {
-      const value = nilai.value.replace(/\./g,"").split(",").join(".")
+      const value = nilai.value.replace(/\./g, "").split(",").join(".");
 
-        return parseFloat(value);
+      return parseFloat(value);
       // if (nilai.value.trim().length > 0) {
       //   return parseFloat(nilai.value);
       // }
@@ -1216,7 +1243,7 @@ const Penagihan = () => {
       }
     );
 
-    if(Cookies.get("token") !== undefined){
+    if (Cookies.get("token") !== undefined) {
       const initialValue = {
         id: param.id,
         vendor_id: vendorId,
@@ -1237,22 +1264,23 @@ const Penagihan = () => {
         created_at: createdAt,
         updated_at: dayjs(new Date()).format("YYYY-MM-DD HH:mm:ss"),
         po_file: purchaseOrderFile !== null ? purchaseOrderFile : null,
-          do_file: deliveryOrderFile !== null ? deliveryOrderFile : null,
-          invoice_file: invoiceFile !== null ? invoiceFile : null,
-          invoice_tambahan_file: invoiceTambahanList,
-          kwitansi_file: kwitansiFile !== null ? kwitansiFile : null,
-          faktur_pajak_file: fakturPajakFile !== null ? fakturPajakFile : null,
-          faktur_pajak_tambahan_file:
-            validationFakturPajakTambahan.length > 0
-              ? fakturPajakTambahanList
-              : null,
-          note_file: receivingNoteFile !== null ? receivingNoteFile : null,
-          resi_file: resiFile !== null ? resiFile : null,
-          scan_report_sales_file:
-            scanReportSalesFile !== null ? scanReportSalesFile : null,
+        do_file: deliveryOrderFile !== null ? deliveryOrderFile : null,
+        invoice_file: invoiceFile !== null ? invoiceFile : null,
+        invoice_tambahan_file: invoiceTambahanList,
+        kwitansi_file: kwitansiFile !== null ? kwitansiFile : null,
+        faktur_pajak_file: fakturPajakFile !== null ? fakturPajakFile : null,
+        faktur_pajak_tambahan_file:
+          validationFakturPajakTambahan.length > 0
+            ? fakturPajakTambahanList
+            : null,
+        note_file: receivingNoteFile !== null ? receivingNoteFile : null,
+        resi_file: resiFile !== null ? resiFile : null,
+        scan_report_sales_file:
+          scanReportSalesFile !== null ? scanReportSalesFile : null,
         status: "Waiting_for_approval",
+        user_id: userId,
       };
-  
+
       await fetch(`${api}api/portal-vendor/invoice`, {
         method: "POST",
         body: JSON.stringify(initialValue),
@@ -1294,8 +1322,8 @@ const Penagihan = () => {
             },
           });
         });
-    }else{
-      navigate("/")
+    } else {
+      navigate("/");
       toast.error("Silahkan Login Terlebih Dahulu!", {
         position: "top-right",
         style: {
@@ -1305,8 +1333,6 @@ const Penagihan = () => {
         },
       });
     }
-
-    
   };
 
   const onSubmitButton2 = async () => {
@@ -1328,9 +1354,9 @@ const Penagihan = () => {
 
     // eslint-disable-next-line array-callback-return
     const nilaiInvoiceList = nilaiInvoice.map((nilai) => {
-      const value = nilai.value.replace(/\./g,"").split(",").join(".")
+      const value = nilai.value.replace(/\./g, "").split(",").join(".");
 
-        return parseFloat(value);
+      return parseFloat(value);
     });
 
     // eslint-disable-next-line array-callback-return
@@ -1360,7 +1386,7 @@ const Penagihan = () => {
       }
     );
 
-    if(Cookies.get("token") !== undefined){
+    if (Cookies.get("token") !== undefined) {
       const initialValue = {
         id: param.id,
         vendor_id: vendorId,
@@ -1376,7 +1402,9 @@ const Penagihan = () => {
         nilai_invoices: nilaiInvoiceList,
         is_pajak: isPajak.value,
         nomer_seri_pajak: nomerSeriFakturPajakList,
-        start_date_periode: dayjs(startDatePeriode).format("YYYY-MM-DD HH:mm:ss"),
+        start_date_periode: dayjs(startDatePeriode).format(
+          "YYYY-MM-DD HH:mm:ss"
+        ),
         end_date_periode: dayjs(endDatePeriode).format("YYYY-MM-DD HH:mm:ss"),
         created_at: createdAt,
         updated_at: dayjs(new Date()).format("YYYY-MM-DD HH:mm:ss"),
@@ -1395,8 +1423,9 @@ const Penagihan = () => {
         scan_report_sales_file:
           scanReportSalesFile !== null ? scanReportSalesFile : null,
         status: "Waiting_for_approval",
+        user_id: userId,
       };
-  
+
       await fetch(`${api}api/portal-vendor/invoice`, {
         method: "POST",
         body: JSON.stringify(initialValue),
@@ -1438,8 +1467,8 @@ const Penagihan = () => {
             },
           });
         });
-    }else{
-      navigate("/")
+    } else {
+      navigate("/");
       toast.error("Silahkan Login Terlebih Dahulu!", {
         position: "top-right",
         style: {
@@ -1449,8 +1478,6 @@ const Penagihan = () => {
         },
       });
     }
-
-    
   };
 
   const steps = ["Tipe Penagihan", "Billing", "Dokumen"];
@@ -1501,7 +1528,7 @@ const Penagihan = () => {
                         <div>:</div>
                         <div className="w-[70%]">
                           <Select
-                          isDisabled={true}
+                            isDisabled={true}
                             value={tipePenagihan}
                             onChange={onChangeTipePenagihan}
                             className="whitespace-nowrap"
@@ -1686,30 +1713,30 @@ const Penagihan = () => {
                               </div>
                             ))}
                             <div className="flex items-center gap-5">
-                                {nomerInvoice.length > 1 && (
-                                  <div
-                                    onClick={deleteInput}
-                                    className={`py-1 px-4 rounded-sm shadow-sm text-white bg-red-500  w-fit ${
-                                      nomerInvoice.length === 4
-                                        ? "cursor-not-allowed"
-                                        : "cursor-pointer"
-                                    } `}
-                                  >
-                                    Delete row
-                                  </div>
-                                )}
-
+                              {nomerInvoice.length > 1 && (
                                 <div
-                                  onClick={addInput}
-                                  className={`py-1 px-4 rounded-sm shadow-sm text-white bg-[#305496]  w-fit ${
+                                  onClick={deleteInput}
+                                  className={`py-1 px-4 rounded-sm shadow-sm text-white bg-red-500  w-fit ${
                                     nomerInvoice.length === 4
                                       ? "cursor-not-allowed"
                                       : "cursor-pointer"
                                   } `}
                                 >
-                                  Add row
+                                  Delete row
                                 </div>
+                              )}
+
+                              <div
+                                onClick={addInput}
+                                className={`py-1 px-4 rounded-sm shadow-sm text-white bg-[#305496]  w-fit ${
+                                  nomerInvoice.length === 4
+                                    ? "cursor-not-allowed"
+                                    : "cursor-pointer"
+                                } `}
+                              >
+                                Add row
                               </div>
+                            </div>
                           </div>
 
                           <div className="mb-3">
@@ -1768,7 +1795,6 @@ const Penagihan = () => {
                                       <input
                                         id={i}
                                         type="text"
-                                      
                                         value={nilaiInvoice[i].value}
                                         onChange={onChangeNilaiInvoice}
                                         className="max-[821px]:w-[208px] w-[246.4px] h-[40px] border border-slate-300 rounded-sm focus:border focus:border-[#0077b6] bg-[#ddebf7]"
@@ -2027,30 +2053,30 @@ const Penagihan = () => {
                               </div>
                             ))}
                             <div className="flex items-center gap-5">
-                                {nomerInvoice.length > 1 && (
-                                  <div
-                                    onClick={deleteInput}
-                                    className={`py-1 px-4 rounded-sm shadow-sm text-white bg-red-500  w-fit ${
-                                      nomerInvoice.length === 4
-                                        ? "cursor-not-allowed"
-                                        : "cursor-pointer"
-                                    } `}
-                                  >
-                                    Delete row
-                                  </div>
-                                )}
-
+                              {nomerInvoice.length > 1 && (
                                 <div
-                                  onClick={addInput}
-                                  className={`py-1 px-4 rounded-sm shadow-sm text-white bg-[#305496]  w-fit ${
+                                  onClick={deleteInput}
+                                  className={`py-1 px-4 rounded-sm shadow-sm text-white bg-red-500  w-fit ${
                                     nomerInvoice.length === 4
                                       ? "cursor-not-allowed"
                                       : "cursor-pointer"
                                   } `}
                                 >
-                                  Add row
+                                  Delete row
                                 </div>
+                              )}
+
+                              <div
+                                onClick={addInput}
+                                className={`py-1 px-4 rounded-sm shadow-sm text-white bg-[#305496]  w-fit ${
+                                  nomerInvoice.length === 4
+                                    ? "cursor-not-allowed"
+                                    : "cursor-pointer"
+                                } `}
+                              >
+                                Add row
                               </div>
+                            </div>
                           </div>
 
                           <div className="mb-10">
@@ -2073,7 +2099,6 @@ const Penagihan = () => {
                                     <input
                                       id={i}
                                       type="text"
-                                 
                                       value={nilaiInvoice[i].value}
                                       onChange={onChangeNilaiInvoice}
                                       className="max-[821px]:w-[208px] w-[246.4px] h-[40px] border border-slate-300 rounded-sm focus:border focus:border-[#0077b6] bg-[#fff2cc]"
@@ -2261,6 +2286,17 @@ const Penagihan = () => {
                                 </div>
                                 <div>*)</div>
                               </div>
+
+                              {purchaseOrderFileUpload.trim().length > 0 && (
+                                <a
+                                  href={`${apiExport}fin/transactionact/view_portal_file.jsp?file=${purchaseOrderFileUpload}`}
+                                  target="_blank"
+                                  className="underline cursor-pointer text-blue-500"
+                                  rel="noreferrer"
+                                >
+                                  File terupload
+                                </a>
+                              )}
                             </div>
                             <div className="flex items-center gap-3 mb-3">
                               <div className="flex flex-col gap-1">
@@ -2306,6 +2342,16 @@ const Penagihan = () => {
                                 </div>
                                 <div>*)</div>
                               </div>
+                              {deliveryOrderFileUpload.trim().length > 0 && (
+                                <a
+                                  href={`${apiExport}fin/transactionact/view_portal_file.jsp?file=${deliveryOrderFileUpload}`}
+                                  target="_blank"
+                                  className="underline cursor-pointer text-blue-500"
+                                  rel="noreferrer"
+                                >
+                                  File terupload
+                                </a>
+                              )}
                             </div>
                             <div className="flex items-center gap-3 mb-3">
                               <div className="flex flex-col gap-1">
@@ -2349,6 +2395,16 @@ const Penagihan = () => {
                                 </div>
                                 <div>*)</div>
                               </div>
+                              {invoiceFileUpload[0].trim().length > 0 && (
+                                <a
+                                  href={`${apiExport}fin/transactionact/view_portal_file.jsp?file=${invoiceFileUpload[0]}`}
+                                  target="_blank"
+                                  className="underline cursor-pointer text-blue-500"
+                                  rel="noreferrer"
+                                >
+                                  File terupload
+                                </a>
+                              )}
                             </div>
                             <div className="mb-10">
                               {invoiceTambahan.map((item, i) => (
@@ -2358,12 +2414,10 @@ const Penagihan = () => {
                                       {i === 0 ? (
                                         <div className="w-[350px]">
                                           Invoice Tambahan{" "}
-                                          {isEmpty(item) ? "true" : "false"}
                                         </div>
                                       ) : (
                                         <div className="w-[350px]">
                                           Invoice Tambahan {i + 1}{" "}
-                                          {isEmpty(item)}
                                         </div>
                                       )}
                                       <div className="text-[10px] text-gray-500">
@@ -2405,6 +2459,19 @@ const Penagihan = () => {
                                         />
                                       </div>
                                     </div>
+                                    {invoiceFileUpload[i + 1].trim().length >
+                                      0 && (
+                                      <a
+                                        href={`${apiExport}fin/transactionact/view_portal_file.jsp?file=${
+                                          invoiceFileUpload[i + 1]
+                                        }`}
+                                        target="_blank"
+                                        className="underline cursor-pointer text-blue-500"
+                                        rel="noreferrer"
+                                      >
+                                        File terupload
+                                      </a>
+                                    )}
                                     <div></div>
                                   </div>
                                 </div>
@@ -2455,6 +2522,16 @@ const Penagihan = () => {
                                 </div>
                                 <div>*)</div>
                               </div>
+                              {kwitansiFileUpload.trim().length > 0 && (
+                                <a
+                                  href={`${apiExport}fin/transactionact/view_portal_file.jsp?file=${kwitansiFileUpload}`}
+                                  target="_blank"
+                                  className="underline cursor-pointer text-blue-500"
+                                  rel="noreferrer"
+                                >
+                                  File terupload
+                                </a>
+                              )}
                             </div>
                             {vendors.status_pajak === "PKP" && (
                               <>
@@ -2500,6 +2577,17 @@ const Penagihan = () => {
                                     </div>
                                     <div>*)</div>
                                   </div>
+                                  {fakturPajakFileUpload[0].trim().length >
+                                    0 && (
+                                    <a
+                                      href={`${apiExport}fin/transactionact/view_portal_file.jsp?file=${fakturPajakFileUpload[0]}`}
+                                      target="_blank"
+                                      className="underline cursor-pointer text-blue-500"
+                                      rel="noreferrer"
+                                    >
+                                      File terupload
+                                    </a>
+                                  )}
                                 </div>
                                 <div className="mb-10">
                                   {fakturPajakTambahan.map((item, i) => (
@@ -2559,6 +2647,19 @@ const Penagihan = () => {
                                             />
                                           </div>
                                         </div>
+                                        {fakturPajakFileUpload[i + 1].trim()
+                                          .length > 0 && (
+                                          <a
+                                            href={`${apiExport}fin/transactionact/view_portal_file.jsp?file=${
+                                              fakturPajakFileUpload[i + 1]
+                                            }`}
+                                            target="_blank"
+                                            className="underline cursor-pointer text-blue-500"
+                                            rel="noreferrer"
+                                          >
+                                            File terupload
+                                          </a>
+                                        )}
                                         <div></div>
                                       </div>
                                     </div>
@@ -2607,6 +2708,16 @@ const Penagihan = () => {
                                 </div>
                                 <div>*)</div>
                               </div>
+                              {receivingNoteFileUpload.trim().length > 0 && (
+                                <a
+                                  href={`${apiExport}fin/transactionact/view_portal_file.jsp?file=${receivingNoteFileUpload}`}
+                                  target="_blank"
+                                  className="underline cursor-pointer text-blue-500"
+                                  rel="noreferrer"
+                                >
+                                  File terupload
+                                </a>
+                              )}
                             </div>
                             <div>
                               <div className="italic">
@@ -2684,6 +2795,16 @@ const Penagihan = () => {
                                   </div>
                                   {tipePengiriman.value === 1 && <div>*)</div>}
                                 </div>
+                                {resiFileUpload.trim().length > 0 && (
+                                  <a
+                                    href={`${apiExport}fin/transactionact/view_portal_file.jsp?file=${resiFileUpload}`}
+                                    target="_blank"
+                                    className="underline cursor-pointer text-blue-500"
+                                    rel="noreferrer"
+                                  >
+                                    File terupload
+                                  </a>
+                                )}
                               </div>
                               {isError && (
                                 <div className="mt-10 mb-3">
@@ -2739,6 +2860,16 @@ const Penagihan = () => {
                                 </div>
                                 <div>*)</div>
                               </div>
+                              {purchaseOrderFileUpload.trim().length > 0 && (
+                                <a
+                                  href={`${apiExport}fin/transactionact/view_portal_file.jsp?file=${purchaseOrderFileUpload}`}
+                                  target="_blank"
+                                  className="underline cursor-pointer text-blue-500"
+                                  rel="noreferrer"
+                                >
+                                  File terupload
+                                </a>
+                              )}
                             </div>
                             <div className="flex items-center gap-3 mb-3">
                               <div className="flex flex-col gap-1">
@@ -2784,6 +2915,16 @@ const Penagihan = () => {
                                 </div>
                                 <div>*)</div>
                               </div>
+                              {deliveryOrderFileUpload.trim().length > 0 && (
+                                <a
+                                  href={`${apiExport}fin/transactionact/view_portal_file.jsp?file=${deliveryOrderFileUpload}`}
+                                  target="_blank"
+                                  className="underline cursor-pointer text-blue-500"
+                                  rel="noreferrer"
+                                >
+                                  File terupload
+                                </a>
+                              )}
                             </div>
                             <div className="flex items-center gap-3 mb-3">
                               <div className="flex flex-col gap-1">
@@ -2827,6 +2968,16 @@ const Penagihan = () => {
                                 </div>
                                 <div>*)</div>
                               </div>
+                              {invoiceFileUpload[0].trim().length > 0 && (
+                                <a
+                                  href={`${apiExport}fin/transactionact/view_portal_file.jsp?file=${invoiceFileUpload[0]}`}
+                                  target="_blank"
+                                  className="underline cursor-pointer text-blue-500"
+                                  rel="noreferrer"
+                                >
+                                  File terupload
+                                </a>
+                              )}
                             </div>
                             <div className="mb-10">
                               {invoiceTambahan.map((item, i) => (
@@ -2881,6 +3032,19 @@ const Penagihan = () => {
                                         />
                                       </div>
                                     </div>
+                                    {invoiceFileUpload[i + 1].trim().length >
+                                      0 && (
+                                      <a
+                                        href={`${apiExport}fin/transactionact/view_portal_file.jsp?file=${
+                                          invoiceFileUpload[i + 1]
+                                        }`}
+                                        target="_blank"
+                                        className="underline cursor-pointer text-blue-500"
+                                        rel="noreferrer"
+                                      >
+                                        File terupload
+                                      </a>
+                                    )}
                                     <div></div>
                                   </div>
                                 </div>
@@ -2930,6 +3094,16 @@ const Penagihan = () => {
                                 </div>
                                 <div>*)</div>
                               </div>
+                              {kwitansiFileUpload.trim().length > 0 && (
+                                <a
+                                  href={`${apiExport}fin/transactionact/view_portal_file.jsp?file=${kwitansiFileUpload}`}
+                                  target="_blank"
+                                  className="underline cursor-pointer text-blue-500"
+                                  rel="noreferrer"
+                                >
+                                  File terupload
+                                </a>
+                              )}
                             </div>
                             {vendors.status_pajak === "PKP" && (
                               <>
@@ -2975,6 +3149,17 @@ const Penagihan = () => {
                                     </div>
                                     <div>*)</div>
                                   </div>
+                                  {fakturPajakFileUpload[0].trim().length >
+                                    0 && (
+                                    <a
+                                      href={`${apiExport}fin/transactionact/view_portal_file.jsp?file=${fakturPajakFileUpload[0]}`}
+                                      target="_blank"
+                                      className="underline cursor-pointer text-blue-500"
+                                      rel="noreferrer"
+                                    >
+                                      File terupload
+                                    </a>
+                                  )}
                                 </div>
                                 <div className="mb-10">
                                   {fakturPajakTambahan.map((item, i) => (
@@ -3034,6 +3219,19 @@ const Penagihan = () => {
                                             />
                                           </div>
                                         </div>
+                                        {fakturPajakFileUpload[i + 1].trim()
+                                          .length > 0 && (
+                                          <a
+                                            href={`${apiExport}fin/transactionact/view_portal_file.jsp?file=${
+                                              fakturPajakFileUpload[i + 1]
+                                            }`}
+                                            target="_blank"
+                                            className="underline cursor-pointer text-blue-500"
+                                            rel="noreferrer"
+                                          >
+                                            File terupload
+                                          </a>
+                                        )}
                                         <div></div>
                                       </div>
                                     </div>
@@ -3084,6 +3282,16 @@ const Penagihan = () => {
                                 </div>
                                 <div>*)</div>
                               </div>
+                              {scanReportSalesFileUpload.trim().length > 0 && (
+                                <a
+                                  href={`${apiExport}fin/transactionact/view_portal_file.jsp?file=${scanReportSalesFileUpload}`}
+                                  target="_blank"
+                                  className="underline cursor-pointer text-blue-500"
+                                  rel="noreferrer"
+                                >
+                                  File terupload
+                                </a>
+                              )}
                             </div>
                             <div>
                               <div className="italic">
@@ -3155,6 +3363,16 @@ const Penagihan = () => {
                                   </div>
                                   {tipePengiriman.value === 1 && <div>*)</div>}
                                 </div>
+                                {resiFileUpload.trim().length > 0 && (
+                                  <a
+                                    href={`${apiExport}fin/transactionact/view_portal_file.jsp?file=${resiFileUpload}`}
+                                    target="_blank"
+                                    className="underline cursor-pointer text-blue-500"
+                                    rel="noreferrer"
+                                  >
+                                    File terupload
+                                  </a>
+                                )}
                               </div>
                               {isError && (
                                 <div className="mt-10 mb-3">
@@ -3247,7 +3465,7 @@ const Penagihan = () => {
                               </div>
                               <div>
                                 <Select
-                                isDisabled={true}
+                                  isDisabled={true}
                                   value={tipePenagihan}
                                   onChange={onChangeTipePenagihan}
                                   className="whitespace-nowrap"
@@ -3474,30 +3692,30 @@ const Penagihan = () => {
                                     </div>
                                   ))}
                                   <div className="flex items-center justify-between max-[357px]:flex-col max-[357px]:items-start max-[357px]:gap-2">
-                                {nomerInvoice.length > 1 && (
-                                  <div
-                                    onClick={deleteInput}
-                                    className={`py-1 px-4 text-center rounded-sm shadow-sm text-white bg-red-500 w-fit max-[357px]:w-full ${
-                                      nomerInvoice.length === 4
-                                        ? "cursor-not-allowed"
-                                        : "cursor-pointer"
-                                    } `}
-                                  >
-                                    Delete row
-                                  </div>
-                                )}
+                                    {nomerInvoice.length > 1 && (
+                                      <div
+                                        onClick={deleteInput}
+                                        className={`py-1 px-4 text-center rounded-sm shadow-sm text-white bg-red-500 w-fit max-[357px]:w-full ${
+                                          nomerInvoice.length === 4
+                                            ? "cursor-not-allowed"
+                                            : "cursor-pointer"
+                                        } `}
+                                      >
+                                        Delete row
+                                      </div>
+                                    )}
 
-                                <div
-                                  onClick={addInput}
-                                  className={`py-1 px-4 text-center rounded-sm shadow-sm text-white bg-[#305496]  w-fit max-[357px]:w-full ${
-                                    nomerInvoice.length === 4
-                                      ? "cursor-not-allowed"
-                                      : "cursor-pointer"
-                                  } `}
-                                >
-                                  Add row
-                                </div>
-                              </div>
+                                    <div
+                                      onClick={addInput}
+                                      className={`py-1 px-4 text-center rounded-sm shadow-sm text-white bg-[#305496]  w-fit max-[357px]:w-full ${
+                                        nomerInvoice.length === 4
+                                          ? "cursor-not-allowed"
+                                          : "cursor-pointer"
+                                      } `}
+                                    >
+                                      Add row
+                                    </div>
+                                  </div>
                                 </div>
 
                                 <div className="mb-10">
@@ -3559,7 +3777,6 @@ const Penagihan = () => {
                                             <input
                                               id={i}
                                               type="text"
-                                      
                                               value={nilaiInvoice[i].value}
                                               onChange={onChangeNilaiInvoice}
                                               className="max-[821px]:w-full w-[246.4px] h-[40px] border border-slate-300 rounded-sm focus:border focus:border-[#0077b6] bg-[#ddebf7]"
@@ -3841,30 +4058,30 @@ const Penagihan = () => {
                                     </div>
                                   ))}
                                   <div className="flex items-center justify-between max-[357px]:flex-col max-[357px]:items-start max-[357px]:gap-2">
-                                {nomerInvoice.length > 1 && (
-                                  <div
-                                    onClick={deleteInput}
-                                    className={`py-1 px-4 text-center rounded-sm shadow-sm text-white bg-red-500 w-fit max-[357px]:w-full ${
-                                      nomerInvoice.length === 4
-                                        ? "cursor-not-allowed"
-                                        : "cursor-pointer"
-                                    } `}
-                                  >
-                                    Delete row
-                                  </div>
-                                )}
+                                    {nomerInvoice.length > 1 && (
+                                      <div
+                                        onClick={deleteInput}
+                                        className={`py-1 px-4 text-center rounded-sm shadow-sm text-white bg-red-500 w-fit max-[357px]:w-full ${
+                                          nomerInvoice.length === 4
+                                            ? "cursor-not-allowed"
+                                            : "cursor-pointer"
+                                        } `}
+                                      >
+                                        Delete row
+                                      </div>
+                                    )}
 
-                                <div
-                                  onClick={addInput}
-                                  className={`py-1 px-4 text-center rounded-sm shadow-sm text-white bg-[#305496]  w-fit max-[357px]:w-full ${
-                                    nomerInvoice.length === 4
-                                      ? "cursor-not-allowed"
-                                      : "cursor-pointer"
-                                  } `}
-                                >
-                                  Add row
-                                </div>
-                              </div>
+                                    <div
+                                      onClick={addInput}
+                                      className={`py-1 px-4 text-center rounded-sm shadow-sm text-white bg-[#305496]  w-fit max-[357px]:w-full ${
+                                        nomerInvoice.length === 4
+                                          ? "cursor-not-allowed"
+                                          : "cursor-pointer"
+                                      } `}
+                                    >
+                                      Add row
+                                    </div>
+                                  </div>
                                 </div>
 
                                 <div className="mb-10 mt-10">
@@ -3887,7 +4104,6 @@ const Penagihan = () => {
                                           <input
                                             id={i}
                                             type="text"
-                                       
                                             value={nilaiInvoice[i].value}
                                             onChange={onChangeNilaiInvoice}
                                             className="max-[821px]:w-full w-[246.4px] h-[40px] border border-slate-300 rounded-sm focus:border focus:border-[#0077b6] bg-[#fff2cc]"
@@ -4160,6 +4376,17 @@ const Penagihan = () => {
                                         className="hidden w-full h-[40px] border border-slate-300 rounded-sm focus:border focus:border-[#0077b6]  "
                                       />
                                     </div>
+                                    {purchaseOrderFileUpload.trim().length >
+                                      0 && (
+                                      <a
+                                        href={`${apiExport}fin/transactionact/view_portal_file.jsp?file=${purchaseOrderFileUpload}`}
+                                        target="_blank"
+                                        className="underline cursor-pointer text-blue-500"
+                                        rel="noreferrer"
+                                      >
+                                        File terupload
+                                      </a>
+                                    )}
                                   </div>
                                   <div className="flex flex-col gap-3 mb-3">
                                     <div className="flex flex-col gap-1">
@@ -4201,6 +4428,17 @@ const Penagihan = () => {
                                         className="hidden w-full h-[40px] border border-slate-300 rounded-sm focus:border focus:border-[#0077b6]  "
                                       />
                                     </div>
+                                    {deliveryOrderFileUpload.trim().length >
+                                      0 && (
+                                      <a
+                                        href={`${apiExport}fin/transactionact/view_portal_file.jsp?file=${deliveryOrderFileUpload}`}
+                                        target="_blank"
+                                        className="underline cursor-pointer text-blue-500"
+                                        rel="noreferrer"
+                                      >
+                                        File terupload
+                                      </a>
+                                    )}
                                   </div>
                                   <div className="flex flex-col gap-3 mb-3">
                                     <div className="flex flex-col gap-1">
@@ -4241,6 +4479,16 @@ const Penagihan = () => {
                                         className="hidden w-full h-[40px] border border-slate-300 rounded-sm focus:border focus:border-[#0077b6]  "
                                       />
                                     </div>
+                                    {invoiceFileUpload[0].trim().length > 0 && (
+                                      <a
+                                        href={`${apiExport}fin/transactionact/view_portal_file.jsp?file=${invoiceFileUpload[0]}`}
+                                        target="_blank"
+                                        className="underline cursor-pointer text-blue-500"
+                                        rel="noreferrer"
+                                      >
+                                        File terupload
+                                      </a>
+                                    )}
                                   </div>
                                   <div className="mb-10">
                                     {invoiceTambahan.map((item, i) => (
@@ -4290,6 +4538,19 @@ const Penagihan = () => {
                                               className="hidden w-full h-[40px] border border-slate-300 rounded-sm focus:border focus:border-[#0077b6] "
                                             />
                                           </div>
+                                          {invoiceFileUpload[i + 1].trim()
+                                            .length > 0 && (
+                                            <a
+                                              href={`${apiExport}fin/transactionact/view_portal_file.jsp?file=${
+                                                invoiceFileUpload[i + 1]
+                                              }`}
+                                              target="_blank"
+                                              className="underline cursor-pointer text-blue-500"
+                                              rel="noreferrer"
+                                            >
+                                              File terupload
+                                            </a>
+                                          )}
                                         </div>
                                       </div>
                                     ))}
@@ -4337,6 +4598,16 @@ const Penagihan = () => {
                                         className="hidden w-full h-[40px] border border-slate-300 rounded-sm focus:border focus:border-[#0077b6]  "
                                       />
                                     </div>
+                                    {kwitansiFileUpload.trim().length > 0 && (
+                                      <a
+                                        href={`${apiExport}fin/transactionact/view_portal_file.jsp?file=${kwitansiFileUpload}`}
+                                        target="_blank"
+                                        className="underline cursor-pointer text-blue-500"
+                                        rel="noreferrer"
+                                      >
+                                        File terupload
+                                      </a>
+                                    )}
                                   </div>
                                   {vendors.status_pajak === "PKP" && (
                                     <>
@@ -4379,6 +4650,17 @@ const Penagihan = () => {
                                             className="hidden w-full h-[40px] border border-slate-300 rounded-sm focus:border focus:border-[#0077b6]  "
                                           />
                                         </div>
+                                        {fakturPajakFileUpload[0].trim()
+                                          .length > 0 && (
+                                          <a
+                                            href={`${apiExport}fin/transactionact/view_portal_file.jsp?file=${fakturPajakFileUpload[0]}`}
+                                            target="_blank"
+                                            className="underline cursor-pointer text-blue-500"
+                                            rel="noreferrer"
+                                          >
+                                            File terupload
+                                          </a>
+                                        )}
                                       </div>
                                       <div className="mb-10">
                                         {fakturPajakTambahan.map((item, i) => (
@@ -4436,6 +4718,20 @@ const Penagihan = () => {
                                                   className="hidden w-full h-[40px] border border-slate-300 rounded-sm focus:border focus:border-[#0077b6]  "
                                                 />
                                               </div>
+                                              {fakturPajakFileUpload[
+                                                i + 1
+                                              ].trim().length > 0 && (
+                                                <a
+                                                  href={`${apiExport}fin/transactionact/view_portal_file.jsp?file=${
+                                                    fakturPajakFileUpload[i + 1]
+                                                  }`}
+                                                  target="_blank"
+                                                  className="underline cursor-pointer text-blue-500"
+                                                  rel="noreferrer"
+                                                >
+                                                  File terupload
+                                                </a>
+                                              )}
                                             </div>
                                           </div>
                                         ))}
@@ -4482,6 +4778,17 @@ const Penagihan = () => {
                                         className="hidden w-full h-[40px] border border-slate-300 rounded-sm focus:border focus:border-[#0077b6]  "
                                       />
                                     </div>
+                                    {receivingNoteFileUpload.trim().length >
+                                      0 && (
+                                      <a
+                                        href={`${apiExport}fin/transactionact/view_portal_file.jsp?file=${receivingNoteFileUpload}`}
+                                        target="_blank"
+                                        className="underline cursor-pointer text-blue-500"
+                                        rel="noreferrer"
+                                      >
+                                        File terupload
+                                      </a>
+                                    )}
                                   </div>
                                   <div>
                                     <div className="italic">
@@ -4555,6 +4862,16 @@ const Penagihan = () => {
                                           className="hidden w-full h-[40px] border border-slate-300 rounded-sm focus:border focus:border-[#0077b6] disabled:bg-gray-300 disabled:cursor-not-allowed"
                                         />
                                       </div>
+                                      {resiFileUpload.trim().length > 0 && (
+                                        <a
+                                          href={`${apiExport}fin/transactionact/view_portal_file.jsp?file=${resiFileUpload}`}
+                                          target="_blank"
+                                          className="underline cursor-pointer text-blue-500"
+                                          rel="noreferrer"
+                                        >
+                                          File terupload
+                                        </a>
+                                      )}
                                     </div>
                                     {isError && (
                                       <div className="mt-10 mb-3">
@@ -4609,6 +4926,17 @@ const Penagihan = () => {
                                         className="hidden w-full h-[40px] border border-slate-300 rounded-sm focus:border focus:border-[#0077b6]  "
                                       />
                                     </div>
+                                    {purchaseOrderFileUpload.trim().length >
+                                      0 && (
+                                      <a
+                                        href={`${apiExport}fin/transactionact/view_portal_file.jsp?file=${purchaseOrderFileUpload}`}
+                                        target="_blank"
+                                        className="underline cursor-pointer text-blue-500"
+                                        rel="noreferrer"
+                                      >
+                                        File terupload
+                                      </a>
+                                    )}
                                   </div>
                                   <div className="flex flex-col gap-3 mb-3">
                                     <div className="flex flex-col gap-1">
@@ -4650,6 +4978,17 @@ const Penagihan = () => {
                                         className="hidden w-full h-[40px] border border-slate-300 rounded-sm focus:border focus:border-[#0077b6]  "
                                       />
                                     </div>
+                                    {deliveryOrderFileUpload.trim().length >
+                                      0 && (
+                                      <a
+                                        href={`${apiExport}fin/transactionact/view_portal_file.jsp?file=${deliveryOrderFileUpload}`}
+                                        target="_blank"
+                                        className="underline cursor-pointer text-blue-500"
+                                        rel="noreferrer"
+                                      >
+                                        File terupload
+                                      </a>
+                                    )}
                                   </div>
                                   <div className="flex flex-col gap-3 mb-3">
                                     <div className="flex flex-col gap-1">
@@ -4690,6 +5029,16 @@ const Penagihan = () => {
                                         className="hidden w-full h-[40px] border border-slate-300 rounded-sm focus:border focus:border-[#0077b6]  "
                                       />
                                     </div>
+                                    {invoiceFileUpload[0].trim().length > 0 && (
+                                      <a
+                                        href={`${apiExport}fin/transactionact/view_portal_file.jsp?file=${invoiceFileUpload[0]}`}
+                                        target="_blank"
+                                        className="underline cursor-pointer text-blue-500"
+                                        rel="noreferrer"
+                                      >
+                                        File terupload
+                                      </a>
+                                    )}
                                   </div>
                                   <div className="mb-10">
                                     {invoiceTambahan.map((item, i) => (
@@ -4739,6 +5088,19 @@ const Penagihan = () => {
                                               className="hidden w-full h-[40px] border border-slate-300 rounded-sm focus:border focus:border-[#0077b6]  "
                                             />
                                           </div>
+                                          {invoiceFileUpload[i + 1].trim()
+                                            .length > 0 && (
+                                            <a
+                                              href={`${apiExport}fin/transactionact/view_portal_file.jsp?file=${
+                                                invoiceFileUpload[i + 1]
+                                              }`}
+                                              target="_blank"
+                                              className="underline cursor-pointer text-blue-500"
+                                              rel="noreferrer"
+                                            >
+                                              File terupload
+                                            </a>
+                                          )}
                                         </div>
                                       </div>
                                     ))}
@@ -4786,6 +5148,16 @@ const Penagihan = () => {
                                         className="hidden w-full h-[40px] border border-slate-300 rounded-sm focus:border focus:border-[#0077b6]  "
                                       />
                                     </div>
+                                    {kwitansiFileUpload.trim().length > 0 && (
+                                      <a
+                                        href={`${apiExport}fin/transactionact/view_portal_file.jsp?file=${kwitansiFileUpload}`}
+                                        target="_blank"
+                                        className="underline cursor-pointer text-blue-500"
+                                        rel="noreferrer"
+                                      >
+                                        File terupload
+                                      </a>
+                                    )}
                                   </div>
                                   {vendors.status_pajak === "PKP" && (
                                     <>
@@ -4828,6 +5200,17 @@ const Penagihan = () => {
                                             className="hidden w-full h-[40px] border border-slate-300 rounded-sm focus:border focus:border-[#0077b6]  "
                                           />
                                         </div>
+                                        {fakturPajakFileUpload[0].trim()
+                                          .length > 0 && (
+                                          <a
+                                            href={`${apiExport}fin/transactionact/view_portal_file.jsp?file=${fakturPajakFileUpload[0]}`}
+                                            target="_blank"
+                                            className="underline cursor-pointer text-blue-500"
+                                            rel="noreferrer"
+                                          >
+                                            File terupload
+                                          </a>
+                                        )}
                                       </div>
                                       <div className="mb-10">
                                         {fakturPajakTambahan.map((item, i) => (
@@ -4885,6 +5268,20 @@ const Penagihan = () => {
                                                   className="hidden w-full h-[40px] border border-slate-300 rounded-sm focus:border focus:border-[#0077b6]  "
                                                 />
                                               </div>
+                                              {fakturPajakFileUpload[
+                                                i + 1
+                                              ].trim().length > 0 && (
+                                                <a
+                                                  href={`${apiExport}fin/transactionact/view_portal_file.jsp?file=${
+                                                    fakturPajakFileUpload[i + 1]
+                                                  }`}
+                                                  target="_blank"
+                                                  className="underline cursor-pointer text-blue-500"
+                                                  rel="noreferrer"
+                                                >
+                                                  File terupload
+                                                </a>
+                                              )}
                                             </div>
                                           </div>
                                         ))}
@@ -4931,6 +5328,17 @@ const Penagihan = () => {
                                         className="hidden w-full h-[40px] border border-slate-300 rounded-sm focus:border focus:border-[#0077b6]  "
                                       />
                                     </div>
+                                    {scanReportSalesFileUpload.trim().length >
+                                      0 && (
+                                      <a
+                                        href={`${apiExport}fin/transactionact/view_portal_file.jsp?file=${scanReportSalesFileUpload}`}
+                                        target="_blank"
+                                        className="underline cursor-pointer text-blue-500"
+                                        rel="noreferrer"
+                                      >
+                                        File terupload
+                                      </a>
+                                    )}
                                   </div>
                                   <div>
                                     <div className="italic">
@@ -5006,6 +5414,16 @@ const Penagihan = () => {
                                           className="hidden w-full h-[40px] border border-slate-300 rounded-sm focus:border focus:border-[#0077b6] disabled:bg-gray-300 disabled:cursor-not-allowed"
                                         />
                                       </div>
+                                      {resiFileUpload.trim().length > 0 && (
+                                        <a
+                                          href={`${apiExport}fin/transactionact/view_portal_file.jsp?file=${resiFileUpload}`}
+                                          target="_blank"
+                                          className="underline cursor-pointer text-blue-500"
+                                          rel="noreferrer"
+                                        >
+                                          File terupload
+                                        </a>
+                                      )}
                                     </div>
                                     {isError && (
                                       <div className="mt-10 mb-3">

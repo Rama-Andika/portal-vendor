@@ -138,9 +138,11 @@ const Login = () => {
                   <Checkbox id="remember" />
                   <Label htmlFor="remember">Remember me</Label>
                 </div>
-                <div className="text-[12px] text-slate-400 cursor-pointer hover:text-blue-400 hover:underline">
-                  Lupa Password?
-                </div>
+                <Link to="/validation-user">
+                  <div className="text-[12px] text-slate-400 cursor-pointer hover:text-blue-400 hover:underline">
+                    Lupa Password?
+                  </div>
+                </Link>
               </div>
 
               <Link to="/admin">

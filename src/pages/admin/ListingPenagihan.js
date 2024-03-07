@@ -69,6 +69,7 @@ const ListingPenagihan = () => {
       .then((response) => response.json())
       .then((data) => {
         setOpenBackdrop(false);
+        console.log(data.data)
 
         // eslint-disable-next-line array-callback-return
         data.data.map((data, index) => {
@@ -114,7 +115,7 @@ const ListingPenagihan = () => {
           color: "#fff",
         },
       });
-      navigate("/adminh");
+      navigate("/admin");
     }
   };
 
@@ -221,9 +222,9 @@ const ListingPenagihan = () => {
             </form>
           </div>
         </div>
-        <div className="w-full overflow-x-auto shadow-md text-[14px]">
+        <div className="w-full overflow-auto shadow-md max-h-[400px] text-[14px]">
           <table id="table" className="w-full table-monitoring">
-            <thead>
+            <thead className="sticky top-0">
               <tr className="text-center whitespace-nowrap border-2 bg-[#eaf4f4]">
                 <td className="p-5 border">Nama Supplier </td>
                 <td className="p-5 border">Tanggal Penagihan</td>

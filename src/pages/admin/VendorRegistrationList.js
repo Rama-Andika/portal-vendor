@@ -442,7 +442,7 @@ const VendorRegistrationList = () => {
         </div>
         <div className="w-full overflow-auto shadow-md max-h-[400px] text-[14px]">
           <table className="w-full table-monitoring">
-            <thead>
+            <thead className="sticky top-0">
               <tr className="text-center whitespace-nowrap border-2 bg-[#eaf4f4]">
                 <td className="p-5 border">Action</td>
                 <td className="p-5 border">No</td>

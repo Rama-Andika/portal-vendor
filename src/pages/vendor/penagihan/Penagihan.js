@@ -748,6 +748,7 @@ const Penagihan = () => {
   const onChangePurchaseOrderFile = (e) => {
     if (e.target.files[0] !== undefined) {
       if (e.target.files[0].size <= 2000000) {
+        console.log(e.target.files[0]);
         setPurchaseOrderPreviewFile(URL.createObjectURL(e.target.files[0]));
         GetBase64(e.target.files[0])
           .then((result) => {
@@ -2249,7 +2250,6 @@ const Penagihan = () => {
                                 <div className="w-[21.1px]"></div>
                                 <div>
                                   <input
-                                    maxLength={20}
                                     type="text"
                                     name=""
                                     id=""
@@ -2321,7 +2321,6 @@ const Penagihan = () => {
                                     <div className="w-[21.1px]"></div>
                                     <div>
                                       <input
-                                        maxLength={20}
                                         type="text"
                                         name=""
                                         id={i}
@@ -2630,7 +2629,6 @@ const Penagihan = () => {
                                       <div className="w-[21.1px]"></div>
                                       <div>
                                         <input
-                                          maxLength={20}
                                           type="text"
                                           name=""
                                           id={i}
@@ -3321,65 +3319,105 @@ const Penagihan = () => {
                                   )}
                                   <div className="mb-10">
                                     {fakturPajakTambahan.map((item, i) => (
-                                      <div key={i}>
-                                        <div className="flex items-center gap-3 mb-3">
-                                          <div className="flex flex-col gap-1">
-                                            {i === 0 ? (
-                                              <div className="w-[350px]">
-                                                Faktur Pajak Tambahan
+                                      <>
+                                        <div key={i}>
+                                          <div className="flex items-center gap-3 mb-3">
+                                            <div className="flex flex-col gap-1">
+                                              {i === 0 ? (
+                                                <div className="w-[350px]">
+                                                  Faktur Pajak Tambahan
+                                                </div>
+                                              ) : (
+                                                <div className="w-[350px]">
+                                                  Faktur Pajak Tambahan {i + 1}
+                                                </div>
+                                              )}
+                                              <div className="text-[10px] text-gray-500">
+                                                Max size 2 mb
                                               </div>
-                                            ) : (
-                                              <div className="w-[350px]">
-                                                Faktur Pajak Tambahan {i + 1}
-                                              </div>
-                                            )}
-                                            <div className="text-[10px] text-gray-500">
-                                              Max size 2 mb
                                             </div>
-                                          </div>
 
-                                          <div>:</div>
-                                          <div className="flex items-center gap-1">
-                                            <div>
-                                              <label
-                                                htmlFor={`pajak_${i}`}
-                                                className="w-fit"
-                                              >
-                                                {isEmpty(
-                                                  fakturPajakTambahan[i]
-                                                ) ? (
-                                                  <div className="w-fit flex gap-1 items-center bg-blue-400 py-2 px-5 text-white hover:bg-blue-200 rounded-md">
-                                                    <span>
-                                                      <FaCloudUploadAlt />
-                                                    </span>
-                                                    <div>Upload</div>
-                                                  </div>
-                                                ) : (
-                                                  <div className="w-fit flex gap-1 items-center bg-blue-400 py-2 px-5 text-white hover:bg-blue-200 rounded-md">
-                                                    <span>
-                                                      <FaCloudUploadAlt />
-                                                    </span>
-                                                    <div>1 File</div>
-                                                  </div>
-                                                )}
-                                              </label>
-                                              <input
-                                                type="file"
-                                                id={`pajak_${i}`}
-                                                onChange={(e) =>
-                                                  onChangeFakturPajakTambahan(
-                                                    e,
-                                                    i
-                                                  )
-                                                }
-                                                accept=".jpg,.pdf"
-                                                className="hidden w-full h-[40px] border border-slate-300 rounded-sm focus:border focus:border-[#0077b6]  "
-                                              />
+                                            <div>:</div>
+                                            <div className="flex items-center gap-1">
+                                              <div>
+                                                <label
+                                                  htmlFor={`pajak_${i}`}
+                                                  className="w-fit"
+                                                >
+                                                  {isEmpty(
+                                                    fakturPajakTambahan[i]
+                                                  ) ? (
+                                                    <div className="w-fit flex gap-1 items-center bg-blue-400 py-2 px-5 text-white hover:bg-blue-200 rounded-md">
+                                                      <span>
+                                                        <FaCloudUploadAlt />
+                                                      </span>
+                                                      <div>Upload</div>
+                                                    </div>
+                                                  ) : (
+                                                    <div className="w-fit flex gap-1 items-center bg-blue-400 py-2 px-5 text-white hover:bg-blue-200 rounded-md">
+                                                      <span>
+                                                        <FaCloudUploadAlt />
+                                                      </span>
+                                                      <div>1 File</div>
+                                                    </div>
+                                                  )}
+                                                </label>
+                                                <input
+                                                  type="file"
+                                                  id={`pajak_${i}`}
+                                                  onChange={(e) =>
+                                                    onChangeFakturPajakTambahan(
+                                                      e,
+                                                      i
+                                                    )
+                                                  }
+                                                  accept=".jpg,.pdf"
+                                                  className="hidden w-full h-[40px] border border-slate-300 rounded-sm focus:border focus:border-[#0077b6]  "
+                                                />
+                                              </div>
                                             </div>
+                                            <div></div>
                                           </div>
-                                          <div></div>
                                         </div>
-                                      </div>
+                                        <div>
+                                          {!isEmpty(fakturPajakTambahan[i]) &&
+                                          RegExp("\\bpdf\\b").test(
+                                            fakturPajakTambahan[i].file.split(
+                                              ","
+                                            )[0]
+                                          ) ? (
+                                            <div className="h-[500px] w-[500px] mb-5">
+                                              <div className="h-full w-full">
+                                                <Viewer
+                                                  fileUrl={
+                                                    fakturPajakPreviewTambahan[
+                                                      i
+                                                    ]
+                                                  }
+                                                />
+                                              </div>
+                                            </div>
+                                          ) : (
+                                            !isEmpty(
+                                              fakturPajakTambahan[i]
+                                            ) && (
+                                              <div className="h-[500px] w-[400px] mb-5">
+                                                <div className="h-full w-full">
+                                                  <img
+                                                    src={
+                                                      fakturPajakPreviewTambahan[
+                                                        i
+                                                      ]
+                                                    }
+                                                    alt="no"
+                                                    className="w-full h-full"
+                                                  />
+                                                </div>
+                                              </div>
+                                            )
+                                          )}
+                                        </div>
+                                      </>
                                     ))}
                                   </div>
                                 </>
@@ -3781,61 +3819,91 @@ const Penagihan = () => {
                               )}
                               <div className="mb-10">
                                 {invoiceTambahan.map((item, i) => (
-                                  <div key={i}>
-                                    <div className="flex items-center gap-3 mb-3">
-                                      <div className="flex flex-col gap-1">
-                                        {i === 0 ? (
-                                          <div className="w-[350px]">
-                                            Invoice Tambahan
-                                          </div>
-                                        ) : (
-                                          <div className="w-[350px]">
-                                            Invoice Tambahan {i + 1}
-                                          </div>
-                                        )}
+                                  <>
+                                    <div key={i}>
+                                      <div className="flex items-center gap-3 mb-3">
+                                        <div className="flex flex-col gap-1">
+                                          {i === 0 ? (
+                                            <div className="w-[350px]">
+                                              Invoice Tambahan
+                                            </div>
+                                          ) : (
+                                            <div className="w-[350px]">
+                                              Invoice Tambahan {i + 1}
+                                            </div>
+                                          )}
 
-                                        <div className="text-[10px] text-gray-500">
-                                          Max size 2 mb
+                                          <div className="text-[10px] text-gray-500">
+                                            Max size 2 mb
+                                          </div>
                                         </div>
-                                      </div>
 
-                                      <div>:</div>
-                                      <div className="flex items-center gap-1">
-                                        <div>
-                                          <label
-                                            htmlFor={`invoice_${i}`}
-                                            className="w-fit"
-                                          >
-                                            {isEmpty(invoiceTambahan[i]) ? (
-                                              <div className="w-fit flex gap-1 items-center bg-[#fff2cc] py-2 px-5 hover:bg-yellow-100 rounded-md">
-                                                <span>
-                                                  <FaCloudUploadAlt />
-                                                </span>
-                                                <div>Upload</div>
-                                              </div>
-                                            ) : (
-                                              <div className="w-fit flex gap-1 items-center bg-[#fff2cc] py-2 px-5 hover:bg-yellow-100 rounded-md">
-                                                <span>
-                                                  <FaCloudUploadAlt />
-                                                </span>
-                                                <div>1 File</div>
-                                              </div>
-                                            )}
-                                          </label>
-                                          <input
-                                            type="file"
-                                            id={`invoice_${i}`}
-                                            onChange={(e) =>
-                                              onChangeInvoiceTambahan(e, i)
-                                            }
-                                            accept=".jpg,.pdf"
-                                            className="hidden w-full h-[40px] border border-slate-300 rounded-sm focus:border focus:border-[#0077b6]  "
-                                          />
+                                        <div>:</div>
+                                        <div className="flex items-center gap-1">
+                                          <div>
+                                            <label
+                                              htmlFor={`invoice_${i}`}
+                                              className="w-fit"
+                                            >
+                                              {isEmpty(invoiceTambahan[i]) ? (
+                                                <div className="w-fit flex gap-1 items-center bg-[#fff2cc] py-2 px-5 hover:bg-yellow-100 rounded-md">
+                                                  <span>
+                                                    <FaCloudUploadAlt />
+                                                  </span>
+                                                  <div>Upload</div>
+                                                </div>
+                                              ) : (
+                                                <div className="w-fit flex gap-1 items-center bg-[#fff2cc] py-2 px-5 hover:bg-yellow-100 rounded-md">
+                                                  <span>
+                                                    <FaCloudUploadAlt />
+                                                  </span>
+                                                  <div>1 File</div>
+                                                </div>
+                                              )}
+                                            </label>
+                                            <input
+                                              type="file"
+                                              id={`invoice_${i}`}
+                                              onChange={(e) =>
+                                                onChangeInvoiceTambahan(e, i)
+                                              }
+                                              accept=".jpg,.pdf"
+                                              className="hidden w-full h-[40px] border border-slate-300 rounded-sm focus:border focus:border-[#0077b6]  "
+                                            />
+                                          </div>
                                         </div>
+                                        <div></div>
                                       </div>
-                                      <div></div>
                                     </div>
-                                  </div>
+                                    <div>
+                                      {!isEmpty(invoiceTambahan[i]) &&
+                                      RegExp("\\bpdf\\b").test(
+                                        invoiceTambahan[i].file.split(",")[0]
+                                      ) ? (
+                                        <div className="h-[500px] w-[500px] mb-5">
+                                          <div className="h-full w-full">
+                                            <Viewer
+                                              fileUrl={
+                                                invoicePreviewTambahan[i]
+                                              }
+                                            />
+                                          </div>
+                                        </div>
+                                      ) : (
+                                        !isEmpty(invoiceTambahan[i]) && (
+                                          <div className="h-[500px] w-[400px] mb-5">
+                                            <div className="h-full w-full">
+                                              <img
+                                                src={invoicePreviewTambahan[i]}
+                                                alt="no"
+                                                className="w-full h-full"
+                                              />
+                                            </div>
+                                          </div>
+                                        )
+                                      )}
+                                    </div>
+                                  </>
                                 ))}
                               </div>
                               <div className="flex items-center gap-3 mb-10">
@@ -3976,65 +4044,105 @@ const Penagihan = () => {
                                   )}
                                   <div className="mb-10">
                                     {fakturPajakTambahan.map((item, i) => (
-                                      <div key={i}>
-                                        <div className="flex items-center gap-3 mb-3">
-                                          <div className="flex flex-col gap-1">
-                                            {i === 0 ? (
-                                              <div className="w-[350px]">
-                                                Faktur Pajak Tambahan
+                                      <>
+                                        <div key={i}>
+                                          <div className="flex items-center gap-3 mb-3">
+                                            <div className="flex flex-col gap-1">
+                                              {i === 0 ? (
+                                                <div className="w-[350px]">
+                                                  Faktur Pajak Tambahan
+                                                </div>
+                                              ) : (
+                                                <div className="w-[350px]">
+                                                  Faktur Pajak Tambahan {i + 1}
+                                                </div>
+                                              )}
+                                              <div className="text-[10px] text-gray-500">
+                                                Max size 2 mb
                                               </div>
-                                            ) : (
-                                              <div className="w-[350px]">
-                                                Faktur Pajak Tambahan {i + 1}
-                                              </div>
-                                            )}
-                                            <div className="text-[10px] text-gray-500">
-                                              Max size 2 mb
                                             </div>
-                                          </div>
 
-                                          <div>:</div>
-                                          <div className="flex items-center gap-1">
-                                            <div>
-                                              <label
-                                                htmlFor={`pajak_${i}`}
-                                                className="w-fit"
-                                              >
-                                                {isEmpty(
-                                                  fakturPajakTambahan[i]
-                                                ) ? (
-                                                  <div className="w-fit flex gap-1 items-center bg-[#fff2cc] py-2 px-5 hover:bg-yellow-100 rounded-md">
-                                                    <span>
-                                                      <FaCloudUploadAlt />
-                                                    </span>
-                                                    <div>Upload</div>
-                                                  </div>
-                                                ) : (
-                                                  <div className="w-fit flex gap-1 items-center bg-[#fff2cc] py-2 px-5 hover:bg-yellow-100 rounded-md">
-                                                    <span>
-                                                      <FaCloudUploadAlt />
-                                                    </span>
-                                                    <div>1 File</div>
-                                                  </div>
-                                                )}
-                                              </label>
-                                              <input
-                                                type="file"
-                                                id={`pajak_${i}`}
-                                                onChange={(e) =>
-                                                  onChangeFakturPajakTambahan(
-                                                    e,
-                                                    i
-                                                  )
-                                                }
-                                                accept=".jpg,.pdf"
-                                                className="hidden w-full h-[40px] border border-slate-300 rounded-sm focus:border focus:border-[#0077b6]  "
-                                              />
+                                            <div>:</div>
+                                            <div className="flex items-center gap-1">
+                                              <div>
+                                                <label
+                                                  htmlFor={`pajak_${i}`}
+                                                  className="w-fit"
+                                                >
+                                                  {isEmpty(
+                                                    fakturPajakTambahan[i]
+                                                  ) ? (
+                                                    <div className="w-fit flex gap-1 items-center bg-[#fff2cc] py-2 px-5 hover:bg-yellow-100 rounded-md">
+                                                      <span>
+                                                        <FaCloudUploadAlt />
+                                                      </span>
+                                                      <div>Upload</div>
+                                                    </div>
+                                                  ) : (
+                                                    <div className="w-fit flex gap-1 items-center bg-[#fff2cc] py-2 px-5 hover:bg-yellow-100 rounded-md">
+                                                      <span>
+                                                        <FaCloudUploadAlt />
+                                                      </span>
+                                                      <div>1 File</div>
+                                                    </div>
+                                                  )}
+                                                </label>
+                                                <input
+                                                  type="file"
+                                                  id={`pajak_${i}`}
+                                                  onChange={(e) =>
+                                                    onChangeFakturPajakTambahan(
+                                                      e,
+                                                      i
+                                                    )
+                                                  }
+                                                  accept=".jpg,.pdf"
+                                                  className="hidden w-full h-[40px] border border-slate-300 rounded-sm focus:border focus:border-[#0077b6]  "
+                                                />
+                                              </div>
                                             </div>
+                                            <div></div>
                                           </div>
-                                          <div></div>
                                         </div>
-                                      </div>
+                                        <div>
+                                          {!isEmpty(fakturPajakTambahan[i]) &&
+                                          RegExp("\\bpdf\\b").test(
+                                            fakturPajakTambahan[i].file.split(
+                                              ","
+                                            )[0]
+                                          ) ? (
+                                            <div className="h-[500px] w-[500px] mb-5">
+                                              <div className="h-full w-full">
+                                                <Viewer
+                                                  fileUrl={
+                                                    fakturPajakPreviewTambahan[
+                                                      i
+                                                    ]
+                                                  }
+                                                />
+                                              </div>
+                                            </div>
+                                          ) : (
+                                            !isEmpty(
+                                              fakturPajakTambahan[i]
+                                            ) && (
+                                              <div className="h-[500px] w-[400px] mb-5">
+                                                <div className="h-full w-full">
+                                                  <img
+                                                    src={
+                                                      fakturPajakPreviewTambahan[
+                                                        i
+                                                      ]
+                                                    }
+                                                    alt="no"
+                                                    className="w-full h-full"
+                                                  />
+                                                </div>
+                                              </div>
+                                            )
+                                          )}
+                                        </div>
+                                      </>
                                     ))}
                                   </div>
                                 </>
@@ -4447,7 +4555,6 @@ const Penagihan = () => {
                                     <div className="w-full">
                                       <div>
                                         <input
-                                          maxLength={20}
                                           type="text"
                                           name=""
                                           id=""
@@ -4520,7 +4627,6 @@ const Penagihan = () => {
                                         <div className="fw-full">
                                           <div>
                                             <input
-                                              maxLength={20}
                                               type="text"
                                               name=""
                                               id={i}
@@ -4850,7 +4956,6 @@ const Penagihan = () => {
                                           <div className="fw-full">
                                             <div>
                                               <input
-                                                maxLength={20}
                                                 type="text"
                                                 name=""
                                                 id={i}
@@ -5386,54 +5491,95 @@ const Penagihan = () => {
                                     )}
                                     <div className="mb-10">
                                       {invoiceTambahan.map((item, i) => (
-                                        <div key={i}>
-                                          <div className="flex flex-col gap-3 mb-3">
-                                            <div className="flex flex-col gap-1">
-                                              {i === 0 ? (
-                                                <div>Invoice Tambahan :</div>
-                                              ) : (
-                                                <div>
-                                                  Invoice Tambahan : {i + 1}
-                                                </div>
-                                              )}
-                                              <div className="text-[10px] text-gray-500">
-                                                Max size 2 mb
-                                              </div>
-                                            </div>
-
-                                            <div>
-                                              <label
-                                                htmlFor={`invoice_${i}`}
-                                                className="w-fit"
-                                              >
-                                                {isEmpty(invoiceTambahan[i]) ? (
-                                                  <div className="w-fit flex gap-1 items-center bg-blue-400 py-2 px-5 text-white hover:bg-blue-200 rounded-md">
-                                                    <span>
-                                                      <FaCloudUploadAlt />
-                                                    </span>
-                                                    <div>Upload</div>
-                                                  </div>
+                                        <>
+                                          <div key={i}>
+                                            <div className="flex flex-col gap-3 mb-3">
+                                              <div className="flex flex-col gap-1">
+                                                {i === 0 ? (
+                                                  <div>Invoice Tambahan :</div>
                                                 ) : (
-                                                  <div className="w-fit flex gap-1 items-center bg-blue-400 py-2 px-5 text-white hover:bg-blue-200 rounded-md">
-                                                    <span>
-                                                      <FaCloudUploadAlt />
-                                                    </span>
-                                                    <div>1 File</div>
+                                                  <div>
+                                                    Invoice Tambahan : {i + 1}
                                                   </div>
                                                 )}
-                                              </label>
-                                              <input
-                                                type="file"
-                                                id={`invoice_${i}`}
-                                                onChange={(e) =>
-                                                  onChangeInvoiceTambahan(e, i)
-                                                }
-                                                accept=".jpg,.pdf"
-                                                className="hidden w-full h-[40px] border border-slate-300 rounded-sm focus:border focus:border-[#0077b6] "
-                                              />
+                                                <div className="text-[10px] text-gray-500">
+                                                  Max size 2 mb
+                                                </div>
+                                              </div>
+
+                                              <div>
+                                                <label
+                                                  htmlFor={`invoice_${i}`}
+                                                  className="w-fit"
+                                                >
+                                                  {isEmpty(
+                                                    invoiceTambahan[i]
+                                                  ) ? (
+                                                    <div className="w-fit flex gap-1 items-center bg-blue-400 py-2 px-5 text-white hover:bg-blue-200 rounded-md">
+                                                      <span>
+                                                        <FaCloudUploadAlt />
+                                                      </span>
+                                                      <div>Upload</div>
+                                                    </div>
+                                                  ) : (
+                                                    <div className="w-fit flex gap-1 items-center bg-blue-400 py-2 px-5 text-white hover:bg-blue-200 rounded-md">
+                                                      <span>
+                                                        <FaCloudUploadAlt />
+                                                      </span>
+                                                      <div>1 File</div>
+                                                    </div>
+                                                  )}
+                                                </label>
+                                                <input
+                                                  type="file"
+                                                  id={`invoice_${i}`}
+                                                  onChange={(e) =>
+                                                    onChangeInvoiceTambahan(
+                                                      e,
+                                                      i
+                                                    )
+                                                  }
+                                                  accept=".jpg,.pdf"
+                                                  className="hidden w-full h-[40px] border border-slate-300 rounded-sm focus:border focus:border-[#0077b6] "
+                                                />
+                                              </div>
                                             </div>
                                           </div>
-                                        </div>
+                                          <div>
+                                            {!isEmpty(invoiceTambahan[i]) &&
+                                            RegExp("\\bpdf\\b").test(
+                                              invoiceTambahan[i].file.split(
+                                                ","
+                                              )[0]
+                                            ) ? (
+                                              <div className="h-[500px] w-[500px] mb-5">
+                                                <div className="h-full w-full">
+                                                  <Viewer
+                                                    fileUrl={
+                                                      invoicePreviewTambahan[i]
+                                                    }
+                                                  />
+                                                </div>
+                                              </div>
+                                            ) : (
+                                              !isEmpty(invoiceTambahan[i]) && (
+                                                <div className="h-[500px] w-[400px] mb-5">
+                                                  <div className="h-full w-full">
+                                                    <img
+                                                      src={
+                                                        invoicePreviewTambahan[
+                                                          i
+                                                        ]
+                                                      }
+                                                      alt="no"
+                                                      className="w-full h-full"
+                                                    />
+                                                  </div>
+                                                </div>
+                                              )
+                                            )}
+                                          </div>
+                                        </>
                                       ))}
                                     </div>
                                     <div className="flex flex-col gap-3 mb-10">
@@ -5575,62 +5721,104 @@ const Penagihan = () => {
                                         <div className="mb-10">
                                           {fakturPajakTambahan.map(
                                             (item, i) => (
-                                              <div key={i}>
-                                                <div className="flex flex-col gap-3 mb-3">
-                                                  <div className="flex flex-col gap-1">
-                                                    {i === 0 ? (
-                                                      <div>
-                                                        Faktur Pajak Tambahan
-                                                      </div>
-                                                    ) : (
-                                                      <div>
-                                                        Faktur Pajak Tambahan{" "}
-                                                        {i + 1}
-                                                      </div>
-                                                    )}
-                                                    <div className="text-[10px] text-gray-500">
-                                                      Max size 2 mb
-                                                    </div>
-                                                  </div>
-
-                                                  <div>
-                                                    <label
-                                                      htmlFor={`pajak_${i}`}
-                                                      className="w-fit"
-                                                    >
-                                                      {isEmpty(
-                                                        fakturPajakTambahan[i]
-                                                      ) ? (
-                                                        <div className="w-fit flex gap-1 items-center bg-blue-400 py-2 px-5 text-white hover:bg-blue-200 rounded-md">
-                                                          <span>
-                                                            <FaCloudUploadAlt />
-                                                          </span>
-                                                          <div>Upload</div>
+                                              <>
+                                                <div key={i}>
+                                                  <div className="flex flex-col gap-3 mb-3">
+                                                    <div className="flex flex-col gap-1">
+                                                      {i === 0 ? (
+                                                        <div>
+                                                          Faktur Pajak Tambahan
                                                         </div>
                                                       ) : (
-                                                        <div className="w-fit flex gap-1 items-center bg-blue-400 py-2 px-5 text-white hover:bg-blue-200 rounded-md">
-                                                          <span>
-                                                            <FaCloudUploadAlt />
-                                                          </span>
-                                                          <div>1 File</div>
+                                                        <div>
+                                                          Faktur Pajak Tambahan{" "}
+                                                          {i + 1}
                                                         </div>
                                                       )}
-                                                    </label>
-                                                    <input
-                                                      type="file"
-                                                      id={`pajak_${i}`}
-                                                      onChange={(e) =>
-                                                        onChangeFakturPajakTambahan(
-                                                          e,
-                                                          i
-                                                        )
-                                                      }
-                                                      accept=".jpg,.pdf"
-                                                      className="hidden w-full h-[40px] border border-slate-300 rounded-sm focus:border focus:border-[#0077b6]  "
-                                                    />
+                                                      <div className="text-[10px] text-gray-500">
+                                                        Max size 2 mb
+                                                      </div>
+                                                    </div>
+
+                                                    <div>
+                                                      <label
+                                                        htmlFor={`pajak_${i}`}
+                                                        className="w-fit"
+                                                      >
+                                                        {isEmpty(
+                                                          fakturPajakTambahan[i]
+                                                        ) ? (
+                                                          <div className="w-fit flex gap-1 items-center bg-blue-400 py-2 px-5 text-white hover:bg-blue-200 rounded-md">
+                                                            <span>
+                                                              <FaCloudUploadAlt />
+                                                            </span>
+                                                            <div>Upload</div>
+                                                          </div>
+                                                        ) : (
+                                                          <div className="w-fit flex gap-1 items-center bg-blue-400 py-2 px-5 text-white hover:bg-blue-200 rounded-md">
+                                                            <span>
+                                                              <FaCloudUploadAlt />
+                                                            </span>
+                                                            <div>1 File</div>
+                                                          </div>
+                                                        )}
+                                                      </label>
+                                                      <input
+                                                        type="file"
+                                                        id={`pajak_${i}`}
+                                                        onChange={(e) =>
+                                                          onChangeFakturPajakTambahan(
+                                                            e,
+                                                            i
+                                                          )
+                                                        }
+                                                        accept=".jpg,.pdf"
+                                                        className="hidden w-full h-[40px] border border-slate-300 rounded-sm focus:border focus:border-[#0077b6]  "
+                                                      />
+                                                    </div>
                                                   </div>
                                                 </div>
-                                              </div>
+                                                <div>
+                                                  {!isEmpty(
+                                                    fakturPajakTambahan[i]
+                                                  ) &&
+                                                  RegExp("\\bpdf\\b").test(
+                                                    fakturPajakTambahan[
+                                                      i
+                                                    ].file.split(",")[0]
+                                                  ) ? (
+                                                    <div className="h-[500px] w-[500px] mb-5">
+                                                      <div className="h-full w-full">
+                                                        <Viewer
+                                                          fileUrl={
+                                                            fakturPajakPreviewTambahan[
+                                                              i
+                                                            ]
+                                                          }
+                                                        />
+                                                      </div>
+                                                    </div>
+                                                  ) : (
+                                                    !isEmpty(
+                                                      fakturPajakTambahan[i]
+                                                    ) && (
+                                                      <div className="h-[500px] w-[400px] mb-5">
+                                                        <div className="h-full w-full">
+                                                          <img
+                                                            src={
+                                                              fakturPajakPreviewTambahan[
+                                                                i
+                                                              ]
+                                                            }
+                                                            alt="no"
+                                                            className="w-full h-full"
+                                                          />
+                                                        </div>
+                                                      </div>
+                                                    )
+                                                  )}
+                                                </div>
+                                              </>
                                             )
                                           )}
                                         </div>
@@ -6005,54 +6193,95 @@ const Penagihan = () => {
                                     )}
                                     <div className="mb-10">
                                       {invoiceTambahan.map((item, i) => (
-                                        <div key={i}>
-                                          <div className="flex flex-col gap-3 mb-3">
-                                            <div className="flex flex-col gap-1">
-                                              {i === 0 ? (
-                                                <div>Invoice Tambahan</div>
-                                              ) : (
-                                                <div>
-                                                  Invoice Tambahan {i + 1}
-                                                </div>
-                                              )}
-                                              <div className="text-[10px] text-gray-500">
-                                                Max size 2 mb
-                                              </div>
-                                            </div>
-
-                                            <div>
-                                              <label
-                                                htmlFor={`invoice_${i}`}
-                                                className="w-fit"
-                                              >
-                                                {isEmpty(invoiceTambahan[i]) ? (
-                                                  <div className="w-fit flex gap-1 items-center bg-[#fff2cc] py-2 px-5 hover:bg-yellow-100 rounded-md">
-                                                    <span>
-                                                      <FaCloudUploadAlt />
-                                                    </span>
-                                                    <div>Upload</div>
-                                                  </div>
+                                        <>
+                                          <div key={i}>
+                                            <div className="flex flex-col gap-3 mb-3">
+                                              <div className="flex flex-col gap-1">
+                                                {i === 0 ? (
+                                                  <div>Invoice Tambahan</div>
                                                 ) : (
-                                                  <div className="w-fit flex gap-1 items-center bg-[#fff2cc] py-2 px-5 hover:bg-yellow-100 rounded-md">
-                                                    <span>
-                                                      <FaCloudUploadAlt />
-                                                    </span>
-                                                    <div>1 File</div>
+                                                  <div>
+                                                    Invoice Tambahan {i + 1}
                                                   </div>
                                                 )}
-                                              </label>
-                                              <input
-                                                type="file"
-                                                id={`invoice_${i}`}
-                                                onChange={(e) =>
-                                                  onChangeInvoiceTambahan(e, i)
-                                                }
-                                                accept=".jpg,.pdf"
-                                                className="hidden w-full h-[40px] border border-slate-300 rounded-sm focus:border focus:border-[#0077b6]  "
-                                              />
+                                                <div className="text-[10px] text-gray-500">
+                                                  Max size 2 mb
+                                                </div>
+                                              </div>
+
+                                              <div>
+                                                <label
+                                                  htmlFor={`invoice_${i}`}
+                                                  className="w-fit"
+                                                >
+                                                  {isEmpty(
+                                                    invoiceTambahan[i]
+                                                  ) ? (
+                                                    <div className="w-fit flex gap-1 items-center bg-[#fff2cc] py-2 px-5 hover:bg-yellow-100 rounded-md">
+                                                      <span>
+                                                        <FaCloudUploadAlt />
+                                                      </span>
+                                                      <div>Upload</div>
+                                                    </div>
+                                                  ) : (
+                                                    <div className="w-fit flex gap-1 items-center bg-[#fff2cc] py-2 px-5 hover:bg-yellow-100 rounded-md">
+                                                      <span>
+                                                        <FaCloudUploadAlt />
+                                                      </span>
+                                                      <div>1 File</div>
+                                                    </div>
+                                                  )}
+                                                </label>
+                                                <input
+                                                  type="file"
+                                                  id={`invoice_${i}`}
+                                                  onChange={(e) =>
+                                                    onChangeInvoiceTambahan(
+                                                      e,
+                                                      i
+                                                    )
+                                                  }
+                                                  accept=".jpg,.pdf"
+                                                  className="hidden w-full h-[40px] border border-slate-300 rounded-sm focus:border focus:border-[#0077b6]  "
+                                                />
+                                              </div>
                                             </div>
                                           </div>
-                                        </div>
+                                          <div>
+                                            {!isEmpty(invoiceTambahan[i]) &&
+                                            RegExp("\\bpdf\\b").test(
+                                              invoiceTambahan[i].file.split(
+                                                ","
+                                              )[0]
+                                            ) ? (
+                                              <div className="h-[500px] w-[500px] mb-5">
+                                                <div className="h-full w-full">
+                                                  <Viewer
+                                                    fileUrl={
+                                                      invoicePreviewTambahan[i]
+                                                    }
+                                                  />
+                                                </div>
+                                              </div>
+                                            ) : (
+                                              !isEmpty(invoiceTambahan[i]) && (
+                                                <div className="h-[500px] w-[400px] mb-5">
+                                                  <div className="h-full w-full">
+                                                    <img
+                                                      src={
+                                                        invoicePreviewTambahan[
+                                                          i
+                                                        ]
+                                                      }
+                                                      alt="no"
+                                                      className="w-full h-full"
+                                                    />
+                                                  </div>
+                                                </div>
+                                              )
+                                            )}
+                                          </div>
+                                        </>
                                       ))}
                                     </div>
                                     <div className="flex flex-col gap-3 mb-10">
@@ -6194,62 +6423,104 @@ const Penagihan = () => {
                                         <div className="mb-10">
                                           {fakturPajakTambahan.map(
                                             (item, i) => (
-                                              <div key={i}>
-                                                <div className="flex flex-col gap-3 mb-3">
-                                                  <div className="flex flex-col gap-1">
-                                                    {i === 0 ? (
-                                                      <div className="w-[350px]">
-                                                        Faktur Pajak Tambahan
-                                                      </div>
-                                                    ) : (
-                                                      <div className="w-[350px]">
-                                                        Faktur Pajak Tambahan{" "}
-                                                        {i + 1}
-                                                      </div>
-                                                    )}
-                                                    <div className="text-[10px] text-gray-500">
-                                                      Max size 2 mb
-                                                    </div>
-                                                  </div>
-
-                                                  <div>
-                                                    <label
-                                                      htmlFor={`pajak_${i}`}
-                                                      className="w-fit"
-                                                    >
-                                                      {isEmpty(
-                                                        fakturPajakTambahan[i]
-                                                      ) ? (
-                                                        <div className="w-fit flex gap-1 items-center bg-[#fff2cc] py-2 px-5 hover:bg-yellow-100 rounded-md">
-                                                          <span>
-                                                            <FaCloudUploadAlt />
-                                                          </span>
-                                                          <div>Upload</div>
+                                              <>
+                                                <div key={i}>
+                                                  <div className="flex flex-col gap-3 mb-3">
+                                                    <div className="flex flex-col gap-1">
+                                                      {i === 0 ? (
+                                                        <div className="w-[350px]">
+                                                          Faktur Pajak Tambahan
                                                         </div>
                                                       ) : (
-                                                        <div className="w-fit flex gap-1 items-center bg-[#fff2cc] py-2 px-5 hover:bg-yellow-100 rounded-md">
-                                                          <span>
-                                                            <FaCloudUploadAlt />
-                                                          </span>
-                                                          <div>1 File</div>
+                                                        <div className="w-[350px]">
+                                                          Faktur Pajak Tambahan{" "}
+                                                          {i + 1}
                                                         </div>
                                                       )}
-                                                    </label>
-                                                    <input
-                                                      type="file"
-                                                      id={`pajak_${i}`}
-                                                      onChange={(e) =>
-                                                        onChangeFakturPajakTambahan(
-                                                          e,
-                                                          i
-                                                        )
-                                                      }
-                                                      accept=".jpg,.pdf"
-                                                      className="hidden w-full h-[40px] border border-slate-300 rounded-sm focus:border focus:border-[#0077b6]  "
-                                                    />
+                                                      <div className="text-[10px] text-gray-500">
+                                                        Max size 2 mb
+                                                      </div>
+                                                    </div>
+
+                                                    <div>
+                                                      <label
+                                                        htmlFor={`pajak_${i}`}
+                                                        className="w-fit"
+                                                      >
+                                                        {isEmpty(
+                                                          fakturPajakTambahan[i]
+                                                        ) ? (
+                                                          <div className="w-fit flex gap-1 items-center bg-[#fff2cc] py-2 px-5 hover:bg-yellow-100 rounded-md">
+                                                            <span>
+                                                              <FaCloudUploadAlt />
+                                                            </span>
+                                                            <div>Upload</div>
+                                                          </div>
+                                                        ) : (
+                                                          <div className="w-fit flex gap-1 items-center bg-[#fff2cc] py-2 px-5 hover:bg-yellow-100 rounded-md">
+                                                            <span>
+                                                              <FaCloudUploadAlt />
+                                                            </span>
+                                                            <div>1 File</div>
+                                                          </div>
+                                                        )}
+                                                      </label>
+                                                      <input
+                                                        type="file"
+                                                        id={`pajak_${i}`}
+                                                        onChange={(e) =>
+                                                          onChangeFakturPajakTambahan(
+                                                            e,
+                                                            i
+                                                          )
+                                                        }
+                                                        accept=".jpg,.pdf"
+                                                        className="hidden w-full h-[40px] border border-slate-300 rounded-sm focus:border focus:border-[#0077b6]  "
+                                                      />
+                                                    </div>
                                                   </div>
                                                 </div>
-                                              </div>
+                                                <div>
+                                                  {!isEmpty(
+                                                    fakturPajakTambahan[i]
+                                                  ) &&
+                                                  RegExp("\\bpdf\\b").test(
+                                                    fakturPajakTambahan[
+                                                      i
+                                                    ].file.split(",")[0]
+                                                  ) ? (
+                                                    <div className="h-[500px] w-[500px] mb-5">
+                                                      <div className="h-full w-full">
+                                                        <Viewer
+                                                          fileUrl={
+                                                            fakturPajakPreviewTambahan[
+                                                              i
+                                                            ]
+                                                          }
+                                                        />
+                                                      </div>
+                                                    </div>
+                                                  ) : (
+                                                    !isEmpty(
+                                                      fakturPajakTambahan[i]
+                                                    ) && (
+                                                      <div className="h-[500px] w-[400px] mb-5">
+                                                        <div className="h-full w-full">
+                                                          <img
+                                                            src={
+                                                              fakturPajakPreviewTambahan[
+                                                                i
+                                                              ]
+                                                            }
+                                                            alt="no"
+                                                            className="w-full h-full"
+                                                          />
+                                                        </div>
+                                                      </div>
+                                                    )
+                                                  )}
+                                                </div>
+                                              </>
                                             )
                                           )}
                                         </div>

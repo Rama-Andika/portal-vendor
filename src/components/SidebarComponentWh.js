@@ -36,7 +36,7 @@ const SidebarComponentWh = () => {
   };
 
   useEffect(() => {
-    console.log("sidebar")
+    console.log("sidebar");
     if (linksWh.length > 0) {
       let arr;
       const list = linksWh.map((item, i) => {
@@ -123,11 +123,7 @@ const SidebarComponentWh = () => {
                       </span>
                     </NavLink>
                   </Sidebar.Collapse>
-                  <Sidebar.Collapse
-                    label="Vendor"
-                    icon={PiMonitorLight}
-                    open
-                  >
+                  <Sidebar.Collapse label="Vendor" icon={PiMonitorLight} open>
                     <NavLink
                       style={({ isActive }) => ({
                         backgroundColor: isActive ? "#0077b6" : "",

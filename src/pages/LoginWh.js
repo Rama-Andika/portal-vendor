@@ -33,7 +33,7 @@ const LoginWh = () => {
       .then((res) => {
         if (res.data.length > 0) {
           Cookies.set("admin_token", generateString(10));
-          Cookies.set("admin_id", res.data[0].id)
+          Cookies.set("admin_id", res.data[0].id);
           setLoading(false);
           navigate("/admin/vendor/pending-task", { replace: true });
           toast.success("Login Success", {
@@ -72,7 +72,7 @@ const LoginWh = () => {
 
   useEffect(() => {
     Cookies.remove("admin_token");
-    Cookies.remove("admin_id")
+    Cookies.remove("admin_id");
   }, []);
 
   return (
@@ -132,9 +132,6 @@ const LoginWh = () => {
                   <Checkbox id="remember" />
                   <Label htmlFor="remember">Remember me</Label>
                 </div>
-                <div className="text-[12px] text-slate-400 cursor-pointer hover:text-blue-400 hover:underline">
-                  Lupa Password?
-                </div>
               </div>
               <Link to="/">
                 <div className="text-[12px] text-slate-400 cursor-pointer hover:text-blue-400 hover:underline">
@@ -154,7 +151,11 @@ const LoginWh = () => {
               className="bg-[#0077b6] py-3 text-white rounded-md shadow-sm "
               onClick={onSubmitLogin}
             >
-              {loading ? <CircularProgress size={20} sx={{ color: "white" }} /> : "LOGIN"}
+              {loading ? (
+                <CircularProgress size={20} sx={{ color: "white" }} />
+              ) : (
+                "LOGIN"
+              )}
             </button>
           </form>
         </div>

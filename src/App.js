@@ -18,15 +18,22 @@ import AdminWhSmith from "./layouts/AdminWhSmith";
 import Admin from "./layouts/Admin";
 import { Worker } from "@react-pdf-viewer/core";
 import VendorEdit from "./pages/admin/VendorEdit";
+import ForgetPasswordConfirm from "./pages/ForgetPasswordConfirm";
+import ForgetPassword from "./pages/ForgetPassword";
 
 function App() {
   return (
     <>
       <Toaster />
       <Worker workerUrl="https://unpkg.com/pdfjs-dist@3.4.120/build/pdf.worker.min.js">
-        <BrowserRouter basename={"/portal-vendor"}>
+        <BrowserRouter basename="/portal-vendor" >
           <Routes>
             <Route path="/" element={<Login />} />
+            <Route path="/forgot-password" element={<ForgetPassword />} />
+            <Route
+              path="/validation-user"
+              element={<ForgetPasswordConfirm />}
+            />
             <Route element={<Admin />}>
               <Route path="vendor/profile" element={<Profile />} />
               <Route path="vendor/penagihan" element={<Penagihan />} />

@@ -1,6 +1,12 @@
 /* eslint-disable no-new-object */
 import { useStateContext } from "../../contexts/ContextProvider";
-import { Backdrop, CircularProgress, Fade, Modal, Pagination } from "@mui/material";
+import {
+  Backdrop,
+  CircularProgress,
+  Fade,
+  Modal,
+  Pagination,
+} from "@mui/material";
 import { DatePicker, LocalizationProvider } from "@mui/x-date-pickers";
 import { AdapterDayjs } from "@mui/x-date-pickers/AdapterDayjs";
 import { DemoContainer } from "@mui/x-date-pickers/internals/demo";
@@ -10,8 +16,10 @@ import accountingNumber from "../../components/functions/AccountingNumber";
 import toast from "react-hot-toast";
 import Select from "react-select";
 import isEmpty from "../../components/functions/CheckEmptyObject";
+import { RiFileExcel2Line } from "react-icons/ri";
 
 const api = process.env.REACT_APP_BASEURL;
+const apiExport = process.env.REACT_APP_EXPORT_URL;
 
 const Cod = () => {
   const { screenSize } = useStateContext();
@@ -23,20 +31,20 @@ const Cod = () => {
   const [start, setStart] = useState(0);
   const [checkBox, setCheckBox] = useState([]);
   const [srcAccountOptions, setSrcAccountOptions] = useState([]);
+
+  // Search
+  const [supplier, setSupplier] = useState("");
+  const [number, setNumber] = useState("");
   const [srcAccount, setSrcAccount] = useState({
     value: "0",
     label: "All",
   });
 
-  // Search
-  const [supplier, setSupplier] = useState("");
-  const [number, setNumber] = useState("");
-
   //modal
   const [open, setOpen] = useState(false);
   const handleOpen = () => setOpen(true);
   const handleClose = () => setOpen(false);
-  const [memoDetail, setMemoDetail] = useState("")
+  const [memoDetail, setMemoDetail] = useState("");
 
   // eslint-disable-next-line no-unused-vars
   const [cashOutDate, setCashOutDate] = useState([]);
@@ -56,7 +64,7 @@ const Cod = () => {
       .then((response) => response.json())
       .then((res) => {
         if (res.data.length > 0) {
-          console.log(res.data)
+          console.log(res.data);
           setTotal(res.total);
           setCount(Math.round(res.total / res.limit));
           setLimit(res.limit);
@@ -453,9 +461,9 @@ const Cod = () => {
   };
 
   const onClickSeeDetailMemo = (memo) => {
-    setMemoDetail(memo)
-    handleOpen()
-  }
+    setMemoDetail(memo);
+    handleOpen();
+  };
   return (
     <div
       className={`${
@@ -489,7 +497,7 @@ const Cod = () => {
               <div className="flex flex-col  gap-1  mb-3 w-full ">
                 <div className="whitespace-nowrap flex">
                   <label htmlFor="" className="w-36 text-[14px] text-slate-400">
-                    Incoming NUmber
+                    Incoming Number
                   </label>
                   <div className="hidden">:</div>
                 </div>
@@ -574,7 +582,7 @@ const Cod = () => {
         className="w-full overflow-auto shadow-md text-[14px] max-h-[400px]"
       >
         <table className="w-full table-monitoring">
-          <thead>
+          <thead className="sticky top-0 z-10">
             <tr className="text-center whitespace-nowrap border-2 bg-[#eaf4f4]">
               <td className="p-5 border">No</td>
               <td className="p-5 border">Incoming Date</td>
@@ -590,7 +598,7 @@ const Cod = () => {
               <td className="p-5 border">Bank Date</td>
               <td className="p-5 border">Memo</td>
               <td className="p-5 border">Initial</td>
-              <td className="p-5 border">Date</td>
+              <td className="p-5 border">Create Date</td>
               <td className="p-5 border">PR Number</td>
               <td className="p-5 border">Payment Date</td>
               <td className="p-5 border">
@@ -624,7 +632,9 @@ const Cod = () => {
                       item.total !== undefined ? item.total : 0
                     )}
                   </td>
-                  <td className="p-5 border">{item.bank_out !== undefined ? item.bank_out : ""}</td>
+                  <td className="p-5 border">
+                    {item.bank_out !== undefined ? item.bank_out : ""}
+                  </td>
                   <td className="p-5 border">
                     <div>
                       <LocalizationProvider dateAdapter={AdapterDayjs}>
@@ -697,14 +707,19 @@ const Cod = () => {
                         name=""
                         id=""
                       />
-                      <div onClick={() => onClickSeeDetailMemo(memo[index])} className="underline text-blue-400 cursor-pointer">See detail</div>
+                      <div
+                        onClick={() => onClickSeeDetailMemo(memo[index])}
+                        className="underline text-blue-400 cursor-pointer"
+                      >
+                        See detail
+                      </div>
                     </div>
                   </td>
                   <td className="p-5 border">{item.name_preparer}</td>
                   <td className="p-5 border">
                     {item.pr_date.length > 0
                       ? dayjs(item.pr_date).format("MMM DD, YYYY")
-                      : dayjs(new Date()).format("MMM DD, YYYY")}
+                      : ""}
                   </td>
                   <td className="p-5 border">{item.journal_number}</td>
                   <td className="p-5 border">
@@ -771,6 +786,21 @@ const Cod = () => {
         </div>
       )}
 
+      {payments.length > 0 && (
+        <>
+          <a
+            //onClick={ExportToExcel(data, "list penagihan")}
+            href={`${apiExport}servlet/com.project.ccs.report.RptPvCodXLS?supplier=${supplier}&number=${number}&coaId=${srcAccount.value}`}
+            className="flex items-center gap-2 mt-5 rounded-sm py-2 px-5 shadow-md bg-[#217346] w-fit text-white cursor-pointer"
+          >
+            <div>
+              <RiFileExcel2Line />
+            </div>
+            <div>Download</div>
+          </a>
+        </>
+      )}
+
       <div>
         <Modal
           aria-labelledby="transition-modal-title"
@@ -792,9 +822,7 @@ const Cod = () => {
               }`}
             >
               <div className="text-[20px] mb-5 font-semibold ">Memo</div>
-              <div>
-                {memoDetail}
-              </div>
+              <div>{memoDetail}</div>
             </div>
           </Fade>
         </Modal>

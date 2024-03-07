@@ -329,7 +329,7 @@ const VendorList = () => {
         </div>
         <div className="w-full overflow-auto max-h-[400px] shadow-md text-[14px]">
           <table className="w-full table-monitoring">
-            <thead>
+            <thead className="sticky top-0 z-10">
               <tr className="text-center whitespace-nowrap border-2 bg-[#eaf4f4]">
                 <td className="p-5 border">Action</td>
                 <td className="p-5 border">No</td>

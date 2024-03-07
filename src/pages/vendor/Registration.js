@@ -2367,7 +2367,7 @@ const Registration = () => {
                           </label>
                         </div>
                         <div className="text-[10px] text-gray-500">
-                          Max size 1 mb
+                          Max size 2 mb
                         </div>
                         <div className="flex gap-1 items-center text-[12px]">
                           <div>
@@ -4107,7 +4107,7 @@ const Registration = () => {
                                 </label>
                               </div>
                               <div className="text-[10px] text-gray-400">
-                                Max size 1 mb
+                                Max size 2 mb
                               </div>
                               <div className="flex gap-1 items-center text-[12px]">
                                 <div>

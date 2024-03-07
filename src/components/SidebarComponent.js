@@ -49,13 +49,8 @@ const SidebarComponent = () => {
             <Sidebar aria-label="Sidebar with multi-level dropdown example ">
               <Sidebar.Items>
                 <Sidebar.ItemGroup>
-                <Sidebar.Collapse
-                    label="Company"
-                    icon={FiShoppingBag}
-                    open
-                  >
+                  <Sidebar.Collapse label="Company" icon={FiShoppingBag} open>
                     <NavLink
-                     
                       style={({ isActive }) => ({
                         backgroundColor: isActive ? "#0077b6" : "",
                       })}
@@ -65,12 +60,10 @@ const SidebarComponent = () => {
                         isActive ? activeLink : normalLink
                       }
                     >
-                    
                       Profile
                     </NavLink>
                   </Sidebar.Collapse>
                   <NavLink
-                  
                     style={({ isActive }) => ({
                       backgroundColor: isActive ? "#0077b6" : "",
                     })}
@@ -81,27 +74,29 @@ const SidebarComponent = () => {
                     }
                   >
                     <div className="ms-[-30px] flex items-center gap-3 ">
-                      <div className="text-[24px]"><LiaFileInvoiceSolid/></div>
+                      <div className="text-[24px]">
+                        <LiaFileInvoiceSolid />
+                      </div>
                       <div>Penagihan</div>
                     </div>
                   </NavLink>
                   <NavLink
-                  
-                  style={({ isActive }) => ({
-                    backgroundColor: isActive ? "#0077b6" : "",
-                  })}
-                  to={`/vendor/monitoring `}
-                  onClick={handleCloseSidebar}
-                  className={({ isActive }) =>
-                    isActive ? activeLink : normalLink
-                  }
-                >
-                  <div className="ms-[-30px] flex items-center gap-3 ">
-                    <div className="text-[24px]"><LiaFileInvoiceSolid/></div>
-                    <div>Monitoring</div>
-                  </div>
-                </NavLink>
-                  
+                    style={({ isActive }) => ({
+                      backgroundColor: isActive ? "#0077b6" : "",
+                    })}
+                    to={`/vendor/monitoring `}
+                    onClick={handleCloseSidebar}
+                    className={({ isActive }) =>
+                      isActive ? activeLink : normalLink
+                    }
+                  >
+                    <div className="ms-[-30px] flex items-center gap-3 ">
+                      <div className="text-[24px]">
+                        <LiaFileInvoiceSolid />
+                      </div>
+                      <div>Monitoring</div>
+                    </div>
+                  </NavLink>
                 </Sidebar.ItemGroup>
               </Sidebar.Items>
             </Sidebar>

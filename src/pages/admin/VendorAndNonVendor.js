@@ -1,5 +1,5 @@
 import { useStateContext } from "../../contexts/ContextProvider";
-import { Pagination } from "@mui/material";
+import { Backdrop, Fade, Modal, Pagination } from "@mui/material";
 import { DatePicker, LocalizationProvider } from "@mui/x-date-pickers";
 import { AdapterDayjs } from "@mui/x-date-pickers/AdapterDayjs";
 import { DemoContainer } from "@mui/x-date-pickers/internals/demo";
@@ -10,17 +10,15 @@ import accountingNumber from "../../components/functions/AccountingNumber";
 import toast from "react-hot-toast";
 import Select from "react-select";
 import isEmpty from "../../components/functions/CheckEmptyObject";
+import { RiFileExcel2Line } from "react-icons/ri";
 
 const api = process.env.REACT_APP_BASEURL;
+const apiExport = process.env.REACT_APP_EXPORT_URL;
 
 const VendorAndNonVendor = () => {
   const { screenSize } = useStateContext();
   const [payments, setPayments] = useState([]);
-  const [srcAccountOptions,  setSrcAccountOptions] = useState([])
-  const [srcAccount, setSrcAccount] = useState({
-    value: "0",
-    label: "All" 
-  })
+  const [srcAccountOptions, setSrcAccountOptions] = useState([]);
 
   //Pagination
   const [page, setPage] = useState(1);
@@ -34,6 +32,17 @@ const VendorAndNonVendor = () => {
   // Search
   const [supplier, setSupplier] = useState("");
   const [number, setNumber] = useState("");
+  const [srcAccount, setSrcAccount] = useState({
+    value: "0",
+    label: "All",
+  });
+  const [mcmReff, setMcmReff] = useState("0");
+
+  //modal
+  const [open, setOpen] = useState(false);
+  const handleOpen = () => setOpen(true);
+  const handleClose = () => setOpen(false);
+  const [memoDetail, setMemoDetail] = useState("");
   // eslint-disable-next-line no-unused-vars
 
   const [outStandingDate, setOutStandingDate] = useState([]);
@@ -78,7 +87,7 @@ const VendorAndNonVendor = () => {
           });
 
           const listRate = res.data.map((item) => {
-            return item.rate;
+            return item.rate.trim().length > 0 ? item.rate : "1";
           });
 
           const listTerm = res.data.map((item) => {
@@ -139,35 +148,34 @@ const VendorAndNonVendor = () => {
 
   // eslint-disable-next-line no-new-object
   const fetchCoa = async (parameter = new Object()) => {
-    await fetch(`${api}api/portal-vendor/list/coa`,{
+    await fetch(`${api}api/portal-vendor/list/coa`, {
       method: "POST",
       body: JSON.stringify({
-        header: "cash in bank"
-      })
-    }).then((response) => response.json())
-    .then((res) => {
-      const data = res.data
-      if(data.length > 0){
-       const options =  data.map((item,i) => {
-        console.log(item)
-          let object = []
-          object[i+1] = {value: item.id, label:item.name}
-          // eslint-disable-next-line array-callback-return
-          item.child.map((children,index) => {
-            object[index+2] = {value: children.id, label:children.name}
-          })
-
- 
-          return object
-        })
-        options[0][0] = {value: "0", label:"All"}
-  
-        setSrcAccountOptions(options[0])
-      }else{
-
-      }
+        header: "cash in bank",
+      }),
     })
-  }
+      .then((response) => response.json())
+      .then((res) => {
+        const data = res.data;
+        if (data.length > 0) {
+          const options = data.map((item, i) => {
+            console.log(item);
+            let object = [];
+            object[i + 1] = { value: item.id, label: item.name };
+            // eslint-disable-next-line array-callback-return
+            item.child.map((children, index) => {
+              object[index + 2] = { value: children.id, label: children.name };
+            });
+
+            return object;
+          });
+          options[0][0] = { value: "0", label: "All" };
+
+          setSrcAccountOptions(options[0]);
+        } else {
+        }
+      });
+  };
 
   const customeStyles = {
     control: (baseStyles, state) => ({
@@ -285,6 +293,10 @@ const VendorAndNonVendor = () => {
       parameter["supplier"] = supplier;
     }
 
+    if (mcmReff !== "0") {
+      parameter["mcm_is_blank"] = mcmReff;
+    }
+
     if (!isEmpty(srcAccount) && srcAccount.value !== "0") {
       parameter["coa_id"] = srcAccount.value;
     }
@@ -339,14 +351,13 @@ const VendorAndNonVendor = () => {
   };
 
   const onChangeTerm = (e, index, item) => {
-    
     const value = e.target.value;
-    console.log(parseInt(value))
+    console.log(parseInt(value));
     const outStandingDateCopy = [...outStandingDate];
     let date = dayjs(item.tanggal_tt).add(parseInt(value), "day");
     let outstanding_date = date.subtract(3, "day");
     outStandingDateCopy[index] = outstanding_date;
-    setOutStandingDate(outStandingDateCopy)
+    setOutStandingDate(outStandingDateCopy);
 
     const termCopy = [...term];
     termCopy[index] = value;
@@ -372,7 +383,7 @@ const VendorAndNonVendor = () => {
   useEffect(() => {
     window.scrollTo(0, 0);
     fetchData();
-    fetchCoa()
+    fetchCoa();
   }, []);
 
   // const onClickEdit = (index) => {
@@ -388,9 +399,11 @@ const VendorAndNonVendor = () => {
     if (number.trim().length > 0) {
       parameter["number"] = number;
     }
-
     if (!isEmpty(srcAccount) && srcAccount.value !== "0") {
       parameter["coa_id"] = srcAccount.value;
+    }
+    if (mcmReff !== "0") {
+      parameter["mcm_is_blank"] = mcmReff;
     }
     setStart(0);
     setPage(1);
@@ -401,15 +414,13 @@ const VendorAndNonVendor = () => {
     e.preventDefault();
     const isErrorCopy = [...isError];
     payments.map(async (item, i) => {
-      
       if (checkBox[i].id === item.bankpo_payment_id && checkBox[i].value) {
-        console.log(term[i] )
+        console.log(term[i]);
         if (
           mcmReffNo[i] !== undefined &&
           mcmReffNo[i].length > 0 &&
           mcmDate[i] !== undefined &&
           paymentDate[i] !== undefined
-          
         ) {
           await fetch(`${api}api/portal-vendor/payment`, {
             method: "POST",
@@ -421,7 +432,7 @@ const VendorAndNonVendor = () => {
               payment_date: dayjs(paymentDate[i]).format("YYYY-MM-DD HH:mm:ss"),
               status: status[i],
               rate: rate[i],
-              term: term[i]
+              term: term[i],
             }),
           })
             .then((response) => response.json())
@@ -443,6 +454,7 @@ const VendorAndNonVendor = () => {
                 document.getElementById("check_all").checked = false;
                 setNumber("");
                 setSupplier("");
+                setMcmReff("0");
                 const parameter = { start: start };
                 fetchData(parameter);
               } else {
@@ -526,15 +538,19 @@ const VendorAndNonVendor = () => {
   const onChangeAccount = (item) => {
     setSrcAccount(item);
   };
+
+  const onClickSeeDetailMemo = (memo) => {
+    setMemoDetail(memo);
+    handleOpen();
+  };
   return (
     <div
       className={`${
         screenSize < 768 ? "px-5 pt-20" : "px-10 pt-10"
       } font-roboto overflow-x-hidden `}
     >
-    
       <div className="mb-20 max-[349px]:mb-5">Vendor & Non Vendor</div>
-      <div className="mb-5 w-[70%] max-[638px]:w-full">
+      <div className="mb-5 w-[70%] max-[659px]:w-full">
         <div className="mb-5 text-slate-400">Searching Parameter</div>
         <div>
           <form onSubmit={(e) => onSearch(e)}>
@@ -576,7 +592,7 @@ const VendorAndNonVendor = () => {
                 </div>
               </div>
             </div>
-            <div className="flex max-[349px]:flex-col gap-5 items-center mb-5">
+            <div className="flex max-[557px]:flex-col gap-5 items-center mb-5">
               <div className="flex flex-col  gap-1  mb-3 w-full ">
                 <div className="whitespace-nowrap flex">
                   <label htmlFor="" className="w-36 text-[14px] text-slate-400">
@@ -585,18 +601,63 @@ const VendorAndNonVendor = () => {
                   <div className="hidden ">:</div>
                 </div>
                 <div className="w-full relative">
-                <Select
-                      value={srcAccount}
-                      onChange={onChangeAccount}
-                      className="whitespace-nowrap"
-                      options={srcAccountOptions}
-                      noOptionsMessage={() => "Data not found"}
-                      styles={customeStyles}
-                      required
-                    />
+                  <Select
+                    value={srcAccount}
+                    onChange={onChangeAccount}
+                    className="whitespace-nowrap"
+                    options={srcAccountOptions}
+                    noOptionsMessage={() => "Data not found"}
+                    styles={customeStyles}
+                    required
+                  />
                 </div>
               </div>
-              
+              <div className="flex flex-col  gap-1  mb-3 w-full ">
+                <div className="whitespace-nowrap flex">
+                  <label htmlFor="" className="w-36 text-[14px] text-slate-400">
+                    Mcm Reff
+                  </label>
+                  <div className="hidden ">:</div>
+                </div>
+                <div className="flex gap-5 items-center">
+                  <div className="flex items-center gap-2">
+                    <label htmlFor="all-mcm">All</label>
+                    <input
+                      name="mcm-reff"
+                      className="checked:bg-[#0077b6] checked:ring-0 focus:ring-0"
+                      type="radio"
+                      id="all-mcm"
+                      value="0"
+                      checked={mcmReff === "0" ? true : false}
+                      onChange={(e) => setMcmReff(e.target.value)}
+                    />
+                  </div>
+                  <div className="flex items-center gap-2">
+                    <label htmlFor="blank">Blank</label>
+                    <input
+                      name="mcm-reff"
+                      className="checked:bg-[#0077b6] checked:ring-0 focus:ring-0"
+                      type="radio"
+                      id="blank"
+                      value="1"
+                      checked={mcmReff === "1" ? true : false}
+                      onChange={(e) => setMcmReff(e.target.value)}
+                    />
+                  </div>
+                  <div className="flex items-center gap-2">
+                    <label htmlFor="not-blank">Not Blank</label>
+                    <input
+                      name="mcm-reff"
+                      className="checked:bg-[#0077b6] checked:ring-0 focus:ring-0"
+                      type="radio"
+                      id="not-blank"
+                      value="2"
+                      checked={mcmReff === "2" ? true : false}
+                      onChange={(e) => setMcmReff(e.target.value)}
+                    />
+                  </div>
+                </div>
+              </div>
             </div>
             {/* <div className="flex max-[349px]:flex-col gap-5 items-center">
               <div className="flex flex-col  gap-1  mb-3 w-full ">
@@ -645,7 +706,7 @@ const VendorAndNonVendor = () => {
         className="w-full overflow-auto shadow-md text-[14px] max-h-[400px]"
       >
         <table className="w-full table-monitoring">
-          <thead>
+          <thead className="sticky top-0 z-10">
             <tr className="text-center whitespace-nowrap border-2 bg-[#eaf4f4]">
               <td className="p-5 border">No</td>
               <td className="p-5 border">Vendor & Non Vendor</td>
@@ -654,6 +715,7 @@ const VendorAndNonVendor = () => {
               <td className="p-5 w-8 border">Name Preparer</td>
               <td className="p-5 border">PR Number</td>
               <td className="p-5 border">Supplier</td>
+              <td className="p-5 border">Memo</td>
               <td className="p-5 border">Currency</td>
               <td className="p-5 border">Ori Currency</td>
               <td className="p-5 border">Rate</td>
@@ -693,14 +755,30 @@ const VendorAndNonVendor = () => {
                   <td className="p-5 border">
                     {dayjs(item.date).format("MMM DD, YYYY")}
                   </td>
-                  <td className="p-5 border">
-                    {dayjs(item.tanggal_tt).month() + 1}
-                  </td>
+                  <td className="p-5 border">{dayjs(item.date).month() + 1}</td>
                   <td className="p-5 border w-16">
                     {item.name_preparer !== undefined ? item.name_preparer : ""}
                   </td>
                   <td className="p-5 border">{item.pr_number}</td>
                   <td className="text-left ps-2 p-5 border">{item.supplier}</td>
+                  <td className="text-left ps-2 p-5 border">
+                    <div className="flex gap-2 items-center">
+                      <input
+                        value={item.memo}
+                        className="disabled:bg-gray-200"
+                        disabled
+                        type="text"
+                        name=""
+                        id=""
+                      />
+                      <div
+                        onClick={() => onClickSeeDetailMemo(item.memo)}
+                        className="underline text-blue-400 cursor-pointer"
+                      >
+                        See detail
+                      </div>
+                    </div>
+                  </td>
                   <td className="p-5 border">{item.currency}</td>
                   <td className="p-5 border">
                     {accountingNumber(
@@ -708,7 +786,7 @@ const VendorAndNonVendor = () => {
                     )}
                   </td>
                   <td className="p-5 border">
-                    <div className="relative">
+                    <div className="">
                       <input
                         onKeyDown={(e) => e.key === " " && e.preventDefault()}
                         onChange={(e) => onChangeRate(e, index, item)}
@@ -752,7 +830,7 @@ const VendorAndNonVendor = () => {
                   </td>
                   <td className="text-left p-5 ps-2 border">{item.bank_out}</td>
                   <td className="p-5 border">
-                    <div className="relative">
+                    <div className="">
                       <input
                         onKeyDown={(e) => e.key === " " && e.preventDefault()}
                         onChange={(e) => onChangeMcmReff(e, index)}
@@ -836,6 +914,48 @@ const VendorAndNonVendor = () => {
           />
         </div>
       )}
+
+      {payments.length > 0 && (
+        <>
+          <a
+            //onClick={ExportToExcel(data, "list penagihan")}
+            href={`${apiExport}servlet/com.project.ccs.report.RptPvPaymentMonitorVendorNonVendorXLS?supplier=${supplier}&number=${number}&coaId=${srcAccount.value}&mcmReff=${mcmReff}`}
+            className="flex items-center gap-2 mt-5 rounded-sm py-2 px-5 shadow-md bg-[#217346] w-fit text-white cursor-pointer"
+          >
+            <div>
+              <RiFileExcel2Line />
+            </div>
+            <div>Download</div>
+          </a>
+        </>
+      )}
+
+      <div>
+        <Modal
+          aria-labelledby="transition-modal-title"
+          aria-describedby="transition-modal-description"
+          open={open}
+          onClose={handleClose}
+          closeAfterTransition
+          slots={{ backdrop: Backdrop }}
+          slotProps={{
+            backdrop: {
+              timeout: 500,
+            },
+          }}
+        >
+          <Fade in={open}>
+            <div
+              className={`border-0 bg-white  py-5 px-7 absolute top-[50%] left-1/2 translate-x-[-50%] translate-y-[-50%] h-[400px] overflow-y-auto z-[999999]  ${
+                screenSize <= 548 ? "w-[90%]" : "w-[50%]"
+              }`}
+            >
+              <div className="text-[20px] mb-5 font-semibold ">Memo</div>
+              <div>{memoDetail}</div>
+            </div>
+          </Fade>
+        </Modal>
+      </div>
 
       {/* <div>
         <Modal

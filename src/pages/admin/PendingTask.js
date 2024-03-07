@@ -147,6 +147,7 @@ const PendingTask = () => {
 
   const onSubmitDocument = async (item) => {
     setOpenBackdrop(true);
+    console.log(item)
     let isSave = false;
     if (item.status === "REJECT") {
       if (item.reason.trim().length > 0) {
@@ -155,7 +156,7 @@ const PendingTask = () => {
         isSave = false;
       }
     } else if (item.status === "APPROVED"){
-      if(item.note.trim().length > 0 && item.due_date !== null){
+      if(item.note.trim().length > 0){
         isSave = true;
       }else{
         isSave = false;
@@ -193,7 +194,8 @@ const PendingTask = () => {
           reason: item.reason,
           status: item.status,
           note: item.note,
-          due_date: dayjs(item.due_date).format("YYYY-MM-DD HH:mm:ss"),
+          due_date: item.due_date !== null ? dayjs(item.due_date).format("YYYY-MM-DD HH:mm:ss") : dayjs(new Date()).format("YYYY-MM-DD HH:mm:ss"),
+          user_id: Cookies.get("admin_id")
         };
 
         await fetch(`${api}api/portal-vendor/invoice`, {
@@ -370,7 +372,7 @@ const PendingTask = () => {
         </div>
         <div className="w-full overflow-x-auto shadow-md text-[14px]">
           <table className="w-full table-monitoring">
-            <thead>
+            <thead className="sticky top-0">
               <tr className="text-center whitespace-nowrap border-2 bg-[#eaf4f4]">
                 <td className="p-5 border">No Request </td>
                 <td className="p-5 border">Nama Supplier </td>
