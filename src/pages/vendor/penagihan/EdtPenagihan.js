@@ -1630,11 +1630,13 @@ const Penagihan = () => {
                               <div className="w-[21.1px]"></div>
                               <div>
                                 <input
-                                  maxLength={20}
                                   type="text"
                                   name=""
                                   id=""
                                   value={nomerDo}
+                                  onKeyDown={(evt) =>
+                                    evt.key === " " && evt.preventDefault()
+                                  }
                                   onChange={(e) => setNomerDo(e.target.value)}
                                   className={`max-[821px]:w-full w-[246.4px] h-[40px] rounded-sm focus:border focus:border-[#0077b6] bg-[#ddebf7] ${
                                     isError && nomerDo.trim().length === 0
@@ -1699,12 +1701,14 @@ const Penagihan = () => {
                                   <div className="w-[21.1px]"></div>
                                   <div>
                                     <input
-                                      maxLength={20}
                                       type="text"
                                       name=""
                                       id={i}
                                       value={item.value}
                                       onChange={onChangeInvoice}
+                                      onKeyDown={(evt) =>
+                                        evt.key === " " && evt.preventDefault()
+                                      }
                                       className="max-[821px]:w-full w-[246.4px] h-[40px] border border-slate-300 rounded-sm focus:border focus:border-[#0077b6] bg-[#ddebf7]"
                                     />
                                   </div>
@@ -2000,12 +2004,15 @@ const Penagihan = () => {
                                     <div className="w-[21.1px]"></div>
                                     <div>
                                       <input
-                                        maxLength={20}
                                         type="text"
                                         name=""
                                         id={i}
                                         value={item.value}
                                         onChange={onChangeInvoice}
+                                        onKeyDown={(evt) =>
+                                          evt.key === " " &&
+                                          evt.preventDefault()
+                                        }
                                         className="max-[821px]:w-full w-[246.4px] h-[40px] border border-slate-300 rounded-sm focus:border focus:border-[#0077b6] bg-[#fff2cc]"
                                       />
                                     </div>
@@ -3611,11 +3618,14 @@ const Penagihan = () => {
                                   <div className="w-full">
                                     <div>
                                       <input
-                                        maxLength={20}
                                         type="text"
                                         name=""
                                         id=""
                                         value={nomerDo}
+                                        onKeyDown={(evt) =>
+                                          evt.key === " " &&
+                                          evt.preventDefault()
+                                        }
                                         onChange={(e) =>
                                           setNomerDo(e.target.value)
                                         }
@@ -3679,12 +3689,15 @@ const Penagihan = () => {
                                       <div className="fw-full">
                                         <div>
                                           <input
-                                            maxLength={20}
                                             type="text"
                                             name=""
                                             id={i}
                                             value={item.value}
                                             onChange={onChangeInvoice}
+                                            onKeyDown={(evt) =>
+                                              evt.key === " " &&
+                                              evt.preventDefault()
+                                            }
                                             className="max-[821px]:w-full w-[246.4px] h-[40px] border border-slate-300 rounded-sm focus:border focus:border-[#0077b6] bg-[#ddebf7]"
                                           />
                                         </div>
@@ -4002,12 +4015,15 @@ const Penagihan = () => {
                                         <div className="fw-full">
                                           <div>
                                             <input
-                                              maxLength={20}
                                               type="text"
                                               name=""
                                               id={i}
                                               value={item.value}
                                               onChange={onChangeInvoice}
+                                              onKeyDown={(evt) =>
+                                                evt.key === " " &&
+                                                evt.preventDefault()
+                                              }
                                               className="max-[821px]:w-full w-[246.4px] h-[40px] border border-slate-300 rounded-sm focus:border focus:border-[#0077b6] bg-[#fff2cc]"
                                             />
                                           </div>
