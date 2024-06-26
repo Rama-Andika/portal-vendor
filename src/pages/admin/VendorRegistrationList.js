@@ -19,13 +19,15 @@ import { useNavigate } from "react-router-dom";
 const options = [
   { value: "APPROVED", label: "APPROVED", key: 0 },
   { value: "RE_REGISTER", label: "RE REGISTER", key: 1 },
+  { value: "CLOSED", label: "CLOSED", key: 2 },
 ];
 
 const srcStatusOptions = [
   { value: 0, label: "All", key: 0 },
   { value: "APPROVED", label: "APPROVED", key: 0 },
   { value: "RE_REGISTER", label: "RE REGISTER", key: 1 },
-  { value: "PENDING", label: "PENDING", key: 1 },
+  { value: "PENDING", label: "PENDING", key: 2 },
+  { value: "CLOSED", label: "CLOSED", key: 3 },
 ];
 
 const api = process.env.REACT_APP_BASEURL;
@@ -79,7 +81,7 @@ const VendorRegistrationList = () => {
         console.log(res.data.length);
         if (res.data.length > 0) {
           setTotal(res.total);
-          setCount(Math.round(res.total / res.limit));
+          setCount(Math.ceil(res.total / res.limit));
           setLimit(res.limit);
           setListVendor(res.data);
           let queryString = [];

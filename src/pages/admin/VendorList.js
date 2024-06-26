@@ -67,7 +67,7 @@ const VendorList = () => {
       .then((res) => {
         setOpenBackdrop(false);
         setTotal(res.total);
-        setCount(Math.round(res.total / res.limit));
+        setCount(Math.ceil(res.total / res.limit));
         setLimit(res.limit);
         setListVendor(res.data);
 

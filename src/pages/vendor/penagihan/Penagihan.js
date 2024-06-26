@@ -39,10 +39,11 @@ const optionsTipePenagihan = [
   { value: "konsinyasi", label: "Konsinyasi", key: 1 },
 ];
 const optionsDeliveryArea = [
-  { value: "tangerang", label: "Tangerang", key: 0 },
-  { value: "jakarta", label: "Jakarta", key: 1 },
-  { value: "bali", label: "Bali", key: 2 },
-  { value: "makassar", label: "Makassar", key: 3 },
+  { value: "tangerang", label: "Tangerang" },
+  { value: "jakarta", label: "Jakarta" },
+  { value: "bali", label: "Bali" },
+  { value: "makassar", label: "Makassar"},
+  { value: "batam", label: "Batam"},
 ];
 const options = [
   { value: 0, label: "Tidak", key: 0 },
@@ -1002,10 +1003,17 @@ const Penagihan = () => {
         const month = dayjs(currDate).month();
         const year = dayjs(currDate).year();
 
-        await fetch(`${api}api/portal-vendor/list/penagihan`)
+        await fetch(`${api}api/portal-vendor/list/penagihan`,{
+          method: "POST",
+          body: JSON.stringify({
+            order: "created_at DESC",
+            limit: 0
+          })
+        })
           .then((response) => response.json())
           .then((res) => {
-            lastItem = res.data[res.data.length - 1];
+            lastItem = res.data[0];
+            console.log(lastItem)
           })
           .catch((err) => console.log(err));
 
@@ -1321,10 +1329,16 @@ const Penagihan = () => {
         const month = dayjs(currDate).month();
         const year = dayjs(currDate).year();
 
-        await fetch(`${api}api/portal-vendor/list/penagihan`)
+        await fetch(`${api}api/portal-vendor/list/penagihan`,{
+          method: "POST",
+          body: JSON.stringify({
+            order: "created_at desc",
+            limit: 0
+          })
+        })
           .then((response) => response.json())
           .then((res) => {
-            lastItem = res.data[res.data.length - 1];
+            lastItem = res.data[0];
           })
           .catch((err) => console.log(err));
 
@@ -1539,10 +1553,16 @@ const Penagihan = () => {
     const month = dayjs(currDate).month();
     const year = dayjs(currDate).year();
 
-    await fetch(`${api}api/portal-vendor/list/penagihan`)
+    await fetch(`${api}api/portal-vendor/list/penagihan`,{
+      method: "POST",
+      body: JSON.stringify({
+        order: "created_at desc",
+        limit: 0
+      })
+    })
       .then((response) => response.json())
       .then((res) => {
-        lastItem = res.data[res.data.length - 1];
+        lastItem = res.data[0];
       })
       .catch((err) => console.log(err));
 
@@ -1794,10 +1814,16 @@ const Penagihan = () => {
     const month = dayjs(currDate).month();
     const year = dayjs(currDate).year();
 
-    await fetch(`${api}api/portal-vendor/list/penagihan`)
+    await fetch(`${api}api/portal-vendor/list/penagihan`,{
+      method: "POST",
+      body: JSON.stringify({
+        order: "created_at desc",
+        limit: 0
+      })
+    })
       .then((response) => response.json())
       .then((res) => {
-        lastItem = res.data[res.data.length - 1];
+        lastItem = res.data[0];
       })
       .catch((err) => console.log(err));
 

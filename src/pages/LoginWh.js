@@ -80,14 +80,12 @@ const LoginWh = () => {
       <div className="grid grid-cols-12 min-h-screen relative font-roboto">
         <div
           className="bg-cover bg-no-repeat bg-center relative col-span-8 max-[634px]:hidden max-[1275px]:col-span-6"
-          style={{ backgroundImage: `url(${unsplashimg.src})` }}
+          style={{ backgroundImage: `url(${require('../assets/images/retail.jpg')})` }} 
         ></div>
         <div className="font-roboto bg-white px-20 max-[790px]:px-10 flex flex-col justify-center w-full rounded-sm shadow-sm col-span-4 max-[634px]:col-span-12 max-[1275px]:col-span-6">
           <div className="flex flex-col items-center gap-2">
-            <div className="font-semibold text-[#0077b6]">
-              PT KARYA PRIMA UNGGULAN
-            </div>
-            <div className="font-semibold mb-10 text-[#0077b6]">LOGIN</div>
+            <div className="font-semibold text-[#0077b6]">LOGIN</div>
+            <div className="font-semibold mb-10 text-[#0077b6]">ADMIN</div>
           </div>
 
           <form className="flex flex-col gap-4">

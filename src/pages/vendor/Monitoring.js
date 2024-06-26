@@ -1,4 +1,4 @@
-import { Backdrop, CircularProgress, Fade, Modal } from "@mui/material";
+import { Backdrop, CircularProgress, Fade, Modal, Pagination } from "@mui/material";
 import { useStateContext } from "../../contexts/ContextProvider";
 import { useEffect, useState } from "react";
 import { Link, useNavigate } from "react-router-dom";
@@ -18,6 +18,7 @@ const srcStatusOptions = [
   { value: "APPROVED", label: "Approved", key: 0 },
   { value: "DRAFT", label: "Draft", key: 1 },
   { value: "Waiting_for_approval", label: "Waiting", key: 1 },
+  { value: "CLOSED", label: "Closed", key: 1 },
 ];
 
 const api = process.env.REACT_APP_BASEURL;
@@ -38,6 +39,14 @@ const Monitoring = () => {
   const [ignoreDate, setIgnoreDate] = useState(1);
   const [startDate, setStartDate] = useState(dayjs(new Date()));
   const [endDate, setEndDate] = useState(dayjs(new Date()));
+
+  //pagination state
+  const [, setTotal] = useState(0);
+  const [count, setCount] = useState(0);
+  const [limit, setLimit] = useState(0);
+  const [start, setStart] = useState(0);
+  const [page, setPage] = useState(1);
+  //end pagination state
 
   const navigate = useNavigate();
 
@@ -70,10 +79,14 @@ const Monitoring = () => {
           // eslint-disable-next-line array-callback-return
           res.data.map((data) => {
             var total = 0;
+            setTotal(data.total);
+            setCount(Math.ceil(data.total / data.limit));
+            setLimit(data.limit);
             data.nilai_invoices.map((nilai) => (total += nilai));
-            setTotalInvoice((prev) => {
-              return [...prev, total.toFixed(2)];
-            });
+            setTotalInvoice((prev) => [
+              ...prev,
+              {id: data.id, total: total.toFixed(2)}
+            ]);
           });
 
           setListPenagihan(res.data);
@@ -137,7 +150,36 @@ const Monitoring = () => {
       parameter["end_date"] = dayjs(endDate).format("YYYY-MM-DD HH:mm:ss");
     }
 
+    setStart(0);
+    setPage(1);
+
     fetchData(parameter);
+  };
+
+  const onChangePagination = (e, value) => {
+    let parameter = {};
+    let limitTemp = limit;
+
+    if (value > page) {
+      limitTemp = limitTemp * value - limit;
+      parameter = { start: limitTemp };
+    } else {
+      limitTemp = limitTemp * value - limit;
+      parameter = { start: limitTemp };
+    }
+
+    if (srcStatus.value !== 0) {
+      parameter["status"] = srcStatus.value;
+    }
+
+    if (ignoreDate === 0) {
+      parameter["start_date"] = dayjs(startDate).format("YYYY-MM-DD HH:mm:ss");
+      parameter["end_date"] = dayjs(endDate).format("YYYY-MM-DD HH:mm:ss");
+    }
+
+    setStart(limitTemp);
+    fetchData(parameter);
+    setPage(value);
   };
 
   useEffect(() => {
@@ -285,7 +327,7 @@ const Monitoring = () => {
                           : ""}
                       </td>
                       <td className="p-5 border">
-                        Rp. {accountingNumber(totalInvoice[index])}
+                        Rp. {accountingNumber(totalInvoice.filter((value) => value.id === item.id)[0]?.total)}
                       </td>
                       <td className="p-5 border">
                         {titleCase(item.status, "_")}
@@ -296,6 +338,20 @@ const Monitoring = () => {
                 </tbody>
               </table>
             </div>
+            {listPenagihan.length > 0 && (
+              <>
+                <div className="mt-10">
+                  <Pagination
+                    count={count}
+                    page={page}
+                    onChange={onChangePagination}
+                    showFirstButton
+                    showLastButton
+                    size="small"
+                  />
+                </div>
+              </>
+            )}
           </div>
         </div>
 

@@ -37,10 +37,11 @@ const optionsTipePenagihan = [
   { value: "konsinyasi", label: "Konsinyasi", key: 1 },
 ];
 const optionsDeliveryArea = [
-  { value: "tangerang", label: "Tangerang", key: 0 },
-  { value: "jakarta", label: "Jakarta", key: 1 },
-  { value: "bali", label: "Bali", key: 2 },
-  { value: "makassar", label: "Makassar", key: 3 },
+  { value: "tangerang", label: "Tangerang"},
+  { value: "jakarta", label: "Jakarta"},
+  { value: "bali", label: "Bali"},
+  { value: "makassar", label: "Makassar"},
+  { value: "batam", label: "Batam"},
 ];
 const options = [
   { value: 0, label: "Tidak", key: 0 },

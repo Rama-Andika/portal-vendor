@@ -11,6 +11,7 @@ import toast from "react-hot-toast";
 import Select from "react-select";
 import isEmpty from "../../components/functions/CheckEmptyObject";
 import { RiFileExcel2Line } from "react-icons/ri";
+import zIndex from "@mui/material/styles/zIndex";
 
 const api = process.env.REACT_APP_BASEURL;
 const apiExport = process.env.REACT_APP_EXPORT_URL;
@@ -19,6 +20,8 @@ const VendorAndNonVendor = () => {
   const { screenSize } = useStateContext();
   const [payments, setPayments] = useState([]);
   const [srcAccountOptions, setSrcAccountOptions] = useState([]);
+  const [optionPeriode, setOptionPeriode] = useState([]);
+  const [optionVendor, setOptionVendor] = useState([]);
 
   //Pagination
   const [page, setPage] = useState(1);
@@ -36,7 +39,19 @@ const VendorAndNonVendor = () => {
     value: "0",
     label: "All",
   });
+  const [srcPeriode, setSrcPeriode] = useState({
+    value: "0",
+    label: "All",
+  });
+  const [srcVendor, setSrcVendor] = useState({
+    value: "0",
+    label: "All",
+  });
   const [mcmReff, setMcmReff] = useState("0");
+  const [paymentDateIsBlank, setPaymentDateIsBlank] = useState("0");
+  const [startDate, setStartDate] = useState(dayjs(new Date()));
+  const [endDate, setEndDate] = useState(dayjs(new Date()));
+  const [ignoreDate, setIgnoreDate] = useState(1);
 
   //modal
   const [open, setOpen] = useState(false);
@@ -65,56 +80,71 @@ const VendorAndNonVendor = () => {
       .then((response) => response.json())
       .then((res) => {
         if (res.data.length > 0) {
+          console.log(res);
           setTotal(res.total);
-          setCount(Math.round(res.total / res.limit));
+          setCount(Math.ceil(res.total / res.limit));
           setLimit(res.limit);
           setPayments(res.data);
 
           const check = res.data.map((item) => ({
             id: item.bankpo_payment_id,
-            value: false,
+            value: item.payment_date ? true : false,
           }));
           setCheckBox(check);
 
           const listOutStandingDate = res.data.map((item) => {
             let date = dayjs(item.tanggal_tt);
             let outstanding_date = date.subtract(3, "day");
-            return outstanding_date;
+            return { id: item.bankpo_payment_id, value: outstanding_date };
           });
 
           const listMcmReffNo = res.data.map((item) => {
-            return item.mcm_reff_no;
+            return item.mcm_reff_no !== null
+              ? { id: item.bankpo_payment_id, value: item.mcm_reff_no }
+              : { id: 0, value: item.mcm_reff_no };
           });
 
           const listRate = res.data.map((item) => {
-            return item.rate.trim().length > 0 ? item.rate : "1";
+            return item.rate.trim().length > 0
+              ? { id: item.bankpo_payment_id, value: item.rate }
+              : { id: item.bankpo_payment_id, value: "1" };
           });
 
           const listTerm = res.data.map((item) => {
-            return item.term;
+            return item?.term
+              ? { id: item.bankpo_payment_id, value: item.term }
+              : { id: 0, value: "" };
           });
 
           const listMcmDate = res.data.map((item) => {
-            return item.mcm_date.length > 0 ? dayjs(item.mcm_date) : undefined;
+            return item.mcm_date.length > 0
+              ? { id: item.bankpo_payment_id, value: dayjs(item.mcm_date) }
+              : { id: 0, value: undefined };
           });
 
           const listPaymentDate = res.data.map((item) => {
             return item.payment_date.length > 0
-              ? dayjs(item.payment_date)
-              : undefined;
+              ? { id: item.bankpo_payment_id, value: dayjs(item.payment_date) }
+              : { id: 0, value: undefined };
           });
 
           const listStatus = listOutStandingDate.map((item, i) => {
             let status;
-            const outstandingDate = dayjs(item).format("YYYY-MM-DD");
-            const datePayment = dayjs(listPaymentDate[i]).format("YYYY-MM-DD");
-            if (outstandingDate < datePayment) {
-              status = "Late";
-            } else {
-              status = "Ontime";
+            const outstandingDate = dayjs(item.value).format("YYYY-MM-DD");
+            const datePayment =
+              item.id === listPaymentDate[i].id
+                ? dayjs(listPaymentDate[i]).format("YYYY-MM-DD")
+                : undefined;
+
+            if (datePayment) {
+              if (outstandingDate < datePayment) {
+                status = "Late";
+              } else {
+                status = "Ontime";
+              }
             }
 
-            return status;
+            return { id: item.id, value: status };
           });
 
           const listIdr = res.data.map((item, i) => {
@@ -159,7 +189,6 @@ const VendorAndNonVendor = () => {
         const data = res.data;
         if (data.length > 0) {
           const options = data.map((item, i) => {
-            console.log(item);
             let object = [];
             object[i + 1] = { value: item.id, label: item.name };
             // eslint-disable-next-line array-callback-return
@@ -177,12 +206,51 @@ const VendorAndNonVendor = () => {
       });
   };
 
+  const fetchPeriode = async (parameter = new Object()) => {
+    await fetch(`${api}api/portal-vendor/list/periode`, {
+      method: "POST",
+    })
+      .then((response) => response.json())
+      .then((res) => {
+        const data = res.data;
+        if (data.length > 0) {
+          const optionPeriodeCopy = data.map((d) => ({
+            value: d.id,
+            label: d.name,
+          }));
+          optionPeriodeCopy.unshift({ value: "0", label: "All" });
+
+          setOptionPeriode(optionPeriodeCopy);
+        }
+      });
+  };
+
+  const fetchVendor = async (parameter = new Object()) => {
+    await fetch(`${api}api/portal-vendor/list/oxyvendor`, {
+      method: "POST",
+    })
+      .then((response) => response.json())
+      .then((res) => {
+        const data = res.data;
+        if (data.length > 0) {
+          const optionVendorCopy = data.map((d) => ({
+            value: d.id,
+            label: d.name,
+          }));
+          optionVendorCopy.unshift({ value: "0", label: "All" });
+
+          setOptionVendor(optionVendorCopy);
+        }
+      });
+  };
+
   const customeStyles = {
     control: (baseStyles, state) => ({
       ...baseStyles,
     }),
     menu: (baseStyles, state) => ({
       ...baseStyles,
+      zIndex: 9999,
     }),
     option: (baseStyles, state) => ({
       ...baseStyles,
@@ -297,8 +365,21 @@ const VendorAndNonVendor = () => {
       parameter["mcm_is_blank"] = mcmReff;
     }
 
+    if (paymentDateIsBlank !== "0") {
+      parameter["payment_date_is_blank"] = paymentDateIsBlank;
+    }
+
     if (!isEmpty(srcAccount) && srcAccount.value !== "0") {
       parameter["coa_id"] = srcAccount.value;
+    }
+
+    if (!isEmpty(srcPeriode) && srcPeriode.value !== "0") {
+      parameter["periodeId"] = srcPeriode.value;
+    }
+
+    if (ignoreDate === 0) {
+      parameter["start_date"] = dayjs(startDate).format("YYYY-MM-DD");
+      parameter["end_date"] = dayjs(endDate).format("YYYY-MM-DD");
     }
 
     setStart(limitTemp);
@@ -307,24 +388,32 @@ const VendorAndNonVendor = () => {
   };
 
   const onChangePaymentDate = (value, index, item) => {
-    const outstandingDate = dayjs(outStandingDate[index]).format("YYYY-MM-DD");
+    const listOutStandingDate = outStandingDate.filter(
+      (d) => d.id === item.bankpo_payment_id
+    );
+    const outstdDate = dayjs(listOutStandingDate[0].value).format("YYYY-MM-DD");
     const datePayment = dayjs(value).format("YYYY-MM-DD");
     const statusCopy = [...status];
-    if (outstandingDate < datePayment) {
-      statusCopy[index] = "Late";
+    if (outstdDate < datePayment) {
+      statusCopy[index].value = "Late";
     } else {
-      statusCopy[index] = "Ontime";
+      statusCopy[index].value = "Ontime";
     }
+
+    statusCopy[index].id = item.bankpo_payment_id;
+
     setStatus(statusCopy);
 
     const startDateCopy = [...paymentDate];
-    startDateCopy[index] = value;
+    startDateCopy[index].id = item.bankpo_payment_id;
+    startDateCopy[index].value = item.value;
     setPaymentDate(startDateCopy);
   };
 
-  const onChangeMcmDate = (value, index) => {
+  const onChangeMcmDate = (value, index, item) => {
     const startDateCopy = [...mcmDate];
-    startDateCopy[index] = value;
+    startDateCopy[index].id = item.bankpo_payment_id;
+    startDateCopy[index].value = value;
     setMcmDate(startDateCopy);
   };
 
@@ -332,7 +421,8 @@ const VendorAndNonVendor = () => {
     const value = e.target.value;
 
     const mcmReffCopy = [...mcmReffNo];
-    mcmReffCopy[index] = value;
+    mcmReffCopy[index].id = item.bankpo_payment_id;
+    mcmReffCopy[index].value = value;
     setMcmReffNo(mcmReffCopy);
   };
 
@@ -346,21 +436,23 @@ const VendorAndNonVendor = () => {
     }
 
     const mcmReffCopy = [...rate];
-    mcmReffCopy[index] = value;
+    mcmReffCopy[index].id = item.bankpo_payment_id;
+    mcmReffCopy[index].value = value;
     setRate(mcmReffCopy);
   };
 
   const onChangeTerm = (e, index, item) => {
     const value = e.target.value;
-    console.log(parseInt(value));
     const outStandingDateCopy = [...outStandingDate];
     let date = dayjs(item.tanggal_tt).add(parseInt(value), "day");
     let outstanding_date = date.subtract(3, "day");
-    outStandingDateCopy[index] = outstanding_date;
+    outStandingDateCopy[index].id = item.bankpo_payment_id;
+    outStandingDateCopy[index].value = outstanding_date;
     setOutStandingDate(outStandingDateCopy);
 
     const termCopy = [...term];
-    termCopy[index] = value;
+    termCopy[index].id = item.bankpo_payment_id;
+    termCopy[index].value = value;
     SetTerm(termCopy);
   };
 
@@ -384,6 +476,8 @@ const VendorAndNonVendor = () => {
     window.scrollTo(0, 0);
     fetchData();
     fetchCoa();
+    fetchPeriode();
+    fetchVendor();
   }, []);
 
   // const onClickEdit = (index) => {
@@ -402,8 +496,20 @@ const VendorAndNonVendor = () => {
     if (!isEmpty(srcAccount) && srcAccount.value !== "0") {
       parameter["coa_id"] = srcAccount.value;
     }
+    if (!isEmpty(srcPeriode) && srcPeriode.value !== "0") {
+      parameter["periodeId"] = srcPeriode.value;
+    }
     if (mcmReff !== "0") {
       parameter["mcm_is_blank"] = mcmReff;
+    }
+
+    if (paymentDateIsBlank !== "0") {
+      parameter["payment_date_is_blank"] = paymentDateIsBlank;
+    }
+
+    if (ignoreDate === 0) {
+      parameter["start_date"] = dayjs(startDate).format("YYYY-MM-DD");
+      parameter["end_date"] = dayjs(endDate).format("YYYY-MM-DD");
     }
     setStart(0);
     setPage(1);
@@ -414,25 +520,36 @@ const VendorAndNonVendor = () => {
     e.preventDefault();
     const isErrorCopy = [...isError];
     payments.map(async (item, i) => {
-      if (checkBox[i].id === item.bankpo_payment_id && checkBox[i].value) {
-        console.log(term[i]);
+      if (
+        item.payment_date.length === 0 &&
+        checkBox[i].id === item.bankpo_payment_id &&
+        checkBox[i].value
+      ) {
         if (
-          mcmReffNo[i] !== undefined &&
-          mcmReffNo[i].length > 0 &&
-          mcmDate[i] !== undefined &&
-          paymentDate[i] !== undefined
+          mcmReffNo[i].value !== undefined &&
+          mcmReffNo[i].value?.length > 0 &&
+          mcmDate[i].value !== undefined
         ) {
           await fetch(`${api}api/portal-vendor/payment`, {
             method: "POST",
             body: JSON.stringify({
               id: item.id !== undefined ? item.id : 0,
               bankpo_payment_id: item.bankpo_payment_id,
-              mcm_reff_no: mcmReffNo[i],
-              mcm_date: dayjs(mcmDate[i]).format("YYYY-MM-DD HH:mm:ss"),
-              payment_date: dayjs(paymentDate[i]).format("YYYY-MM-DD HH:mm:ss"),
-              status: status[i],
-              rate: rate[i],
-              term: term[i],
+              mcm_reff_no:
+                item.bankpo_payment_id === mcmReffNo[i].id
+                  ? mcmReffNo[i].value
+                  : "",
+              mcm_date:
+                mcmDate[i].id === item.bankpo_payment_id
+                  ? dayjs(mcmDate[i].value).format("YYYY-MM-DD HH:mm:ss")
+                  : null,
+              payment_date:
+                paymentDate[i].id === item.bankpo_payment_id
+                  ? dayjs(paymentDate[i].value).format("YYYY-MM-DD HH:mm:ss")
+                  : null,
+              status: status[i].value,
+              rate: item.bankpo_payment_id === rate[i].id ? rate[i].value : "",
+              term: item.bankpo_payment_id === term[i].id ? term[i].value : "",
             }),
           })
             .then((response) => response.json())
@@ -441,7 +558,7 @@ const VendorAndNonVendor = () => {
                 isErrorCopy[i] = false;
                 setisError(isErrorCopy);
 
-                toast.success(`${mcmReffNo[i]} success!`, {
+                toast.success(`${mcmReffNo[i].value} success!`, {
                   position: "top-right",
                   duration: 500,
                   style: {
@@ -461,7 +578,7 @@ const VendorAndNonVendor = () => {
                 isErrorCopy[i] = true;
                 setisError(isErrorCopy);
 
-                toast.error(`${mcmReffNo[i]} failed!`, {
+                toast.error(`${mcmReffNo[i].value} failed!`, {
                   position: "top-right",
                   duration: 500,
                   style: {
@@ -478,7 +595,9 @@ const VendorAndNonVendor = () => {
             });
         } else {
           toast.error(
-            `${mcmReffNo[i] !== undefined ? mcmReffNo[i] : ""} failed!`,
+            `${
+              mcmReffNo[i].value !== undefined ? mcmReffNo[i].value : ""
+            } failed!`,
             {
               position: "top-right",
               duration: 500,
@@ -509,7 +628,7 @@ const VendorAndNonVendor = () => {
       // eslint-disable-next-line array-callback-return
       arr = payments.map((item) => ({
         id: item.bankpo_payment_id,
-        value: false,
+        value: item.tipe === "1" ? true : false,
       }));
     }
     setCheckBox(arr);
@@ -539,6 +658,14 @@ const VendorAndNonVendor = () => {
     setSrcAccount(item);
   };
 
+  const onChangeStartDate = (value) => {
+    setStartDate(value);
+  };
+
+  const onChangeEndDate = (value) => {
+    setEndDate(value);
+  };
+
   const onClickSeeDetailMemo = (memo) => {
     setMemoDetail(memo);
     handleOpen();
@@ -549,12 +676,12 @@ const VendorAndNonVendor = () => {
         screenSize < 768 ? "px-5 pt-20" : "px-10 pt-10"
       } font-roboto overflow-x-hidden `}
     >
-      <div className="mb-20 max-[349px]:mb-5">Vendor & Non Vendor</div>
-      <div className="mb-5 w-[70%] max-[659px]:w-full">
+      <div className="mb-20 max-[349px]:mb-5">Vendor</div>
+      <div className="mb-5 w-[70%] max-[850px]:w-full">
         <div className="mb-5 text-slate-400">Searching Parameter</div>
         <div>
           <form onSubmit={(e) => onSearch(e)}>
-            <div className="flex max-[349px]:flex-col gap-5 items-center mb-5">
+            <div className="flex max-[557px]:flex-col gap-5 items-center mb-5">
               <div className="flex flex-col  gap-1  mb-3 w-full ">
                 <div className="whitespace-nowrap flex">
                   <label htmlFor="" className="w-36 text-[14px] text-slate-400">
@@ -562,14 +689,14 @@ const VendorAndNonVendor = () => {
                   </label>
                   <div className="hidden ">:</div>
                 </div>
-                <div className="w-full relative">
+                <div className="w-full">
                   <input
                     type="text"
                     value={supplier}
                     onChange={(e) => setSupplier(e.target.value)}
                     name=""
                     id=""
-                    className="w-full h-[32px] text-slate-400 border border-slate-300 rounded-sm focus:border focus:border-[#0077b6]  "
+                    className="w-full h-[32px]  border border-slate-300 rounded-sm focus:border focus:border-[#0077b6]  "
                   />
                 </div>
               </div>
@@ -580,32 +707,32 @@ const VendorAndNonVendor = () => {
                   </label>
                   <div className="hidden">:</div>
                 </div>
-                <div className="w-full relative">
+                <div className="w-full">
                   <input
                     type="text"
                     value={number}
                     onChange={(e) => setNumber(e.target.value)}
                     name=""
                     id=""
-                    className="w-full h-[32px] text-slate-400 border border-slate-300 rounded-sm focus:border focus:border-[#0077b6]  "
+                    className="w-full h-[32px]  border border-slate-300 rounded-sm focus:border focus:border-[#0077b6]  "
                   />
                 </div>
               </div>
             </div>
             <div className="flex max-[557px]:flex-col gap-5 items-center mb-5">
-              <div className="flex flex-col  gap-1  mb-3 w-full ">
+              <div className="flex flex-col  gap-1 mb-3 w-full ">
                 <div className="whitespace-nowrap flex">
                   <label htmlFor="" className="w-36 text-[14px] text-slate-400">
-                    Account
+                    Period
                   </label>
                   <div className="hidden ">:</div>
                 </div>
-                <div className="w-full relative">
+                <div className="w-full">
                   <Select
-                    value={srcAccount}
-                    onChange={onChangeAccount}
+                    value={srcPeriode}
+                    onChange={(value) => setSrcPeriode(value)}
                     className="whitespace-nowrap"
-                    options={srcAccountOptions}
+                    options={optionPeriode}
                     noOptionsMessage={() => "Data not found"}
                     styles={customeStyles}
                     required
@@ -615,7 +742,7 @@ const VendorAndNonVendor = () => {
               <div className="flex flex-col  gap-1  mb-3 w-full ">
                 <div className="whitespace-nowrap flex">
                   <label htmlFor="" className="w-36 text-[14px] text-slate-400">
-                    Mcm Reff
+                    Payment Date
                   </label>
                   <div className="hidden ">:</div>
                 </div>
@@ -628,6 +755,73 @@ const VendorAndNonVendor = () => {
                       type="radio"
                       id="all-mcm"
                       value="0"
+                      checked={paymentDateIsBlank === "0" ? true : false}
+                      onChange={(e) => setPaymentDateIsBlank(e.target.value)}
+                    />
+                  </div>
+                  <div className="flex items-center gap-2">
+                    <label htmlFor="blank">Blank</label>
+                    <input
+                      name="mcm-reff"
+                      className="checked:bg-[#0077b6] checked:ring-0 focus:ring-0"
+                      type="radio"
+                      id="blank"
+                      value="1"
+                      checked={paymentDateIsBlank === "1" ? true : false}
+                      onChange={(e) => setPaymentDateIsBlank(e.target.value)}
+                    />
+                  </div>
+                  <div className="flex items-center gap-2">
+                    <label htmlFor="not-blank">Not Blank</label>
+                    <input
+                      name="mcm-reff"
+                      className="checked:bg-[#0077b6] checked:ring-0 focus:ring-0"
+                      type="radio"
+                      id="not-blank"
+                      value="2"
+                      checked={paymentDateIsBlank === "2" ? true : false}
+                      onChange={(e) => setPaymentDateIsBlank(e.target.value)}
+                    />
+                  </div>
+                </div>
+              </div>
+            </div>
+            <div className="flex max-[557px]:flex-col gap-5 items-center mb-5">
+              <div className="flex flex-col  gap-1 mb-3 w-full ">
+                <div className="whitespace-nowrap flex">
+                  <label htmlFor="" className="w-36 text-[14px] text-slate-400">
+                    Account
+                  </label>
+                  <div className="hidden ">:</div>
+                </div>
+                <div className="w-full">
+                  <Select
+                    value={srcAccount}
+                    onChange={onChangeAccount}
+                    className="whitespace-nowrap"
+                    options={srcAccountOptions}
+                    noOptionsMessage={() => "Data not found"}
+                    styles={customeStyles}
+                    required
+                  />
+                </div>
+              </div>
+              <div className="flex flex-col  gap-1 mb-3 w-full ">
+                <div className="whitespace-nowrap flex">
+                  <label htmlFor="" className="w-36 text-[14px] text-slate-400">
+                    Mcm Reff
+                  </label>
+                  <div className="hidden ">:</div>
+                </div>
+                <div className="flex gap-5 items-center">
+                  <div className="flex items-center gap-2">
+                    <label htmlFor="all-mcm">All</label>
+                    <input
+                      name="paymentDateBlank"
+                      className="checked:bg-[#0077b6] checked:ring-0 focus:ring-0"
+                      type="radio"
+                      id="all-mcm"
+                      value="0"
                       checked={mcmReff === "0" ? true : false}
                       onChange={(e) => setMcmReff(e.target.value)}
                     />
@@ -635,7 +829,7 @@ const VendorAndNonVendor = () => {
                   <div className="flex items-center gap-2">
                     <label htmlFor="blank">Blank</label>
                     <input
-                      name="mcm-reff"
+                      name="paymentDateBlank"
                       className="checked:bg-[#0077b6] checked:ring-0 focus:ring-0"
                       type="radio"
                       id="blank"
@@ -647,7 +841,7 @@ const VendorAndNonVendor = () => {
                   <div className="flex items-center gap-2">
                     <label htmlFor="not-blank">Not Blank</label>
                     <input
-                      name="mcm-reff"
+                      name="paymentDateBlank"
                       className="checked:bg-[#0077b6] checked:ring-0 focus:ring-0"
                       type="radio"
                       id="not-blank"
@@ -656,6 +850,60 @@ const VendorAndNonVendor = () => {
                       onChange={(e) => setMcmReff(e.target.value)}
                     />
                   </div>
+                </div>
+              </div>
+            </div>
+
+            <div className="flex flex-col gap-1 w-full mb-3 ">
+              <div className="whitespace-nowrap flex">
+                <label htmlFor="" className="w-36 text-[14px] text-slate-400">
+                  Create Date
+                </label>
+                <div className="hidden">:</div>
+              </div>
+              <div className="flex max-[1254px]:items-start items-center gap-2 max-[1254px]:flex-col">
+                <div className="w-full">
+                  <div className="flex max-[501px]:flex-col max-[501px]:gap-2 items-center gap-5">
+                    <div className="w-full">
+                      <LocalizationProvider dateAdapter={AdapterDayjs}>
+                        <DemoContainer components={["DatePicker"]}>
+                          <DatePicker
+                            className="w-full"
+                            value={startDate}
+                            onChange={onChangeStartDate}
+                            slotProps={{ textField: { size: "small" } }}
+                          />
+                        </DemoContainer>
+                      </LocalizationProvider>
+                    </div>
+                    <div>s/d</div>
+                    <div className="w-full">
+                      <LocalizationProvider dateAdapter={AdapterDayjs}>
+                        <DemoContainer components={["DatePicker"]}>
+                          <DatePicker
+                            className="w-full"
+                            value={endDate}
+                            onChange={onChangeEndDate}
+                            slotProps={{ textField: { size: "small" } }}
+                          />
+                        </DemoContainer>
+                      </LocalizationProvider>
+                    </div>
+                  </div>
+                </div>
+                <div className="flex gap-1 items-center text-[12px]">
+                  <div>
+                    <input
+                      onChange={() =>
+                        setIgnoreDate((prev) => (prev === 1 ? 0 : 1))
+                      }
+                      type="checkbox"
+                      className="checked:bg-[#0077b6] border-[#cecfcf]"
+                      value="1"
+                      checked={ignoreDate === 1 ? true : false}
+                    />
+                  </div>
+                  <div className="whitespace-nowrap">Ignore</div>
                 </div>
               </div>
             </div>
@@ -703,33 +951,34 @@ const VendorAndNonVendor = () => {
       </div>
       <div
         id="scrollableDiv"
-        className="w-full overflow-auto shadow-md text-[14px] max-h-[400px]"
+        className="w-full overflow-auto shadow-md text-[14px]"
       >
         <table className="w-full table-monitoring">
-          <thead className="sticky top-0 z-10">
-            <tr className="text-center whitespace-nowrap border-2 bg-[#eaf4f4]">
-              <td className="p-5 border">No</td>
-              <td className="p-5 border">Vendor & Non Vendor</td>
-              <td className="p-5 border">Create Date</td>
-              <td className="p-5 border">Month</td>
-              <td className="p-5 w-8 border">Name Preparer</td>
-              <td className="p-5 border">PR Number</td>
-              <td className="p-5 border">Supplier</td>
-              <td className="p-5 border">Memo</td>
-              <td className="p-5 border">Currency</td>
-              <td className="p-5 border">Ori Currency</td>
-              <td className="p-5 border">Rate</td>
-              <td className="p-5 border">IDR Currency</td>
-              <td className="p-5">Term (Days)</td>
-              <td className="p-5 border">Outstanding Date</td>
-              <td className="p-5 border">Indicator</td>
-              <td className="p-5 border">Bank Out</td>
-              <td className="p-5 border">MCM Reff No</td>
-              <td className="p-5 border">Date MCM</td>
-              <td className="p-5 border">Payment Date</td>
-              <td className="p-5 border">Status</td>
-              <td className="p-5 border">Settlement In Oxy</td>
-              <td className="p-5 border">
+          <thead className="">
+            <tr className="text-center whitespace-nowrap border-2 ">
+              <td className="p-5 border bg-[#eaf4f4]">No</td>
+              <td className="p-5 border bg-[#eaf4f4]">Create Date</td>
+              <td className="p-5 border bg-[#eaf4f4]">Month</td>
+              <td className="p-5 w-8 border bg-[#eaf4f4]">Name Preparer</td>
+              <td className="p-5 border bg-[#eaf4f4] sticky left-0 z-10">
+                PR Number
+              </td>
+              <td className="p-5 border bg-[#eaf4f4]">Supplier</td>
+              <td className="p-5 border bg-[#eaf4f4]">Memo</td>
+              <td className="p-5 border bg-[#eaf4f4]">Currency</td>
+              <td className="p-5 border bg-[#eaf4f4]">Ori Currency</td>
+              <td className="p-5 border bg-[#eaf4f4]">Rate</td>
+              <td className="p-5 border bg-[#eaf4f4]">IDR Currency</td>
+              <td className="p-5 bg-[#eaf4f4]">Term (Days)</td>
+              <td className="p-5 border bg-[#eaf4f4]">Outstanding Date</td>
+              <td className="p-5 border bg-[#eaf4f4]">Indicator</td>
+              <td className="p-5 border bg-[#eaf4f4]">Bank Out</td>
+              <td className="p-5 border bg-[#eaf4f4]">MCM Reff No</td>
+              <td className="p-5 border bg-[#eaf4f4]">Date MCM</td>
+              <td className="p-5 border bg-[#eaf4f4]">Payment Date</td>
+              <td className="p-5 border bg-[#eaf4f4]">Status</td>
+              <td className="p-5 border bg-[#eaf4f4]">Settlement In Oxy</td>
+              <td className="p-5 border bg-[#eaf4f4]">
                 <div>
                   <input
                     onChange={onChangeCheckedAll}
@@ -746,12 +995,9 @@ const VendorAndNonVendor = () => {
               payments.map((item, index) => (
                 <tr
                   key={index}
-                  className="text-center whitespace-nowrap hover:bg-slate-100 border bg-white"
+                  className="text-center whitespace-nowrap hover:bg-slate-100 border "
                 >
-                  <td className="p-5 border">{start + index + 1}</td>
-                  <td className="p-5 border">
-                    {item.tipe === "0" ? "Vendor" : "Non Vendor"}
-                  </td>
+                  <td className="p-5 border">{start + index + 1} </td>
                   <td className="p-5 border">
                     {dayjs(item.date).format("MMM DD, YYYY")}
                   </td>
@@ -759,8 +1005,12 @@ const VendorAndNonVendor = () => {
                   <td className="p-5 border w-16">
                     {item.name_preparer !== undefined ? item.name_preparer : ""}
                   </td>
-                  <td className="p-5 border">{item.pr_number}</td>
-                  <td className="text-left ps-2 p-5 border">{item.supplier}</td>
+                  <td className="p-5 border bg-white sticky left-0 z-10">
+                    {item.pr_number}
+                  </td>
+                  <td className="text-left ps-2 p-5 border bg-white">
+                    {item.supplier}
+                  </td>
                   <td className="text-left ps-2 p-5 border">
                     <div className="flex gap-2 items-center">
                       <input
@@ -791,32 +1041,27 @@ const VendorAndNonVendor = () => {
                         onKeyDown={(e) => e.key === " " && e.preventDefault()}
                         onChange={(e) => onChangeRate(e, index, item)}
                         type="number"
-                        value={rate[index]}
-                        className={`border-slate-300`}
+                        value={
+                          item.bankpo_payment_id === rate[index].id
+                            ? rate[index].value
+                            : ""
+                        }
+                        disabled={item.payment_date ? true : false}
+                        className={`border-slate-300 ${
+                          item.payment_date && "bg-gray-200"
+                        }`}
                       />
                     </div>
                   </td>
                   <td className="p-5 border">
                     {accountingNumber(idrCurrency[index])}
                   </td>
-                  <td className="py-5  border">
-                    {item.tipe === "0" ? (
-                      item.due_date
-                    ) : (
-                      <input
-                        onKeyDown={(e) => e.key === " " && e.preventDefault()}
-                        onChange={(e) => onChangeTerm(e, index, item)}
-                        type="number"
-                        value={term[index]}
-                        className={`border-slate-300 w-[100px] text-center`}
-                      />
-                    )}
+                  <td className="py-5  border">{item.due_date}</td>
+                  <td className="p-5 border">
+                    {dayjs(outStandingDate[index].value).format("MMM DD, YYYY")}
                   </td>
                   <td className="p-5 border">
-                    {dayjs(outStandingDate[index]).format("MMM DD, YYYY")}
-                  </td>
-                  <td className="p-5 border">
-                    {dayjs(outStandingDate[index]).format("YYYY-MM-DD") >
+                    {dayjs(outStandingDate[index].value).format("YYYY-MM-DD") >
                     dayjs(new Date()).format("YYYY-MM-DD") ? (
                       ""
                     ) : (
@@ -833,10 +1078,17 @@ const VendorAndNonVendor = () => {
                     <div className="">
                       <input
                         onKeyDown={(e) => e.key === " " && e.preventDefault()}
-                        onChange={(e) => onChangeMcmReff(e, index)}
+                        onChange={(e) => onChangeMcmReff(e, index, item)}
                         type="text"
-                        value={mcmReffNo[index]}
-                        className={`border-slate-300`}
+                        value={
+                          item.bankpo_payment_id === mcmReffNo[index].id
+                            ? mcmReffNo[index].value
+                            : ""
+                        }
+                        disabled={item.payment_date ? true : false}
+                        className={`border-slate-300 ${
+                          item.payment_date && "bg-gray-200"
+                        }`}
                       />
                     </div>
                   </td>
@@ -845,10 +1097,19 @@ const VendorAndNonVendor = () => {
                       <LocalizationProvider dateAdapter={AdapterDayjs}>
                         <DemoContainer components={["DatePicker"]}>
                           <DatePicker
-                            className="w-full"
-                            value={mcmDate[index]}
-                            onChange={(value) => onChangeMcmDate(value, index)}
+                            value={
+                              mcmDate[index].id === item.bankpo_payment_id
+                                ? mcmDate[index].value
+                                : null
+                            }
+                            onChange={(value) =>
+                              onChangeMcmDate(value, index, item)
+                            }
                             slotProps={{ textField: { size: "small" } }}
+                            disabled={item.payment_date ? true : false}
+                            className={`w-full ${
+                              item.payment_date && "bg-gray-200"
+                            }`}
                           />
                         </DemoContainer>
                       </LocalizationProvider>
@@ -859,8 +1120,15 @@ const VendorAndNonVendor = () => {
                       <LocalizationProvider dateAdapter={AdapterDayjs}>
                         <DemoContainer components={["DatePicker"]}>
                           <DatePicker
-                            className="w-full"
-                            value={paymentDate[index]}
+                            disabled={item.payment_date ? true : false}
+                            className={`w-full ${
+                              item.payment_date && "bg-gray-200"
+                            }`}
+                            value={
+                              paymentDate[index].id === item.bankpo_payment_id
+                                ? paymentDate[index].value
+                                : null
+                            }
                             onChange={(value) =>
                               onChangePaymentDate(value, index, item)
                             }
@@ -870,13 +1138,20 @@ const VendorAndNonVendor = () => {
                       </LocalizationProvider>
                     </div>
                   </td>
-                  <td className="p-5 border">{status[index]}</td>
-                  <td className="p-5 border">TRUE</td>
+                  <td className="p-5 border">
+                    {status[index].id === item.bankpo_payment_id
+                      ? status[index].value
+                      : ""}
+                  </td>
+                  <td className="p-5 border">
+                    {item.payment_date ? "TRUE" : "FALSE"}
+                  </td>
                   <td className="p-5 border">
                     <div>
                       <input
                         onChange={() => onChangeChecked(item, index)}
                         name={`check_${item.bankpo_payment_id}`}
+                        disabled={item.payment_date ? true : false}
                         type="checkbox"
                         checked={
                           checkBox.length > 0 &&
@@ -919,7 +1194,14 @@ const VendorAndNonVendor = () => {
         <>
           <a
             //onClick={ExportToExcel(data, "list penagihan")}
-            href={`${apiExport}servlet/com.project.ccs.report.RptPvPaymentMonitorVendorNonVendorXLS?supplier=${supplier}&number=${number}&coaId=${srcAccount.value}&mcmReff=${mcmReff}`}
+            href={`${apiExport}servlet/com.project.ccs.report.RptPvPaymentMonitorVendorNonVendorXLS?supplier=${supplier}&number=${number}&periodeId=${
+              srcPeriode.value
+            }&coaId=${srcAccount.value}&mcmReff=${mcmReff}
+            &paymentDateIsBlank=${paymentDateIsBlank}&ignoreCreateDate=${ignoreDate}&startDate=${dayjs(
+              startDate
+            ).format("YYYY-MM-DD")}&endDate=${dayjs(endDate).format(
+              "YYYY-MM-DD"
+            )}`}
             className="flex items-center gap-2 mt-5 rounded-sm py-2 px-5 shadow-md bg-[#217346] w-fit text-white cursor-pointer"
           >
             <div>

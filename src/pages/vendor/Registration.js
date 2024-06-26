@@ -129,6 +129,10 @@ const Registration = () => {
   const [sertifBpomFile, setSertifBpomFile] = useState(null);
   const [sertifBpomFilePreview, setSertifBpomFilePreview] = useState(null);
 
+  const [dokumenPendukungLainnya, setDokumenPendukungLainnya] = useState(null);
+  const [dokumenPendukungLainnyaPreview, setDokumenPendukungLainnyaPreview] = useState(null);
+
+
   const [isError, setIsError] = useState(false);
   const [message, setMessage] = useState("");
   const [showPassword, setShowPassword] = useState(false);
@@ -456,6 +460,7 @@ const Registration = () => {
       file_screenshot_rekening:
         ssPerusahaanFile !== null ? ssPerusahaanFile : null,
       file_sertikasi_bpom: sertifBpomFile !== null ? sertifBpomFile : null,
+      file_dokumen_lainnya: dokumenPendukungLainnya !== null ? dokumenPendukungLainnya : null,
       vendor_id: 0,
       status: "PENDING",
     };
@@ -789,6 +794,24 @@ const Registration = () => {
       }
     }
   };
+
+  const onChangeDokumenLainnyaFile = (e) => {
+    if (e.target.files[0] !== undefined) {
+      if (e.target.files[0].size <= 2000000) {
+        setDokumenPendukungLainnyaPreview(URL.createObjectURL(e.target.files[0]));
+        GetBase64(e.target.files[0])
+          .then((result) => {
+            setDokumenPendukungLainnya(result);
+      
+          })
+          .catch((err) => {
+            setDokumenPendukungLainnya(null);
+          });
+      } else {
+        setDokumenPendukungLainnya(null);
+      }
+    }
+  }
 
   const onChangeProvinsi = (item) => {
     if (provinsi.value !== item.value) {
@@ -2401,6 +2424,55 @@ const Registration = () => {
                           <div className="h-full w-full">
                             <img
                               src={sertifBpomFilePreview}
+                              alt="no"
+                              className="w-full h-full"
+                            />
+                          </div>
+                        </div>
+                      )
+                    )}
+                    <div className="flex items-center mb-3">
+                      <div className="flex flex-col gap-1">
+                        <div className="whitespace-nowrap flex">
+                          <label htmlFor="" className="w-72">
+                            Dokumen pendukung lainnya
+                          </label>
+                        </div>
+                        <div className="text-[10px] text-gray-500">
+                          Max size 2 mb
+                        </div>
+                        <div className="flex gap-1 items-center text-[12px]">
+                          <div>
+                            <PiWarningCircleLight />
+                          </div>
+                          <div>khusus untuk wilayah batam</div>
+                        </div>
+                      </div>
+                      <div className="mr-2">:</div>
+
+                      <div className="w-1/2 relative">
+                        <input
+                          type="file"
+                          onChange={onChangeDokumenLainnyaFile}
+                         
+                          accept=".jpg,.pdf"
+                          className=" w-full h-[36px] border border-slate-300 rounded-sm focus:border focus:border-[#0077b6]  "
+                        />
+                      </div>
+                    </div>
+                    {dokumenPendukungLainnya !== null &&
+                    RegExp("\\bpdf\\b").test(dokumenPendukungLainnya.split(",")[0]) ? (
+                      <div className="h-[500px] w-[500px] mb-5">
+                        <div className="h-full w-full">
+                          <Viewer fileUrl={dokumenPendukungLainnyaPreview} />
+                        </div>
+                      </div>
+                    ) : (
+                      dokumenPendukungLainnya !== null && (
+                        <div className="h-[500px] w-[400px] mb-5">
+                          <div className="h-full w-full">
+                            <img
+                              src={dokumenPendukungLainnyaPreview}
                               alt="no"
                               className="w-full h-full"
                             />
@@ -4142,6 +4214,56 @@ const Registration = () => {
                                 <div className="h-full w-full">
                                   <img
                                     src={sertifBpomFilePreview}
+                                    alt="no"
+                                    className="w-full h-full"
+                                  />
+                                </div>
+                              </div>
+                            )
+                          )}
+                          <div className="flex flex-col gap-2  mb-3">
+                            <div className="flex flex-col">
+                              <div className=" flex">
+                                <label htmlFor="" className="">
+                                  Dokumen pendukung lainnya
+                                </label>
+                              </div>
+                              <div className="text-[10px] text-gray-400">
+                                Max size 2 mb
+                              </div>
+                              <div className="flex gap-1 items-center text-[12px]">
+                                <div>
+                                  <PiWarningCircleLight />
+                                </div>
+                                <div>khusus untuk wilayah batam</div>
+                              </div>
+                            </div>
+
+                            <div className=" relative">
+                              <input
+                                type="file"
+                                onChange={onChangeDokumenLainnyaFile}
+                              
+                                accept="image/jpg,.pdf"
+                                className=" w-full h-[36px] border border-slate-300 rounded-sm focus:border focus:border-[#0077b6]  "
+                              />
+                            </div>
+                          </div>
+                          {dokumenPendukungLainnya !== null &&
+                          RegExp("\\bpdf\\b").test(
+                            dokumenPendukungLainnya.split(",")[0]
+                          ) ? (
+                            <div className="h-[500px] w-full mb-5">
+                              <div className="h-full w-full">
+                                <Viewer fileUrl={dokumenPendukungLainnyaPreview} />
+                              </div>
+                            </div>
+                          ) : (
+                            dokumenPendukungLainnya !== null && (
+                              <div className="h-[300px] w-full mb-5">
+                                <div className="h-full w-full">
+                                  <img
+                                    src={dokumenPendukungLainnyaPreview}
                                     alt="no"
                                     className="w-full h-full"
                                   />

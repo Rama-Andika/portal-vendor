@@ -25,7 +25,7 @@ const NavButton = ({ title, customFunc, icon, color, dotColor }) => (
   </button>
 );
 
-const Navbar = () => {
+const Navbar = ({children}) => {
   const unsplashimg = {
     src: "https://source.unsplash.com/1600x900/?random",
     alt: "random unsplash image",
@@ -98,50 +98,49 @@ const Navbar = () => {
 
   return (
     <div
-      className="flex p-2 md:mx-6 gap-5 z-[99]"
+      className="w-full mb-10 py-[16px] px-[26px] overflow-x-hidden"
       onClick={() => dropdown && setDropdown(false)}
     >
-      <NavButton
-        title="Menu"
-        customFunc={() => setActiveMenu((prevActiveMenu) => !prevActiveMenu)}
-        color="#0077b6"
-        icon={<AiOutlineMenu />}
-      />
-      <div
-        onClick={onClickDropdown}
-        className="flex relative cursor-pointer z-[20]"
-      >
-        <div className="flex items-center gap-2 cursor-pointer p-1 hover:bg-light-gray rounded-lg relative">
-          <img
-            src={unsplashimg.src}
-            alt="avatar"
-            className="rounded-full w-8 h-8"
-          />
-          <p>
-            <span className="text-gray-400 text-14">Hi, {name} </span>{" "}
-            {/* <span className="text-gray-400 font-bold ml-1 text-14">Rama</span> */}
-          </p>
-          <MdKeyboardArrowDown className="text-gray-400 text-14" />
-        </div>
-        {dropdown && (
-          <div
-            ref={dropDownSection}
-            className="absolute top-[40px] right-0 "
-          >
-            <div className="bg-white shadow-md py-2">
-              <div className="">
-                <div
-                  onClick={logout}
-                  className="text-gray-400 text-14 py-2 px-5 "
-                >
-                  Logout
+      <div className="bg-white shadow-[0_2px_4px_0_rgba(165,163,174,0.30)] py-[12px] px-[24px] flex items-center justify-between">
+        <NavButton
+          title="Menu"
+          customFunc={() => setActiveMenu((prevActiveMenu) => !prevActiveMenu)}
+          color="#0077b6"
+          icon={<AiOutlineMenu />}
+        />
+        <div
+          onClick={onClickDropdown}
+          className="flex relative cursor-pointer z-[20]"
+        >
+          <div className="flex items-center gap-2 cursor-pointer p-1 hover:bg-light-gray rounded-lg relative">
+            <img
+              src={require('../assets/images/user.png')}
+              alt="avatar"
+              className="rounded-1full w-8 h-8"
+            />
+            <p>
+              <span className="text-gray-400 text-14">Hi, {name} </span>{" "}
+              {/* <span className="text-gray-400 font-bold ml-1 text-14">Rama</span> */}
+            </p>
+            <MdKeyboardArrowDown className="text-gray-400 text-14" />
+          </div>
+          {dropdown && (
+            <div ref={dropDownSection} className="absolute top-[40px] right-0">
+              <div className="bg-white shadow-md py-2">
+                <div className="">
+                  <div
+                    onClick={logout}
+                    className="text-gray-400 text-14 py-2 px-5 "
+                  >
+                    Logout
+                  </div>
                 </div>
-              
               </div>
             </div>
-          </div>
-        )}
+          )}
+        </div>
       </div>
+      <div className="">{children}</div>
     </div>
   );
 };

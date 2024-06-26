@@ -66,7 +66,7 @@ const Cod = () => {
         if (res.data.length > 0) {
           console.log(res.data);
           setTotal(res.total);
-          setCount(Math.round(res.total / res.limit));
+          setCount(Math.ceil(res.total / res.limit));
           setLimit(res.limit);
           setPayments(res.data);
 
@@ -582,7 +582,7 @@ const Cod = () => {
         className="w-full overflow-auto shadow-md text-[14px] max-h-[400px]"
       >
         <table className="w-full table-monitoring">
-          <thead className="sticky top-0 z-10">
+          <thead className="">
             <tr className="text-center whitespace-nowrap border-2 bg-[#eaf4f4]">
               <td className="p-5 border">No</td>
               <td className="p-5 border">Incoming Date</td>

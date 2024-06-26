@@ -7,7 +7,7 @@ import { Sidebar } from "flowbite-react";
 import { LiaFileInvoiceSolid } from "react-icons/lia";
 import { FiShoppingBag } from "react-icons/fi";
 
-const SidebarComponent = () => {
+const SidebarComponent = ({width}) => {
   const { activeMenu, setActiveMenu, screenSize } = useStateContext();
 
   const handleCloseSidebar = () => {
@@ -21,88 +21,82 @@ const SidebarComponent = () => {
   const normalLink =
     "flex items-center gap-3 pt-3 pl-[40px] pb-2.5 rounded-lg text-md text-gray-700 dark:text-gray-200 dark:hover:text-black hover:bg-light-gray";
   return (
-    <div className="ml-3 h-screen md:overflow-hidden overflow-auto md:hover:overflow-auto pb-10 relative">
-      <div>
-        <button
-          type="button"
-          onClick={() => setActiveMenu((prev) => !prev)}
-          className="text-xl rounded-full pe-3 hover:bg-light-gray mt-4 block md:hidden dark:hover:bg-main-dark-bg absolute top-[-15px] right-[-10px]"
-        >
-          <MdOutlineCancel className="dark:text-white " />
-        </button>
+    <div
+      className={`border-r min-h-screen max-[646px]:h-full ${width} shadow-md overflow-y-auto pb-10 z-10 bg-white relative shrink-0 transition-all ease-in-out duration-200`}
+    >
+      <div onClick={() => setActiveMenu((prevActiveMenu) => !prevActiveMenu)} className="absolute top-2 right-2 shadow-md p-2 rounded-full text-xs cursor-pointer">
+          X
       </div>
-      {activeMenu && (
-        <>
-          <div className="flex justify-between items-center ">
-            <Link
-              to="/"
-              onClick={handleCloseSidebar}
-              className="items-center gap-3 mt-4 flex text-xl font-extrabold tracking-tight dark:text-white text-slate-900"
-            >
-              <SiShopware />{" "}
-              <span className="text-[16px] w-[222px] overflow-ellipsis overflow-hidden">
-                PT KARYA PRIMA UNGGULAN
-              </span>
-            </Link>
-          </div>
-          <div className="mt-10 ml-[-20px]">
-            <Sidebar aria-label="Sidebar with multi-level dropdown example ">
-              <Sidebar.Items>
-                <Sidebar.ItemGroup>
-                  <Sidebar.Collapse label="Company" icon={FiShoppingBag} open>
-                    <NavLink
-                      style={({ isActive }) => ({
-                        backgroundColor: isActive ? "#0077b6" : "",
-                      })}
-                      to={`/vendor/profile`}
-                      onClick={handleCloseSidebar}
-                      className={({ isActive }) =>
-                        isActive ? activeLink : normalLink
-                      }
-                    >
-                      Profile
-                    </NavLink>
-                  </Sidebar.Collapse>
-                  <NavLink
-                    style={({ isActive }) => ({
-                      backgroundColor: isActive ? "#0077b6" : "",
-                    })}
-                    to={`/vendor/penagihan `}
-                    onClick={handleCloseSidebar}
-                    className={({ isActive }) =>
-                      isActive ? activeLink : normalLink
-                    }
-                  >
-                    <div className="ms-[-30px] flex items-center gap-3 ">
-                      <div className="text-[24px]">
-                        <LiaFileInvoiceSolid />
-                      </div>
-                      <div>Penagihan</div>
-                    </div>
-                  </NavLink>
-                  <NavLink
-                    style={({ isActive }) => ({
-                      backgroundColor: isActive ? "#0077b6" : "",
-                    })}
-                    to={`/vendor/monitoring `}
-                    onClick={handleCloseSidebar}
-                    className={({ isActive }) =>
-                      isActive ? activeLink : normalLink
-                    }
-                  >
-                    <div className="ms-[-30px] flex items-center gap-3 ">
-                      <div className="text-[24px]">
-                        <LiaFileInvoiceSolid />
-                      </div>
-                      <div>Monitoring</div>
-                    </div>
-                  </NavLink>
-                </Sidebar.ItemGroup>
-              </Sidebar.Items>
-            </Sidebar>
-          </div>
-        </>
-      )}
+      <div className="flex items-center py-[20px] px-[24px] justify-between">
+        <div className="flex items-center gap-[10px]">
+          <Link
+            to="/admin"
+            onClick={handleCloseSidebar}
+            className="items-center gap-3 mt-4 flex text-xl font-extrabold tracking-tight dark:text-white text-slate-900"
+          >
+            <SiShopware />{" "}
+            <span className="text-[16px] w-[222px] overflow-ellipsis overflow-hidden">
+              PT KARYA PRIMA UNGGULAN
+            </span>
+          </Link>
+        </div>
+      </div>
+      <div className="text-[15px]">
+        <Sidebar aria-label="Sidebar with multi-level dropdown example ">
+          <Sidebar.Items>
+            <Sidebar.ItemGroup>
+              <Sidebar.Collapse label="Company" icon={FiShoppingBag} open>
+                <NavLink
+                  style={({ isActive }) => ({
+                    backgroundColor: isActive ? "#0077b6" : "",
+                  })}
+                  to={`/vendor/profile`}
+                  onClick={handleCloseSidebar}
+                  className={({ isActive }) =>
+                    isActive ? activeLink : normalLink
+                  }
+                >
+                  Profile
+                </NavLink>
+              </Sidebar.Collapse>
+              <NavLink
+                style={({ isActive }) => ({
+                  backgroundColor: isActive ? "#0077b6" : "",
+                })}
+                to={`/vendor/penagihan `}
+                onClick={handleCloseSidebar}
+                className={({ isActive }) =>
+                  isActive ? activeLink : normalLink
+                }
+              >
+                <div className="ms-[-30px] flex items-center gap-3 ">
+                  <div className="text-[24px]">
+                    <LiaFileInvoiceSolid />
+                  </div>
+                  <div>Penagihan</div>
+                </div>
+              </NavLink>
+              <NavLink
+                style={({ isActive }) => ({
+                  backgroundColor: isActive ? "#0077b6" : "",
+                })}
+                to={`/vendor/monitoring `}
+                onClick={handleCloseSidebar}
+                className={({ isActive }) =>
+                  isActive ? activeLink : normalLink
+                }
+              >
+                <div className="ms-[-30px] flex items-center gap-3 ">
+                  <div className="text-[24px]">
+                    <LiaFileInvoiceSolid />
+                  </div>
+                  <div>Monitoring</div>
+                </div>
+              </NavLink>
+            </Sidebar.ItemGroup>
+          </Sidebar.Items>
+        </Sidebar>
+      </div>
     </div>
   );
 };

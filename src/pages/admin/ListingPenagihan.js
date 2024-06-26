@@ -4,7 +4,13 @@ import { AdapterDayjs } from "@mui/x-date-pickers/AdapterDayjs";
 import { DemoContainer } from "@mui/x-date-pickers/internals/demo";
 import { useEffect, useState } from "react";
 import dayjs from "dayjs";
-import { Backdrop, CircularProgress, Fade, Modal } from "@mui/material";
+import {
+  Backdrop,
+  CircularProgress,
+  Fade,
+  Modal,
+  Pagination,
+} from "@mui/material";
 import { RiFileExcel2Line } from "react-icons/ri";
 import titleCase from "../../components/functions/TitleCase";
 import accountingNumber from "../../components/functions/AccountingNumber";
@@ -13,17 +19,29 @@ import toast from "react-hot-toast";
 import Cookies from "js-cookie";
 import isEmpty from "../../components/functions/CheckEmptyObject";
 import { PiFileZipDuotone } from "react-icons/pi";
+import Select from "react-select";
 
 const api = process.env.REACT_APP_BASEURL;
 const apiExport = process.env.REACT_APP_EXPORT_URL;
 
+const optionStatus = [
+  { value: 0, label: "All" },
+  { value: "DRAFT", label: "DRAFT" },
+  { value: "REJECT", label: "REJECT" },
+  { value: "Waiting_for_approval", label: "WAITING" },
+  { value: "APPROVED", label: "APPROVED" },
+  { value: "CANCEL", label: "CANCEL" },
+];
+
+const options = [{ value: "CANCEL", label: "CANCEL" }];
+
 const ListingPenagihan = () => {
   const { screenSize } = useStateContext();
+  const [srcStatus, setSrcStatus] = useState({ value: 0, label: "All" });
   const [vendorName, setVendorName] = useState("");
   const [startDate, setStartDate] = useState(dayjs(new Date()));
   const [endDate, setEndDate] = useState(dayjs(new Date()));
   // eslint-disable-next-line no-unused-vars
-  const [page, setPage] = useState(1);
   const [openBackdrop, setOpenBackdrop] = useState(false);
   const [totalInvoice, setTotalInvoice] = useState([]);
   const [listPenagihan, setListPenagihan] = useState([]);
@@ -31,6 +49,18 @@ const ListingPenagihan = () => {
   const [data, setData] = useState([]);
   const [ignoreDate, setIgnoreDate] = useState(1);
   const [open, setOpen] = useState(false);
+  const [status, setStatus] = useState({
+    value: "CANCEL",
+    label: "CANCEL",
+  });
+
+  //pagination state
+  const [, setTotal] = useState(0);
+  const [count, setCount] = useState(0);
+  const [limit, setLimit] = useState(0);
+  const [start, setStart] = useState(0);
+  const [page, setPage] = useState(1);
+  //end pagination state
 
   const navigate = useNavigate();
   const handleOpen = () => setOpen(true);
@@ -54,9 +84,19 @@ const ListingPenagihan = () => {
     setEndDate(value);
   };
 
-  // eslint-disable-next-line no-unused-vars
-  const onChangePagination = (e, value) => {
-    setPage(value);
+  const customeStyles = {
+    control: (baseStyles, state) => ({
+      ...baseStyles,
+    }),
+    menu: (baseStyles, state) => ({
+      ...baseStyles,
+    }),
+    option: (baseStyles, state) => ({
+      ...baseStyles,
+      backgroundColor: state.isSelected
+        ? "#569cb8"
+        : state.isFocused && "#caf0f8",
+    }),
   };
 
   const fetchData = async (parameter) => {
@@ -69,15 +109,18 @@ const ListingPenagihan = () => {
       .then((response) => response.json())
       .then((data) => {
         setOpenBackdrop(false);
-        console.log(data.data)
+        setTotal(data.total);
+        setCount(Math.ceil(data.total / data.limit));
+        setLimit(data.limit);
 
         // eslint-disable-next-line array-callback-return
         data.data.map((data, index) => {
           var total = 0;
           data.nilai_invoices.map((nilai) => (total += nilai));
-          setTotalInvoice((prev) => {
-            return [...prev, total.toFixed(2)];
-          });
+          setTotalInvoice((prev) => [
+            ...prev,
+            { id: data.id, total: total.toFixed(2) },
+          ]);
         });
 
         setListPenagihan(data.data);
@@ -99,7 +142,44 @@ const ListingPenagihan = () => {
       parameter["end_date"] = dayjs(endDate).format("YYYY-MM-DD HH:mm:ss");
     }
 
+    if (srcStatus.value !== 0) {
+      parameter["status"] = srcStatus.value;
+    }
+
+    setStart(0);
+    setPage(1);
+
     fetchData(parameter);
+  };
+
+  const onChangePagination = (e, value) => {
+    let parameter = {};
+    let limitTemp = limit;
+
+    if (value > page) {
+      limitTemp = limitTemp * value - limit;
+      parameter = { start: limitTemp };
+    } else {
+      limitTemp = limitTemp * value - limit;
+      parameter = { start: limitTemp };
+    }
+
+    if (vendorName.trim().length > 0) {
+      parameter["vendor_name"] = vendorName;
+    }
+
+    if (ignoreDate === 0) {
+      parameter["start_date"] = dayjs(startDate).format("YYYY-MM-DD HH:mm:ss");
+      parameter["end_date"] = dayjs(endDate).format("YYYY-MM-DD HH:mm:ss");
+    }
+
+    if (srcStatus.value !== 0) {
+      parameter["status"] = srcStatus.value;
+    }
+
+    setStart(limitTemp);
+    fetchData(parameter);
+    setPage(value);
   };
 
   const onClikOpen = (item) => {
@@ -116,6 +196,101 @@ const ListingPenagihan = () => {
         },
       });
       navigate("/admin");
+    }
+  };
+
+  const onSubmitDocument = async (item) => {
+    setOpenBackdrop(true);
+
+    if (Cookies.get("admin_token") !== undefined) {
+      const initialValue = {
+        id: item.id,
+        vendor_id: item.vendor_id,
+        no_request: item.no_request,
+        tipe_penagihan: item.tipe_penagihan,
+        tipe_pengiriman: item.tipe_pengiriman,
+        nomer_po: item.nomer_po,
+        tanggal_po: dayjs(item.tanggal_po).format("YYYY-MM-DD HH:mm:ss"),
+        nomer_do: item.nomer_do,
+        delivery_area: item.delivery_area,
+        nomer_invoices: item.nomer_invoices,
+        tanggal_invoices: item.tanggal_invoices,
+        nilai_invoices: item.nilai_invoices,
+        is_pajak: item.is_pajak,
+        nomer_seri_pajak: item.nomer_seri_pajak,
+        start_date_periode: dayjs(item.start_date_periode).format(
+          "YYYY-MM-DD HH:mm:ss"
+        ),
+        end_date_periode: dayjs(item.end_date_periode).format(
+          "YYYY-MM-DD HH:mm:ss"
+        ),
+        created_at: dayjs(item.created_at).format("YYYY-MM-DD HH:mm:ss"),
+        updated_at: dayjs(new Date()).format("YYYY-MM-DD HH:mm:ss"),
+        reason: item.reason,
+        status: status.value,
+        note: item.note,
+        due_date:
+          item.due_date !== null
+            ? dayjs(item.due_date).format("YYYY-MM-DD HH:mm:ss")
+            : dayjs(new Date()).format("YYYY-MM-DD HH:mm:ss"),
+        user_id: Cookies.get("admin_id"),
+      };
+
+      await fetch(`${api}api/portal-vendor/invoice`, {
+        method: "POST",
+        body: JSON.stringify(initialValue),
+      })
+        .then((response) => response.json())
+        .then((res) => {
+          if (res.data === 0) {
+            setOpen(false);
+            fetchData();
+            setOpenBackdrop(false);
+            toast.error("Penagihan update failed!", {
+              position: "top-right",
+              style: {
+                borderRadius: "10px",
+                background: "#333",
+                color: "#fff",
+              },
+            });
+          } else {
+            setOpen(false);
+            fetchData();
+            setOpenBackdrop(false);
+            toast.success("Penagihan update success!", {
+              position: "top-right",
+              style: {
+                borderRadius: "10px",
+                background: "#333",
+                color: "#fff",
+              },
+            });
+          }
+        })
+        .catch((err) => {
+          setOpenBackdrop(false);
+          setOpen(false);
+          fetchData();
+          toast.error("Penagihan update failed!", {
+            position: "top-right",
+            style: {
+              borderRadius: "10px",
+              background: "#333",
+              color: "#fff",
+            },
+          });
+        });
+    } else {
+      navigate("/admin");
+      toast.error("Silahkan Login Terlebih Dahulu!", {
+        position: "top-right",
+        style: {
+          borderRadius: "10px",
+          background: "#333",
+          color: "#fff",
+        },
+      });
     }
   };
 
@@ -210,6 +385,30 @@ const ListingPenagihan = () => {
                   </div>
                 </div>
               </div>
+              <div className="flex max-[1254px]:flex-col gap-5 items-center mb-5">
+                <div className="flex flex-col gap-3 mb-3 w-full ">
+                  <div className="whitespace-nowrap flex">
+                    <label
+                      htmlFor=""
+                      className="w-36 text-[14px] text-slate-400"
+                    >
+                      Status
+                    </label>
+                    <div className="hidden ">:</div>
+                  </div>
+                  <div className="w-full">
+                    <Select
+                      value={srcStatus}
+                      onChange={(item) => setSrcStatus(item)}
+                      className="whitespace-nowrap"
+                      options={optionStatus}
+                      noOptionsMessage={() => "Data not found"}
+                      styles={customeStyles}
+                      required
+                    />
+                  </div>
+                </div>
+              </div>
 
               <div className="flex justify-end mt-2">
                 <button
@@ -240,7 +439,7 @@ const ListingPenagihan = () => {
                 listPenagihan.map((item, index) => (
                   <tr
                     key={index}
-                    className="text-center whitespace-nowrap hover:bg-slate-100 border bg-white"
+                    className="whitespace-nowrap hover:bg-slate-100 border bg-white"
                   >
                     <td className="p-5 border">{item.vendor.nama}</td>
                     <td className="p-5 border">
@@ -248,7 +447,11 @@ const ListingPenagihan = () => {
                     </td>
                     <td className="p-5 border">{item.doc_receive_number}</td>
                     <td className="p-5 border">
-                      Rp. {accountingNumber(totalInvoice[index])}
+                      Rp.{" "}
+                      {accountingNumber(
+                        totalInvoice.filter((value) => value.id === item.id)[0]
+                          ?.total
+                      )}
                     </td>
                     <td className="p-5 border">
                       {titleCase(item.status, "_")}
@@ -260,7 +463,7 @@ const ListingPenagihan = () => {
                       onClick={() => onClikOpen(item)}
                       className="p-5 border cursor-pointer"
                     >
-                      <div className="py-2 px-1 rounded-lg bg-gray-200">
+                      <div className="py-2 px-4 rounded-lg bg-gray-200">
                         Detail
                       </div>
                     </td>
@@ -287,7 +490,7 @@ const ListingPenagihan = () => {
                 ignoreDate === 0 ? dayjs(startDate).format("YYYY-MM-DD") : ""
               }&endDate=${
                 ignoreDate === 0 ? dayjs(endDate).format("YYYY-MM-DD") : ""
-              } `}
+              }&status=${srcStatus.value !== 0 ? srcStatus.value : ""} `}
               className="flex items-center gap-2 mt-5 rounded-sm py-2 px-5 shadow-md bg-[#217346] w-fit text-white cursor-pointer"
             >
               <div>
@@ -296,16 +499,16 @@ const ListingPenagihan = () => {
               <div>Download</div>
             </a>
 
-            {/* <div className="mt-10">
-            <Pagination
-              count={20}
-              page={page}
-              onChange={onChangePagination}
-              showFirstButton
-              showLastButton
-              size="small"
-            />
-          </div> */}
+            <div className="mt-10">
+              <Pagination
+                count={count}
+                page={page}
+                onChange={onChangePagination}
+                showFirstButton
+                showLastButton
+                size="small"
+              />
+            </div>
           </>
         )}
       </div>
@@ -332,6 +535,17 @@ const ListingPenagihan = () => {
               >
                 <div className="text-[20px] mb-5 font-semibold ">Detail</div>
                 <div className="flex flex-col gap-2">
+                  <div className="flex max-[549px]:flex-col max-[549px]:items-start items-center gap-2">
+                    <div className="w-[270px] whitespace-nowrap font-bold">
+                      Status
+                    </div>
+                    <div className="max-[549px]:hidden min-[550px]:block">
+                      :
+                    </div>
+                    <div className="w-[240px] whitespace-nowrap overflow-ellipsis overflow-hidden">
+                      {penagihanDetail.status}
+                    </div>
+                  </div>
                   <div className="flex max-[549px]:flex-col max-[549px]:items-start items-center gap-2">
                     <div className="w-[270px] whitespace-nowrap font-bold">
                       Supplier
@@ -383,9 +597,7 @@ const ListingPenagihan = () => {
                     <div className="max-[549px]:hidden min-[550px]:block">
                       :
                     </div>
-                    <div className="w-[240px] whitespace-nowrap overflow-ellipsis overflow-hidden">
-                      {penagihanDetail.nomer_do}
-                    </div>
+                    <div className="w-[240px]">{penagihanDetail.nomer_do}</div>
                   </div>
                   <div className="flex max-[549px]:flex-col max-[549px]:items-start items-center gap-2">
                     <div className="w-[270px] whitespace-nowrap font-bold">
@@ -407,9 +619,7 @@ const ListingPenagihan = () => {
                     </div>
                     <div className="flex flex-col gap-1">
                       {penagihanDetail.nomer_invoices.map((nomer) => (
-                        <div className="w-[240px] whitespace-nowrap overflow-ellipsis overflow-hidden">
-                          {nomer}
-                        </div>
+                        <div className="w-[240px] max-w-[240px]">{nomer}</div>
                       ))}
                     </div>
                   </div>
@@ -469,6 +679,38 @@ const ListingPenagihan = () => {
                       ))}
                     </div>
                   </div>
+                  {penagihanDetail.status === "REJECT" && (
+                    <div className="flex max-[549px]:flex-col max-[549px]:items-start gap-2 mb-5">
+                      <div className="w-[270px] whitespace-nowrap font-bold">
+                        Reason Reject
+                      </div>
+                      <div className="max-[549px]:hidden min-[550px]:block">
+                        :
+                      </div>
+                      <div className="flex flex-col gap-1">
+                        <div className="w-[240px] ">
+                          {penagihanDetail.reason}
+                        </div>
+                      </div>
+                    </div>
+                  )}
+                  {(penagihanDetail.status === "REJECT" ||
+                    penagihanDetail.status === "DRAFT") && (
+                    <div className="flex max-[402px]:flex-col items-center max-[402px]:items-start gap-2 mt-5">
+                      <div className="w-[100px]">Set status to</div>
+                      <div className="max-[402px]:w-full">
+                        <Select
+                          value={status}
+                          onChange={(value) => setStatus(value)}
+                          className="whitespace-nowrap"
+                          options={options}
+                          noOptionsMessage={() => "Data not found"}
+                          styles={customeStyles}
+                          required
+                        />
+                      </div>
+                    </div>
+                  )}
                 </div>
 
                 <a
@@ -481,13 +723,22 @@ const ListingPenagihan = () => {
                   <div>Download</div>
                 </a>
 
-                <div className="mt-5 flex max-[479px]:flex-col max-[479px]:items-start items-center gap-2 text-center justify-end">
+                <div className="mt-5 flex max-[479px]:flex-col max-[479px]:items-start items-center gap-2 text-center justify-between">
                   <div
                     onClick={handleClose}
                     className="rounded-md py-2 px-5 shadow-sm border border-gray-400 cursor-pointer max-[479px]:w-full"
                   >
                     Back
                   </div>
+                  {(penagihanDetail.status === "REJECT" ||
+                    penagihanDetail.status === "DRAFT") && (
+                    <div
+                      onClick={() => onSubmitDocument(penagihanDetail)}
+                      className="rounded-md py-2 px-5 shadow-sm bg-[#0077b6] text-white cursor-pointer max-[479px]:w-full"
+                    >
+                      Submit
+                    </div>
+                  )}
                 </div>
               </div>
             )}

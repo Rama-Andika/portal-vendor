@@ -5,7 +5,7 @@ import { AdapterDayjs } from "@mui/x-date-pickers/AdapterDayjs";
 import { DemoContainer } from "@mui/x-date-pickers/internals/demo";
 import { useEffect, useState } from "react";
 import dayjs from "dayjs";
-import { Backdrop, CircularProgress, Fade, Modal } from "@mui/material";
+import { Backdrop, CircularProgress, Fade, Modal, Pagination } from "@mui/material";
 import { RiFileExcel2Line } from "react-icons/ri";
 import Select from "react-select";
 import titleCase from "../../components/functions/TitleCase";
@@ -19,6 +19,7 @@ import { useNavigate } from "react-router-dom";
 const options = [
   { value: "APPROVED", label: "APPROVED", key: 0 },
   { value: "REJECT", label: "REJECT", key: 1 },
+  { value: "CANCEL", label: "CANCEL", key: 2 },
 ];
 
 const api = process.env.REACT_APP_BASEURL;
@@ -30,10 +31,17 @@ const PendingTask = () => {
   const [startDate, setStartDate] = useState(dayjs(new Date()));
   const [endDate, setEndDate] = useState(dayjs(new Date()));
   // eslint-disable-next-line no-unused-vars
-  const [page, setPage] = useState(1);
   const [openBackdrop, setOpenBackdrop] = useState(false);
   const [open, setOpen] = useState(false);
   const [totalInvoice, setTotalInvoice] = useState([]);
+
+  //pagination state
+  const [, setTotal] = useState(0);
+  const [count, setCount] = useState(0);
+  const [limit, setLimit] = useState(0);
+  const [start, setStart] = useState(0);
+  const [page, setPage] = useState(1);
+  //end pagination state
 
   const [listPenagihan, setListPenagihan] = useState([]);
   // eslint-disable-next-line no-unused-vars
@@ -81,11 +89,7 @@ const PendingTask = () => {
     }
     setPenagihanDetail({ ...penagihanDetail, status: item.value });
   };
-
-  // eslint-disable-next-line no-unused-vars
-  const onChangePagination = (e, value) => {
-    setPage(value);
-  };
+ 
 
   const onClikOpen = (item) => {
     if (Cookies.get("admin_token") !== undefined) {
@@ -114,22 +118,30 @@ const PendingTask = () => {
     })
       .then((response) => response.json())
       .then((data) => {
+        console.log(data)
+        setTotal(data.total);
+        setCount(Math.ceil(data.total / data.limit));
+        setLimit(data.limit);
         setOpenBackdrop(false);
         // eslint-disable-next-line array-callback-return
         data.data.map((data, index) => {
           var total = 0;
           data.nilai_invoices.map((nilai) => (total += nilai));
-          setTotalInvoice((prev) => {
-            return [...prev, total.toFixed(2)];
-          });
+          setTotalInvoice((prev) => [
+            ...prev,
+            {id: data.id, total: total.toFixed(2)}
+          ]);
         });
 
         setListPenagihan(data.data);
+        
       })
       .catch((err) => {
+        console.log(err)
         setOpenBackdrop(false);
       });
   };
+  
 
   const btnSearch = (e) => {
     e.preventDefault();
@@ -142,7 +154,36 @@ const PendingTask = () => {
       parameter["end_date"] = dayjs(endDate).format("YYYY-MM-DD HH:mm:ss");
     }
 
+    setStart(0);
+    setPage(1);
+
     fetchData(parameter);
+  };
+
+  const onChangePagination = (e, value) => {
+    let parameter = {};
+    let limitTemp = limit;
+
+    if (value > page) {
+      limitTemp = limitTemp * value - limit;
+      parameter = { start: limitTemp };
+    } else {
+      limitTemp = limitTemp * value - limit;
+      parameter = { start: limitTemp };
+    }
+
+    if (name.trim().length > 0) {
+      parameter["name"] = name;
+    }
+
+    if (ignoreDate === 0) {
+      parameter["start_date"] = dayjs(startDate).format("YYYY-MM-DD HH:mm:ss");
+      parameter["end_date"] = dayjs(endDate).format("YYYY-MM-DD HH:mm:ss");
+    }
+
+    setStart(limitTemp);
+    fetchData(parameter);
+    setPage(value);
   };
 
   const onSubmitDocument = async (item) => {
@@ -370,7 +411,7 @@ const PendingTask = () => {
             </form>
           </div>
         </div>
-        <div className="w-full overflow-x-auto shadow-md text-[14px]">
+        <div className="w-full overflow-auto shadow-md max-h-[400px] text-[14px]">
           <table className="w-full table-monitoring">
             <thead className="sticky top-0">
               <tr className="text-center whitespace-nowrap border-2 bg-[#eaf4f4]">
@@ -399,14 +440,14 @@ const PendingTask = () => {
 
                     <td className="p-5 border"></td>
                     <td className="p-5 border">
-                      Rp. {accountingNumber(totalInvoice[index])}
+                      Rp. {accountingNumber(totalInvoice.filter((value) => value.id === item.id)[0]?.total)}
                     </td>
 
                     <td
                       onClick={() => onClikOpen(item)}
                       className="p-5 border cursor-pointer"
                     >
-                      <div className="py-2 px-1 rounded-lg bg-gray-200">
+                      <div className="py-2 px-4 rounded-lg bg-gray-200">
                         Detail
                       </div>
                     </td>
@@ -442,16 +483,16 @@ const PendingTask = () => {
               <div>Download</div>
             </a>
 
-            {/* <div className="mt-10">
+            <div className="mt-10">
               <Pagination
-                count={20}
+                count={count}
                 page={page}
                 onChange={onChangePagination}
                 showFirstButton
                 showLastButton
                 size="small"
               />
-            </div> */}
+            </div>
           </>
         )}
 
@@ -529,7 +570,7 @@ const PendingTask = () => {
                       <div className="max-[549px]:hidden min-[550px]:block">
                         :
                       </div>
-                      <div className="w-[240px] whitespace-nowrap overflow-ellipsis overflow-hidden">
+                      <div className="w-[240px]">
                         {penagihanDetail.nomer_do}
                       </div>
                     </div>
@@ -553,7 +594,7 @@ const PendingTask = () => {
                       </div>
                       <div className="flex flex-col gap-1">
                         {penagihanDetail.nomer_invoices.map((nomer) => (
-                          <div className="w-[240px] whitespace-nowrap overflow-ellipsis overflow-hidden">
+                          <div className="w-[240px]">
                             {nomer}
                           </div>
                         ))}
