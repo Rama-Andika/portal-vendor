@@ -52,6 +52,7 @@ const VendorAndNonVendor = () => {
   const [startDate, setStartDate] = useState(dayjs(new Date()));
   const [endDate, setEndDate] = useState(dayjs(new Date()));
   const [ignoreDate, setIgnoreDate] = useState(1);
+  const [srcStatus, setSrcStatus] = useState("0");
 
   //modal
   const [open, setOpen] = useState(false);
@@ -357,8 +358,11 @@ const VendorAndNonVendor = () => {
     if (number.trim().length > 0) {
       parameter["number"] = number;
     }
-    if (supplier.trim().length > 0) {
-      parameter["supplier"] = supplier;
+    if (srcStatus !== "0") {
+      parameter["status"] = srcStatus;
+    }
+    if (!isEmpty(srcVendor) && srcVendor.value !== "0") {
+      parameter["vendorId"] = srcVendor.value;
     }
 
     if (mcmReff !== "0") {
@@ -487,11 +491,14 @@ const VendorAndNonVendor = () => {
   const onSearch = (e) => {
     e.preventDefault();
     let parameter = {};
-    if (supplier.trim().length > 0) {
-      parameter["supplier"] = supplier;
+    if (!isEmpty(srcVendor) && srcVendor.value !== "0") {
+      parameter["vendorId"] = srcVendor.value;
     }
     if (number.trim().length > 0) {
       parameter["number"] = number;
+    }
+    if (srcStatus !== "0") {
+      parameter["status"] = srcStatus;
     }
     if (!isEmpty(srcAccount) && srcAccount.value !== "0") {
       parameter["coa_id"] = srcAccount.value;
@@ -685,18 +692,19 @@ const VendorAndNonVendor = () => {
               <div className="flex flex-col  gap-1  mb-3 w-full ">
                 <div className="whitespace-nowrap flex">
                   <label htmlFor="" className="w-36 text-[14px] text-slate-400">
-                    Supplier Name
+                    Vendor
                   </label>
                   <div className="hidden ">:</div>
                 </div>
                 <div className="w-full">
-                  <input
-                    type="text"
-                    value={supplier}
-                    onChange={(e) => setSupplier(e.target.value)}
-                    name=""
-                    id=""
-                    className="w-full h-[32px]  border border-slate-300 rounded-sm focus:border focus:border-[#0077b6]  "
+                  <Select
+                    value={srcVendor}
+                    onChange={(value) => setSrcVendor(value)}
+                    className="whitespace-nowrap"
+                    options={optionVendor}
+                    noOptionsMessage={() => "Data not found"}
+                    styles={customeStyles}
+                    required
                   />
                 </div>
               </div>
@@ -853,7 +861,31 @@ const VendorAndNonVendor = () => {
                 </div>
               </div>
             </div>
-
+            <div className="flex max-[557px]:flex-col gap-5 items-center mb-5">
+              <div className="flex flex-col  gap-1 mb-3 w-full ">
+                <div className="whitespace-nowrap flex">
+                  <label htmlFor="" className="w-36 text-[14px] text-slate-400">
+                    Status
+                  </label>
+                  <div className="hidden ">:</div>
+                </div>
+                <div className="w-full">
+                  <select
+                    name="status"
+                    id="status"
+                    value={srcStatus}
+                    onChange={(e) => setSrcStatus(e.target.value)}
+                    className="max-w-[522.69px] border border-slate-300 rounded-sm focus:border focus:border-[#0077b6]"
+                  >
+                    <option value="0">All</option>
+                    <option value="Not Posted">Draft</option>
+                    <option value="Posted">Approved</option>
+                    <option value="Paid">Paid</option>
+                    <option value="Ready To Paid">Ready To Paid</option>
+                  </select>
+                </div>
+              </div>
+            </div>
             <div className="flex flex-col gap-1 w-full mb-3 ">
               <div className="whitespace-nowrap flex">
                 <label htmlFor="" className="w-36 text-[14px] text-slate-400">
@@ -960,9 +992,7 @@ const VendorAndNonVendor = () => {
               <td className="p-5 border bg-[#eaf4f4]">Create Date</td>
               <td className="p-5 border bg-[#eaf4f4]">Month</td>
               <td className="p-5 w-8 border bg-[#eaf4f4]">Name Preparer</td>
-              <td className="p-5 border bg-[#eaf4f4] ">
-                PR Number
-              </td>
+              <td className="p-5 border bg-[#eaf4f4] ">PR Number</td>
               <td className="p-5 border bg-[#eaf4f4]">Supplier</td>
               <td className="p-5 border bg-[#eaf4f4]">Memo</td>
               <td className="p-5 border bg-[#eaf4f4]">Currency</td>
@@ -973,7 +1003,9 @@ const VendorAndNonVendor = () => {
               <td className="p-5 border bg-[#eaf4f4]">Outstanding Date</td>
               <td className="p-5 border bg-[#eaf4f4]">Indicator</td>
               <td className="p-5 border bg-[#eaf4f4]">Bank Out</td>
-              <td className="p-5 border bg-[#eaf4f4] sticky right-0 z-10">MCM Reff No</td>
+              <td className="p-5 border bg-[#eaf4f4] sticky right-0 z-10">
+                MCM Reff No
+              </td>
               <td className="p-5 border bg-[#eaf4f4]">Date MCM</td>
               <td className="p-5 border bg-[#eaf4f4]">Payment Date</td>
               <td className="p-5 border bg-[#eaf4f4]">Status</td>
@@ -995,23 +1027,21 @@ const VendorAndNonVendor = () => {
               payments.map((item, index) => (
                 <tr
                   key={index}
-                  className="text-center whitespace-nowrap hover:bg-slate-100 border "
+                  className="text-center relative whitespace-nowrap hover:bg-slate-100 z-10 border "
                 >
-                  <td className="p-5 border">{start + index + 1} </td>
-                  <td className="p-5 border">
+                  <td className="p-5 border bg-white hover:bg-slate-100">{start + index + 1} </td>
+                  <td className="p-5 border bg-white hover:bg-slate-100">
                     {dayjs(item.date).format("MMM DD, YYYY")}
                   </td>
-                  <td className="p-5 border">{dayjs(item.date).month() + 1}</td>
-                  <td className="p-5 border w-16">
+                  <td className="p-5 border bg-white hover:bg-slate-100">{dayjs(item.date).month() + 1}</td>
+                  <td className="p-5 border w-16 bg-white hover:bg-slate-100">
                     {item.name_preparer !== undefined ? item.name_preparer : ""}
                   </td>
-                  <td className="p-5 border bg-white ">
-                    {item.pr_number}
-                  </td>
-                  <td className="text-left ps-2 p-5 border bg-white">
+                  <td className="p-5 border bg-white hover:bg-slate-100">{item.pr_number}</td>
+                  <td className="text-left ps-2 p-5 border bg-white hover:bg-slate-100">
                     {item.supplier}
                   </td>
-                  <td className="text-left ps-2 p-5 border">
+                  <td className="text-left ps-2 p-5 border bg-white hover:bg-slate-100">
                     <div className="flex gap-2 items-center">
                       <input
                         value={item.memo}
@@ -1029,13 +1059,13 @@ const VendorAndNonVendor = () => {
                       </div>
                     </div>
                   </td>
-                  <td className="p-5 border">{item.currency}</td>
-                  <td className="p-5 border">
+                  <td className="p-5 border bg-white hover:bg-slate-100">{item.currency}</td>
+                  <td className="p-5 border bg-white hover:bg-slate-100">
                     {accountingNumber(
                       item.ori_currency !== undefined ? item.ori_currency : 0
                     )}
                   </td>
-                  <td className="p-5 border">
+                  <td className="p-5 border bg-white hover:bg-slate-100">
                     <div className="">
                       <input
                         onKeyDown={(e) => e.key === " " && e.preventDefault()}
@@ -1053,14 +1083,14 @@ const VendorAndNonVendor = () => {
                       />
                     </div>
                   </td>
-                  <td className="p-5 border">
+                  <td className="p-5 border bg-white hover:bg-slate-100">
                     {accountingNumber(idrCurrency[index])}
                   </td>
-                  <td className="py-5  border">{item.due_date}</td>
-                  <td className="p-5 border">
+                  <td className="py-5  border bg-white hover:bg-slate-100">{item.due_date}</td>
+                  <td className="p-5 border bg-white hover:bg-slate-100">
                     {dayjs(outStandingDate[index].value).format("MMM DD, YYYY")}
                   </td>
-                  <td className="p-5 border">
+                  <td className="p-5 border bg-white hover:bg-slate-100">
                     {dayjs(outStandingDate[index].value).format("YYYY-MM-DD") >
                     dayjs(new Date()).format("YYYY-MM-DD") ? (
                       ""
@@ -1073,8 +1103,8 @@ const VendorAndNonVendor = () => {
                       </div>
                     )}
                   </td>
-                  <td className="text-left p-5 ps-2 border">{item.bank_out}</td>
-                  <td className="p-5 border sticky right-0 z-10">
+                  <td className="text-left p-5 ps-2 border bg-white hover:bg-slate-100">{item.bank_out}</td>
+                  <td className="p-5 border sticky right-0 z-10 bg-white hover:bg-slate-100">
                     <div className="">
                       <input
                         onKeyDown={(e) => e.key === " " && e.preventDefault()}
@@ -1092,7 +1122,7 @@ const VendorAndNonVendor = () => {
                       />
                     </div>
                   </td>
-                  <td className="p-5 border">
+                  <td className="p-5 border bg-white hover:bg-slate-100">
                     <div>
                       <LocalizationProvider dateAdapter={AdapterDayjs}>
                         <DemoContainer components={["DatePicker"]}>
@@ -1115,7 +1145,7 @@ const VendorAndNonVendor = () => {
                       </LocalizationProvider>
                     </div>
                   </td>
-                  <td className="p-5 border">
+                  <td className="p-5 border bg-white hover:bg-slate-100">
                     <div>
                       <LocalizationProvider dateAdapter={AdapterDayjs}>
                         <DemoContainer components={["DatePicker"]}>
@@ -1138,15 +1168,15 @@ const VendorAndNonVendor = () => {
                       </LocalizationProvider>
                     </div>
                   </td>
-                  <td className="p-5 border">
+                  <td className="p-5 border bg-white hover:bg-slate-100">
                     {status[index].id === item.bankpo_payment_id
                       ? status[index].value
                       : ""}
                   </td>
-                  <td className="p-5 border">
+                  <td className="p-5 border bg-white hover:bg-slate-100">
                     {item.payment_date ? "TRUE" : "FALSE"}
                   </td>
-                  <td className="p-5 border bg-white sticky right-0 z-10">
+                  <td className="p-5 border bg-white hover:bg-slate-100 sticky right-0 z-10">
                     <div>
                       <input
                         onChange={() => onChangeChecked(item, index)}
@@ -1194,10 +1224,9 @@ const VendorAndNonVendor = () => {
         <>
           <a
             //onClick={ExportToExcel(data, "list penagihan")}
-            href={`${apiExport}servlet/com.project.ccs.report.RptPvPaymentMonitorVendorNonVendorXLS?supplier=${supplier}&number=${number}&periodeId=${
+            href={`${apiExport}servlet/com.project.ccs.report.RptPvPaymentMonitorVendorNonVendorXLS?vendorId=${srcVendor.value}&number=${number}&periodeId=${
               srcPeriode.value
-            }&coaId=${srcAccount.value}&mcmReff=${mcmReff}
-            &paymentDateIsBlank=${paymentDateIsBlank}&ignoreCreateDate=${ignoreDate}&startDate=${dayjs(
+            }&coaId=${srcAccount.value}&mcmReff=${mcmReff}&status=${srcStatus}&paymentDateIsBlank=${paymentDateIsBlank}&ignoreCreateDate=${ignoreDate}&startDate=${dayjs(
               startDate
             ).format("YYYY-MM-DD")}&endDate=${dayjs(endDate).format(
               "YYYY-MM-DD"
