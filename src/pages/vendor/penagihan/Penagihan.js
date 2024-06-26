@@ -996,52 +996,10 @@ const Penagihan = () => {
 
     if (Cookies.get("token") !== undefined) {
       if (isSave) {
-        let lastItem;
-        let counter = 1;
-
-        const currDate = new Date();
-        const month = dayjs(currDate).month();
-        const year = dayjs(currDate).year();
-
-        await fetch(`${api}api/portal-vendor/list/penagihan`,{
-          method: "POST",
-          body: JSON.stringify({
-            order: "created_at DESC",
-            limit: 0
-          })
-        })
-          .then((response) => response.json())
-          .then((res) => {
-            lastItem = res.data[0];
-            console.log(lastItem)
-          })
-          .catch((err) => console.log(err));
-
-        if (lastItem !== undefined) {
-          if (lastItem.no_request !== undefined) {
-            counter = parseInt(lastItem.no_request.split("/")[0]) + 1;
-            if (
-              parseInt(month + 1) !==
-              parseInt(lastItem.no_request.split("/")[1])
-            ) {
-              counter = 1;
-            }
-          }
-        }
-
-        let formattedNumber = counter.toLocaleString("en-US", {
-          minimumIntegerDigits: 9,
-          useGrouping: false,
-        });
-
-        const noRequest = formattedNumber + "/" + (month + 1) + "/" + year;
-        setNomerRequest(noRequest);
-
         if (id === 0) {
           const initialValue = {
             id: id,
             vendor_id: vendorId,
-            no_request: noRequest,
             tipe_penagihan: tipePenagihan.value,
             tipe_pengiriman: tipePengiriman.value,
             nomer_po: "PO" + nomerPo,
@@ -1120,7 +1078,6 @@ const Penagihan = () => {
           const initialValue = {
             id: id,
             vendor_id: vendorId,
-            no_request: noRequest,
             tipe_penagihan: tipePenagihan.value,
             tipe_pengiriman: tipePengiriman.value,
             nomer_po: "PO" + nomerPo,
@@ -1322,51 +1279,10 @@ const Penagihan = () => {
 
     if (Cookies.get("token")) {
       if (isSave) {
-        let lastItem;
-        let counter = 1;
-
-        const currDate = new Date();
-        const month = dayjs(currDate).month();
-        const year = dayjs(currDate).year();
-
-        await fetch(`${api}api/portal-vendor/list/penagihan`,{
-          method: "POST",
-          body: JSON.stringify({
-            order: "created_at desc",
-            limit: 0
-          })
-        })
-          .then((response) => response.json())
-          .then((res) => {
-            lastItem = res.data[0];
-          })
-          .catch((err) => console.log(err));
-
-        if (lastItem !== undefined) {
-          if (lastItem.no_request !== undefined) {
-            counter = parseInt(lastItem.no_request.split("/")[0]) + 1;
-            if (
-              parseInt(month + 1) !==
-              parseInt(lastItem.no_request.split("/")[1])
-            ) {
-              counter = 1;
-            }
-          }
-        }
-
-        let formattedNumber = counter.toLocaleString("en-US", {
-          minimumIntegerDigits: 9,
-          useGrouping: false,
-        });
-
-        const noRequest = formattedNumber + "/" + (month + 1) + "/" + year;
-        setNomerRequest(noRequest);
-
         if (id === 0) {
           const initialValue = {
             id: id,
             vendor_id: vendorId,
-            no_request: noRequest,
             tipe_penagihan: tipePenagihan.value,
             tipe_pengiriman: tipePengiriman.value,
             nomer_po: "PO" + nomerPo,
@@ -1450,7 +1366,6 @@ const Penagihan = () => {
           const initialValue = {
             id: id,
             vendor_id: vendorId,
-            no_request: noRequest,
             tipe_penagihan: tipePenagihan.value,
             tipe_pengiriman: tipePengiriman.value,
             nomer_po: "PO" + nomerPo,
@@ -1546,44 +1461,6 @@ const Penagihan = () => {
 
   const onSubmitButton = async () => {
     setOpenBackdrop(true);
-    let lastItem;
-    let counter = 1;
-
-    const currDate = new Date();
-    const month = dayjs(currDate).month();
-    const year = dayjs(currDate).year();
-
-    await fetch(`${api}api/portal-vendor/list/penagihan`,{
-      method: "POST",
-      body: JSON.stringify({
-        order: "created_at desc",
-        limit: 0
-      })
-    })
-      .then((response) => response.json())
-      .then((res) => {
-        lastItem = res.data[0];
-      })
-      .catch((err) => console.log(err));
-
-    if (lastItem !== undefined) {
-      if (lastItem.no_request !== undefined) {
-        counter = parseInt(lastItem.no_request.split("/")[0]) + 1;
-        if (
-          parseInt(month + 1) !== parseInt(lastItem.no_request.split("/")[1])
-        ) {
-          counter = 1;
-        }
-      }
-    }
-
-    let formattedNumber = counter.toLocaleString("en-US", {
-      minimumIntegerDigits: 9,
-      useGrouping: false,
-    });
-
-    const noRequest = formattedNumber + "/" + (month + 1) + "/" + year;
-
     // eslint-disable-next-line array-callback-return
     const invoiceList = nomerInvoice.map((invoice) => {
       if (invoice.value.trim().length > 0) {
@@ -1637,7 +1514,6 @@ const Penagihan = () => {
         const initialValue = {
           id: id,
           vendor_id: vendorId,
-          no_request: noRequest,
           tipe_penagihan: tipePenagihan.value,
           tipe_pengiriman: tipePengiriman.value,
           nomer_po: "PO" + nomerPo,
@@ -1717,7 +1593,6 @@ const Penagihan = () => {
         const initialValue = {
           id: id,
           vendor_id: vendorId,
-          no_request: noRequest,
           tipe_penagihan: tipePenagihan.value,
           tipe_pengiriman: tipePengiriman.value,
           nomer_po: "PO" + nomerPo,
@@ -1806,45 +1681,6 @@ const Penagihan = () => {
 
   const onSubmitButton2 = async () => {
     setOpenBackdrop(true);
-
-    let lastItem;
-    let counter = 1;
-
-    const currDate = new Date();
-    const month = dayjs(currDate).month();
-    const year = dayjs(currDate).year();
-
-    await fetch(`${api}api/portal-vendor/list/penagihan`,{
-      method: "POST",
-      body: JSON.stringify({
-        order: "created_at desc",
-        limit: 0
-      })
-    })
-      .then((response) => response.json())
-      .then((res) => {
-        lastItem = res.data[0];
-      })
-      .catch((err) => console.log(err));
-
-    if (lastItem !== undefined) {
-      if (lastItem.no_request !== undefined) {
-        counter = parseInt(lastItem.no_request.split("/")[0]) + 1;
-        if (
-          parseInt(month + 1) !== parseInt(lastItem.no_request.split("/")[1])
-        ) {
-          counter = 1;
-        }
-      }
-    }
-
-    let formattedNumber = counter.toLocaleString("en-US", {
-      minimumIntegerDigits: 9,
-      useGrouping: false,
-    });
-
-    const noRequest = formattedNumber + "/" + (month + 1) + "/" + year;
-
     // eslint-disable-next-line array-callback-return
     const invoiceList = nomerInvoice.map((invoice) => {
       if (invoice.value.trim().length > 0) {
@@ -1898,7 +1734,6 @@ const Penagihan = () => {
         const initialValue = {
           id: id,
           vendor_id: vendorId,
-          no_request: noRequest,
           tipe_penagihan: tipePenagihan.value,
           tipe_pengiriman: tipePengiriman.value,
           nomer_po: "PO" + nomerPo,
@@ -1980,7 +1815,6 @@ const Penagihan = () => {
         const initialValue = {
           id: id,
           vendor_id: vendorId,
-          no_request: noRequest,
           tipe_penagihan: tipePenagihan.value,
           tipe_pengiriman: tipePengiriman.value,
           nomer_po: "PO" + nomerPo,

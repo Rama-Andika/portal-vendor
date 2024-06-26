@@ -960,7 +960,7 @@ const VendorAndNonVendor = () => {
               <td className="p-5 border bg-[#eaf4f4]">Create Date</td>
               <td className="p-5 border bg-[#eaf4f4]">Month</td>
               <td className="p-5 w-8 border bg-[#eaf4f4]">Name Preparer</td>
-              <td className="p-5 border bg-[#eaf4f4] sticky left-0 z-10">
+              <td className="p-5 border bg-[#eaf4f4] ">
                 PR Number
               </td>
               <td className="p-5 border bg-[#eaf4f4]">Supplier</td>
@@ -973,12 +973,12 @@ const VendorAndNonVendor = () => {
               <td className="p-5 border bg-[#eaf4f4]">Outstanding Date</td>
               <td className="p-5 border bg-[#eaf4f4]">Indicator</td>
               <td className="p-5 border bg-[#eaf4f4]">Bank Out</td>
-              <td className="p-5 border bg-[#eaf4f4]">MCM Reff No</td>
+              <td className="p-5 border bg-[#eaf4f4] sticky right-0 z-10">MCM Reff No</td>
               <td className="p-5 border bg-[#eaf4f4]">Date MCM</td>
               <td className="p-5 border bg-[#eaf4f4]">Payment Date</td>
               <td className="p-5 border bg-[#eaf4f4]">Status</td>
               <td className="p-5 border bg-[#eaf4f4]">Settlement In Oxy</td>
-              <td className="p-5 border bg-[#eaf4f4]">
+              <td className="p-5 border bg-[#eaf4f4] sticky right-0 z-10">
                 <div>
                   <input
                     onChange={onChangeCheckedAll}
@@ -1005,7 +1005,7 @@ const VendorAndNonVendor = () => {
                   <td className="p-5 border w-16">
                     {item.name_preparer !== undefined ? item.name_preparer : ""}
                   </td>
-                  <td className="p-5 border bg-white sticky left-0 z-10">
+                  <td className="p-5 border bg-white ">
                     {item.pr_number}
                   </td>
                   <td className="text-left ps-2 p-5 border bg-white">
@@ -1074,7 +1074,7 @@ const VendorAndNonVendor = () => {
                     )}
                   </td>
                   <td className="text-left p-5 ps-2 border">{item.bank_out}</td>
-                  <td className="p-5 border">
+                  <td className="p-5 border sticky right-0 z-10">
                     <div className="">
                       <input
                         onKeyDown={(e) => e.key === " " && e.preventDefault()}
@@ -1146,7 +1146,7 @@ const VendorAndNonVendor = () => {
                   <td className="p-5 border">
                     {item.payment_date ? "TRUE" : "FALSE"}
                   </td>
-                  <td className="p-5 border">
+                  <td className="p-5 border bg-white sticky right-0 z-10">
                     <div>
                       <input
                         onChange={() => onChangeChecked(item, index)}
