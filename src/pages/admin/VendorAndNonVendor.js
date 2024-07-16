@@ -3,7 +3,7 @@ import { Backdrop, Fade, Modal, Pagination } from "@mui/material";
 import { DatePicker, LocalizationProvider } from "@mui/x-date-pickers";
 import { AdapterDayjs } from "@mui/x-date-pickers/AdapterDayjs";
 import { DemoContainer } from "@mui/x-date-pickers/internals/demo";
-import { useEffect, useState } from "react";
+import { useEffect, useRef, useState } from "react";
 import { CgDanger } from "react-icons/cg";
 import dayjs from "dayjs";
 import accountingNumber from "../../components/functions/AccountingNumber";
@@ -22,6 +22,11 @@ const VendorAndNonVendor = () => {
   const [srcAccountOptions, setSrcAccountOptions] = useState([]);
   const [optionPeriode, setOptionPeriode] = useState([]);
   const [optionVendor, setOptionVendor] = useState([]);
+
+  // Ref
+  const lastColumnRef = useRef(null);
+  const firstColumnRef = useRef(null);
+  const checkColumnRef = useRef(null);
 
   //Pagination
   const [page, setPage] = useState(1);
@@ -89,7 +94,7 @@ const VendorAndNonVendor = () => {
 
           const check = res.data.map((item) => ({
             id: item.bankpo_payment_id,
-            value: item.payment_date ? true : false,
+            value: item.status_settle === "Paid" ? true : false,
           }));
           setCheckBox(check);
 
@@ -156,7 +161,7 @@ const VendorAndNonVendor = () => {
               idr = parseFloat(item.ori_currency) * parseInt(item.rate);
             }
 
-            return idr;
+            return { id: item.bankpo_payment_id, value: idr };
           });
 
           setIdrCurrency(listIdr);
@@ -397,52 +402,96 @@ const VendorAndNonVendor = () => {
     );
     const outstdDate = dayjs(listOutStandingDate[0].value).format("YYYY-MM-DD");
     const datePayment = dayjs(value).format("YYYY-MM-DD");
-    const statusCopy = [...status];
+
+    let status;
     if (outstdDate < datePayment) {
-      statusCopy[index].value = "Late";
+      status = "Late";
     } else {
-      statusCopy[index].value = "Ontime";
+      status = "Ontime";
     }
 
-    statusCopy[index].id = item.bankpo_payment_id;
+    setStatus((prevItems) =>
+      prevItems.map((p) =>
+        p.id === item.bankpo_payment_id ? { ...p, value: status } : p
+      )
+    );
 
-    setStatus(statusCopy);
-
-    const startDateCopy = [...paymentDate];
-    startDateCopy[index].id = item.bankpo_payment_id;
-    startDateCopy[index].value = item.value;
-    setPaymentDate(startDateCopy);
+    const checkIfMcmDateExists = paymentDate.some(
+      (m) => m.id === item.bankpo_payment_id
+    );
+    if (!checkIfMcmDateExists) {
+      setPaymentDate((prevItems) =>
+        prevItems.map((p) =>
+          p.id === 0 ? { ...p, id: item.bankpo_payment_id, value: value } : p
+        )
+      );
+    } else {
+      setPaymentDate((prevItems) =>
+        prevItems.map((p) =>
+          p.id === item.bankpo_payment_id ? { ...p, value: dayjs(value) } : p
+        )
+      );
+    }
   };
 
   const onChangeMcmDate = (value, index, item) => {
-    const startDateCopy = [...mcmDate];
-    startDateCopy[index].id = item.bankpo_payment_id;
-    startDateCopy[index].value = value;
-    setMcmDate(startDateCopy);
+    const checkIfMcmDateExists = mcmDate.some(
+      (m) => m.id === item.bankpo_payment_id
+    );
+    if (!checkIfMcmDateExists) {
+      setMcmDate((prevItems) =>
+        prevItems.map((p) =>
+          p.id === 0 ? { ...p, id: item.bankpo_payment_id, value: value } : p
+        )
+      );
+    } else {
+      setMcmDate((prevItems) =>
+        prevItems.map((p) =>
+          p.id === item.bankpo_payment_id ? { ...p, value: value } : p
+        )
+      );
+    }
   };
 
   const onChangeMcmReff = (e, index, item) => {
     const value = e.target.value;
-
-    const mcmReffCopy = [...mcmReffNo];
-    mcmReffCopy[index].id = item.bankpo_payment_id;
-    mcmReffCopy[index].value = value;
-    setMcmReffNo(mcmReffCopy);
+    const checkIfMcmRefNoExists = mcmReffNo.some(
+      (m) => m.id === item.bankpo_payment_id
+    );
+    if (!checkIfMcmRefNoExists) {
+      setMcmReffNo((prevItems) =>
+        prevItems.map((p) =>
+          p.id === 0 ? { ...p, id: item.bankpo_payment_id, value: value } : p
+        )
+      );
+    } else {
+      setMcmReffNo((prevItems) =>
+        prevItems.map((p) =>
+          p.id === item.bankpo_payment_id ? { ...p, value: value } : p
+        )
+      );
+    }
   };
 
   const onChangeRate = (e, index, item) => {
     const value = e.target.value;
 
     if (item.currency !== "Rp.") {
-      const idrCurrencyCopy = [...idrCurrency];
-      idrCurrencyCopy[index] = parseFloat(item.ori_currency * value);
-      setIdrCurrency(idrCurrencyCopy);
+      setIdrCurrency((prevItems) =>
+        prevItems.map((p) =>
+          p.id === item.bankpo_payment_id
+            ? { ...p, value: item.ori_currency * value }
+            : p
+        )
+      );
     }
 
-    const mcmReffCopy = [...rate];
-    mcmReffCopy[index].id = item.bankpo_payment_id;
-    mcmReffCopy[index].value = value;
-    setRate(mcmReffCopy);
+    const rateCopy = rate.map((prevItems) =>
+      prevItems.map((p) =>
+        p.id === item.bankpo_payment_id ? { ...p, value: value } : p
+      )
+    );
+    setRate(rateCopy);
   };
 
   const onChangeTerm = (e, index, item) => {
@@ -525,10 +574,11 @@ const VendorAndNonVendor = () => {
 
   const onUpdate = (e) => {
     e.preventDefault();
+    console.log(mcmDate);
     const isErrorCopy = [...isError];
     payments.map(async (item, i) => {
       if (
-        item.payment_date.length === 0 &&
+        item.status_settle !== "Paid" &&
         checkBox[i].id === item.bankpo_payment_id &&
         checkBox[i].value
       ) {
@@ -554,7 +604,8 @@ const VendorAndNonVendor = () => {
                 paymentDate[i].id === item.bankpo_payment_id
                   ? dayjs(paymentDate[i].value).format("YYYY-MM-DD HH:mm:ss")
                   : null,
-              status: status[i].value,
+              status:
+                item.bankpo_payment_id === status[i].id ? status[i].value : "",
               rate: item.bankpo_payment_id === rate[i].id ? rate[i].value : "",
               term: item.bankpo_payment_id === term[i].id ? term[i].value : "",
             }),
@@ -676,6 +727,24 @@ const VendorAndNonVendor = () => {
   const onClickSeeDetailMemo = (memo) => {
     setMemoDetail(memo);
     handleOpen();
+  };
+
+  const onClickToFirstColumn = () => {
+    console.log('1')
+    firstColumnRef.current.scrollIntoView({ behavior: "smooth",block: "start" });
+  };
+
+  const onClickToLastColumn = () => {
+    console.log('1')
+    lastColumnRef.current.scrollIntoView({ behavior: "smooth",block: "start" });
+  };
+
+  const onScroll = () => {
+    if (lastColumnRef.current && checkColumnRef.current) {
+      if (lastColumnRef.current === checkColumnRef.current) {
+        console.log(true);
+      }
+    }
   };
   return (
     <div
@@ -981,224 +1050,272 @@ const VendorAndNonVendor = () => {
           </form>
         </div>
       </div>
-      <div
-        id="scrollableDiv"
-        className="w-full overflow-auto shadow-md text-[14px]"
-      >
-        <table className="w-full table-monitoring">
-          <thead className="">
-            <tr className="text-center whitespace-nowrap border-2 ">
-              <td className="p-5 border bg-[#eaf4f4]">No</td>
-              <td className="p-5 border bg-[#eaf4f4]">Create Date</td>
-              <td className="p-5 border bg-[#eaf4f4]">Month</td>
-              <td className="p-5 w-8 border bg-[#eaf4f4]">Name Preparer</td>
-              <td className="p-5 border bg-[#eaf4f4] ">PR Number</td>
-              <td className="p-5 border bg-[#eaf4f4]">Supplier</td>
-              <td className="p-5 border bg-[#eaf4f4]">Memo</td>
-              <td className="p-5 border bg-[#eaf4f4]">Currency</td>
-              <td className="p-5 border bg-[#eaf4f4]">Ori Currency</td>
-              <td className="p-5 border bg-[#eaf4f4]">Rate</td>
-              <td className="p-5 border bg-[#eaf4f4]">IDR Currency</td>
-              <td className="p-5 bg-[#eaf4f4]">Term (Days)</td>
-              <td className="p-5 border bg-[#eaf4f4]">Outstanding Date</td>
-              <td className="p-5 border bg-[#eaf4f4]">Indicator</td>
-              <td className="p-5 border bg-[#eaf4f4]">Bank Out</td>
-              <td className="p-5 border bg-[#eaf4f4] sticky right-0 z-10">
-                MCM Reff No
-              </td>
-              <td className="p-5 border bg-[#eaf4f4]">Date MCM</td>
-              <td className="p-5 border bg-[#eaf4f4]">Payment Date</td>
-              <td className="p-5 border bg-[#eaf4f4]">Status</td>
-              <td className="p-5 border bg-[#eaf4f4]">Settlement In Oxy</td>
-              <td className="p-5 border bg-[#eaf4f4] sticky right-0 z-10">
-                <div>
-                  <input
-                    onChange={onChangeCheckedAll}
-                    id="check_all"
-                    type="checkbox"
-                    className="checked:bg-[#0077b6]"
-                  />
-                </div>
-              </td>
-            </tr>
-          </thead>
-          <tbody>
-            {payments.length > 0 &&
-              payments.map((item, index) => (
-                <tr
-                  key={index}
-                  className="text-center relative whitespace-nowrap hover:bg-slate-100 z-10 border "
-                >
-                  <td className="p-5 border bg-white hover:bg-slate-100">{start + index + 1} </td>
-                  <td className="p-5 border bg-white hover:bg-slate-100">
-                    {dayjs(item.date).format("MMM DD, YYYY")}
-                  </td>
-                  <td className="p-5 border bg-white hover:bg-slate-100">{dayjs(item.date).month() + 1}</td>
-                  <td className="p-5 border w-16 bg-white hover:bg-slate-100">
-                    {item.name_preparer !== undefined ? item.name_preparer : ""}
-                  </td>
-                  <td className="p-5 border bg-white hover:bg-slate-100">{item.pr_number}</td>
-                  <td className="text-left ps-2 p-5 border bg-white hover:bg-slate-100">
-                    {item.supplier}
-                  </td>
-                  <td className="text-left ps-2 p-5 border bg-white hover:bg-slate-100">
-                    <div className="flex gap-2 items-center">
-                      <input
-                        value={item.memo}
-                        className="disabled:bg-gray-200"
-                        disabled
-                        type="text"
-                        name=""
-                        id=""
-                      />
-                      <div
-                        onClick={() => onClickSeeDetailMemo(item.memo)}
-                        className="underline text-blue-400 cursor-pointer"
-                      >
-                        See detail
+      <div className="relative">
+        <div
+          onClick={onClickToLastColumn}
+          className="absolute top-2 right-[-20px] bg-white rounded-full shadow-md py-2 px-4 border text-[24px] z-[9999] animate-bounce cursor-pointer"
+        >
+          {">"}
+        </div>
+        <div
+          onClick={onClickToFirstColumn}
+          className="absolute top-2 left-[-20px] bg-white rounded-full shadow-md py-2 px-4 border text-[24px] z-[9999] animate-bounce cursor-pointer"
+        >
+          {"<"}
+        </div>
+        <div
+          className="w-full overflow-auto shadow-md text-[14px] max-h-[600px]"
+        >
+          <table className="w-full table-monitoring">
+            <thead className="sticky top-0 z-10">
+            <tr className="text-center whitespace-nowrap border-2 bg-[#eaf4f4]">
+                <td ref={firstColumnRef} className="p-5 border ">
+                  No
+                </td>
+                <td className="p-5 border ">Create Date</td>
+                <td className="p-5 border ">Month</td>
+                <td className="p-5 w-8 border ">Name Preparer</td>
+                <td className="p-5 border ">PR Number</td>
+                <td className="p-5 border ">Supplier</td>
+                <td className="p-5 border ">Memo</td>
+                <td className="p-5 border ">Currency</td>
+                <td className="p-5 border ">Ori Currency</td>
+                <td className="p-5 border ">Rate</td>
+                <td className="p-5 border ">IDR Currency</td>
+                <td className="p-5 border">Term (Days)</td>
+                <td className="p-5 border b">Outstanding Date</td>
+                <td className="p-5 border ">Indicator</td>
+                <td className="p-5 border ">Bank Out</td>
+                <td className="p-5 border  ">MCM Reff No</td>
+                <td className="p-5 border ">Date MCM</td>
+                <td className="p-5 border">Payment Date</td>
+                <td className="p-5 border ">Status</td>
+                <td className="p-5 border ">Settlement In Oxy</td>
+                <td ref={lastColumnRef} className="p-5 border">
+                  <div>
+                    <input
+                      onChange={onChangeCheckedAll}
+                      id="check_all"
+                      type="checkbox"
+                      className="checked:bg-[#0077b6]"
+                    />
+                  </div>
+                </td>
+              </tr>
+            </thead>
+            <tbody>
+              {payments.length > 0 &&
+                payments.map((item, index) => (
+                  <tr
+                    key={index}
+                    className="text-center whitespace-nowrap hover:bg-slate-100 border bg-white"
+                  >
+                    <td className="p-5 border ">
+                      {start + index + 1}{" "}
+                    </td>
+                    <td className="p-5 border ">
+                      {dayjs(item.date).format("MMM DD, YYYY")}
+                    </td>
+                    <td className="p-5 border ">
+                      {dayjs(item.date).month() + 1}
+                    </td>
+                    <td className="p-5 border w-16 ">
+                      {item.name_preparer !== undefined
+                        ? item.name_preparer
+                        : ""}
+                    </td>
+                    <td className="p-5 border ">
+                      {item.pr_number}
+                    </td>
+                    <td className="text-left ps-2 p-5 border ">
+                      {item.supplier}
+                    </td>
+                    <td className="text-left ps-2 p-5 border ">
+                      <div className="flex gap-2 items-center">
+                        <input
+                          value={item.memo}
+                          className="disabled:bg-gray-200"
+                          disabled
+                          type="text"
+                          name=""
+                          id=""
+                        />
+                        <div
+                          onClick={() => onClickSeeDetailMemo(item.memo)}
+                          className="underline text-blue-400 cursor-pointer"
+                        >
+                          See detail
+                        </div>
                       </div>
-                    </div>
-                  </td>
-                  <td className="p-5 border bg-white hover:bg-slate-100">{item.currency}</td>
-                  <td className="p-5 border bg-white hover:bg-slate-100">
-                    {accountingNumber(
-                      item.ori_currency !== undefined ? item.ori_currency : 0
-                    )}
-                  </td>
-                  <td className="p-5 border bg-white hover:bg-slate-100">
-                    <div className="">
-                      <input
-                        onKeyDown={(e) => e.key === " " && e.preventDefault()}
-                        onChange={(e) => onChangeRate(e, index, item)}
-                        type="number"
-                        value={
-                          item.bankpo_payment_id === rate[index].id
-                            ? rate[index].value
-                            : ""
-                        }
-                        disabled={item.payment_date ? true : false}
-                        className={`border-slate-300 ${
-                          item.payment_date && "bg-gray-200"
-                        }`}
-                      />
-                    </div>
-                  </td>
-                  <td className="p-5 border bg-white hover:bg-slate-100">
-                    {accountingNumber(idrCurrency[index])}
-                  </td>
-                  <td className="py-5  border bg-white hover:bg-slate-100">{item.due_date}</td>
-                  <td className="p-5 border bg-white hover:bg-slate-100">
-                    {dayjs(outStandingDate[index].value).format("MMM DD, YYYY")}
-                  </td>
-                  <td className="p-5 border bg-white hover:bg-slate-100">
-                    {dayjs(outStandingDate[index].value).format("YYYY-MM-DD") >
-                    dayjs(new Date()).format("YYYY-MM-DD") ? (
-                      ""
-                    ) : (
-                      <div className="text-red-400 flex items-center gap-1">
-                        <span>
-                          <CgDanger />
-                        </span>
-                        Need to pay
+                    </td>
+                    <td className="p-5 border ">
+                      {item.currency}
+                    </td>
+                    <td className="p-5 border ">
+                      {accountingNumber(
+                        item.ori_currency !== undefined ? item.ori_currency : 0
+                      )}
+                    </td>
+                    <td className="p-5 border ">
+                      <div className="">
+                        <input
+                          onKeyDown={(e) => e.key === " " && e.preventDefault()}
+                          onChange={(e) => onChangeRate(e, index, item)}
+                          type="number"
+                          value={
+                            item.bankpo_payment_id === rate[index].id
+                              ? rate[index].value
+                              : ""
+                          }
+                          disabled={
+                            item.status_settle === "Paid" ? true : false
+                          }
+                          className={`border-slate-300 ${
+                            item.status_settle === "Paid" && "bg-gray-200"
+                          }`}
+                        />
                       </div>
-                    )}
-                  </td>
-                  <td className="text-left p-5 ps-2 border bg-white hover:bg-slate-100">{item.bank_out}</td>
-                  <td className="p-5 border sticky right-0 z-10 bg-white hover:bg-slate-100">
-                    <div className="">
-                      <input
-                        onKeyDown={(e) => e.key === " " && e.preventDefault()}
-                        onChange={(e) => onChangeMcmReff(e, index, item)}
-                        type="text"
-                        value={
-                          item.bankpo_payment_id === mcmReffNo[index].id
-                            ? mcmReffNo[index].value
-                            : ""
-                        }
-                        disabled={item.payment_date ? true : false}
-                        className={`border-slate-300 ${
-                          item.payment_date && "bg-gray-200"
-                        }`}
-                      />
-                    </div>
-                  </td>
-                  <td className="p-5 border bg-white hover:bg-slate-100">
-                    <div>
-                      <LocalizationProvider dateAdapter={AdapterDayjs}>
-                        <DemoContainer components={["DatePicker"]}>
-                          <DatePicker
-                            value={
-                              mcmDate[index].id === item.bankpo_payment_id
-                                ? mcmDate[index].value
-                                : null
-                            }
-                            onChange={(value) =>
-                              onChangeMcmDate(value, index, item)
-                            }
-                            slotProps={{ textField: { size: "small" } }}
-                            disabled={item.payment_date ? true : false}
-                            className={`w-full ${
-                              item.payment_date && "bg-gray-200"
-                            }`}
-                          />
-                        </DemoContainer>
-                      </LocalizationProvider>
-                    </div>
-                  </td>
-                  <td className="p-5 border bg-white hover:bg-slate-100">
-                    <div>
-                      <LocalizationProvider dateAdapter={AdapterDayjs}>
-                        <DemoContainer components={["DatePicker"]}>
-                          <DatePicker
-                            disabled={item.payment_date ? true : false}
-                            className={`w-full ${
-                              item.payment_date && "bg-gray-200"
-                            }`}
-                            value={
-                              paymentDate[index].id === item.bankpo_payment_id
-                                ? paymentDate[index].value
-                                : null
-                            }
-                            onChange={(value) =>
-                              onChangePaymentDate(value, index, item)
-                            }
-                            slotProps={{ textField: { size: "small" } }}
-                          />
-                        </DemoContainer>
-                      </LocalizationProvider>
-                    </div>
-                  </td>
-                  <td className="p-5 border bg-white hover:bg-slate-100">
-                    {status[index].id === item.bankpo_payment_id
-                      ? status[index].value
-                      : ""}
-                  </td>
-                  <td className="p-5 border bg-white hover:bg-slate-100">
-                    {item.payment_date ? "TRUE" : "FALSE"}
-                  </td>
-                  <td className="p-5 border bg-white hover:bg-slate-100 sticky right-0 z-10">
-                    <div>
-                      <input
-                        onChange={() => onChangeChecked(item, index)}
-                        name={`check_${item.bankpo_payment_id}`}
-                        disabled={item.payment_date ? true : false}
-                        type="checkbox"
-                        checked={
-                          checkBox.length > 0 &&
-                          item.bankpo_payment_id === checkBox[index].id &&
-                          checkBox[index].value
-                            ? true
-                            : false
-                        }
-                        className="checked:bg-[#0077b6]"
-                      />
-                    </div>
-                  </td>
-                </tr>
-              ))}
-          </tbody>
-        </table>
+                    </td>
+                    <td className="p-5 border ">
+                      {accountingNumber(
+                        item.bankpo_payment_id === idrCurrency[index].id
+                          ? idrCurrency[index].value
+                          : 0
+                      )}
+                    </td>
+                    <td className="py-5  border ">
+                      {item.due_date}
+                    </td>
+                    <td className="p-5 border ">
+                      {dayjs(outStandingDate[index].value).format(
+                        "MMM DD, YYYY"
+                      )}
+                    </td>
+                    <td className="p-5 border ">
+                      {dayjs(outStandingDate[index].value).format(
+                        "YYYY-MM-DD"
+                      ) > dayjs(new Date()).format("YYYY-MM-DD") ? (
+                        ""
+                      ) : (
+                        <div className="text-red-400 flex items-center gap-1">
+                          <span>
+                            <CgDanger />
+                          </span>
+                          Need to pay
+                        </div>
+                      )}
+                    </td>
+                    <td className="text-left p-5 ps-2 border ">
+                      {item.bank_out}
+                    </td>
+                    <td className="p-5 border  ">
+                      <div className="">
+                        <input
+                          onKeyDown={(e) => e.key === " " && e.preventDefault()}
+                          onChange={(e) => onChangeMcmReff(e, index, item)}
+                          type="text"
+                          value={
+                            item.bankpo_payment_id === mcmReffNo[index].id
+                              ? mcmReffNo[index].value
+                              : ""
+                          }
+                          disabled={
+                            item.status_settle === "Paid" ? true : false
+                          }
+                          className={`border-slate-300 ${
+                            item.status_settle === "Paid" && "bg-gray-200"
+                          }`}
+                        />
+                      </div>
+                    </td>
+                    <td className="p-5 border ">
+                      <div>
+                        <LocalizationProvider dateAdapter={AdapterDayjs}>
+                          <DemoContainer components={["DatePicker"]}>
+                            <DatePicker
+                              value={
+                                mcmDate[index].id === item.bankpo_payment_id
+                                  ? mcmDate[index].value
+                                  : null
+                              }
+                              onChange={(value) =>
+                                onChangeMcmDate(value, index, item)
+                              }
+                              slotProps={{ textField: { size: "small" } }}
+                              disabled={
+                                item.status_settle === "Paid" ? true : false
+                              }
+                              className={`w-full ${
+                                item.status_settle === "Paid" && "bg-gray-200"
+                              }`}
+                            />
+                          </DemoContainer>
+                        </LocalizationProvider>
+                      </div>
+                    </td>
+                    <td className="p-5 border bg-white">
+                      <div>
+                        <LocalizationProvider dateAdapter={AdapterDayjs}>
+                          <DemoContainer components={["DatePicker"]}>
+                            <DatePicker
+                              disabled={
+                                item.status_settle === "Paid" ? true : false
+                              }
+                              className={`w-full ${
+                                item.status_settle === "Paid" && "bg-gray-200"
+                              }`}
+                              value={
+                                paymentDate[index].id === item.bankpo_payment_id
+                                  ? paymentDate[index].value
+                                  : null
+                              }
+                              onChange={(value) =>
+                                onChangePaymentDate(value, index, item)
+                              }
+                              slotProps={{ textField: { size: "small" } }}
+                            />
+                          </DemoContainer>
+                        </LocalizationProvider>
+                      </div>
+                    </td>
+                    <td className="p-5 border ">
+                      {status[index].id === item.bankpo_payment_id
+                        ? status[index].value
+                        : ""}
+                    </td>
+                    <td className="p-5 border ">
+                      {item.status_settle === "Paid" ? "TRUE" : "FALSE"}
+                    </td>
+                    <td
+                      ref={checkColumnRef}
+                      className="p-5 border  "
+                    >
+                      <div>
+                        <input
+                          onChange={() => onChangeChecked(item, index)}
+                          name={`check_${item.bankpo_payment_id}`}
+                          disabled={
+                            item.status_settle === "Paid" ? true : false
+                          }
+                          type="checkbox"
+                          checked={
+                            checkBox.length > 0 &&
+                            item.bankpo_payment_id === checkBox[index].id &&
+                            checkBox[index].value
+                              ? true
+                              : false
+                          }
+                          className="checked:bg-[#0077b6]"
+                        />
+                      </div>
+                    </td>
+                  </tr>
+                ))}
+            </tbody>
+          </table>
+        </div>
       </div>
+
       <div className="w-[80%] max-[900px]:w-full flex justify-end mt-10">
         <button
           onClick={onUpdate}
@@ -1224,9 +1341,11 @@ const VendorAndNonVendor = () => {
         <>
           <a
             //onClick={ExportToExcel(data, "list penagihan")}
-            href={`${apiExport}servlet/com.project.ccs.report.RptPvPaymentMonitorVendorNonVendorXLS?vendorId=${srcVendor.value}&number=${number}&periodeId=${
-              srcPeriode.value
-            }&coaId=${srcAccount.value}&mcmReff=${mcmReff}&status=${srcStatus}&paymentDateIsBlank=${paymentDateIsBlank}&ignoreCreateDate=${ignoreDate}&startDate=${dayjs(
+            href={`${apiExport}servlet/com.project.ccs.report.RptPvPaymentMonitorVendorNonVendorXLS?vendorId=${
+              srcVendor.value
+            }&number=${number}&periodeId=${srcPeriode.value}&coaId=${
+              srcAccount.value
+            }&mcmReff=${mcmReff}&status=${srcStatus}&paymentDateIsBlank=${paymentDateIsBlank}&ignoreCreateDate=${ignoreDate}&startDate=${dayjs(
               startDate
             ).format("YYYY-MM-DD")}&endDate=${dayjs(endDate).format(
               "YYYY-MM-DD"

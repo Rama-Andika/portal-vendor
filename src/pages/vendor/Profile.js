@@ -2433,7 +2433,7 @@ const Profile = () => {
                   </div>
 
                   <div className=" relative">
-                    <label htmlFor="upload-bpom" className="w-fit">
+                    <label htmlFor="upload-dokumen-lainnya" className="w-fit">
                       {dokumenPendukungLainnya === null ? (
                         <div className="w-fit flex gap-1 items-center bg-blue-400 py-2 px-5 text-white hover:bg-blue-200 rounded-md">
                           <span>
@@ -2453,7 +2453,7 @@ const Profile = () => {
                     <input
                       onChange={onChangeDokumenLainnyaFile}
                       type="file"
-                      id="upload-bpom"
+                      id="upload-dokumen-lainnya"
                       accept=".jpg,.pdf"
                       className="hidden w-full h-[36px] border border-slate-300 rounded-sm focus:border focus:border-[#0077b6]  "
                     />

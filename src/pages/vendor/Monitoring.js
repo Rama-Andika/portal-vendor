@@ -17,6 +17,7 @@ const srcStatusOptions = [
   { value: 0, label: "All", key: 0 },
   { value: "APPROVED", label: "Approved", key: 0 },
   { value: "DRAFT", label: "Draft", key: 1 },
+  { value: "REJECT", label: "Reject", key: 1 },
   { value: "Waiting_for_approval", label: "Waiting", key: 1 },
   { value: "CLOSED", label: "Closed", key: 1 },
 ];
@@ -76,12 +77,12 @@ const Monitoring = () => {
       })
         .then((response) => response.json())
         .then((res) => {
+          setTotal(res.total);
+          setCount(Math.ceil(res.total / res.limit));
+          setLimit(res.limit);
           // eslint-disable-next-line array-callback-return
           res.data.map((data) => {
             var total = 0;
-            setTotal(data.total);
-            setCount(Math.ceil(data.total / data.limit));
-            setLimit(data.limit);
             data.nilai_invoices.map((nilai) => (total += nilai));
             setTotalInvoice((prev) => [
               ...prev,
@@ -301,6 +302,7 @@ const Monitoring = () => {
                     <td className="p-5 border">No Request </td>
                     <td className="p-5 border">Tanggal Submit</td>
                     <td className="p-5 border">Tanggal Approved</td>
+                    <td className="p-5 border">Tanggal Pembayaran</td>
                     <td className="p-5 border">Nilai Penagihan</td>
                     <td className="p-5 border">Status Penagihan</td>
                     <td className="p-5 border">No Tukar Faktur</td>
@@ -325,6 +327,9 @@ const Monitoring = () => {
                         {item.status === "APPROVED"
                           ? dayjs(item.updated_at).format("DD/MM/YYYY")
                           : ""}
+                      </td>
+                      <td className="p-5 border">
+                        {item.due_date ? dayjs(item.due_date).format("DD/MM/YYYY") : ""}
                       </td>
                       <td className="p-5 border">
                         Rp. {accountingNumber(totalInvoice.filter((value) => value.id === item.id)[0]?.total)}
