@@ -173,7 +173,7 @@ const PendingTask = () => {
     }
 
     if (name.trim().length > 0) {
-      parameter["name"] = name;
+      parameter["vendor_name"] = name;
     }
 
     if (ignoreDate === 0) {

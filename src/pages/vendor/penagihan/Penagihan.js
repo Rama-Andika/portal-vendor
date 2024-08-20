@@ -33,6 +33,7 @@ import GetBase64 from "../../../components/functions/GetBase64";
 import { Viewer } from "@react-pdf-viewer/core";
 import titleCase from "../../../components/functions/TitleCase";
 import accountingNumber from "../../../components/functions/AccountingNumber";
+import accountingNumberV2 from "../../../components/functions/AccountingNumberV2";
 
 const optionsTipePenagihan = [
   { value: "beli putus", label: "Beli Putus", key: 0 },
@@ -551,7 +552,7 @@ const Penagihan = () => {
 
     setNilaiInvoice((s) => {
       const newArr = s.slice();
-      newArr[index].value = accountingNumber(
+      newArr[index].value = accountingNumberV2(
         e.target.value.split(".").join("")
       );
 

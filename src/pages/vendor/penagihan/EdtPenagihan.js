@@ -31,6 +31,7 @@ import titleCase from "../../../components/functions/TitleCase";
 import GetBase64 from "../../../components/functions/GetBase64";
 import Cookies from "js-cookie";
 import accountingNumber from "../../../components/functions/AccountingNumber";
+import accountingNumberV2 from "../../../components/functions/AccountingNumberV2";
 
 const optionsTipePenagihan = [
   { value: "beli putus", label: "Beli Putus", key: 0 },
@@ -216,7 +217,7 @@ const Penagihan = () => {
             return { value: dayjs(tanggal) };
           });
           const listNilaiInvoice = data.nilai_invoices.map((nilai) => {
-            return { value: accountingNumber(nilai.toString()) };
+            return { value: accountingNumberV2(nilai.toString()) };
           });
 
           let arrayInvoiceTambahan = [];
@@ -300,10 +301,13 @@ const Penagihan = () => {
     // eslint-disable-next-line array-callback-return
     nilaiInvoice.map((nilai) => {
       const value = nilai.value.replace(/\./g, "").split(",").join(".");
+      console.log(value)
       if (nilai.value.trim().length > 0 && !isNaN(value)) {
         countNilaiInvoice += 1;
       }
     });
+
+    
 
     // const invoiceTambahanArray = invoiceTambahan.filter((invoice) => {
     //   return !isEmpty(invoice);
@@ -318,6 +322,13 @@ const Penagihan = () => {
     //     countInvoiceTambahan += 1;
     //   }
     // });
+
+    console.log(nomerPo.trim().length)
+    console.log(tanggalPo !== undefined)
+    console.log(nomerDo.trim().length)
+    console.log(countNomerInvoice === nomerInvoice.length)
+    console.log(countTanggalInvoice === nomerInvoice.length)
+    console.log(countNilaiInvoice === nomerInvoice.length)
 
     if (activeStep === 0) {
       setActiveStep((prevActiveStep) => prevActiveStep + 1);
@@ -582,7 +593,7 @@ const Penagihan = () => {
 
     setNilaiInvoice((s) => {
       const newArr = s.slice();
-      newArr[index].value = accountingNumber(
+      newArr[index].value = accountingNumberV2(
         e.target.value.split(".").join("")
       );
 
