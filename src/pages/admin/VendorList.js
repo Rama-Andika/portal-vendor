@@ -45,7 +45,7 @@ const VendorList = () => {
   const [vendorDetail, setVendorDetail] = useState({});
 
   const [listUser, setListUser] = useState([]);
-  const [userDetail, setUserDetail] = useState({})
+  const [userDetail, setUserDetail] = useState({});
 
   const navigate = useNavigate();
   const handleOpen = () => setOpen(true);
@@ -141,7 +141,7 @@ const VendorList = () => {
   useEffect(() => {
     window.scrollTo(0, 0);
     fetchData();
-  // eslint-disable-next-line react-hooks/exhaustive-deps
+    // eslint-disable-next-line react-hooks/exhaustive-deps
   }, []);
 
   const onSearch = (e) => {
@@ -165,7 +165,7 @@ const VendorList = () => {
 
   const onClickView = (item, user) => {
     if (Cookies.get("admin_token") !== undefined) {
-      setUserDetail(user)
+      setUserDetail(user);
       setVendorDetail(item);
       handleOpen();
     } else {
@@ -223,9 +223,9 @@ const VendorList = () => {
           screenSize < 768 ? "px-5 pt-20" : "px-10 pt-10"
         } font-roboto `}
       >
-        <div className="mb-20">Vendor List</div>
+        <div className="mb-20">Daftar Vendor</div>
         <div className="mb-5 w-[70%] max-[638px]:w-full">
-          <div className="mb-5 text-slate-400">Searching Parameter</div>
+          <div className="mb-5 text-slate-400">Parameter Pencarian</div>
           <div>
             <form onSubmit={(e) => onSearch(e)}>
               <div className="flex gap-5 items-center mb-5">
@@ -235,7 +235,7 @@ const VendorList = () => {
                       htmlFor=""
                       className="w-36 text-[14px] text-slate-400"
                     >
-                      Supplier Name
+                      Nama Vendor
                     </label>
                     <div className="hidden ">:</div>
                   </div>
@@ -256,7 +256,7 @@ const VendorList = () => {
                       htmlFor=""
                       className="w-36 text-[14px] text-slate-400"
                     >
-                      Supplier Code
+                      Kode Vendor
                     </label>
                     <div className="hidden">:</div>
                   </div>
@@ -279,7 +279,7 @@ const VendorList = () => {
                       htmlFor=""
                       className="w-36 text-[14px] text-slate-400"
                     >
-                      Location
+                      Lokasi
                     </label>
                     <div className="hidden">:</div>
                   </div>
@@ -333,11 +333,11 @@ const VendorList = () => {
               <tr className="text-center whitespace-nowrap border-2 bg-[#eaf4f4]">
                 <td className="p-5 border">Action</td>
                 <td className="p-5 border">No</td>
-                <td className="p-5 border">Supplier Name</td>
-                <td className="p-5 border">Supplier Code</td>
+                <td className="p-5 border">Nama</td>
+                <td className="p-5 border">Kode</td>
                 <td className="p-5 border">Term Of Payment</td>
-                <td className="p-5 border">Location</td>
-                <td className="p-5 border">Contact Person</td>
+                <td className="p-5 border">Lokasi</td>
+                <td className="p-5 border">Kontak Person</td>
                 <td className="p-5 border">Email</td>
               </tr>
             </thead>
@@ -413,7 +413,7 @@ const VendorList = () => {
             <Fade in={open}>
               {!isEmpty(vendorDetail) && (
                 <div
-                  className={`border-0 bg-white py-5 px-7 absolute top-[50%] left-1/2 translate-x-[-50%] translate-y-[-50%] h-[400px] overflow-y-auto z-[999999]  ${
+                  className={`rounded-md border-0 bg-white py-5 px-7 absolute top-[50%] left-1/2 translate-x-[-50%] translate-y-[-50%] h-[400px] overflow-y-auto z-[999999]  ${
                     screenSize <= 548 ? "w-[90%]" : "w-fit"
                   }`}
                 >
@@ -423,9 +423,7 @@ const VendorList = () => {
                       <div className="w-[270px] whitespace-nowrap font-bold">
                         Nama
                       </div>
-                      <div className="max-[549px]:hidden min-[550px]:block">
-                        :
-                      </div>
+                 
                       <div className="w-[240px] whitespace-nowrap overflow-ellipsis overflow-hidden">
                         {titleCase(vendorDetail.nama)}
                       </div>
@@ -434,9 +432,7 @@ const VendorList = () => {
                       <div className="w-[270px] whitespace-nowrap font-bold">
                         Username
                       </div>
-                      <div className="max-[549px]:hidden min-[550px]:block">
-                        :
-                      </div>
+                 
                       <div className="w-[240px] whitespace-nowrap overflow-ellipsis overflow-hidden">
                         {userDetail.username}
                       </div>
@@ -445,9 +441,7 @@ const VendorList = () => {
                       <div className="w-[270px] whitespace-nowrap font-bold">
                         Tipe Perusahaan
                       </div>
-                      <div className="max-[549px]:hidden min-[550px]:block">
-                        :
-                      </div>
+                   
                       <div className="w-[240px] whitespace-nowrap overflow-ellipsis overflow-hidden">
                         {titleCase(vendorDetail.tipe_perusahaan)}
                       </div>
@@ -456,9 +450,7 @@ const VendorList = () => {
                       <div className="w-[270px] whitespace-nowrap font-bold">
                         Tipe Perusahaan Lainnya
                       </div>
-                      <div className="max-[549px]:hidden min-[550px]:block">
-                        :
-                      </div>
+                    
                       <div className="w-[240px] whitespace-nowrap overflow-ellipsis overflow-hidden">
                         {titleCase(vendorDetail.tipe_perusahaan_lainnya)}
                       </div>
@@ -468,9 +460,7 @@ const VendorList = () => {
                       <div className="w-[270px] whitespace-nowrap font-bold">
                         Alamat
                       </div>
-                      <div className="max-[549px]:hidden min-[550px]:block">
-                        :
-                      </div>
+                  
                       <div className="w-[240px] max-[549px]:w-full whitespace-pre-wrap">
                         {vendorDetail.alamat}
                       </div>
@@ -479,9 +469,7 @@ const VendorList = () => {
                       <div className="w-[270px] whitespace-nowrap font-bold">
                         Provinsi
                       </div>
-                      <div className="max-[549px]:hidden min-[550px]:block">
-                        :
-                      </div>
+                 
                       <div className="w-[240px] whitespace-nowrap overflow-ellipsis overflow-hidden">
                         {titleCase(vendorDetail.provinsi)}
                       </div>
@@ -490,9 +478,7 @@ const VendorList = () => {
                       <div className="w-[270px] whitespace-nowrap font-bold">
                         Kota
                       </div>
-                      <div className="max-[549px]:hidden min-[550px]:block">
-                        :
-                      </div>
+                   
                       <div className="w-[240px] whitespace-nowrap overflow-ellipsis overflow-hidden">
                         {titleCase(vendorDetail.kota)}
                       </div>
@@ -501,9 +487,7 @@ const VendorList = () => {
                       <div className="w-[270px] whitespace-nowrap font-bold">
                         Kode Pos
                       </div>
-                      <div className="max-[549px]:hidden min-[550px]:block">
-                        :
-                      </div>
+                   
                       <div className="w-[240px] whitespace-nowrap overflow-ellipsis overflow-hidden">
                         {titleCase(vendorDetail.kode_pos)}
                       </div>
@@ -512,9 +496,7 @@ const VendorList = () => {
                       <div className="w-[270px] whitespace-nowrap font-bold">
                         Tipe Pembelian
                       </div>
-                      <div className="max-[549px]:hidden min-[550px]:block">
-                        :
-                      </div>
+                 
                       <div className="w-[240px] whitespace-nowrap overflow-ellipsis overflow-hidden">
                         {titleCase(vendorDetail.tipe_pembelian)}
                       </div>
@@ -523,9 +505,7 @@ const VendorList = () => {
                       <div className="w-[270px] whitespace-nowrap font-bold">
                         Status Pajak
                       </div>
-                      <div className="max-[549px]:hidden min-[550px]:block">
-                        :
-                      </div>
+               
                       <div className="w-[240px] whitespace-nowrap overflow-ellipsis overflow-hidden">
                         {vendorDetail.status_pajak}
                       </div>
@@ -534,9 +514,7 @@ const VendorList = () => {
                       <div className="w-[270px] whitespace-nowrap font-bold">
                         NPWP
                       </div>
-                      <div className="max-[549px]:hidden min-[550px]:block">
-                        :
-                      </div>
+               
                       <div className="w-[240px] whitespace-nowrap overflow-ellipsis overflow-hidden">
                         {vendorDetail.npwp}
                       </div>
@@ -545,9 +523,7 @@ const VendorList = () => {
                       <div className="w-[270px] whitespace-nowrap font-bold">
                         Website
                       </div>
-                      <div className="max-[549px]:hidden min-[550px]:block">
-                        :
-                      </div>
+                   
                       <div className="w-[240px] whitespace-nowrap overflow-ellipsis overflow-hidden">
                         {vendorDetail.website}
                       </div>
@@ -556,9 +532,7 @@ const VendorList = () => {
                       <div className="w-[270px] whitespace-nowrap font-bold">
                         Nama Pemilik
                       </div>
-                      <div className="max-[549px]:hidden min-[550px]:block">
-                        :
-                      </div>
+                  
                       <div className="w-[240px] whitespace-nowrap overflow-ellipsis overflow-hidden">
                         {titleCase(vendorDetail.nama_pemilik)}
                       </div>
@@ -567,9 +541,7 @@ const VendorList = () => {
                       <div className="w-[270px] whitespace-nowrap font-bold">
                         Nama Penanggung Jawab
                       </div>
-                      <div className="max-[549px]:hidden min-[550px]:block">
-                        :
-                      </div>
+                 
                       <div className="w-[240px] whitespace-nowrap overflow-ellipsis overflow-hidden">
                         {titleCase(vendorDetail.nama_penanggung_jawab)}
                       </div>

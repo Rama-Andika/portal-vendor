@@ -472,7 +472,7 @@ const Cod = () => {
     >
       <div className="mb-10 max-[349px]:mb-5">COD</div>
       <div className="mb-5 w-[70%] max-[638px]:w-full">
-        <div className="mb-5 text-slate-400">Searching Parameter</div>
+        <div className="mb-5 text-slate-400">Parameter Pencarian</div>
         <div>
           <form onSubmit={(e) => onSearch(e)}>
             <div className="flex max-[349px]:flex-col gap-5 items-center mb-5">
@@ -817,7 +817,7 @@ const Cod = () => {
         >
           <Fade in={open}>
             <div
-              className={`border-0 bg-white  py-5 px-7 absolute top-[50%] left-1/2 translate-x-[-50%] translate-y-[-50%] h-[400px] overflow-y-auto z-[999999]  ${
+              className={`rounded-md border-0 bg-white  py-5 px-7 absolute top-[50%] left-1/2 translate-x-[-50%] translate-y-[-50%] h-[400px] overflow-y-auto z-[999999]  ${
                 screenSize <= 548 ? "w-[90%]" : "w-[50%]"
               }`}
             >

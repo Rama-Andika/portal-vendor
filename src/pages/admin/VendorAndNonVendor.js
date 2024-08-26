@@ -3,7 +3,7 @@ import { Backdrop, Fade, Modal, Pagination } from "@mui/material";
 import { DatePicker, LocalizationProvider } from "@mui/x-date-pickers";
 import { AdapterDayjs } from "@mui/x-date-pickers/AdapterDayjs";
 import { DemoContainer } from "@mui/x-date-pickers/internals/demo";
-import { useEffect, useRef, useState } from "react";
+import { useEffect, useState } from "react";
 import { CgDanger } from "react-icons/cg";
 import dayjs from "dayjs";
 import accountingNumber from "../../components/functions/AccountingNumber";
@@ -11,7 +11,6 @@ import toast from "react-hot-toast";
 import Select from "react-select";
 import isEmpty from "../../components/functions/CheckEmptyObject";
 import { RiFileExcel2Line } from "react-icons/ri";
-import zIndex from "@mui/material/styles/zIndex";
 
 const api = process.env.REACT_APP_BASEURL;
 const apiExport = process.env.REACT_APP_EXPORT_URL;
@@ -20,13 +19,6 @@ const VendorAndNonVendor = () => {
   const { screenSize } = useStateContext();
   const [payments, setPayments] = useState([]);
   const [srcAccountOptions, setSrcAccountOptions] = useState([]);
-  const [optionPeriode, setOptionPeriode] = useState([]);
-  const [optionVendor, setOptionVendor] = useState([]);
-
-  // Ref
-  const lastColumnRef = useRef(null);
-  const firstColumnRef = useRef(null);
-  const checkColumnRef = useRef(null);
 
   //Pagination
   const [page, setPage] = useState(1);
@@ -44,20 +36,11 @@ const VendorAndNonVendor = () => {
     value: "0",
     label: "All",
   });
-  const [srcPeriode, setSrcPeriode] = useState({
-    value: "0",
-    label: "All",
-  });
-  const [srcVendor, setSrcVendor] = useState({
-    value: "0",
-    label: "All",
-  });
   const [mcmReff, setMcmReff] = useState("0");
   const [paymentDateIsBlank, setPaymentDateIsBlank] = useState("0");
   const [startDate, setStartDate] = useState(dayjs(new Date()));
   const [endDate, setEndDate] = useState(dayjs(new Date()));
   const [ignoreDate, setIgnoreDate] = useState(1);
-  const [srcStatus, setSrcStatus] = useState("0");
 
   //modal
   const [open, setOpen] = useState(false);
@@ -94,7 +77,7 @@ const VendorAndNonVendor = () => {
 
           const check = res.data.map((item) => ({
             id: item.bankpo_payment_id,
-            value: item.status_settle === "Paid" ? true : false,
+            value: item.payment_date ? true : false,
           }));
           setCheckBox(check);
 
@@ -161,7 +144,7 @@ const VendorAndNonVendor = () => {
               idr = parseFloat(item.ori_currency) * parseInt(item.rate);
             }
 
-            return { id: item.bankpo_payment_id, value: idr };
+            return idr;
           });
 
           setIdrCurrency(listIdr);
@@ -212,51 +195,12 @@ const VendorAndNonVendor = () => {
       });
   };
 
-  const fetchPeriode = async (parameter = new Object()) => {
-    await fetch(`${api}api/portal-vendor/list/periode`, {
-      method: "POST",
-    })
-      .then((response) => response.json())
-      .then((res) => {
-        const data = res.data;
-        if (data.length > 0) {
-          const optionPeriodeCopy = data.map((d) => ({
-            value: d.id,
-            label: d.name,
-          }));
-          optionPeriodeCopy.unshift({ value: "0", label: "All" });
-
-          setOptionPeriode(optionPeriodeCopy);
-        }
-      });
-  };
-
-  const fetchVendor = async (parameter = new Object()) => {
-    await fetch(`${api}api/portal-vendor/list/oxyvendor`, {
-      method: "POST",
-    })
-      .then((response) => response.json())
-      .then((res) => {
-        const data = res.data;
-        if (data.length > 0) {
-          const optionVendorCopy = data.map((d) => ({
-            value: d.id,
-            label: d.name,
-          }));
-          optionVendorCopy.unshift({ value: "0", label: "All" });
-
-          setOptionVendor(optionVendorCopy);
-        }
-      });
-  };
-
   const customeStyles = {
     control: (baseStyles, state) => ({
       ...baseStyles,
     }),
     menu: (baseStyles, state) => ({
       ...baseStyles,
-      zIndex: 9999,
     }),
     option: (baseStyles, state) => ({
       ...baseStyles,
@@ -363,11 +307,8 @@ const VendorAndNonVendor = () => {
     if (number.trim().length > 0) {
       parameter["number"] = number;
     }
-    if (srcStatus !== "0") {
-      parameter["status"] = srcStatus;
-    }
-    if (!isEmpty(srcVendor) && srcVendor.value !== "0") {
-      parameter["vendorId"] = srcVendor.value;
+    if (supplier.trim().length > 0) {
+      parameter["supplier"] = supplier;
     }
 
     if (mcmReff !== "0") {
@@ -380,10 +321,6 @@ const VendorAndNonVendor = () => {
 
     if (!isEmpty(srcAccount) && srcAccount.value !== "0") {
       parameter["coa_id"] = srcAccount.value;
-    }
-
-    if (!isEmpty(srcPeriode) && srcPeriode.value !== "0") {
-      parameter["periodeId"] = srcPeriode.value;
     }
 
     if (ignoreDate === 0) {
@@ -402,96 +339,52 @@ const VendorAndNonVendor = () => {
     );
     const outstdDate = dayjs(listOutStandingDate[0].value).format("YYYY-MM-DD");
     const datePayment = dayjs(value).format("YYYY-MM-DD");
-
-    let status;
+    const statusCopy = [...status];
     if (outstdDate < datePayment) {
-      status = "Late";
+      statusCopy[index].value = "Late";
     } else {
-      status = "Ontime";
+      statusCopy[index].value = "Ontime";
     }
 
-    setStatus((prevItems) =>
-      prevItems.map((p) =>
-        p.id === item.bankpo_payment_id ? { ...p, value: status } : p
-      )
-    );
+    statusCopy[index].id = item.bankpo_payment_id;
 
-    const checkIfMcmDateExists = paymentDate.some(
-      (m) => m.id === item.bankpo_payment_id
-    );
-    if (!checkIfMcmDateExists) {
-      setPaymentDate((prevItems) =>
-        prevItems.map((p) =>
-          p.id === 0 ? { ...p, id: item.bankpo_payment_id, value: value } : p
-        )
-      );
-    } else {
-      setPaymentDate((prevItems) =>
-        prevItems.map((p) =>
-          p.id === item.bankpo_payment_id ? { ...p, value: dayjs(value) } : p
-        )
-      );
-    }
+    setStatus(statusCopy);
+
+    const startDateCopy = [...paymentDate];
+    startDateCopy[index].id = item.bankpo_payment_id;
+    startDateCopy[index].value = item.value;
+    setPaymentDate(startDateCopy);
   };
 
   const onChangeMcmDate = (value, index, item) => {
-    const checkIfMcmDateExists = mcmDate.some(
-      (m) => m.id === item.bankpo_payment_id
-    );
-    if (!checkIfMcmDateExists) {
-      setMcmDate((prevItems) =>
-        prevItems.map((p) =>
-          p.id === 0 ? { ...p, id: item.bankpo_payment_id, value: value } : p
-        )
-      );
-    } else {
-      setMcmDate((prevItems) =>
-        prevItems.map((p) =>
-          p.id === item.bankpo_payment_id ? { ...p, value: value } : p
-        )
-      );
-    }
+    const startDateCopy = [...mcmDate];
+    startDateCopy[index].id = item.bankpo_payment_id;
+    startDateCopy[index].value = value;
+    setMcmDate(startDateCopy);
   };
 
   const onChangeMcmReff = (e, index, item) => {
     const value = e.target.value;
-    const checkIfMcmRefNoExists = mcmReffNo.some(
-      (m) => m.id === item.bankpo_payment_id
-    );
-    if (!checkIfMcmRefNoExists) {
-      setMcmReffNo((prevItems) =>
-        prevItems.map((p) =>
-          p.id === 0 ? { ...p, id: item.bankpo_payment_id, value: value } : p
-        )
-      );
-    } else {
-      setMcmReffNo((prevItems) =>
-        prevItems.map((p) =>
-          p.id === item.bankpo_payment_id ? { ...p, value: value } : p
-        )
-      );
-    }
+
+    const mcmReffCopy = [...mcmReffNo];
+    mcmReffCopy[index].id = item.bankpo_payment_id;
+    mcmReffCopy[index].value = value;
+    setMcmReffNo(mcmReffCopy);
   };
 
   const onChangeRate = (e, index, item) => {
     const value = e.target.value;
 
     if (item.currency !== "Rp.") {
-      setIdrCurrency((prevItems) =>
-        prevItems.map((p) =>
-          p.id === item.bankpo_payment_id
-            ? { ...p, value: item.ori_currency * value }
-            : p
-        )
-      );
+      const idrCurrencyCopy = [...idrCurrency];
+      idrCurrencyCopy[index] = parseFloat(item.ori_currency * value);
+      setIdrCurrency(idrCurrencyCopy);
     }
 
-    const rateCopy = rate.map((prevItems) =>
-      prevItems.map((p) =>
-        p.id === item.bankpo_payment_id ? { ...p, value: value } : p
-      )
-    );
-    setRate(rateCopy);
+    const mcmReffCopy = [...rate];
+    mcmReffCopy[index].id = item.bankpo_payment_id;
+    mcmReffCopy[index].value = value;
+    setRate(mcmReffCopy);
   };
 
   const onChangeTerm = (e, index, item) => {
@@ -529,8 +422,6 @@ const VendorAndNonVendor = () => {
     window.scrollTo(0, 0);
     fetchData();
     fetchCoa();
-    fetchPeriode();
-    fetchVendor();
   }, []);
 
   // const onClickEdit = (index) => {
@@ -540,20 +431,14 @@ const VendorAndNonVendor = () => {
   const onSearch = (e) => {
     e.preventDefault();
     let parameter = {};
-    if (!isEmpty(srcVendor) && srcVendor.value !== "0") {
-      parameter["vendorId"] = srcVendor.value;
+    if (supplier.trim().length > 0) {
+      parameter["supplier"] = supplier;
     }
     if (number.trim().length > 0) {
       parameter["number"] = number;
     }
-    if (srcStatus !== "0") {
-      parameter["status"] = srcStatus;
-    }
     if (!isEmpty(srcAccount) && srcAccount.value !== "0") {
       parameter["coa_id"] = srcAccount.value;
-    }
-    if (!isEmpty(srcPeriode) && srcPeriode.value !== "0") {
-      parameter["periodeId"] = srcPeriode.value;
     }
     if (mcmReff !== "0") {
       parameter["mcm_is_blank"] = mcmReff;
@@ -574,11 +459,10 @@ const VendorAndNonVendor = () => {
 
   const onUpdate = (e) => {
     e.preventDefault();
-    console.log(mcmDate);
     const isErrorCopy = [...isError];
     payments.map(async (item, i) => {
       if (
-        item.status_settle !== "Paid" &&
+        item.payment_date.length === 0 &&
         checkBox[i].id === item.bankpo_payment_id &&
         checkBox[i].value
       ) {
@@ -604,8 +488,7 @@ const VendorAndNonVendor = () => {
                 paymentDate[i].id === item.bankpo_payment_id
                   ? dayjs(paymentDate[i].value).format("YYYY-MM-DD HH:mm:ss")
                   : null,
-              status:
-                item.bankpo_payment_id === status[i].id ? status[i].value : "",
+              status: status[i].value,
               rate: item.bankpo_payment_id === rate[i].id ? rate[i].value : "",
               term: item.bankpo_payment_id === term[i].id ? term[i].value : "",
             }),
@@ -728,24 +611,6 @@ const VendorAndNonVendor = () => {
     setMemoDetail(memo);
     handleOpen();
   };
-
-  const onClickToFirstColumn = () => {
-    console.log('1')
-    firstColumnRef.current.scrollIntoView({ behavior: "smooth",block: "start" });
-  };
-
-  const onClickToLastColumn = () => {
-    console.log('1')
-    lastColumnRef.current.scrollIntoView({ behavior: "smooth",block: "start" });
-  };
-
-  const onScroll = () => {
-    if (lastColumnRef.current && checkColumnRef.current) {
-      if (lastColumnRef.current === checkColumnRef.current) {
-        console.log(true);
-      }
-    }
-  };
   return (
     <div
       className={`${
@@ -754,33 +619,32 @@ const VendorAndNonVendor = () => {
     >
       <div className="mb-20 max-[349px]:mb-5">Vendor</div>
       <div className="mb-5 w-[70%] max-[850px]:w-full">
-        <div className="mb-5 text-slate-400">Searching Parameter</div>
+        <div className="mb-5 text-slate-400">Parameter Pencarian</div>
         <div>
           <form onSubmit={(e) => onSearch(e)}>
-            <div className="flex max-[557px]:flex-col gap-5 items-center mb-5">
+            <div className="flex max-[349px]:flex-col gap-5 items-center mb-5">
               <div className="flex flex-col  gap-1  mb-3 w-full ">
                 <div className="whitespace-nowrap flex">
                   <label htmlFor="" className="w-36 text-[14px] text-slate-400">
-                    Vendor
+                    Nama Vendor
                   </label>
                   <div className="hidden ">:</div>
                 </div>
                 <div className="w-full">
-                  <Select
-                    value={srcVendor}
-                    onChange={(value) => setSrcVendor(value)}
-                    className="whitespace-nowrap"
-                    options={optionVendor}
-                    noOptionsMessage={() => "Data not found"}
-                    styles={customeStyles}
-                    required
+                  <input
+                    type="text"
+                    value={supplier}
+                    onChange={(e) => setSupplier(e.target.value)}
+                    name=""
+                    id=""
+                    className="w-full h-[32px]  border border-slate-300 rounded-sm focus:border focus:border-[#0077b6]  "
                   />
                 </div>
               </div>
               <div className="flex flex-col  gap-1  mb-3 w-full ">
                 <div className="whitespace-nowrap flex">
                   <label htmlFor="" className="w-36 text-[14px] text-slate-400">
-                    PR Number
+                    Nomor PR
                   </label>
                   <div className="hidden">:</div>
                 </div>
@@ -800,74 +664,7 @@ const VendorAndNonVendor = () => {
               <div className="flex flex-col  gap-1 mb-3 w-full ">
                 <div className="whitespace-nowrap flex">
                   <label htmlFor="" className="w-36 text-[14px] text-slate-400">
-                    Period
-                  </label>
-                  <div className="hidden ">:</div>
-                </div>
-                <div className="w-full">
-                  <Select
-                    value={srcPeriode}
-                    onChange={(value) => setSrcPeriode(value)}
-                    className="whitespace-nowrap"
-                    options={optionPeriode}
-                    noOptionsMessage={() => "Data not found"}
-                    styles={customeStyles}
-                    required
-                  />
-                </div>
-              </div>
-              <div className="flex flex-col  gap-1  mb-3 w-full ">
-                <div className="whitespace-nowrap flex">
-                  <label htmlFor="" className="w-36 text-[14px] text-slate-400">
-                    Payment Date
-                  </label>
-                  <div className="hidden ">:</div>
-                </div>
-                <div className="flex gap-5 items-center">
-                  <div className="flex items-center gap-2">
-                    <label htmlFor="all-mcm">All</label>
-                    <input
-                      name="mcm-reff"
-                      className="checked:bg-[#0077b6] checked:ring-0 focus:ring-0"
-                      type="radio"
-                      id="all-mcm"
-                      value="0"
-                      checked={paymentDateIsBlank === "0" ? true : false}
-                      onChange={(e) => setPaymentDateIsBlank(e.target.value)}
-                    />
-                  </div>
-                  <div className="flex items-center gap-2">
-                    <label htmlFor="blank">Blank</label>
-                    <input
-                      name="mcm-reff"
-                      className="checked:bg-[#0077b6] checked:ring-0 focus:ring-0"
-                      type="radio"
-                      id="blank"
-                      value="1"
-                      checked={paymentDateIsBlank === "1" ? true : false}
-                      onChange={(e) => setPaymentDateIsBlank(e.target.value)}
-                    />
-                  </div>
-                  <div className="flex items-center gap-2">
-                    <label htmlFor="not-blank">Not Blank</label>
-                    <input
-                      name="mcm-reff"
-                      className="checked:bg-[#0077b6] checked:ring-0 focus:ring-0"
-                      type="radio"
-                      id="not-blank"
-                      value="2"
-                      checked={paymentDateIsBlank === "2" ? true : false}
-                      onChange={(e) => setPaymentDateIsBlank(e.target.value)}
-                    />
-                  </div>
-                </div>
-              </div>
-            </div>
-            <div className="flex max-[557px]:flex-col gap-5 items-center mb-5">
-              <div className="flex flex-col  gap-1 mb-3 w-full ">
-                <div className="whitespace-nowrap flex">
-                  <label htmlFor="" className="w-36 text-[14px] text-slate-400">
-                    Account
+                    Akun
                   </label>
                   <div className="hidden ">:</div>
                 </div>
@@ -930,35 +727,56 @@ const VendorAndNonVendor = () => {
                 </div>
               </div>
             </div>
-            <div className="flex max-[557px]:flex-col gap-5 items-center mb-5">
-              <div className="flex flex-col  gap-1 mb-3 w-full ">
-                <div className="whitespace-nowrap flex">
-                  <label htmlFor="" className="w-36 text-[14px] text-slate-400">
-                    Status
-                  </label>
-                  <div className="hidden ">:</div>
+            <div className="flex flex-col gap-1 mb-5 w-full ">
+              <div className="whitespace-nowrap flex">
+                <label htmlFor="" className="w-36 text-[14px] text-slate-400">
+                  Tanggal Pembayaran
+                </label>
+                <div className="hidden ">:</div>
+              </div>
+              <div className="flex gap-5 items-center">
+                <div className="flex items-center gap-2">
+                  <label htmlFor="all-mcm">All</label>
+                  <input
+                    name="mcm-reff"
+                    className="checked:bg-[#0077b6] checked:ring-0 focus:ring-0"
+                    type="radio"
+                    id="all-mcm"
+                    value="0"
+                    checked={paymentDateIsBlank === "0" ? true : false}
+                    onChange={(e) => setPaymentDateIsBlank(e.target.value)}
+                  />
                 </div>
-                <div className="w-full">
-                  <select
-                    name="status"
-                    id="status"
-                    value={srcStatus}
-                    onChange={(e) => setSrcStatus(e.target.value)}
-                    className="max-w-[522.69px] border border-slate-300 rounded-sm focus:border focus:border-[#0077b6]"
-                  >
-                    <option value="0">All</option>
-                    <option value="Not Posted">Draft</option>
-                    <option value="Posted">Approved</option>
-                    <option value="Paid">Paid</option>
-                    <option value="Ready To Paid">Ready To Paid</option>
-                  </select>
+                <div className="flex items-center gap-2">
+                  <label htmlFor="blank">Blank</label>
+                  <input
+                    name="mcm-reff"
+                    className="checked:bg-[#0077b6] checked:ring-0 focus:ring-0"
+                    type="radio"
+                    id="blank"
+                    value="1"
+                    checked={paymentDateIsBlank === "1" ? true : false}
+                    onChange={(e) => setPaymentDateIsBlank(e.target.value)}
+                  />
+                </div>
+                <div className="flex items-center gap-2">
+                  <label htmlFor="not-blank">Not Blank</label>
+                  <input
+                    name="mcm-reff"
+                    className="checked:bg-[#0077b6] checked:ring-0 focus:ring-0"
+                    type="radio"
+                    id="not-blank"
+                    value="2"
+                    checked={paymentDateIsBlank === "2" ? true : false}
+                    onChange={(e) => setPaymentDateIsBlank(e.target.value)}
+                  />
                 </div>
               </div>
             </div>
             <div className="flex flex-col gap-1 w-full mb-3 ">
               <div className="whitespace-nowrap flex">
                 <label htmlFor="" className="w-36 text-[14px] text-slate-400">
-                  Create Date
+                  Tanggal Pembuatan
                 </label>
                 <div className="hidden">:</div>
               </div>
@@ -1004,7 +822,7 @@ const VendorAndNonVendor = () => {
                       checked={ignoreDate === 1 ? true : false}
                     />
                   </div>
-                  <div className="whitespace-nowrap">Ignore</div>
+                  <div className="whitespace-nowrap">Abaikan</div>
                 </div>
               </div>
             </div>
@@ -1050,272 +868,220 @@ const VendorAndNonVendor = () => {
           </form>
         </div>
       </div>
-      <div className="relative">
-        <div
-          onClick={onClickToLastColumn}
-          className="absolute top-2 right-[-20px] bg-white rounded-full shadow-md py-2 px-4 border text-[24px] z-[9999] animate-bounce cursor-pointer"
-        >
-          {">"}
-        </div>
-        <div
-          onClick={onClickToFirstColumn}
-          className="absolute top-2 left-[-20px] bg-white rounded-full shadow-md py-2 px-4 border text-[24px] z-[9999] animate-bounce cursor-pointer"
-        >
-          {"<"}
-        </div>
-        <div
-          className="w-full overflow-auto shadow-md text-[14px] max-h-[600px]"
-        >
-          <table className="w-full table-monitoring">
-            <thead className="sticky top-0 z-10">
+      <div
+        id="scrollableDiv"
+        className="w-full overflow-x-auto shadow-md text-[14px] max-h-[400px]"
+      >
+        <table className="w-full table-monitoring">
+          <thead className="">
             <tr className="text-center whitespace-nowrap border-2 bg-[#eaf4f4]">
-                <td ref={firstColumnRef} className="p-5 border ">
-                  No
-                </td>
-                <td className="p-5 border ">Create Date</td>
-                <td className="p-5 border ">Month</td>
-                <td className="p-5 w-8 border ">Name Preparer</td>
-                <td className="p-5 border ">PR Number</td>
-                <td className="p-5 border ">Supplier</td>
-                <td className="p-5 border ">Memo</td>
-                <td className="p-5 border ">Currency</td>
-                <td className="p-5 border ">Ori Currency</td>
-                <td className="p-5 border ">Rate</td>
-                <td className="p-5 border ">IDR Currency</td>
-                <td className="p-5 border">Term (Days)</td>
-                <td className="p-5 border b">Outstanding Date</td>
-                <td className="p-5 border ">Indicator</td>
-                <td className="p-5 border ">Bank Out</td>
-                <td className="p-5 border  ">MCM Reff No</td>
-                <td className="p-5 border ">Date MCM</td>
-                <td className="p-5 border">Payment Date</td>
-                <td className="p-5 border ">Status</td>
-                <td className="p-5 border ">Settlement In Oxy</td>
-                <td ref={lastColumnRef} className="p-5 border">
-                  <div>
-                    <input
-                      onChange={onChangeCheckedAll}
-                      id="check_all"
-                      type="checkbox"
-                      className="checked:bg-[#0077b6]"
-                    />
-                  </div>
-                </td>
-              </tr>
-            </thead>
-            <tbody>
-              {payments.length > 0 &&
-                payments.map((item, index) => (
-                  <tr
-                    key={index}
-                    className="text-center whitespace-nowrap hover:bg-slate-100 border bg-white"
-                  >
-                    <td className="p-5 border ">
-                      {start + index + 1}{" "}
-                    </td>
-                    <td className="p-5 border ">
-                      {dayjs(item.date).format("MMM DD, YYYY")}
-                    </td>
-                    <td className="p-5 border ">
-                      {dayjs(item.date).month() + 1}
-                    </td>
-                    <td className="p-5 border w-16 ">
-                      {item.name_preparer !== undefined
-                        ? item.name_preparer
-                        : ""}
-                    </td>
-                    <td className="p-5 border ">
-                      {item.pr_number}
-                    </td>
-                    <td className="text-left ps-2 p-5 border ">
-                      {item.supplier}
-                    </td>
-                    <td className="text-left ps-2 p-5 border ">
-                      <div className="flex gap-2 items-center">
-                        <input
-                          value={item.memo}
-                          className="disabled:bg-gray-200"
-                          disabled
-                          type="text"
-                          name=""
-                          id=""
-                        />
-                        <div
-                          onClick={() => onClickSeeDetailMemo(item.memo)}
-                          className="underline text-blue-400 cursor-pointer"
-                        >
-                          See detail
-                        </div>
+              <td className="p-5 border">No</td>
+              <td className="p-5 border">Tanggal Pembuatan</td>
+              <td className="p-5 border">Bulan</td>
+              <td className="p-5 w-8 border">Nama Pembuat</td>
+              <td className="p-5 border">Nomor PR</td>
+              <td className="p-5 border">Vendor</td>
+              <td className="p-5 border">Memo</td>
+              <td className="p-5 border">Mata Uang</td>
+              <td className="p-5 border">Ori Currency</td>
+              <td className="p-5 border">Rate</td>
+              <td className="p-5 border">Mata Uang IDR</td>
+              <td className="p-5">Term (Days)</td>
+              <td className="p-5 border">Tanggal Jatuh Tempo</td>
+              <td className="p-5 border">Indikator</td>
+              <td className="p-5 border">Bank Out</td>
+              <td className="p-5 border">Nomor MCM Ref</td>
+              <td className="p-5 border">Tanggal MCM</td>
+              <td className="p-5 border">Tanggal Pembayaran</td>
+              <td className="p-5 border">Status</td>
+              <td className="p-5 border">Settlement In Oxy</td>
+              <td className="p-5 border">
+                <div>
+                  <input
+                    onChange={onChangeCheckedAll}
+                    id="check_all"
+                    type="checkbox"
+                    className="checked:bg-[#0077b6]"
+                  />
+                </div>
+              </td>
+            </tr>
+          </thead>
+          <tbody>
+            {payments.length > 0 &&
+              payments.map((item, index) => (
+                <tr
+                  key={index}
+                  className="text-center whitespace-nowrap hover:bg-slate-100 border bg-white"
+                >
+                  <td className="p-5 border">{start + index + 1} </td>
+                  <td className="p-5 border">
+                    {dayjs(item.date).format("MMM DD, YYYY")}
+                  </td>
+                  <td className="p-5 border">{dayjs(item.date).month() + 1}</td>
+                  <td className="p-5 border w-16">
+                    {item.name_preparer !== undefined ? item.name_preparer : ""}
+                  </td>
+                  <td className="p-5 border">{item.pr_number}</td>
+                  <td className="text-left ps-2 p-5 border">{item.supplier}</td>
+                  <td className="text-left ps-2 p-5 border">
+                    <div className="flex gap-2 items-center">
+                      <input
+                        value={item.memo}
+                        className="disabled:bg-gray-200"
+                        disabled
+                        type="text"
+                        name=""
+                        id=""
+                      />
+                      <div
+                        onClick={() => onClickSeeDetailMemo(item.memo)}
+                        className="underline text-blue-400 cursor-pointer"
+                      >
+                        See detail
                       </div>
-                    </td>
-                    <td className="p-5 border ">
-                      {item.currency}
-                    </td>
-                    <td className="p-5 border ">
-                      {accountingNumber(
-                        item.ori_currency !== undefined ? item.ori_currency : 0
-                      )}
-                    </td>
-                    <td className="p-5 border ">
-                      <div className="">
-                        <input
-                          onKeyDown={(e) => e.key === " " && e.preventDefault()}
-                          onChange={(e) => onChangeRate(e, index, item)}
-                          type="number"
-                          value={
-                            item.bankpo_payment_id === rate[index].id
-                              ? rate[index].value
-                              : ""
-                          }
-                          disabled={
-                            item.status_settle === "Paid" ? true : false
-                          }
-                          className={`border-slate-300 ${
-                            item.status_settle === "Paid" && "bg-gray-200"
-                          }`}
-                        />
+                    </div>
+                  </td>
+                  <td className="p-5 border">{item.currency}</td>
+                  <td className="p-5 border">
+                    {accountingNumber(
+                      item.ori_currency !== undefined ? item.ori_currency : 0
+                    )}
+                  </td>
+                  <td className="p-5 border">
+                    <div className="">
+                      <input
+                        onKeyDown={(e) => e.key === " " && e.preventDefault()}
+                        onChange={(e) => onChangeRate(e, index, item)}
+                        type="number"
+                        value={
+                          item.bankpo_payment_id === rate[index].id
+                            ? rate[index].value
+                            : ""
+                        }
+                        disabled={item.payment_date ? true : false}
+                        className={`border-slate-300 ${
+                          item.payment_date && "bg-gray-200"
+                        }`}
+                      />
+                    </div>
+                  </td>
+                  <td className="p-5 border">
+                    {accountingNumber(idrCurrency[index])}
+                  </td>
+                  <td className="py-5  border">{item.due_date}</td>
+                  <td className="p-5 border">
+                    {dayjs(outStandingDate[index].value).format("MMM DD, YYYY")}
+                  </td>
+                  <td className="p-5 border">
+                    {dayjs(outStandingDate[index].value).format("YYYY-MM-DD") >
+                    dayjs(new Date()).format("YYYY-MM-DD") ? (
+                      ""
+                    ) : (
+                      <div className="text-red-400 flex items-center gap-1">
+                        <span>
+                          <CgDanger />
+                        </span>
+                        Need to pay
                       </div>
-                    </td>
-                    <td className="p-5 border ">
-                      {accountingNumber(
-                        item.bankpo_payment_id === idrCurrency[index].id
-                          ? idrCurrency[index].value
-                          : 0
-                      )}
-                    </td>
-                    <td className="py-5  border ">
-                      {item.due_date}
-                    </td>
-                    <td className="p-5 border ">
-                      {dayjs(outStandingDate[index].value).format(
-                        "MMM DD, YYYY"
-                      )}
-                    </td>
-                    <td className="p-5 border ">
-                      {dayjs(outStandingDate[index].value).format(
-                        "YYYY-MM-DD"
-                      ) > dayjs(new Date()).format("YYYY-MM-DD") ? (
-                        ""
-                      ) : (
-                        <div className="text-red-400 flex items-center gap-1">
-                          <span>
-                            <CgDanger />
-                          </span>
-                          Need to pay
-                        </div>
-                      )}
-                    </td>
-                    <td className="text-left p-5 ps-2 border ">
-                      {item.bank_out}
-                    </td>
-                    <td className="p-5 border  ">
-                      <div className="">
-                        <input
-                          onKeyDown={(e) => e.key === " " && e.preventDefault()}
-                          onChange={(e) => onChangeMcmReff(e, index, item)}
-                          type="text"
-                          value={
-                            item.bankpo_payment_id === mcmReffNo[index].id
-                              ? mcmReffNo[index].value
-                              : ""
-                          }
-                          disabled={
-                            item.status_settle === "Paid" ? true : false
-                          }
-                          className={`border-slate-300 ${
-                            item.status_settle === "Paid" && "bg-gray-200"
-                          }`}
-                        />
-                      </div>
-                    </td>
-                    <td className="p-5 border ">
-                      <div>
-                        <LocalizationProvider dateAdapter={AdapterDayjs}>
-                          <DemoContainer components={["DatePicker"]}>
-                            <DatePicker
-                              value={
-                                mcmDate[index].id === item.bankpo_payment_id
-                                  ? mcmDate[index].value
-                                  : null
-                              }
-                              onChange={(value) =>
-                                onChangeMcmDate(value, index, item)
-                              }
-                              slotProps={{ textField: { size: "small" } }}
-                              disabled={
-                                item.status_settle === "Paid" ? true : false
-                              }
-                              className={`w-full ${
-                                item.status_settle === "Paid" && "bg-gray-200"
-                              }`}
-                            />
-                          </DemoContainer>
-                        </LocalizationProvider>
-                      </div>
-                    </td>
-                    <td className="p-5 border bg-white">
-                      <div>
-                        <LocalizationProvider dateAdapter={AdapterDayjs}>
-                          <DemoContainer components={["DatePicker"]}>
-                            <DatePicker
-                              disabled={
-                                item.status_settle === "Paid" ? true : false
-                              }
-                              className={`w-full ${
-                                item.status_settle === "Paid" && "bg-gray-200"
-                              }`}
-                              value={
-                                paymentDate[index].id === item.bankpo_payment_id
-                                  ? paymentDate[index].value
-                                  : null
-                              }
-                              onChange={(value) =>
-                                onChangePaymentDate(value, index, item)
-                              }
-                              slotProps={{ textField: { size: "small" } }}
-                            />
-                          </DemoContainer>
-                        </LocalizationProvider>
-                      </div>
-                    </td>
-                    <td className="p-5 border ">
-                      {status[index].id === item.bankpo_payment_id
-                        ? status[index].value
-                        : ""}
-                    </td>
-                    <td className="p-5 border ">
-                      {item.status_settle === "Paid" ? "TRUE" : "FALSE"}
-                    </td>
-                    <td
-                      ref={checkColumnRef}
-                      className="p-5 border  "
-                    >
-                      <div>
-                        <input
-                          onChange={() => onChangeChecked(item, index)}
-                          name={`check_${item.bankpo_payment_id}`}
-                          disabled={
-                            item.status_settle === "Paid" ? true : false
-                          }
-                          type="checkbox"
-                          checked={
-                            checkBox.length > 0 &&
-                            item.bankpo_payment_id === checkBox[index].id &&
-                            checkBox[index].value
-                              ? true
-                              : false
-                          }
-                          className="checked:bg-[#0077b6]"
-                        />
-                      </div>
-                    </td>
-                  </tr>
-                ))}
-            </tbody>
-          </table>
-        </div>
+                    )}
+                  </td>
+                  <td className="text-left p-5 ps-2 border">{item.bank_out}</td>
+                  <td className="p-5 border">
+                    <div className="">
+                      <input
+                        onKeyDown={(e) => e.key === " " && e.preventDefault()}
+                        onChange={(e) => onChangeMcmReff(e, index, item)}
+                        type="text"
+                        value={
+                          item.bankpo_payment_id === mcmReffNo[index].id
+                            ? mcmReffNo[index].value
+                            : ""
+                        }
+                        disabled={item.payment_date ? true : false}
+                        className={`border-slate-300 ${
+                          item.payment_date && "bg-gray-200"
+                        }`}
+                      />
+                    </div>
+                  </td>
+                  <td className="p-5 border">
+                    <div>
+                      <LocalizationProvider dateAdapter={AdapterDayjs}>
+                        <DemoContainer components={["DatePicker"]}>
+                          <DatePicker
+                            value={
+                              mcmDate[index].id === item.bankpo_payment_id
+                                ? mcmDate[index].value
+                                : null
+                            }
+                            onChange={(value) =>
+                              onChangeMcmDate(value, index, item)
+                            }
+                            slotProps={{ textField: { size: "small" } }}
+                            disabled={item.payment_date ? true : false}
+                            className={`w-full ${
+                              item.payment_date && "bg-gray-200"
+                            }`}
+                          />
+                        </DemoContainer>
+                      </LocalizationProvider>
+                    </div>
+                  </td>
+                  <td className="p-5 border">
+                    <div>
+                      <LocalizationProvider dateAdapter={AdapterDayjs}>
+                        <DemoContainer components={["DatePicker"]}>
+                          <DatePicker
+                            disabled={item.payment_date ? true : false}
+                            className={`w-full ${
+                              item.payment_date && "bg-gray-200"
+                            }`}
+                            value={
+                              paymentDate[index].id === item.bankpo_payment_id
+                                ? paymentDate[index].value
+                                : null
+                            }
+                            onChange={(value) =>
+                              onChangePaymentDate(value, index, item)
+                            }
+                            slotProps={{ textField: { size: "small" } }}
+                          />
+                        </DemoContainer>
+                      </LocalizationProvider>
+                    </div>
+                  </td>
+                  <td className="p-5 border">
+                    {status[index].id === item.bankpo_payment_id
+                      ? status[index].value
+                      : ""}
+                  </td>
+                  <td className="p-5 border">
+                    {item.payment_date ? "TRUE" : "FALSE"}
+                  </td>
+                  <td className="p-5 border">
+                    <div>
+                      <input
+                        onChange={() => onChangeChecked(item, index)}
+                        name={`check_${item.bankpo_payment_id}`}
+                        disabled={item.payment_date ? true : false}
+                        type="checkbox"
+                        checked={
+                          checkBox.length > 0 &&
+                          item.bankpo_payment_id === checkBox[index].id &&
+                          checkBox[index].value
+                            ? true
+                            : false
+                        }
+                        className="checked:bg-[#0077b6]"
+                      />
+                    </div>
+                  </td>
+                </tr>
+              ))}
+          </tbody>
+        </table>
       </div>
-
       <div className="w-[80%] max-[900px]:w-full flex justify-end mt-10">
         <button
           onClick={onUpdate}
@@ -1341,11 +1107,10 @@ const VendorAndNonVendor = () => {
         <>
           <a
             //onClick={ExportToExcel(data, "list penagihan")}
-            href={`${apiExport}servlet/com.project.ccs.report.RptPvPaymentMonitorVendorNonVendorXLS?vendorId=${
-              srcVendor.value
-            }&number=${number}&periodeId=${srcPeriode.value}&coaId=${
+            href={`${apiExport}servlet/com.project.ccs.report.RptPvPaymentMonitorVendorNonVendorXLS?supplier=${supplier}&number=${number}&coaId=${
               srcAccount.value
-            }&mcmReff=${mcmReff}&status=${srcStatus}&paymentDateIsBlank=${paymentDateIsBlank}&ignoreCreateDate=${ignoreDate}&startDate=${dayjs(
+            }&mcmReff=${mcmReff}
+            &paymentDateIsBlank=${paymentDateIsBlank}&ignoreCreateDate=${ignoreDate}&startDate=${dayjs(
               startDate
             ).format("YYYY-MM-DD")}&endDate=${dayjs(endDate).format(
               "YYYY-MM-DD"
@@ -1376,7 +1141,7 @@ const VendorAndNonVendor = () => {
         >
           <Fade in={open}>
             <div
-              className={`border-0 bg-white  py-5 px-7 absolute top-[50%] left-1/2 translate-x-[-50%] translate-y-[-50%] h-[400px] overflow-y-auto z-[999999]  ${
+              className={`rounded-md border-0 bg-white  py-5 px-7 absolute top-[50%] left-1/2 translate-x-[-50%] translate-y-[-50%] h-[400px] overflow-y-auto z-[999999]  ${
                 screenSize <= 548 ? "w-[90%]" : "w-[50%]"
               }`}
             >

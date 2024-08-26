@@ -11,6 +11,7 @@ import { FaBuilding } from "react-icons/fa";
 import { HiCash } from "react-icons/hi";
 import { TbBuildingCommunity } from "react-icons/tb";
 import { MdMonitor } from "react-icons/md";
+import { LiaFileInvoiceSolid } from "react-icons/lia";
 
 const SidebarComponentWh = ({ width }) => {
   const { activeMenu, setActiveMenu, screenSize, setOpenSidebar } =
@@ -75,7 +76,7 @@ const SidebarComponentWh = ({ width }) => {
           >
             <SiShopware />{" "}
             <span className="text-[16px] w-[222px] overflow-ellipsis overflow-hidden">
-              PT KARYA PRIMA UNGGULAN
+              PT My Company
             </span>
           </Link>
         </div>
@@ -85,7 +86,7 @@ const SidebarComponentWh = ({ width }) => {
           <Sidebar.Items>
             <Sidebar.ItemGroup>
               <Sidebar.Collapse
-                label="Payment Monitor"
+                label="Monitor Pembayaran"
                 icon={MdMonitor}
                 open={false}
               >
@@ -133,7 +134,7 @@ const SidebarComponentWh = ({ width }) => {
                 >
                   <FaBuilding />
                   <span className="capitalize whitespace-nowrap text-[14px]">
-                    Registration List
+                    Vendor Tertunda
                   </span>
                 </NavLink>
                 <NavLink
@@ -148,7 +149,7 @@ const SidebarComponentWh = ({ width }) => {
                 >
                   <HiCash />
                   <span className="capitalize whitespace-nowrap text-[14px]">
-                    Vendor List
+                    Daftar Vendor
                   </span>
                 </NavLink>
                 <NavLink
@@ -163,7 +164,7 @@ const SidebarComponentWh = ({ width }) => {
                 >
                   <HiCash />
                   <span className="capitalize whitespace-nowrap text-[14px]">
-                    Pending Task
+                    Penagihan Tertunda
                   </span>
                 </NavLink>
                 <NavLink
@@ -178,10 +179,27 @@ const SidebarComponentWh = ({ width }) => {
                 >
                   <HiCash />
                   <span className="capitalize whitespace-nowrap text-[14px]">
-                    Listing Penagihan
+                     Penagihan
                   </span>
                 </NavLink>
               </Sidebar.Collapse>
+              <NavLink
+                style={({ isActive }) => ({
+                  backgroundColor: isActive ? "#0077b6" : "",
+                })}
+                to={`/admin/kartuhutang `}
+                onClick={handleCloseSidebar}
+                className={({ isActive }) =>
+                  isActive ? activeLink : normalLink
+                }
+              >
+                <div className="ms-[-30px] flex items-center gap-3 ">
+                  <div className="text-[24px]">
+                    <LiaFileInvoiceSolid />
+                  </div>
+                  <div>Kartu Hutang</div>
+                </div>
+              </NavLink>
             </Sidebar.ItemGroup>
           </Sidebar.Items>
         </Sidebar>

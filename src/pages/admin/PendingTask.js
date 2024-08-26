@@ -5,7 +5,13 @@ import { AdapterDayjs } from "@mui/x-date-pickers/AdapterDayjs";
 import { DemoContainer } from "@mui/x-date-pickers/internals/demo";
 import { useEffect, useState } from "react";
 import dayjs from "dayjs";
-import { Backdrop, CircularProgress, Fade, Modal, Pagination } from "@mui/material";
+import {
+  Backdrop,
+  CircularProgress,
+  Fade,
+  Modal,
+  Pagination,
+} from "@mui/material";
 import { RiFileExcel2Line } from "react-icons/ri";
 import Select from "react-select";
 import titleCase from "../../components/functions/TitleCase";
@@ -89,7 +95,6 @@ const PendingTask = () => {
     }
     setPenagihanDetail({ ...penagihanDetail, status: item.value });
   };
- 
 
   const onClikOpen = (item) => {
     if (Cookies.get("admin_token") !== undefined) {
@@ -118,7 +123,7 @@ const PendingTask = () => {
     })
       .then((response) => response.json())
       .then((data) => {
-        console.log(data)
+        console.log(data);
         setTotal(data.total);
         setCount(Math.ceil(data.total / data.limit));
         setLimit(data.limit);
@@ -129,19 +134,17 @@ const PendingTask = () => {
           data.nilai_invoices.map((nilai) => (total += nilai));
           setTotalInvoice((prev) => [
             ...prev,
-            {id: data.id, total: total.toFixed(2)}
+            { id: data.id, total: total.toFixed(2) },
           ]);
         });
 
         setListPenagihan(data.data);
-        
       })
       .catch((err) => {
-        console.log(err)
+        console.log(err);
         setOpenBackdrop(false);
       });
   };
-  
 
   const btnSearch = (e) => {
     e.preventDefault();
@@ -173,7 +176,7 @@ const PendingTask = () => {
     }
 
     if (name.trim().length > 0) {
-      parameter["vendor_name"] = name;
+      parameter["name"] = name;
     }
 
     if (ignoreDate === 0) {
@@ -188,7 +191,7 @@ const PendingTask = () => {
 
   const onSubmitDocument = async (item) => {
     setOpenBackdrop(true);
-    console.log(item)
+    console.log(item);
     let isSave = false;
     if (item.status === "REJECT") {
       if (item.reason.trim().length > 0) {
@@ -196,14 +199,13 @@ const PendingTask = () => {
       } else {
         isSave = false;
       }
-    } else if (item.status === "APPROVED"){
-      if(item.note.trim().length > 0){
+    } else if (item.status === "APPROVED") {
+      if (item.note.trim().length > 0) {
         isSave = true;
-      }else{
+      } else {
         isSave = false;
       }
-    } 
-    else {
+    } else {
       isSave = true;
     }
 
@@ -235,8 +237,11 @@ const PendingTask = () => {
           reason: item.reason,
           status: item.status,
           note: item.note,
-          due_date: item.due_date !== null ? dayjs(item.due_date).format("YYYY-MM-DD HH:mm:ss") : dayjs(new Date()).format("YYYY-MM-DD HH:mm:ss"),
-          user_id: Cookies.get("admin_id")
+          due_date:
+            item.due_date !== null
+              ? dayjs(item.due_date).format("YYYY-MM-DD HH:mm:ss")
+              : dayjs(new Date()).format("YYYY-MM-DD HH:mm:ss"),
+          user_id: Cookies.get("admin_id"),
         };
 
         await fetch(`${api}api/portal-vendor/invoice`, {
@@ -315,9 +320,9 @@ const PendingTask = () => {
           screenSize < 768 ? "px-5 pt-20" : "px-10 pt-10"
         } font-roboto `}
       >
-        <div className="mb-20 max-[349px]:mb-5">Pending Task</div>
+        <div className="mb-20 max-[349px]:mb-5">Daftar Penagihan Tertunda</div>
         <div className="mb-5 w-[70%] max-[638px]:w-full">
-          <div className="mb-5 text-slate-400">Searching Parameter</div>
+          <div className="mb-5 text-slate-400">Parameter Pencarian</div>
           <div>
             <form action="">
               <div className="flex max-[1254px]:flex-col gap-5 items-center mb-5">
@@ -327,7 +332,7 @@ const PendingTask = () => {
                       htmlFor=""
                       className="w-36 text-[14px] text-slate-400"
                     >
-                      Supplier Name
+                      Nama Vendor
                     </label>
                     <div className="hidden ">:</div>
                   </div>
@@ -348,7 +353,7 @@ const PendingTask = () => {
                       htmlFor=""
                       className="w-36 text-[14px] text-slate-400"
                     >
-                      Date
+                      Tanggal
                     </label>
                     <div className="hidden">:</div>
                   </div>
@@ -394,7 +399,7 @@ const PendingTask = () => {
                           checked={ignoreDate === 1 ? true : false}
                         />
                       </div>
-                      <div className="whitespace-nowrap">Ignore</div>
+                      <div className="whitespace-nowrap">Abaikan</div>
                     </div>
                   </div>
                 </div>
@@ -415,11 +420,11 @@ const PendingTask = () => {
           <table className="w-full table-monitoring">
             <thead className="sticky top-0">
               <tr className="text-center whitespace-nowrap border-2 bg-[#eaf4f4]">
-                <td className="p-5 border">No Request </td>
-                <td className="p-5 border">Nama Supplier </td>
-                <td className="p-5 border">Kode Supplier</td>
+                <td className="p-5 border">Nomor Request</td>
+                <td className="p-5 border">Nama</td>
+                <td className="p-5 border">Kode</td>
                 <td className="p-5 border">Tanggal Penagihan</td>
-                <td className="p-5 border">No Tagihan</td>
+                <td className="p-5 border">Nomor Tagihan</td>
                 <td className="p-5 border">Nilai Penagihan (Rp)</td>
                 <td className="p-5 border">Action</td>
               </tr>
@@ -429,7 +434,7 @@ const PendingTask = () => {
                 listPenagihan.map((item, index) => (
                   <tr
                     key={index}
-                    className="text-center whitespace-nowrap hover:bg-slate-100 border bg-white"
+                    className="whitespace-nowrap hover:bg-slate-100 border bg-white"
                   >
                     <td className="p-5 border">{item.no_request}</td>
                     <td className="p-5 border">{item.vendor.nama}</td>
@@ -440,7 +445,11 @@ const PendingTask = () => {
 
                     <td className="p-5 border"></td>
                     <td className="p-5 border">
-                      Rp. {accountingNumber(totalInvoice.filter((value) => value.id === item.id)[0]?.total)}
+                      Rp.{" "}
+                      {accountingNumber(
+                        totalInvoice.filter((value) => value.id === item.id)[0]
+                          ?.total
+                      )}
                     </td>
 
                     <td
@@ -513,7 +522,7 @@ const PendingTask = () => {
             <Fade in={open}>
               {!isEmpty(penagihanDetail) && (
                 <div
-                  className={`border-0 bg-white py-5 px-7 absolute top-[50%] left-1/2 translate-x-[-50%] translate-y-[-50%] h-[400px] overflow-y-auto z-[999999]  ${
+                  className={`rounded-md border-0 rounded-md bg-white py-5 px-7 absolute top-[50%] left-1/2 translate-x-[-50%] translate-y-[-50%] h-[400px] overflow-y-auto z-[999999]  ${
                     screenSize <= 548 ? "w-[90%]" : "w-fit"
                   }`}
                 >
@@ -521,11 +530,9 @@ const PendingTask = () => {
                   <div className="flex flex-col gap-2">
                     <div className="flex max-[549px]:flex-col max-[549px]:items-start items-center gap-2">
                       <div className="w-[270px] whitespace-nowrap font-bold">
-                        Supplier
+                        Vendor
                       </div>
-                      <div className="max-[549px]:hidden min-[550px]:block">
-                        :
-                      </div>
+
                       <div className="w-[240px] whitespace-nowrap overflow-ellipsis overflow-hidden">
                         {penagihanDetail.vendor.nama}
                       </div>
@@ -534,9 +541,7 @@ const PendingTask = () => {
                       <div className="w-[270px] whitespace-nowrap font-bold">
                         Tipe Penagihan
                       </div>
-                      <div className="max-[549px]:hidden min-[550px]:block">
-                        :
-                      </div>
+  
                       <div className="w-[240px] whitespace-nowrap overflow-ellipsis overflow-hidden">
                         {titleCase(penagihanDetail.tipe_penagihan)}
                       </div>
@@ -545,9 +550,7 @@ const PendingTask = () => {
                       <div className="w-[270px] whitespace-nowrap font-bold">
                         No Purchase Order (PO)
                       </div>
-                      <div className="max-[549px]:hidden min-[550px]:block">
-                        :
-                      </div>
+                
                       <div className="w-[240px] whitespace-nowrap overflow-ellipsis overflow-hidden">
                         {penagihanDetail.nomer_po}
                       </div>
@@ -556,9 +559,7 @@ const PendingTask = () => {
                       <div className="w-[270px] whitespace-nowrap font-bold">
                         Tanggal PO
                       </div>
-                      <div className="max-[549px]:hidden min-[550px]:block">
-                        :
-                      </div>
+             
                       <div className="w-[240px] whitespace-nowrap overflow-ellipsis overflow-hidden">
                         {dayjs(penagihanDetail.tanggal_po).format("DD/MM/YYYY")}
                       </div>
@@ -567,9 +568,7 @@ const PendingTask = () => {
                       <div className="w-[270px] whitespace-nowrap font-bold">
                         No Delivery Order (DO)
                       </div>
-                      <div className="max-[549px]:hidden min-[550px]:block">
-                        :
-                      </div>
+                  
                       <div className="w-[240px]">
                         {penagihanDetail.nomer_do}
                       </div>
@@ -578,9 +577,7 @@ const PendingTask = () => {
                       <div className="w-[270px] whitespace-nowrap font-bold">
                         Delivery Area
                       </div>
-                      <div className="max-[549px]:hidden min-[550px]:block">
-                        :
-                      </div>
+                 
                       <div className="w-[240px] whitespace-nowrap overflow-ellipsis overflow-hidden">
                         {titleCase(penagihanDetail.delivery_area)}
                       </div>
@@ -589,14 +586,10 @@ const PendingTask = () => {
                       <div className="w-[270px] whitespace-nowrap font-bold">
                         No Invoice
                       </div>
-                      <div className="max-[549px]:hidden min-[550px]:block">
-                        :
-                      </div>
+                  
                       <div className="flex flex-col gap-1">
                         {penagihanDetail.nomer_invoices.map((nomer) => (
-                          <div className="w-[240px]">
-                            {nomer}
-                          </div>
+                          <div className="w-[240px]">{nomer}</div>
                         ))}
                       </div>
                     </div>
@@ -604,9 +597,7 @@ const PendingTask = () => {
                       <div className="w-[270px] whitespace-nowrap font-bold">
                         Tanggal Invoice
                       </div>
-                      <div className="max-[549px]:hidden min-[550px]:block">
-                        :
-                      </div>
+                   
                       <div className="flex flex-col gap-1">
                         {penagihanDetail.tanggal_invoices.map((tanggal) => (
                           <div className="w-[240px] whitespace-nowrap overflow-ellipsis overflow-hidden">
@@ -619,9 +610,7 @@ const PendingTask = () => {
                       <div className="w-[270px] whitespace-nowrap font-bold">
                         Nilai Invoice
                       </div>
-                      <div className="max-[549px]:hidden min-[550px]:block">
-                        :
-                      </div>
+                    
                       <div className="flex flex-col gap-1">
                         {penagihanDetail.nilai_invoices.map((nilai) => (
                           <div className="w-[240px] whitespace-nowrap overflow-ellipsis overflow-hidden">
@@ -634,9 +623,7 @@ const PendingTask = () => {
                       <div className="w-[270px] whitespace-nowrap font-bold">
                         Apakah Barang Termasuk Pajak
                       </div>
-                      <div className="max-[549px]:hidden min-[550px]:block">
-                        :
-                      </div>
+                 
                       <div className="w-[240px] whitespace-nowrap overflow-ellipsis overflow-hidden">
                         {penagihanDetail.is_pajak === 0 ? "Tidak" : "Ya"}
                       </div>
@@ -645,9 +632,7 @@ const PendingTask = () => {
                       <div className="w-[270px] whitespace-nowrap font-bold">
                         No Seri Faktur Pajak
                       </div>
-                      <div className="max-[549px]:hidden min-[550px]:block">
-                        :
-                      </div>
+                
                       <div className="flex flex-col gap-1">
                         {penagihanDetail.nomer_seri_pajak.map((nilai) => (
                           <div className="w-[240px] whitespace-nowrap overflow-ellipsis overflow-hidden">

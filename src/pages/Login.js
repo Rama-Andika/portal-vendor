@@ -17,11 +17,7 @@ const Login = () => {
 
   const [showPassword, setShowPassword] = useState(false);
   const [loading, setLoading] = useState(false);
-
-  const unsplashimg = {
-    src: "https://source.unsplash.com/1600x900/?random",
-    alt: "random unsplash image",
-  };
+  const [company, setCompany] = useState({})
 
   const onSubmitLogin = async (e) => {
     setLoading(true);
@@ -49,6 +45,7 @@ const Login = () => {
           Cookies.set("id", data.data[0].id);
           Cookies.set("token", generateString(10));
           Cookies.set("vendor_id", data.data[0].vendor_id);
+          Cookies.set("vendoroxy_id", data.data[0].vendoroxy_id);
           navigate(`/vendor/profile`);
           setLoading(false);
         } else {
@@ -76,10 +73,25 @@ const Login = () => {
       });
   };
 
+  const getCompany = async() => {
+    try {
+      const response = await fetch(`${api}api/company`)
+      if(!response.ok){
+        throw new Error(response.statusText)
+      }
+      const result = await response.json()
+      const {data} = result
+      setCompany(data)
+    } catch (error) {
+      console.log(error)
+    }
+  }
+
   useEffect(() => {
     Cookies.remove("id");
     Cookies.remove("token");
     Cookies.remove("vendor_id");
+    getCompany()
   }, []);
 
   return (
@@ -94,8 +106,8 @@ const Login = () => {
         ></div>
         <div className="font-roboto bg-white px-20 max-[790px]:px-10 flex flex-col justify-center w-full rounded-sm shadow-sm col-span-4 max-[634px]:col-span-12 max-[1275px]:col-span-6">
           <div className="flex flex-col items-center gap-2">
-            <div className="font-semibold text-[#0077b6]">SUPPLIER PORTAL</div>
-            <div className="font-semibold mb-10 text-[#0077b6]">LOGIN</div>
+            <div className="font-semibold text-[#0077b6]">{company?.name}</div>
+            <div className="font-semibold mb-10 text-[#0077b6]">Portal Vendor</div>
           </div>
 
           <form className="flex flex-col gap-4">
@@ -137,7 +149,7 @@ const Login = () => {
               <div className="flex justify-between items-center">
                 <div className="flex items-center gap-2">
                   <Checkbox id="remember" />
-                  <Label htmlFor="remember">Remember me</Label>
+                  <Label htmlFor="remember">Ingatkan Saya</Label>
                 </div>
                 <Link to="/validation-user">
                   <div className="text-[12px] text-slate-400 cursor-pointer hover:text-blue-400 hover:underline">
@@ -148,7 +160,7 @@ const Login = () => {
 
               <Link to="/admin">
                 <div className="text-[12px] text-slate-400 cursor-pointer hover:text-blue-400 hover:underline">
-                  Login sebagai WH Smith
+                  Login sebagai Admin
                 </div>
               </Link>
               <Link to="/registration">
@@ -170,7 +182,7 @@ const Login = () => {
               {loading ? (
                 <CircularProgress size={20} sx={{ color: "white" }} />
               ) : (
-                "LOGIN"
+                "LOGIN VENDOR"
               )}
             </button>
           </form>

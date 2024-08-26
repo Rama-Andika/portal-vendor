@@ -15,17 +15,16 @@ import { PiFileZipDuotone } from "react-icons/pi";
 import Cookies from "js-cookie";
 import { useNavigate } from "react-router-dom";
 
-
 const options = [
   { value: "APPROVED", label: "APPROVED", key: 0 },
-  { value: "RE_REGISTER", label: "RE REGISTER", key: 1 },
+  { value: "SENT_BACK", label: "SENT BACK", key: 1 },
   { value: "CLOSED", label: "CLOSED", key: 2 },
 ];
 
 const srcStatusOptions = [
   { value: 0, label: "All", key: 0 },
   { value: "APPROVED", label: "APPROVED", key: 0 },
-  { value: "RE_REGISTER", label: "RE REGISTER", key: 1 },
+  { value: "SENT_BACK", label: "SENT BACK", key: 1 },
   { value: "PENDING", label: "PENDING", key: 2 },
   { value: "CLOSED", label: "CLOSED", key: 3 },
 ];
@@ -63,7 +62,7 @@ const VendorRegistrationList = () => {
   const [vendorDetail, setVendorDetail] = useState({});
 
   const [listUser, setListUser] = useState([]);
-  const [userDetail, setUserDetail] = useState({})
+  const [userDetail, setUserDetail] = useState({});
 
   const navigate = useNavigate();
   const handleOpen = () => setOpen(true);
@@ -182,7 +181,7 @@ const VendorRegistrationList = () => {
 
   const onClickEdit = (item, user) => {
     if (Cookies.get("admin_token") !== undefined) {
-      setUserDetail(user)
+      setUserDetail(user);
       setVendorDetail(item);
       setStatus({ value: item.status, label: item.status });
       handleOpen();
@@ -225,7 +224,8 @@ const VendorRegistrationList = () => {
     vendorDetail.status = status.value;
     vendorDetail.reason =
       status.value === "APPROVED" ? "" : vendorDetail.reason;
-    vendorDetail.kode = status.value === "APPROVED" ? vendorDetail.kode : "";
+    vendorDetail.kode =
+      status.value === "APPROVED" ? vendorDetail.kode.trim() : "";
     vendorDetail.file_npwp = null;
     vendorDetail.file_ktp_pemilik = null;
     vendorDetail.file_ktp_penanggung_jawab = null;
@@ -235,94 +235,44 @@ const VendorRegistrationList = () => {
     vendorDetail.file_sertifikasi_bpom = null;
 
     if (Cookies.get("admin_token") !== undefined) {
-      if (status.value === "APPROVED" && vendorDetail.kode.trim().length > 0) {
-        await fetch(`${api}api/portal-vendor/sign-up`, {
-          method: "POST",
-          body: JSON.stringify(vendorDetail),
-        })
-          .then((response) => response.json())
-          .then((res) => {
-            if (res.data !== 0) {
-              setOpen(false);
-              fetchData();
-              setOpenBackdrop(false);
-              toast.success("Update Success!", {
-                position: "top-right",
-                style: {
-                  borderRadius: "10px",
-                  background: "#333",
-                  color: "#fff",
-                },
-              });
-            } else {
-              setOpen(false);
-              fetchData();
-              setOpenBackdrop(false);
-              toast.error(
-                "Vendor belum terdaftar di Oxysystem atau kode salah!",
-                {
-                  position: "top-right",
-                  style: {
-                    borderRadius: "10px",
-                    background: "#333",
-                    color: "#fff",
-                  },
-                }
-              );
-            }
-          })
-          .catch((err) => {
+      await fetch(`${api}api/portal-vendor/sign-up`, {
+        method: "POST",
+        body: JSON.stringify(vendorDetail),
+      })
+        .then((response) => response.json())
+        .then((res) => {
+          if (res.data !== 0) {
+            setOpen(false);
+            fetchData();
             setOpenBackdrop(false);
-          });
-      } else if (status.value !== "APPROVED") {
-        await fetch(`${api}api/portal-vendor/sign-up`, {
-          method: "POST",
-          body: JSON.stringify(vendorDetail),
-        })
-          .then((response) => response.json())
-          .then((res) => {
-            if (res.data !== 0) {
-              setOpen(false);
-              fetchData();
-              setOpenBackdrop(false);
-              toast.success("Update Success!", {
-                position: "top-right",
-                style: {
-                  borderRadius: "10px",
-                  background: "#333",
-                  color: "#fff",
-                },
-              });
-            } else {
-              setOpen(false);
-              fetchData();
-              setOpenBackdrop(false);
-              toast.error("Vendor belum terdaftar di Oxysystem!", {
-                position: "top-right",
-                style: {
-                  borderRadius: "10px",
-                  background: "#333",
-                  color: "#fff",
-                },
-              });
-            }
-          })
-          .catch((err) => {
+            toast.success("Update Success!", {
+              position: "top-right",
+              style: {
+                borderRadius: "10px",
+                background: "#333",
+                color: "#fff",
+              },
+            });
+          } else {
+            setOpen(false);
+            fetchData();
             setOpenBackdrop(false);
-          });
-      } else {
-        setOpen(false);
-        fetchData();
-        setOpenBackdrop(false);
-        toast.error("Kode tidak boleh kosong!", {
-          position: "top-right",
-          style: {
-            borderRadius: "10px",
-            background: "#333",
-            color: "#fff",
-          },
+            toast.error(
+              "Vendor belum terdaftar di Oxysystem atau kode salah!",
+              {
+                position: "top-right",
+                style: {
+                  borderRadius: "10px",
+                  background: "#333",
+                  color: "#fff",
+                },
+              }
+            );
+          }
+        })
+        .catch((err) => {
+          setOpenBackdrop(false);
         });
-      }
     } else {
       navigate("/admin");
       toast.error("Silahkan Login Terlebih Dahulu!", {
@@ -358,9 +308,9 @@ const VendorRegistrationList = () => {
           screenSize < 768 ? "px-5 pt-20" : "px-10 pt-10"
         } font-roboto `}
       >
-        <div className="mb-20 max-[349px]:mb-5">Vendor Registration List</div>
+        <div className="mb-20 max-[349px]:mb-5">Daftar Vendor Tertunda</div>
         <div className="mb-5 w-[70%] max-[638px]:w-full">
-          <div className="mb-5 text-slate-400">Searching Parameter</div>
+          <div className="mb-5 text-slate-400">Parameter Pencarian</div>
           <div>
             <form onSubmit={(e) => onSearch(e)}>
               <div className="flex max-[349px]:flex-col gap-5 items-center mb-5">
@@ -370,7 +320,7 @@ const VendorRegistrationList = () => {
                       htmlFor=""
                       className="w-36 text-[14px] text-slate-400"
                     >
-                      Supplier Name
+                      Nama Vendor
                     </label>
                     <div className="hidden">:</div>
                   </div>
@@ -391,7 +341,7 @@ const VendorRegistrationList = () => {
                       htmlFor=""
                       className="w-36 text-[14px] text-slate-400"
                     >
-                      Supplier Code
+                      Kode Vendor
                     </label>
                     <div className="hidden">:</div>
                   </div>
@@ -448,8 +398,8 @@ const VendorRegistrationList = () => {
               <tr className="text-center whitespace-nowrap border-2 bg-[#eaf4f4]">
                 <td className="p-5 border">Action</td>
                 <td className="p-5 border">No</td>
-                <td className="p-5 border">Supplier Name</td>
-                <td className="p-5 border">Supplier Code</td>
+                <td className="p-5 border">Nama</td>
+                <td className="p-5 border">Kode</td>
                 <td className="p-5 border">Status</td>
                 <td className="p-5 border">Check List</td>
               </tr>
@@ -523,7 +473,7 @@ const VendorRegistrationList = () => {
             <Fade in={open}>
               {!isEmpty(vendorDetail) && (
                 <div
-                  className={`border-0 bg-white py-5 px-7 absolute top-[50%] left-1/2 translate-x-[-50%] translate-y-[-50%] h-[400px] overflow-y-auto z-[999999]  ${
+                  className={`rounded-md border-0 bg-white py-5 px-7 absolute top-[50%] left-1/2 translate-x-[-50%] translate-y-[-50%] h-[400px] overflow-y-auto z-[999999]  ${
                     screenSize <= 548 ? "w-[90%]" : "w-fit"
                   }`}
                 >
@@ -533,9 +483,7 @@ const VendorRegistrationList = () => {
                       <div className="w-[270px] whitespace-nowrap font-bold">
                         Nama
                       </div>
-                      <div className="max-[549px]:hidden min-[550px]:block">
-                        :
-                      </div>
+
                       <div className="w-[240px] whitespace-nowrap overflow-ellipsis overflow-hidden">
                         {vendorDetail.nama}
                       </div>
@@ -544,9 +492,7 @@ const VendorRegistrationList = () => {
                       <div className="w-[270px] whitespace-nowrap font-bold">
                         Username
                       </div>
-                      <div className="max-[549px]:hidden min-[550px]:block">
-                        :
-                      </div>
+
                       <div className="w-[240px] whitespace-nowrap overflow-ellipsis overflow-hidden">
                         {userDetail.username}
                       </div>
@@ -555,9 +501,7 @@ const VendorRegistrationList = () => {
                       <div className="w-[270px] whitespace-nowrap font-bold">
                         Tipe Perusahaan
                       </div>
-                      <div className="max-[549px]:hidden min-[550px]:block">
-                        :
-                      </div>
+
                       <div className="w-[240px] whitespace-nowrap overflow-ellipsis overflow-hidden">
                         {titleCase(vendorDetail.tipe_perusahaan)}
                       </div>
@@ -566,9 +510,7 @@ const VendorRegistrationList = () => {
                       <div className="w-[270px] whitespace-nowrap font-bold">
                         Tipe Perusahaan Lainnya
                       </div>
-                      <div className="max-[549px]:hidden min-[550px]:block">
-                        :
-                      </div>
+
                       <div className="w-[240px] whitespace-nowrap overflow-ellipsis overflow-hidden">
                         {titleCase(vendorDetail.tipe_perusahaan_lainnya)}
                       </div>
@@ -578,9 +520,7 @@ const VendorRegistrationList = () => {
                       <div className="w-[270px] whitespace-nowrap font-bold">
                         Alamat
                       </div>
-                      <div className="max-[549px]:hidden min-[550px]:block">
-                        :
-                      </div>
+
                       <div className="w-[240px] max-[549px]:w-full whitespace-pre-wrap">
                         {vendorDetail.alamat}
                       </div>
@@ -589,9 +529,7 @@ const VendorRegistrationList = () => {
                       <div className="w-[270px] whitespace-nowrap font-bold">
                         Provinsi
                       </div>
-                      <div className="max-[549px]:hidden min-[550px]:block">
-                        :
-                      </div>
+
                       <div className="w-[240px] whitespace-nowrap overflow-ellipsis overflow-hidden">
                         {titleCase(vendorDetail.provinsi)}
                       </div>
@@ -600,9 +538,7 @@ const VendorRegistrationList = () => {
                       <div className="w-[270px] whitespace-nowrap font-bold">
                         Kota
                       </div>
-                      <div className="max-[549px]:hidden min-[550px]:block">
-                        :
-                      </div>
+
                       <div className="w-[240px] whitespace-nowrap overflow-ellipsis overflow-hidden">
                         {titleCase(vendorDetail.kota)}
                       </div>
@@ -611,9 +547,7 @@ const VendorRegistrationList = () => {
                       <div className="w-[270px] whitespace-nowrap font-bold">
                         Kode Pos
                       </div>
-                      <div className="max-[549px]:hidden min-[550px]:block">
-                        :
-                      </div>
+
                       <div className="w-[240px] whitespace-nowrap overflow-ellipsis overflow-hidden">
                         {titleCase(vendorDetail.kode_pos)}
                       </div>
@@ -622,9 +556,7 @@ const VendorRegistrationList = () => {
                       <div className="w-[270px] whitespace-nowrap font-bold">
                         Tipe Pembelian
                       </div>
-                      <div className="max-[549px]:hidden min-[550px]:block">
-                        :
-                      </div>
+
                       <div className="w-[240px] whitespace-nowrap overflow-ellipsis overflow-hidden">
                         {titleCase(vendorDetail.tipe_pembelian)}
                       </div>
@@ -633,9 +565,7 @@ const VendorRegistrationList = () => {
                       <div className="w-[270px] whitespace-nowrap font-bold">
                         Status Pajak
                       </div>
-                      <div className="max-[549px]:hidden min-[550px]:block">
-                        :
-                      </div>
+
                       <div className="w-[240px] whitespace-nowrap overflow-ellipsis overflow-hidden">
                         {vendorDetail.status_pajak}
                       </div>
@@ -644,9 +574,7 @@ const VendorRegistrationList = () => {
                       <div className="w-[270px] whitespace-nowrap font-bold">
                         NPWP
                       </div>
-                      <div className="max-[549px]:hidden min-[550px]:block">
-                        :
-                      </div>
+
                       <div className="w-[240px] whitespace-nowrap overflow-ellipsis overflow-hidden">
                         {vendorDetail.npwp}
                       </div>
@@ -655,9 +583,7 @@ const VendorRegistrationList = () => {
                       <div className="w-[270px] whitespace-nowrap font-bold">
                         Website
                       </div>
-                      <div className="max-[549px]:hidden min-[550px]:block">
-                        :
-                      </div>
+
                       <div className="w-[240px] whitespace-nowrap overflow-ellipsis overflow-hidden">
                         {vendorDetail.website}
                       </div>
@@ -666,9 +592,7 @@ const VendorRegistrationList = () => {
                       <div className="w-[270px] whitespace-nowrap font-bold">
                         Nama Pemilik
                       </div>
-                      <div className="max-[549px]:hidden min-[550px]:block">
-                        :
-                      </div>
+
                       <div className="w-[240px] whitespace-nowrap overflow-ellipsis overflow-hidden">
                         {titleCase(vendorDetail.nama_pemilik)}
                       </div>
@@ -677,9 +601,7 @@ const VendorRegistrationList = () => {
                       <div className="w-[270px] whitespace-nowrap font-bold">
                         Nama Penanggung Jawab
                       </div>
-                      <div className="max-[549px]:hidden min-[550px]:block">
-                        :
-                      </div>
+
                       <div className="w-[240px] whitespace-nowrap overflow-ellipsis overflow-hidden">
                         {titleCase(vendorDetail.nama_penanggung_jawab)}
                       </div>
@@ -716,7 +638,7 @@ const VendorRegistrationList = () => {
                           />
                         </div>
                       </div>
-                      {status.value === "RE_REGISTER" && (
+                      {status.value === "SENT_BACK" && (
                         <div className="mt-5 flex flex-col gap-2">
                           <label htmlFor="">Reason</label>
                           <textarea

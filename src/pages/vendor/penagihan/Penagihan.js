@@ -33,18 +33,16 @@ import GetBase64 from "../../../components/functions/GetBase64";
 import { Viewer } from "@react-pdf-viewer/core";
 import titleCase from "../../../components/functions/TitleCase";
 import accountingNumber from "../../../components/functions/AccountingNumber";
-import accountingNumberV2 from "../../../components/functions/AccountingNumberV2";
 
 const optionsTipePenagihan = [
   { value: "beli putus", label: "Beli Putus", key: 0 },
   { value: "konsinyasi", label: "Konsinyasi", key: 1 },
 ];
 const optionsDeliveryArea = [
-  { value: "tangerang", label: "Tangerang" },
-  { value: "jakarta", label: "Jakarta" },
-  { value: "bali", label: "Bali" },
-  { value: "makassar", label: "Makassar"},
-  { value: "batam", label: "Batam"},
+  { value: "tangerang", label: "Tangerang", key: 0 },
+  { value: "jakarta", label: "Jakarta", key: 1 },
+  { value: "bali", label: "Bali", key: 2 },
+  { value: "makassar", label: "Makassar", key: 3 },
 ];
 const options = [
   { value: 0, label: "Tidak", key: 0 },
@@ -552,7 +550,7 @@ const Penagihan = () => {
 
     setNilaiInvoice((s) => {
       const newArr = s.slice();
-      newArr[index].value = accountingNumberV2(
+      newArr[index].value = accountingNumber(
         e.target.value.split(".").join("")
       );
 
@@ -997,10 +995,52 @@ const Penagihan = () => {
 
     if (Cookies.get("token") !== undefined) {
       if (isSave) {
+        let lastItem;
+        let counter = 1;
+
+        const currDate = new Date();
+        const month = dayjs(currDate).month();
+        const year = dayjs(currDate).year();
+
+        await fetch(`${api}api/portal-vendor/list/penagihan`, {
+          method: "POST",
+          body: JSON.stringify({
+            order: "created_at DESC",
+            limit: 0,
+          }),
+        })
+          .then((response) => response.json())
+          .then((res) => {
+            lastItem = res.data[0];
+            console.log(lastItem);
+          })
+          .catch((err) => console.log(err));
+
+        if (lastItem !== undefined) {
+          if (lastItem.no_request !== undefined) {
+            counter = parseInt(lastItem.no_request.split("/")[0]) + 1;
+            if (
+              parseInt(month + 1) !==
+              parseInt(lastItem.no_request.split("/")[1])
+            ) {
+              counter = 1;
+            }
+          }
+        }
+
+        let formattedNumber = counter.toLocaleString("en-US", {
+          minimumIntegerDigits: 9,
+          useGrouping: false,
+        });
+
+        const noRequest = formattedNumber + "/" + (month + 1) + "/" + year;
+        setNomerRequest(noRequest);
+
         if (id === 0) {
           const initialValue = {
             id: id,
             vendor_id: vendorId,
+            no_request: noRequest,
             tipe_penagihan: tipePenagihan.value,
             tipe_pengiriman: tipePengiriman.value,
             nomer_po: "PO" + nomerPo,
@@ -1079,6 +1119,7 @@ const Penagihan = () => {
           const initialValue = {
             id: id,
             vendor_id: vendorId,
+            no_request: noRequest,
             tipe_penagihan: tipePenagihan.value,
             tipe_pengiriman: tipePengiriman.value,
             nomer_po: "PO" + nomerPo,
@@ -1280,10 +1321,51 @@ const Penagihan = () => {
 
     if (Cookies.get("token")) {
       if (isSave) {
+        let lastItem;
+        let counter = 1;
+
+        const currDate = new Date();
+        const month = dayjs(currDate).month();
+        const year = dayjs(currDate).year();
+
+        await fetch(`${api}api/portal-vendor/list/penagihan`, {
+          method: "POST",
+          body: JSON.stringify({
+            order: "created_at desc",
+            limit: 0,
+          }),
+        })
+          .then((response) => response.json())
+          .then((res) => {
+            lastItem = res.data[0];
+          })
+          .catch((err) => console.log(err));
+
+        if (lastItem !== undefined) {
+          if (lastItem.no_request !== undefined) {
+            counter = parseInt(lastItem.no_request.split("/")[0]) + 1;
+            if (
+              parseInt(month + 1) !==
+              parseInt(lastItem.no_request.split("/")[1])
+            ) {
+              counter = 1;
+            }
+          }
+        }
+
+        let formattedNumber = counter.toLocaleString("en-US", {
+          minimumIntegerDigits: 9,
+          useGrouping: false,
+        });
+
+        const noRequest = formattedNumber + "/" + (month + 1) + "/" + year;
+        setNomerRequest(noRequest);
+
         if (id === 0) {
           const initialValue = {
             id: id,
             vendor_id: vendorId,
+            no_request: noRequest,
             tipe_penagihan: tipePenagihan.value,
             tipe_pengiriman: tipePengiriman.value,
             nomer_po: "PO" + nomerPo,
@@ -1367,6 +1449,7 @@ const Penagihan = () => {
           const initialValue = {
             id: id,
             vendor_id: vendorId,
+            no_request: noRequest,
             tipe_penagihan: tipePenagihan.value,
             tipe_pengiriman: tipePengiriman.value,
             nomer_po: "PO" + nomerPo,
@@ -1462,6 +1545,44 @@ const Penagihan = () => {
 
   const onSubmitButton = async () => {
     setOpenBackdrop(true);
+    let lastItem;
+    let counter = 1;
+
+    const currDate = new Date();
+    const month = dayjs(currDate).month();
+    const year = dayjs(currDate).year();
+
+    await fetch(`${api}api/portal-vendor/list/penagihan`, {
+      method: "POST",
+      body: JSON.stringify({
+        order: "created_at desc",
+        limit: 0,
+      }),
+    })
+      .then((response) => response.json())
+      .then((res) => {
+        lastItem = res.data[0];
+      })
+      .catch((err) => console.log(err));
+
+    if (lastItem !== undefined) {
+      if (lastItem.no_request !== undefined) {
+        counter = parseInt(lastItem.no_request.split("/")[0]) + 1;
+        if (
+          parseInt(month + 1) !== parseInt(lastItem.no_request.split("/")[1])
+        ) {
+          counter = 1;
+        }
+      }
+    }
+
+    let formattedNumber = counter.toLocaleString("en-US", {
+      minimumIntegerDigits: 9,
+      useGrouping: false,
+    });
+
+    const noRequest = formattedNumber + "/" + (month + 1) + "/" + year;
+
     // eslint-disable-next-line array-callback-return
     const invoiceList = nomerInvoice.map((invoice) => {
       if (invoice.value.trim().length > 0) {
@@ -1515,6 +1636,7 @@ const Penagihan = () => {
         const initialValue = {
           id: id,
           vendor_id: vendorId,
+          no_request: noRequest,
           tipe_penagihan: tipePenagihan.value,
           tipe_pengiriman: tipePengiriman.value,
           nomer_po: "PO" + nomerPo,
@@ -1594,6 +1716,7 @@ const Penagihan = () => {
         const initialValue = {
           id: id,
           vendor_id: vendorId,
+          no_request: noRequest,
           tipe_penagihan: tipePenagihan.value,
           tipe_pengiriman: tipePengiriman.value,
           nomer_po: "PO" + nomerPo,
@@ -1682,6 +1805,45 @@ const Penagihan = () => {
 
   const onSubmitButton2 = async () => {
     setOpenBackdrop(true);
+
+    let lastItem;
+    let counter = 1;
+
+    const currDate = new Date();
+    const month = dayjs(currDate).month();
+    const year = dayjs(currDate).year();
+
+    await fetch(`${api}api/portal-vendor/list/penagihan`, {
+      method: "POST",
+      body: JSON.stringify({
+        order: "created_at desc",
+        limit: 0,
+      }),
+    })
+      .then((response) => response.json())
+      .then((res) => {
+        lastItem = res.data[0];
+      })
+      .catch((err) => console.log(err));
+
+    if (lastItem !== undefined) {
+      if (lastItem.no_request !== undefined) {
+        counter = parseInt(lastItem.no_request.split("/")[0]) + 1;
+        if (
+          parseInt(month + 1) !== parseInt(lastItem.no_request.split("/")[1])
+        ) {
+          counter = 1;
+        }
+      }
+    }
+
+    let formattedNumber = counter.toLocaleString("en-US", {
+      minimumIntegerDigits: 9,
+      useGrouping: false,
+    });
+
+    const noRequest = formattedNumber + "/" + (month + 1) + "/" + year;
+
     // eslint-disable-next-line array-callback-return
     const invoiceList = nomerInvoice.map((invoice) => {
       if (invoice.value.trim().length > 0) {
@@ -1735,6 +1897,7 @@ const Penagihan = () => {
         const initialValue = {
           id: id,
           vendor_id: vendorId,
+          no_request: noRequest,
           tipe_penagihan: tipePenagihan.value,
           tipe_pengiriman: tipePengiriman.value,
           nomer_po: "PO" + nomerPo,
@@ -1816,6 +1979,7 @@ const Penagihan = () => {
         const initialValue = {
           id: id,
           vendor_id: vendorId,
+          no_request: noRequest,
           tipe_penagihan: tipePenagihan.value,
           tipe_pengiriman: tipePengiriman.value,
           nomer_po: "PO" + nomerPo,
@@ -2004,7 +2168,7 @@ const Penagihan = () => {
                           <div className="w-[150px]">
                             <label htmlFor="">Tipe Penagihan</label>
                           </div>
-                          <div>:</div>
+
                           <div className="w-[70%]">
                             <Select
                               isDisabled={true}
@@ -2038,7 +2202,6 @@ const Penagihan = () => {
                                 </div>
                               </div>
 
-                              <div>:</div>
                               <div className="flex items-center gap-1 ">
                                 <div>PO</div>
                                 <div>
@@ -2071,7 +2234,6 @@ const Penagihan = () => {
                             <div className="flex items-center gap-2 mb-3">
                               <div className="w-[250px]">Tanggal PO</div>
 
-                              <div>:</div>
                               <div className="flex items-center gap-1">
                                 <div className="w-[21.1px]"></div>
                                 <div>
@@ -2106,7 +2268,7 @@ const Penagihan = () => {
                               <div className="w-[250px]">
                                 No Delivery Order (DO)
                               </div>
-                              <div>:</div>
+
                               <div className="flex items-center gap-1 ">
                                 <div className="w-[21.1px]"></div>
                                 <div>
@@ -2139,7 +2301,7 @@ const Penagihan = () => {
                             </div>
                             <div className="flex items-center gap-2 mb-10">
                               <div className="w-[250px]">Delivery Area</div>
-                              <div>:</div>
+
                               <div className="flex items-center gap-1 max-[821px]:w-[249.56px] w-[287.96px]">
                                 <div className="w-[24px]"></div>
                                 <div className="w-full ">
@@ -2166,37 +2328,107 @@ const Penagihan = () => {
                             </div>
                             <div className="mb-10">
                               {nomerInvoice.map((item, i) => (
-                                <div
-                                  className="flex items-center gap-2 mb-3"
-                                  key={i}
-                                >
-                                  {i === 0 ? (
-                                    <div className="w-[250px]">No Invoice</div>
-                                  ) : (
-                                    <div className="w-[250px]">
-                                      No Invoice {i + 1}
+                                <>
+                                  <div
+                                    className="flex items-center gap-2 mb-3"
+                                    key={i}
+                                  >
+                                    {i === 0 ? (
+                                      <div className="w-[250px]">
+                                        Nomor Invoice
+                                      </div>
+                                    ) : (
+                                      <div className="w-[250px]">
+                                        Nomor Invoice {i + 1}
+                                      </div>
+                                    )}
+
+                                    <div className="flex items-center gap-1 ">
+                                      <div className="w-[21.1px]"></div>
+                                      <div>
+                                        <input
+                                          type="text"
+                                          name=""
+                                          id={i}
+                                          onKeyDown={(evt) =>
+                                            evt.key === " " &&
+                                            evt.preventDefault()
+                                          }
+                                          value={item.value}
+                                          onChange={onChangeInvoice}
+                                          className="max-[821px]:w-full w-[246.4px] h-[40px] border border-slate-300 rounded-sm focus:border focus:border-[#0077b6] bg-[#ddebf7]"
+                                        />
+                                      </div>
+                                      <div>{i === 0 && "*)"}</div>
                                     </div>
-                                  )}
-                                  <div>:</div>
-                                  <div className="flex items-center gap-1 ">
-                                    <div className="w-[21.1px]"></div>
-                                    <div>
-                                      <input
-                                        type="text"
-                                        name=""
-                                        id={i}
-                                        onKeyDown={(evt) =>
-                                          evt.key === " " &&
-                                          evt.preventDefault()
-                                        }
-                                        value={item.value}
-                                        onChange={onChangeInvoice}
-                                        className="max-[821px]:w-full w-[246.4px] h-[40px] border border-slate-300 rounded-sm focus:border focus:border-[#0077b6] bg-[#ddebf7]"
-                                      />
-                                    </div>
-                                    <div>{i === 0 && "*)"}</div>
                                   </div>
-                                </div>
+                                  <div key={i}>
+                                    <div className="flex items-center gap-2 mb-3">
+                                      {i === 0 ? (
+                                        <div className="w-[250px]">
+                                          Tanggal Invoice
+                                        </div>
+                                      ) : (
+                                        <div className="w-[250px]">
+                                          Tanggal Invoice {i + 1}
+                                        </div>
+                                      )}
+
+                                      <div className="flex items-center gap-1">
+                                        <div className="w-[21.1px]"></div>
+                                        <div>
+                                          <LocalizationProvider
+                                            dateAdapter={AdapterDayjs}
+                                          >
+                                            <DemoContainer
+                                              components={["DatePicker"]}
+                                            >
+                                              <DatePicker
+                                                className="w-full bg-[#ddebf7]"
+                                                value={tanggalInvoice[i].value}
+                                                onChange={(item) =>
+                                                  onChangeTanggalInvoice(
+                                                    item,
+                                                    i
+                                                  )
+                                                }
+                                                slotProps={{
+                                                  textField: { size: "small" },
+                                                }}
+                                              />
+                                            </DemoContainer>
+                                          </LocalizationProvider>
+                                        </div>
+                                        <div>{i === 0 && "*)"}</div>
+                                      </div>
+                                    </div>
+                                    <div className="flex items-center gap-2 mb-3">
+                                      {i === 0 ? (
+                                        <div className="w-[250px]">
+                                          Nilai Invoice
+                                        </div>
+                                      ) : (
+                                        <div className="w-[250px]">
+                                          Nilai Invoice {i + 1}
+                                        </div>
+                                      )}
+
+                                      <div className="flex items-center gap-1 ">
+                                        <div>Rp</div>
+                                        <div>
+                                          <input
+                                            id={i}
+                                            type="text"
+                                            value={nilaiInvoice[i].value}
+                                            onChange={onChangeNilaiInvoice}
+                                            className="max-[821px]:w-[208px] w-[246.4px] h-[40px] border border-slate-300 rounded-sm focus:border focus:border-[#0077b6] bg-[#ddebf7]"
+                                          />
+                                        </div>
+                                        <div>{i === 0 && "*)"}</div>
+                                      </div>
+                                    </div>
+                                  </div>
+                                </>
                               ))}
                               <div className="flex items-center gap-5">
                                 {nomerInvoice.length > 1 && (
@@ -2208,7 +2440,7 @@ const Penagihan = () => {
                                         : "cursor-pointer"
                                     } `}
                                   >
-                                    Delete row
+                                    Delete Invoice
                                   </div>
                                 )}
 
@@ -2220,83 +2452,15 @@ const Penagihan = () => {
                                       : "cursor-pointer"
                                   } `}
                                 >
-                                  Add row
+                                  Tambah Invoice
                                 </div>
                               </div>
-                            </div>
-
-                            <div className="mb-3">
-                              {nomerInvoice.map((item, i) => (
-                                <div key={i}>
-                                  <div className="flex items-center gap-2 mb-3">
-                                    {i === 0 ? (
-                                      <div className="w-[250px]">
-                                        Tanggal Invoice
-                                      </div>
-                                    ) : (
-                                      <div className="w-[250px]">
-                                        Tanggal Invoice {i + 1}
-                                      </div>
-                                    )}
-                                    <div>:</div>
-                                    <div className="flex items-center gap-1">
-                                      <div className="w-[21.1px]"></div>
-                                      <div>
-                                        <LocalizationProvider
-                                          dateAdapter={AdapterDayjs}
-                                        >
-                                          <DemoContainer
-                                            components={["DatePicker"]}
-                                          >
-                                            <DatePicker
-                                              className="w-full bg-[#ddebf7]"
-                                              value={tanggalInvoice[i].value}
-                                              onChange={(item) =>
-                                                onChangeTanggalInvoice(item, i)
-                                              }
-                                              slotProps={{
-                                                textField: { size: "small" },
-                                              }}
-                                            />
-                                          </DemoContainer>
-                                        </LocalizationProvider>
-                                      </div>
-                                      <div>{i === 0 && "*)"}</div>
-                                    </div>
-                                  </div>
-                                  <div className="flex items-center gap-2 mb-3">
-                                    {i === 0 ? (
-                                      <div className="w-[250px]">
-                                        Nilai Invoice
-                                      </div>
-                                    ) : (
-                                      <div className="w-[250px]">
-                                        Nilai Invoice {i + 1}
-                                      </div>
-                                    )}
-                                    <div>:</div>
-                                    <div className="flex items-center gap-1 ">
-                                      <div>Rp</div>
-                                      <div>
-                                        <input
-                                          id={i}
-                                          type="text"
-                                          value={nilaiInvoice[i].value}
-                                          onChange={onChangeNilaiInvoice}
-                                          className="max-[821px]:w-[208px] w-[246.4px] h-[40px] border border-slate-300 rounded-sm focus:border focus:border-[#0077b6] bg-[#ddebf7]"
-                                        />
-                                      </div>
-                                      <div>{i === 0 && "*)"}</div>
-                                    </div>
-                                  </div>
-                                </div>
-                              ))}
                             </div>
                             <div className="flex items-center gap-2 mb-10 mt-10">
                               <div className="w-[250px]">
                                 Apakah barang termasuk pajak?
                               </div>
-                              <div>:</div>
+
                               <div className="flex items-center gap-1 max-[821px]:w-[249.56px] w-[287.96px]">
                                 <div className="w-[24px]"></div>
                                 <div className="w-full ">
@@ -2325,7 +2489,7 @@ const Penagihan = () => {
                                   <div>Harus 16 digit</div>
                                 </div>
                               </div>
-                              <div>:</div>
+
                               <div className="flex items-center gap-1 ">
                                 <div className="w-[21.1px]"></div>
                                 <div className="flex flex-col gap-1">
@@ -2381,7 +2545,7 @@ const Penagihan = () => {
                                   <div>Harus 8 digit</div>
                                 </div>
                               </div>
-                              <div>:</div>
+
                               <div className="flex items-center gap-1 ">
                                 <div>PO</div>
                                 <div>
@@ -2413,7 +2577,7 @@ const Penagihan = () => {
                             </div>
                             <div className="flex items-center gap-2 mb-3">
                               <div className="w-[250px]">Tanggal PO</div>
-                              <div>:</div>
+
                               <div className="flex items-center gap-1">
                                 <div className="w-[21.1px]"></div>
                                 <div>
@@ -2446,7 +2610,7 @@ const Penagihan = () => {
 
                             <div className="flex items-center gap-2 mb-10">
                               <div className="w-[250px]">Delivery Area</div>
-                              <div>:</div>
+
                               <div className="flex items-center gap-1 max-[821px]:w-[249.56px] w-[287.96px]">
                                 <div className="w-[24px]"></div>
                                 <div className="w-full ">
@@ -2477,15 +2641,14 @@ const Penagihan = () => {
                                   <div className="flex items-center gap-2 mb-3">
                                     {i === 0 ? (
                                       <div className="w-[250px]">
-                                        No Invoice
+                                        Nomor Invoice
                                       </div>
                                     ) : (
                                       <div className="w-[250px]">
-                                        No Invoice {i + 1}
+                                        Nomor Invoice {i + 1}
                                       </div>
                                     )}
 
-                                    <div>:</div>
                                     <div className="flex items-center gap-1 ">
                                       <div className="w-[21.1px]"></div>
                                       <div>
@@ -2516,7 +2679,7 @@ const Penagihan = () => {
                                         Tanggal Invoice {i + 1}
                                       </div>
                                     )}
-                                    <div>:</div>
+
                                     <div className="flex items-center gap-1">
                                       <div className="w-[21.1px]"></div>
                                       <div>
@@ -2555,7 +2718,7 @@ const Penagihan = () => {
                                         : "cursor-pointer"
                                     } `}
                                   >
-                                    Delete row
+                                    Delete Invoice
                                   </div>
                                 )}
 
@@ -2567,7 +2730,7 @@ const Penagihan = () => {
                                       : "cursor-pointer"
                                   } `}
                                 >
-                                  Add row
+                                  Tambah Invoice
                                 </div>
                               </div>
                             </div>
@@ -2587,7 +2750,7 @@ const Penagihan = () => {
                                       Nilai Invoice {i + 1}
                                     </div>
                                   )}
-                                  <div>:</div>
+
                                   <div className="flex items-center gap-1 ">
                                     <div>Rp</div>
                                     <div>
@@ -2611,7 +2774,7 @@ const Penagihan = () => {
                               <div className="flex flex-col gap-1">
                                 <div className="ps-10 flex items-center gap-2">
                                   <div className="w-[210px]">Dari Tanggal</div>
-                                  <div>:</div>
+
                                   <div className="flex items-center gap-1">
                                     <div className="w-[24px]"></div>
                                     <LocalizationProvider
@@ -2639,7 +2802,7 @@ const Penagihan = () => {
                                   <div className="w-[210px]">
                                     Sampai Tanggal
                                   </div>
-                                  <div>:</div>
+
                                   <div className="flex items-center gap-1">
                                     <div className="w-[24px]"></div>
                                     <LocalizationProvider
@@ -2669,7 +2832,7 @@ const Penagihan = () => {
                               <div className="w-[250px]">
                                 Apakah barang termasuk pajak?
                               </div>
-                              <div>:</div>
+
                               <div className="flex items-center gap-1 max-[821px]:w-[249.56px] w-[287.96px]">
                                 <div className="w-[24px]"></div>
                                 <div className="w-full ">
@@ -2698,7 +2861,7 @@ const Penagihan = () => {
                                   <div>Harus 16 digit</div>
                                 </div>
                               </div>
-                              <div>:</div>
+
                               <div className="flex items-center gap-1 ">
                                 <div className="w-[21.1px]"></div>
                                 <div className="flex flex-col gap-1">
@@ -2759,7 +2922,6 @@ const Penagihan = () => {
                                   </div>
                                 </div>
 
-                                <div>:</div>
                                 <div className="flex items-center gap-1">
                                   <div>
                                     <label
@@ -2830,7 +2992,6 @@ const Penagihan = () => {
                                   </div>
                                 </div>
 
-                                <div>:</div>
                                 <div className="flex items-center gap-1">
                                   <div>
                                     <label
@@ -2897,7 +3058,7 @@ const Penagihan = () => {
                                     Max size 2 mb
                                   </div>
                                 </div>
-                                <div>:</div>
+
                                 <div className="flex items-center gap-1">
                                   <div>
                                     <label
@@ -2973,7 +3134,6 @@ const Penagihan = () => {
                                           </div>
                                         </div>
 
-                                        <div>:</div>
                                         <div className="flex items-center gap-1">
                                           <div>
                                             <label
@@ -3053,7 +3213,6 @@ const Penagihan = () => {
                                   </div>
                                 </div>
 
-                                <div>:</div>
                                 <div className="flex items-center gap-1">
                                   <div>
                                     <label
@@ -3120,7 +3279,7 @@ const Penagihan = () => {
                                         Max size 2 mb
                                       </div>
                                     </div>
-                                    <div>:</div>
+
                                     <div className="flex items-center gap-1">
                                       <div>
                                         <label
@@ -3198,7 +3357,6 @@ const Penagihan = () => {
                                               </div>
                                             </div>
 
-                                            <div>:</div>
                                             <div className="flex items-center gap-1">
                                               <div>
                                                 <label
@@ -3293,7 +3451,7 @@ const Penagihan = () => {
                                     Max size 2 mb
                                   </div>
                                 </div>
-                                <div>:</div>
+
                                 <div className="flex items-center gap-1">
                                   <div>
                                     <label
@@ -3354,13 +3512,13 @@ const Penagihan = () => {
                               <div>
                                 <div className="italic">
                                   Dokumen asli (hardcopy) sudah di kirimkan ke
-                                  PT Karya Prima Unggulan :
+                                  PT My Company :
                                 </div>
                                 <div className="flex items-center gap-3 mb-3">
                                   <div className="w-[350px]">
                                     Tipe Pengiriman
                                   </div>
-                                  <div>:</div>
+
                                   <div className="w-1/4 relative">
                                     <Select
                                       value={tipePengiriman}
@@ -3391,7 +3549,7 @@ const Penagihan = () => {
                                       Max size 2 mb
                                     </div>
                                   </div>
-                                  <div>:</div>
+
                                   <div className="flex items-center gap-1">
                                     <div>
                                       <label
@@ -3486,7 +3644,7 @@ const Penagihan = () => {
                                     Max size 2 mb
                                   </div>
                                 </div>
-                                <div>:</div>
+
                                 <div className="flex items-center gap-1">
                                   <div>
                                     <label
@@ -3555,7 +3713,6 @@ const Penagihan = () => {
                                   </div>
                                 </div>
 
-                                <div>:</div>
                                 <div className="flex items-center gap-1">
                                   <div>
                                     <label
@@ -3622,7 +3779,7 @@ const Penagihan = () => {
                                     Max size 2 mb
                                   </div>
                                 </div>
-                                <div>:</div>
+
                                 <div className="flex items-center gap-1">
                                   <div>
                                     <label
@@ -3699,7 +3856,6 @@ const Penagihan = () => {
                                           </div>
                                         </div>
 
-                                        <div>:</div>
                                         <div className="flex items-center gap-1">
                                           <div>
                                             <label
@@ -3778,7 +3934,7 @@ const Penagihan = () => {
                                     bermaterai
                                   </div>
                                 </div>
-                                <div>:</div>
+
                                 <div className="flex items-center gap-1">
                                   <div>
                                     <label
@@ -3845,7 +4001,7 @@ const Penagihan = () => {
                                         Max size 2 mb
                                       </div>
                                     </div>
-                                    <div>:</div>
+
                                     <div className="flex items-center gap-1">
                                       <div>
                                         <label
@@ -3923,7 +4079,6 @@ const Penagihan = () => {
                                               </div>
                                             </div>
 
-                                            <div>:</div>
                                             <div className="flex items-center gap-1">
                                               <div>
                                                 <label
@@ -4018,7 +4173,7 @@ const Penagihan = () => {
                                     Max size 2 mb
                                   </div>
                                 </div>
-                                <div>:</div>
+
                                 <div className="flex items-center gap-1">
                                   <div>
                                     <label
@@ -4079,13 +4234,13 @@ const Penagihan = () => {
                               <div>
                                 <div className="italic">
                                   Dokumen asli (hardcopy) sudah di kirimkan ke
-                                  PT Karya Prima Unggulan :
+                                  PT My Company :
                                 </div>
                                 <div className="flex items-center gap-3 mb-3">
                                   <div className="w-[350px]">
                                     Tipe Pengiriman
                                   </div>
-                                  <div>:</div>
+
                                   <div className="w-1/4 relative">
                                     <Select
                                       value={tipePengiriman}
@@ -4116,7 +4271,7 @@ const Penagihan = () => {
                                       Max size 2 mb
                                     </div>
                                   </div>
-                                  <div>:</div>
+
                                   <div className="flex items-center gap-1">
                                     <div>
                                       <label
@@ -4472,36 +4627,105 @@ const Penagihan = () => {
                                   </div>
                                   <div className="mb-10">
                                     {nomerInvoice.map((item, i) => (
-                                      <div
-                                        className="flex flex-col gap-2 mb-3"
-                                        key={i}
-                                      >
-                                        {i === 0 ? (
-                                          <div className="w-[250px]">
-                                            No Invoice *) :
-                                          </div>
-                                        ) : (
-                                          <div className="w-[250px]">
-                                            No Invoice {i + 1}
-                                          </div>
-                                        )}
-                                        <div className="fw-full">
-                                          <div>
-                                            <input
-                                              type="text"
-                                              name=""
-                                              id={i}
-                                              value={item.value}
-                                              onKeyDown={(evt) =>
-                                                evt.key === " " &&
-                                                evt.preventDefault()
-                                              }
-                                              onChange={onChangeInvoice}
-                                              className="max-[821px]:w-full w-[246.4px] h-[40px] border border-slate-300 rounded-sm focus:border focus:border-[#0077b6] bg-[#ddebf7]"
-                                            />
+                                      <>
+                                        <div
+                                          className="flex flex-col gap-2 mb-3"
+                                          key={i}
+                                        >
+                                          {i === 0 ? (
+                                            <div className="w-[250px]">
+                                              Nomor Invoice *) :
+                                            </div>
+                                          ) : (
+                                            <div className="w-[250px]">
+                                              Nomor Invoice {i + 1}
+                                            </div>
+                                          )}
+                                          <div className="fw-full">
+                                            <div>
+                                              <input
+                                                type="text"
+                                                name=""
+                                                id={i}
+                                                value={item.value}
+                                                onKeyDown={(evt) =>
+                                                  evt.key === " " &&
+                                                  evt.preventDefault()
+                                                }
+                                                onChange={onChangeInvoice}
+                                                className="max-[821px]:w-full w-[246.4px] h-[40px] border border-slate-300 rounded-sm focus:border focus:border-[#0077b6] bg-[#ddebf7]"
+                                              />
+                                            </div>
                                           </div>
                                         </div>
-                                      </div>
+                                        <div key={i}>
+                                          <div className="flex flex-col gap-2 mb-3">
+                                            {i === 0 ? (
+                                              <div className="w-[250px]">
+                                                Tanggal Invoice *) :
+                                              </div>
+                                            ) : (
+                                              <div className="w-[250px]">
+                                                Tanggal Invoice {i + 1}
+                                              </div>
+                                            )}
+
+                                            <div className="w-full">
+                                              <div>
+                                                <LocalizationProvider
+                                                  dateAdapter={AdapterDayjs}
+                                                >
+                                                  <DemoContainer
+                                                    components={["DatePicker"]}
+                                                  >
+                                                    <DatePicker
+                                                      className="w-full bg-[#ddebf7]"
+                                                      value={
+                                                        tanggalInvoice[i].value
+                                                      }
+                                                      onChange={(item) =>
+                                                        onChangeTanggalInvoice(
+                                                          item,
+                                                          i
+                                                        )
+                                                      }
+                                                      slotProps={{
+                                                        textField: {
+                                                          size: "small",
+                                                        },
+                                                      }}
+                                                    />
+                                                  </DemoContainer>
+                                                </LocalizationProvider>
+                                              </div>
+                                            </div>
+                                          </div>
+                                          <div className="flex flex-col gap-2 mb-3">
+                                            {i === 0 ? (
+                                              <div className="w-[250px]">
+                                                Nilai Invoice *) :
+                                              </div>
+                                            ) : (
+                                              <div className="w-[250px]">
+                                                Nilai Invoice {i + 1}
+                                              </div>
+                                            )}
+                                            <div className="fw-full">
+                                              <div>
+                                                <input
+                                                  id={i}
+                                                  type="text"
+                                                  value={nilaiInvoice[i].value}
+                                                  onChange={
+                                                    onChangeNilaiInvoice
+                                                  }
+                                                  className="max-[821px]:w-full w-[246.4px] h-[40px] border border-slate-300 rounded-sm focus:border focus:border-[#0077b6] bg-[#ddebf7]"
+                                                />
+                                              </div>
+                                            </div>
+                                          </div>
+                                        </div>
+                                      </>
                                     ))}
                                     <div className="flex items-center justify-between max-[357px]:flex-col max-[357px]:items-start max-[357px]:gap-2">
                                       {nomerInvoice.length > 1 && (
@@ -4513,7 +4737,7 @@ const Penagihan = () => {
                                               : "cursor-pointer"
                                           } `}
                                         >
-                                          Delete row
+                                          Delete Invoice
                                         </div>
                                       )}
 
@@ -4525,80 +4749,12 @@ const Penagihan = () => {
                                             : "cursor-pointer"
                                         } `}
                                       >
-                                        Add row
+                                        Tambah Invoice
                                       </div>
                                     </div>
                                   </div>
 
-                                  <div className="mb-10">
-                                    {nomerInvoice.map((item, i) => (
-                                      <div key={i}>
-                                        <div className="flex flex-col gap-2 mb-3">
-                                          {i === 0 ? (
-                                            <div className="w-[250px]">
-                                              Tanggal Invoice *) :
-                                            </div>
-                                          ) : (
-                                            <div className="w-[250px]">
-                                              Tanggal Invoice {i + 1}
-                                            </div>
-                                          )}
-
-                                          <div className="w-full">
-                                            <div>
-                                              <LocalizationProvider
-                                                dateAdapter={AdapterDayjs}
-                                              >
-                                                <DemoContainer
-                                                  components={["DatePicker"]}
-                                                >
-                                                  <DatePicker
-                                                    className="w-full bg-[#ddebf7]"
-                                                    value={
-                                                      tanggalInvoice[i].value
-                                                    }
-                                                    onChange={(item) =>
-                                                      onChangeTanggalInvoice(
-                                                        item,
-                                                        i
-                                                      )
-                                                    }
-                                                    slotProps={{
-                                                      textField: {
-                                                        size: "small",
-                                                      },
-                                                    }}
-                                                  />
-                                                </DemoContainer>
-                                              </LocalizationProvider>
-                                            </div>
-                                          </div>
-                                        </div>
-                                        <div className="flex flex-col gap-2 mb-3">
-                                          {i === 0 ? (
-                                            <div className="w-[250px]">
-                                              Nilai Invoice *) :
-                                            </div>
-                                          ) : (
-                                            <div className="w-[250px]">
-                                              Nilai Invoice {i + 1}
-                                            </div>
-                                          )}
-                                          <div className="fw-full">
-                                            <div>
-                                              <input
-                                                id={i}
-                                                type="text"
-                                                value={nilaiInvoice[i].value}
-                                                onChange={onChangeNilaiInvoice}
-                                                className="max-[821px]:w-full w-[246.4px] h-[40px] border border-slate-300 rounded-sm focus:border focus:border-[#0077b6] bg-[#ddebf7]"
-                                              />
-                                            </div>
-                                          </div>
-                                        </div>
-                                      </div>
-                                    ))}
-                                  </div>
+                                  <div className="mb-10"></div>
                                   <div className="flex flex-col gap-2 mb-3">
                                     <div>
                                       Apakah barang termasuk pajak? *) :{" "}
@@ -4807,11 +4963,11 @@ const Penagihan = () => {
                                         >
                                           {i === 0 ? (
                                             <div className="">
-                                              No Invoice *) :
+                                              Nomor Invoice *) :
                                             </div>
                                           ) : (
                                             <div className="">
-                                              No Invoice {i + 1}
+                                              Nomor Invoice {i + 1}
                                             </div>
                                           )}
                                           <div className="fw-full">
@@ -4885,7 +5041,7 @@ const Penagihan = () => {
                                               : "cursor-pointer"
                                           } `}
                                         >
-                                          Delete row
+                                          Delete Invoice
                                         </div>
                                       )}
 
@@ -4897,7 +5053,7 @@ const Penagihan = () => {
                                             : "cursor-pointer"
                                         } `}
                                       >
-                                        Add row
+                                        Tambah Invoice
                                       </div>
                                     </div>
                                   </div>
@@ -5753,7 +5909,7 @@ const Penagihan = () => {
                                     <div>
                                       <div className="italic">
                                         Dokumen asli (hardcopy) sudah di
-                                        kirimkan ke PT Karya Prima Unggulan :
+                                        kirimkan ke PT My Company :
                                       </div>
                                       <div className="flex flex-col gap-3 mb-3">
                                         <div>Tipe Pengiriman *) :</div>
@@ -6455,7 +6611,7 @@ const Penagihan = () => {
                                     <div>
                                       <div className="italic">
                                         Dokumen asli (hardcopy) sudah di
-                                        kirimkan ke PT Karya Prima Unggulan :
+                                        kirimkan ke PT My Company :
                                       </div>
                                       <div className="flex flex-col gap-3 mb-3">
                                         <div className="w-[350px]">

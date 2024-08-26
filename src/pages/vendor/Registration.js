@@ -30,7 +30,7 @@ import GetBase64 from "../../components/functions/GetBase64";
 import { Viewer } from "@react-pdf-viewer/core";
 import "@react-pdf-viewer/core/lib/styles/index.css";
 
-const steps = ["Company Profile", "Contact Person", "Payment", "Document"];
+const steps = ["Profil Perusahaan", "Kontak Person", "Pembayaran", "Dokumen"];
 const options = [
   { value: "cv", label: "CV", key: 1 },
   { value: "pt", label: "PT", key: 2 },
@@ -128,10 +128,6 @@ const Registration = () => {
 
   const [sertifBpomFile, setSertifBpomFile] = useState(null);
   const [sertifBpomFilePreview, setSertifBpomFilePreview] = useState(null);
-
-  const [dokumenPendukungLainnya, setDokumenPendukungLainnya] = useState(null);
-  const [dokumenPendukungLainnyaPreview, setDokumenPendukungLainnyaPreview] = useState(null);
-
 
   const [isError, setIsError] = useState(false);
   const [message, setMessage] = useState("");
@@ -460,7 +456,6 @@ const Registration = () => {
       file_screenshot_rekening:
         ssPerusahaanFile !== null ? ssPerusahaanFile : null,
       file_sertikasi_bpom: sertifBpomFile !== null ? sertifBpomFile : null,
-      file_dokumen_lainnya: dokumenPendukungLainnya !== null ? dokumenPendukungLainnya : null,
       vendor_id: 0,
       status: "PENDING",
     };
@@ -476,7 +471,7 @@ const Registration = () => {
         setLoading(false);
         if (res.data !== 0) {
           setOpenBackdrop(false);
-          toast.success("Sign up success!", {
+          toast.success("Menunggu proses verifikasi dari admin ditunggu dalam waktu 1 x 24 jam", {
             position: "top-right",
             style: {
               borderRadius: "10px",
@@ -795,24 +790,6 @@ const Registration = () => {
     }
   };
 
-  const onChangeDokumenLainnyaFile = (e) => {
-    if (e.target.files[0] !== undefined) {
-      if (e.target.files[0].size <= 2000000) {
-        setDokumenPendukungLainnyaPreview(URL.createObjectURL(e.target.files[0]));
-        GetBase64(e.target.files[0])
-          .then((result) => {
-            setDokumenPendukungLainnya(result);
-      
-          })
-          .catch((err) => {
-            setDokumenPendukungLainnya(null);
-          });
-      } else {
-        setDokumenPendukungLainnya(null);
-      }
-    }
-  }
-
   const onChangeProvinsi = (item) => {
     if (provinsi.value !== item.value) {
       setProvinsi(item);
@@ -874,7 +851,7 @@ const Registration = () => {
                         <label htmlFor="" className="w-36">
                           Username
                         </label>
-                        <div>:</div>
+                        
                       </div>
                       <div className="w-1/2 relative">
                         <input
@@ -907,7 +884,7 @@ const Registration = () => {
                         <label htmlFor="" className="w-36">
                           Email
                         </label>
-                        <div>:</div>
+                        
                       </div>
                       <div className="w-1/2 relative">
                         <input
@@ -941,7 +918,7 @@ const Registration = () => {
                         <label htmlFor="" className="w-36">
                           Password
                         </label>
-                        <div>:</div>
+                        
                       </div>
                       <div className="w-1/2 relative">
                         <input
@@ -980,7 +957,7 @@ const Registration = () => {
                         <label htmlFor="" className="w-36">
                           Tipe Perusahaan
                         </label>
-                        <div>:</div>
+                        
                       </div>
                       <div className="w-1/2 relative flex flex-col gap-1">
                         <Select
@@ -1037,7 +1014,7 @@ const Registration = () => {
                         <label htmlFor="" className="w-36">
                           Nama Perusahaan
                         </label>
-                        <div>:</div>
+                        
                       </div>
                       <div className="w-1/2 relative">
                         <input
@@ -1068,7 +1045,7 @@ const Registration = () => {
                         <label htmlFor="" className="w-36">
                           Alamat
                         </label>
-                        <div>:</div>
+                        
                       </div>
                       <div className="w-1/2 relative">
                         <textarea
@@ -1098,7 +1075,7 @@ const Registration = () => {
                         <label htmlFor="" className="w-36">
                           Provinsi
                         </label>
-                        <div>:</div>
+                        
                       </div>
                       <div className="w-1/2 relative">
                         <Select
@@ -1124,9 +1101,9 @@ const Registration = () => {
                     <div className="flex gap-2 items-center mb-3">
                       <div className="whitespace-nowrap flex">
                         <label htmlFor="" className="w-36">
-                          Kota
+                          Kabupaten/Kota
                         </label>
-                        <div>:</div>
+                        
                       </div>
                       <div className="w-1/2 relative">
                         <input
@@ -1156,7 +1133,7 @@ const Registration = () => {
                         <label htmlFor="" className="w-36">
                           Kode Pos
                         </label>
-                        <div>:</div>
+                        
                       </div>
                       <div className="w-1/2 relative">
                         <input
@@ -1186,7 +1163,7 @@ const Registration = () => {
                         <label htmlFor="" className="w-36">
                           Tipe Pembelian
                         </label>
-                        <div>:</div>
+                        
                       </div>
                       <div className="w-1/2 relative">
                         <Select
@@ -1214,7 +1191,7 @@ const Registration = () => {
                         <label htmlFor="" className="w-36">
                           Status Pajak
                         </label>
-                        <div>:</div>
+                        
                       </div>
                       <div className="w-1/2 relative">
                         <Select
@@ -1238,7 +1215,7 @@ const Registration = () => {
                       </div>
                     </div>
 
-                    <div className="flex items-center mb-3">
+                    <div className="flex gap-2 items-center mb-3">
                       <div className="flex flex-col gap-1">
                         <div className="whitespace-nowrap flex">
                           <label htmlFor="" className="w-36">
@@ -1253,7 +1230,6 @@ const Registration = () => {
                           <div>Harus 16 digit</div>
                         </div>
                       </div>
-                      <div className="mr-2">:</div>
 
                       <div className="w-1/2 relative">
                         <input
@@ -1290,7 +1266,7 @@ const Registration = () => {
                         <label htmlFor="" className="w-36">
                           Website
                         </label>
-                        <div>:</div>
+                        
                       </div>
                       <div className="w-1/2">
                         <input
@@ -1321,13 +1297,16 @@ const Registration = () => {
                     <div className="me-2">:</div>
                     <div>* = Tidak boleh kosong</div>
                   </div>
+                  <div className="mt-10 font-semibold underline">
+                      Pemilik
+                  </div>
                   <form action="">
                     <div className="flex gap-2 items-center mb-3">
                       <div className="whitespace-nowrap flex">
                         <label htmlFor="" className="w-72">
                           Nama Pemilik Perusahaan
                         </label>
-                        <div>:</div>
+                        
                       </div>
                       <div className="w-1/2 relative">
                         <input
@@ -1360,7 +1339,7 @@ const Registration = () => {
                         <label htmlFor="" className="w-72">
                           Nama Penanggung Jawab
                         </label>
-                        <div>:</div>
+                        
                       </div>
                       <div className="w-1/2 relative">
                         <input
@@ -1393,7 +1372,7 @@ const Registration = () => {
                         <label htmlFor="" className="w-72">
                           Jabatan Penanggung Jawab
                         </label>
-                        <div>:</div>
+                        
                       </div>
                       <div className="w-1/2 relative">
                         <input
@@ -1425,9 +1404,9 @@ const Registration = () => {
                     <div className="flex gap-2 items-center mb-3">
                       <div className="whitespace-nowrap flex">
                         <label htmlFor="" className="w-72">
-                          No Telp Kantor
+                          Nomor Telepon Kantor
                         </label>
-                        <div>:</div>
+                        
                       </div>
                       <div className="w-1/2 relative">
                         <input
@@ -1461,7 +1440,7 @@ const Registration = () => {
                         <label htmlFor="" className="w-72">
                           No Whatsapp Purchase Order (PO)
                         </label>
-                        <div>:</div>
+                        
                       </div>
                       <div className="w-1/2 relative">
                         <input
@@ -1492,7 +1471,7 @@ const Registration = () => {
                         <label htmlFor="" className="w-72">
                           Email Korespondensi PO
                         </label>
-                        <div>:</div>
+                        
                       </div>
                       <div className="w-1/2 relative">
                         <input
@@ -1525,7 +1504,7 @@ const Registration = () => {
                         <label htmlFor="" className="w-72">
                           Nama Kontak
                         </label>
-                        <div>:</div>
+                        
                       </div>
                       <div className="w-1/2 relative">
                         <input
@@ -1555,7 +1534,7 @@ const Registration = () => {
                         <label htmlFor="" className="w-72">
                           Jabatan
                         </label>
-                        <div>:</div>
+                        
                       </div>
                       <div className="w-1/2">
                         <input
@@ -1573,7 +1552,7 @@ const Registration = () => {
                         <label htmlFor="" className="w-72">
                           No Whatsapp Keuangan
                         </label>
-                        <div>:</div>
+                        
                       </div>
                       <div className="w-1/2 relative">
                         <input
@@ -1605,7 +1584,7 @@ const Registration = () => {
                         <label htmlFor="" className="w-72">
                           Email Korespondensi Keuangan
                         </label>
-                        <div>:</div>
+                        
                       </div>
                       <div className="w-1/2 relative">
                         <input
@@ -1624,7 +1603,7 @@ const Registration = () => {
                         <label htmlFor="" className="w-72">
                           Nama Kontak
                         </label>
-                        <div>:</div>
+                        
                       </div>
                       <div className="w-1/2 relative">
                         <input
@@ -1657,7 +1636,7 @@ const Registration = () => {
                         <label htmlFor="" className="w-72">
                           Jabatan
                         </label>
-                        <div>:</div>
+                        
                       </div>
                       <div className="w-1/2 relative">
                         <input
@@ -1712,7 +1691,7 @@ const Registration = () => {
                         <label htmlFor="" className="w-44">
                           Term Pembayaran
                         </label>
-                        <div>:</div>
+                        
                       </div>
                       <div className="w-1/2 relative flex items-center gap-2">
                         <input
@@ -1744,7 +1723,7 @@ const Registration = () => {
                         <label htmlFor="" className="w-44">
                           Bank
                         </label>
-                        <div>:</div>
+                        
                       </div>
                       <div className="w-1/2 relative">
                         <input
@@ -1774,7 +1753,7 @@ const Registration = () => {
                         <label htmlFor="" className="w-44">
                           No. Rekening Bank
                         </label>
-                        <div>:</div>
+                        
                       </div>
                       <div className="w-1/2 relative">
                         <input
@@ -1804,7 +1783,7 @@ const Registration = () => {
                         <label htmlFor="" className="w-44">
                           Nama Rekening Bank
                         </label>
-                        <div>:</div>
+                        
                       </div>
                       <div className="w-1/2 relative">
                         <input
@@ -1834,7 +1813,7 @@ const Registration = () => {
                         <label htmlFor="" className="w-44">
                           Kantor Cabang Bank
                         </label>
-                        <div>:</div>
+                        
                       </div>
                       <div className="w-1/2 relative flex items-center gap-2">
                         <div>KCP</div>
@@ -1865,7 +1844,7 @@ const Registration = () => {
                         <label htmlFor="" className="w-44">
                           Metode Pengiriman
                         </label>
-                        <div>:</div>
+                        
                       </div>
                       <div className="w-1/2 relative">
                         <Select
@@ -1893,7 +1872,7 @@ const Registration = () => {
                         <label htmlFor="" className="w-44">
                           Pengembalian Barang
                         </label>
-                        <div>:</div>
+                        
                       </div>
                       <div className="w-1/2 relative flex items-center gap-2">
                         <input
@@ -1926,7 +1905,7 @@ const Registration = () => {
                         <label htmlFor="" className="w-44">
                           Rebate
                         </label>
-                        <div>:</div>
+                        
                       </div>
                       <div className="w-1/2 relative">
                         <input
@@ -1949,7 +1928,7 @@ const Registration = () => {
                         <label htmlFor="" className="w-44">
                           Marketing fee
                         </label>
-                        <div>:</div>
+                        
                       </div>
                       <div className="w-1/2 relative">
                         <input
@@ -1971,7 +1950,7 @@ const Registration = () => {
                         <label htmlFor="" className="w-44">
                           Listing Fee
                         </label>
-                        <div>:</div>
+                        
                       </div>
                       <div className="w-1/2 relative">
                         <input
@@ -1993,7 +1972,7 @@ const Registration = () => {
                         <label htmlFor="" className="w-44">
                           Promotion Found
                         </label>
-                        <div>:</div>
+                        
                       </div>
                       <div className="w-1/2 relative">
                         <input
@@ -2045,7 +2024,7 @@ const Registration = () => {
                           <label htmlFor="" className="w-72">
                             NPWP / Surat Keterangan Bebas Pajak
                           </label>
-                          <div>:</div>
+                          
                         </div>
                         <div className="text-[10px] text-gray-500">
                           Max size 2 mb
@@ -2102,7 +2081,7 @@ const Registration = () => {
                           <label htmlFor="" className="w-72">
                             KTP Pemilik
                           </label>
-                          <div>:</div>
+                          
                         </div>
                         <div className="text-[10px] text-gray-500">
                           Max size 2 mb
@@ -2158,7 +2137,7 @@ const Registration = () => {
                           <label htmlFor="" className="w-72">
                             KTP Penanggung Jawab
                           </label>
-                          <div>:</div>
+                          
                         </div>
                         <div className="text-[10px] text-gray-500">
                           Max size 2 mb
@@ -2220,7 +2199,7 @@ const Registration = () => {
                             Surat Pengukuhan Kena Pajak (SPKP) / Surat
                             Keterangan Non PKP (Bagi Pengusaha Tidak Kena Pajak)
                           </label>
-                          <div>:</div>
+                          
                         </div>
                         <div className="text-[10px] text-gray-500">
                           Max size 2 mb
@@ -2276,7 +2255,7 @@ const Registration = () => {
                           <label htmlFor="" className="w-72">
                             Nomer Induk Berusaha (NIB)
                           </label>
-                          <div>:</div>
+                          
                         </div>
                         <div className="text-[10px] text-gray-500">
                           Max size 2 mb
@@ -2332,7 +2311,7 @@ const Registration = () => {
                           <label htmlFor="" className="w-72">
                             Screenshot Rekening Perusahaan
                           </label>
-                          <div>:</div>
+                          
                         </div>
                         <div className="text-[10px] text-gray-500">
                           Max size 2 mb
@@ -2389,6 +2368,7 @@ const Registration = () => {
                             Sertifikasi BPOM
                           </label>
                         </div>
+                        
                         <div className="text-[10px] text-gray-500">
                           Max size 2 mb
                         </div>
@@ -2399,8 +2379,7 @@ const Registration = () => {
                           <div>Untuk supplier makanan & minuman</div>
                         </div>
                       </div>
-                      <div className="mr-2">:</div>
-
+                  
                       <div className="w-1/2 relative">
                         <input
                           type="file"
@@ -2431,55 +2410,6 @@ const Registration = () => {
                         </div>
                       )
                     )}
-                    <div className="flex items-center mb-3">
-                      <div className="flex flex-col gap-1">
-                        <div className="whitespace-nowrap flex">
-                          <label htmlFor="" className="w-72">
-                            Dokumen pendukung lainnya
-                          </label>
-                        </div>
-                        <div className="text-[10px] text-gray-500">
-                          Max size 2 mb
-                        </div>
-                        <div className="flex gap-1 items-center text-[12px]">
-                          <div>
-                            <PiWarningCircleLight />
-                          </div>
-                          <div>khusus untuk wilayah batam</div>
-                        </div>
-                      </div>
-                      <div className="mr-2">:</div>
-
-                      <div className="w-1/2 relative">
-                        <input
-                          type="file"
-                          onChange={onChangeDokumenLainnyaFile}
-                         
-                          accept=".jpg,.pdf"
-                          className=" w-full h-[36px] border border-slate-300 rounded-sm focus:border focus:border-[#0077b6]  "
-                        />
-                      </div>
-                    </div>
-                    {dokumenPendukungLainnya !== null &&
-                    RegExp("\\bpdf\\b").test(dokumenPendukungLainnya.split(",")[0]) ? (
-                      <div className="h-[500px] w-[500px] mb-5">
-                        <div className="h-full w-full">
-                          <Viewer fileUrl={dokumenPendukungLainnyaPreview} />
-                        </div>
-                      </div>
-                    ) : (
-                      dokumenPendukungLainnya !== null && (
-                        <div className="h-[500px] w-[400px] mb-5">
-                          <div className="h-full w-full">
-                            <img
-                              src={dokumenPendukungLainnyaPreview}
-                              alt="no"
-                              className="w-full h-full"
-                            />
-                          </div>
-                        </div>
-                      )
-                    )}
                   </form>
                   <div className="flex gap-2 mt-20">
                     <div>
@@ -2497,7 +2427,7 @@ const Registration = () => {
                       mematuhi segala bentuk UU dan peraturan yang dibuat oleh
                       Pemerintah Republik Indonesia, dalam lingkup usaha kami
                       yang kami jalakan selama menajadi supplier/vendor aktif
-                      kepada PT Karya Prima Unggulan
+                      kepada PT My Company
                     </div>
                   </div>
 
@@ -2542,7 +2472,7 @@ const Registration = () => {
                     {loading ? (
                       <CircularProgress size={20} sx={{ color: "white" }} />
                     ) : (
-                      "Finish"
+                      "Submit"
                     )}
                   </button>
                 ) : (
@@ -2827,7 +2757,7 @@ const Registration = () => {
                                 htmlFor=""
                                 className="w-36 flex gap-1 items-center"
                               >
-                                Kota{" "}
+                                Kabupaten/Kota{" "}
                                 {isError && kota.trim().length === 0 ? (
                                   <span className="text-red-400">
                                     <PiWarningCircleLight />
@@ -3059,6 +2989,9 @@ const Registration = () => {
                           <div className="">Keterangan :</div>
                           <div>* = Tidak boleh kosong</div>
                         </div>
+                        <div className="mt-10 font-semibold underline">
+                            Pemilik
+                        </div>
                         <form action="">
                           <div className="flex flex-col gap-2 mb-3">
                             <div className=" flex">
@@ -3168,7 +3101,7 @@ const Registration = () => {
                                 htmlFor=""
                                 className=" flex gap-1 items-center"
                               >
-                                No Telp Kantor{" "}
+                                Nomor Telepon Kantor{" "}
                                 {isError && noTelpKantor.trim().length === 0 ? (
                                   <span className="text-red-400">
                                     <PiWarningCircleLight />
@@ -4221,56 +4154,6 @@ const Registration = () => {
                               </div>
                             )
                           )}
-                          <div className="flex flex-col gap-2  mb-3">
-                            <div className="flex flex-col">
-                              <div className=" flex">
-                                <label htmlFor="" className="">
-                                  Dokumen pendukung lainnya
-                                </label>
-                              </div>
-                              <div className="text-[10px] text-gray-400">
-                                Max size 2 mb
-                              </div>
-                              <div className="flex gap-1 items-center text-[12px]">
-                                <div>
-                                  <PiWarningCircleLight />
-                                </div>
-                                <div>khusus untuk wilayah batam</div>
-                              </div>
-                            </div>
-
-                            <div className=" relative">
-                              <input
-                                type="file"
-                                onChange={onChangeDokumenLainnyaFile}
-                              
-                                accept="image/jpg,.pdf"
-                                className=" w-full h-[36px] border border-slate-300 rounded-sm focus:border focus:border-[#0077b6]  "
-                              />
-                            </div>
-                          </div>
-                          {dokumenPendukungLainnya !== null &&
-                          RegExp("\\bpdf\\b").test(
-                            dokumenPendukungLainnya.split(",")[0]
-                          ) ? (
-                            <div className="h-[500px] w-full mb-5">
-                              <div className="h-full w-full">
-                                <Viewer fileUrl={dokumenPendukungLainnyaPreview} />
-                              </div>
-                            </div>
-                          ) : (
-                            dokumenPendukungLainnya !== null && (
-                              <div className="h-[300px] w-full mb-5">
-                                <div className="h-full w-full">
-                                  <img
-                                    src={dokumenPendukungLainnyaPreview}
-                                    alt="no"
-                                    className="w-full h-full"
-                                  />
-                                </div>
-                              </div>
-                            )
-                          )}
 
                           {isError && (
                             <div className="mt-10 mb-3">
@@ -4296,7 +4179,7 @@ const Registration = () => {
                             telah mematuhi segala bentuk UU dan peraturan yang
                             dibuat oleh Pemerintah Republik Indonesia, dalam
                             lingkup usaha kami yang kami jalakan selama menajadi
-                            supplier/vendor aktif kepada PT Karya Prima Unggulan
+                            supplier/vendor aktif kepada PT My Company
                           </div>
                         </div>
                         <div className="flex max-[348px]:flex-col max-[348px]:gap-2 mt-24 justify-between py-3">
@@ -4323,7 +4206,7 @@ const Registration = () => {
                                     sx={{ color: "white" }}
                                   />
                                 ) : (
-                                  "Finish"
+                                  "Submit"
                                 )}
                               </button>
                             </>
@@ -4350,7 +4233,7 @@ const Registration = () => {
                                     sx={{ color: "white" }}
                                   />
                                 ) : (
-                                  "Finish"
+                                  "Submit"
                                 )}
                               </button>
                             </>

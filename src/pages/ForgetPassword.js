@@ -206,7 +206,7 @@ const ForgetPassword = () => {
         </div> */}
         <div
           className="bg-cover bg-no-repeat bg-center relative col-span-8 max-[634px]:hidden max-[1275px]:col-span-6"
-          style={{ backgroundImage: `url(${unsplashimg.src})` }}
+          style={{ backgroundImage: `url(${require('../assets/images/retail.jpg')})` }} 
         ></div>
         <div className="font-roboto bg-white px-20 max-[790px]:px-10 flex flex-col justify-center w-full rounded-sm shadow-sm col-span-4 max-[634px]:col-span-12 max-[1275px]:col-span-6">
           <div className="flex flex-col items-center gap-2">

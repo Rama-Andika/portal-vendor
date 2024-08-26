@@ -20,6 +20,7 @@ import { Worker } from "@react-pdf-viewer/core";
 import VendorEdit from "./pages/admin/VendorEdit";
 import ForgetPasswordConfirm from "./pages/ForgetPasswordConfirm";
 import ForgetPassword from "./pages/ForgetPassword";
+import KartuHutang from "./pages/KartuHutang";
 
 function App() {
   return (
@@ -42,6 +43,7 @@ function App() {
                 element={<EdtPenagihan />}
               />
               <Route path="vendor/monitoring" element={<Monitoring />} />
+              <Route path="vendor/kartuhutang" element={<KartuHutang />} />
             </Route>
 
             <Route path="/admin" element={<LoginWh />} />
@@ -67,6 +69,7 @@ function App() {
                 element={<ListingPenagihan />}
               />
               <Route path="admin/vendor/edit" element={<VendorEdit />} />
+              <Route path="admin/kartuhutang" element={<KartuHutang />} />
             </Route>
           </Routes>
         </BrowserRouter>

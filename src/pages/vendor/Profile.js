@@ -95,7 +95,6 @@ const Profile = () => {
   const [nibFileUpload, setNibFileUpload] = useState("");
   const [ssPerusahaanFileUpload, setSsPerusahaanFileUpload] = useState("");
   const [sertifBpomFileUpload, setSertifBpomFileUpload] = useState("");
-  const [dokumenLainnyaUpload, setDokumenLainnyaUpload] = useState("");
 
   const [npwpFile, setNpwpFile] = useState(null);
   const [npwpFilePreview, setNpwpFilePreview] = useState(null);
@@ -118,9 +117,6 @@ const Profile = () => {
 
   const [sertifBpomFile, setSertifBpomFile] = useState(null);
   const [sertifBpomFilePreview, setSertifBpomFilePreview] = useState(null);
-
-  const [dokumenPendukungLainnya, setDokumenPendukungLainnya] = useState(null);
-  const [dokumenPendukungLainnyaPreview, setDokumenPendukungLainnyaPreview] = useState(null);
 
   const id = Cookies.get("vendor_id");
 
@@ -283,9 +279,6 @@ const Profile = () => {
           if (data.VENDOR_KTP !== undefined) {
             setKtpPemilikFileUpload(data.VENDOR_KTP);
           }
-          if (data.VENDOR_DOKUMEN !== undefined) {
-            setDokumenLainnyaUpload(data.VENDOR_DOKUMEN);
-          }
         } else {
           setOpenBackdrop(false);
         }
@@ -424,9 +417,7 @@ const Profile = () => {
                   ssPerusahaanFile !== null ? ssPerusahaanFile : null,
                 file_sertikasi_bpom:
                   sertifBpomFile !== null ? sertifBpomFile : null,
-                file_dokumen_lainnya:
-                  dokumenPendukungLainnya !== null ? dokumenPendukungLainnya : null,
-                status: status,
+                status: "PENDING",
                 reason: reason,
                 vendor_id: vendorId,
               };
@@ -667,23 +658,6 @@ const Profile = () => {
     }
   };
 
-  const onChangeDokumenLainnyaFile = (e) => {
-    if (e.target.files[0] !== undefined) {
-      if (e.target.files[0].size <= 2000000) {
-        setDokumenPendukungLainnyaPreview(URL.createObjectURL(e.target.files[0]));
-        GetBase64(e.target.files[0])
-          .then((result) => {
-            setDokumenPendukungLainnya(result);
-          })
-          .catch((err) => {
-            setDokumenPendukungLainnya(null);
-          });
-      } else {
-        setDokumenPendukungLainnya(null);
-      }
-    }
-  }
-
   const onChangeStatusPajak = (item) => {
     setStatusPajak(item);
   };
@@ -810,9 +784,9 @@ const Profile = () => {
                               <label htmlFor="" className="w-72">
                                 Status
                               </label>
-                              <div>:</div>
+                              
                             </div>
-                            {status === "RE_REGISTER" || status === "CLOSED" ? (
+                            {status === "SENT_BACK" || status === "CLOSED" ? (
                               <div className="flex items-center gap-1">
                                 <div className="w-full relative">
                                   <input
@@ -849,7 +823,7 @@ const Profile = () => {
                               <label htmlFor="" className="w-72">
                                 Username
                               </label>
-                              <div>:</div>
+                              
                             </div>
 
                             <div className="w-full relative">
@@ -868,7 +842,7 @@ const Profile = () => {
                               <label htmlFor="" className="w-72">
                                 Tipe Perusahaan
                               </label>
-                              <div>:</div>
+                              
                             </div>
                             <div className="w-full relative flex flex-col gap-1">
                               <Select
@@ -902,7 +876,7 @@ const Profile = () => {
                               <label htmlFor="" className="w-72">
                                 Nama Perusahaan
                               </label>
-                              <div>:</div>
+                              
                             </div>
                             <div className="w-full relative">
                               <input
@@ -924,7 +898,7 @@ const Profile = () => {
                               <label htmlFor="" className="w-72">
                                 Kode
                               </label>
-                              <div>:</div>
+                              
                             </div>
                             <div className="w-full relative">
                               <input
@@ -947,7 +921,7 @@ const Profile = () => {
                                 Status
                               </label>
                             </div>
-                            {status === "RE_REGISTER" ? (
+                            {status === "SENT_BACK" ? (
                               <div className="flex flex-col gap-1">
                                 <div className="w-full relative">
                                   <input
@@ -1080,7 +1054,7 @@ const Profile = () => {
                               <label htmlFor="" className="w-72">
                                 Provinsi
                               </label>
-                              <div>:</div>
+                              
                             </div>
                             <div className="w-full relative">
                               <Select
@@ -1100,7 +1074,7 @@ const Profile = () => {
                               <label htmlFor="" className="w-72">
                                 Kota
                               </label>
-                              <div>:</div>
+                              
                             </div>
                             <div className="w-full relative">
                               <input
@@ -1164,7 +1138,7 @@ const Profile = () => {
                               <label htmlFor="" className="w-72">
                                 Kode Pos
                               </label>
-                              <div>:</div>
+                              
                             </div>
                             <div className="w-full relative">
                               <input
@@ -1183,7 +1157,7 @@ const Profile = () => {
                               <label htmlFor="" className="w-72">
                                 Tipe Pembelian
                               </label>
-                              <div>:</div>
+                              
                             </div>
                             <div className="w-full relative">
                               <Select
@@ -1250,7 +1224,7 @@ const Profile = () => {
                               <label htmlFor="" className="w-72">
                                 Status Pajak
                               </label>
-                              <div>:</div>
+                              
                             </div>
                             <div className="w-full relative">
                               <Select
@@ -1273,7 +1247,7 @@ const Profile = () => {
                               <label htmlFor="" className="w-72">
                                 NPWP
                               </label>
-                              <div>:</div>
+                              
                             </div>
                             <div className="w-full relative">
                               <input
@@ -1340,7 +1314,7 @@ const Profile = () => {
                           <label htmlFor="" className="w-72">
                             Website
                           </label>
-                          <div>:</div>
+                          
                         </div>
                         <div className="w-full">
                           <input
@@ -1379,7 +1353,7 @@ const Profile = () => {
                           <label htmlFor="" className="w-72">
                             Alamat
                           </label>
-                          <div>:</div>
+                          
                         </div>
                         <div className="w-full relative">
                           <textarea
@@ -1431,7 +1405,7 @@ const Profile = () => {
                     <label htmlFor="" className="w-72">
                       Nama Pemilik Perusahaan
                     </label>
-                    <div className="hidden min-[612px]:block">:</div>
+                    
                   </div>
                   <div className="w-full relative">
                     <input
@@ -1449,7 +1423,7 @@ const Profile = () => {
                     <label htmlFor="" className="w-72">
                       Nama Penanggung Jawab
                     </label>
-                    <div className="hidden min-[612px]:block">:</div>
+                    
                   </div>
                   <div className="w-full relative">
                     <input
@@ -1467,7 +1441,7 @@ const Profile = () => {
                     <label htmlFor="" className="w-72">
                       Jabatan Penanggung Jawab
                     </label>
-                    <div className="hidden min-[612px]:block">:</div>
+                    
                   </div>
                   <div className="w-full relative">
                     <input
@@ -1487,7 +1461,7 @@ const Profile = () => {
                     <label htmlFor="" className="w-72">
                       No. Telp Kantor
                     </label>
-                    <div className="hidden min-[612px]:block">:</div>
+                    
                   </div>
                   <div className="w-full relative">
                     <input
@@ -1508,7 +1482,7 @@ const Profile = () => {
                     <label htmlFor="" className="w-72">
                       No Whatsapp Purchase Order (PO)
                     </label>
-                    <div className="hidden min-[612px]:block">:</div>
+                    
                   </div>
                   <div className="w-full relative">
                     <input
@@ -1527,7 +1501,7 @@ const Profile = () => {
                     <label htmlFor="" className="w-72">
                       Email Korespondensi PO
                     </label>
-                    <div className="hidden min-[612px]:block">:</div>
+                    
                   </div>
                   <div className="w-full relative">
                     <input
@@ -1545,7 +1519,7 @@ const Profile = () => {
                     <label htmlFor="" className="w-72">
                       Nama Kontak
                     </label>
-                    <div className="hidden min-[612px]:block">:</div>
+                    
                   </div>
                   <div className="w-full relative">
                     <input
@@ -1563,7 +1537,7 @@ const Profile = () => {
                     <label htmlFor="" className="w-72">
                       Jabatan
                     </label>
-                    <div className="hidden min-[612px]:block">:</div>
+                    
                   </div>
                   <div className="w-full relative">
                     <input
@@ -1581,7 +1555,7 @@ const Profile = () => {
                     <label htmlFor="" className="w-72">
                       No. Whatsapp Keuangan
                     </label>
-                    <div className="hidden min-[612px]:block">:</div>
+                    
                   </div>
                   <div className="w-full relative">
                     <input
@@ -1601,7 +1575,7 @@ const Profile = () => {
                     <label htmlFor="" className="w-72">
                       Email Korespondensi Keuangan
                     </label>
-                    <div className="hidden min-[612px]:block">:</div>
+                    
                   </div>
                   <div className="w-full relative">
                     <input
@@ -1621,7 +1595,7 @@ const Profile = () => {
                     <label htmlFor="" className="w-72">
                       Nama Kontak
                     </label>
-                    <div className="hidden min-[612px]:block">:</div>
+                    
                   </div>
                   <div className="w-full relative">
                     <input
@@ -1639,7 +1613,7 @@ const Profile = () => {
                     <label htmlFor="" className="w-72">
                       Jabatan
                     </label>
-                    <div className="hidden min-[612px]:block">:</div>
+                    
                   </div>
                   <div className="w-full relative">
                     <input
@@ -1671,7 +1645,7 @@ const Profile = () => {
                     <label htmlFor="" className="w-72">
                       Term
                     </label>
-                    <div className="hidden min-[612px]:block">:</div>
+                    
                   </div>
                   <div className="w-full relative flex items-center gap-1">
                     <input
@@ -1691,7 +1665,7 @@ const Profile = () => {
                     <label htmlFor="" className="w-72">
                       Bank
                     </label>
-                    <div className="hidden min-[612px]:block">:</div>
+                    
                   </div>
                   <div className="w-full relative">
                     <input
@@ -1709,7 +1683,7 @@ const Profile = () => {
                     <label htmlFor="" className="w-72">
                       No. Rekening Bank
                     </label>
-                    <div className="hidden min-[612px]:block">:</div>
+                    
                   </div>
                   <div className="w-full relative">
                     <input
@@ -1727,7 +1701,7 @@ const Profile = () => {
                     <label htmlFor="" className="w-72">
                       Nama Rekening Bank
                     </label>
-                    <div className="hidden min-[612px]:block">:</div>
+                    
                   </div>
                   <div className="w-full relative">
                     <input
@@ -1745,7 +1719,7 @@ const Profile = () => {
                     <label htmlFor="" className="w-72">
                       Kantor Cabang Bank
                     </label>
-                    <div className="hidden min-[612px]:block">:</div>
+                    
                   </div>
                   <div className="w-full relative flex items-center gap-1">
                     <div>KCP</div>
@@ -1764,7 +1738,7 @@ const Profile = () => {
                     <label htmlFor="" className="w-72">
                       Metode Pengiriman
                     </label>
-                    <div className="hidden min-[612px]:block">:</div>
+                    
                   </div>
                   <div className="w-full relative">
                     <Select
@@ -1783,7 +1757,7 @@ const Profile = () => {
                     <label htmlFor="" className="w-72">
                       Pengembalian Barang
                     </label>
-                    <div className="hidden min-[612px]:block">:</div>
+                    
                   </div>
                   <div className="w-full relative flex items-center gap-1">
                     <input
@@ -1804,7 +1778,7 @@ const Profile = () => {
                     <label htmlFor="" className="w-72">
                       Rebate
                     </label>
-                    <div className="hidden min-[612px]:block">:</div>
+                    
                   </div>
                   <div className="w-full relative">
                     <input
@@ -1826,7 +1800,7 @@ const Profile = () => {
                     <label htmlFor="" className="w-72">
                       Marketing Fee
                     </label>
-                    <div className="hidden min-[612px]:block">:</div>
+                    
                   </div>
                   <div className="w-full relative">
                     <input
@@ -1848,7 +1822,7 @@ const Profile = () => {
                     <label htmlFor="" className="w-72">
                       Listing Fee
                     </label>
-                    <div className="hidden min-[612px]:block">:</div>
+                    
                   </div>
                   <div className="w-full relative">
                     <input
@@ -1870,7 +1844,7 @@ const Profile = () => {
                     <label htmlFor="" className="w-72">
                       Promotion Fund
                     </label>
-                    <div className="hidden min-[612px]:block">:</div>
+                    
                   </div>
                   <div className="w-full relative">
                     <input
@@ -1918,7 +1892,7 @@ const Profile = () => {
                       <label htmlFor="" className="w-72">
                         NPWP / Surat Keterangan Bebas Pajak
                       </label>
-                      <div className="hidden min-[612px]:block">:</div>
+                      
                     </div>
                     <div className="text-[10px] text-gray-500">
                       Max size 2 mb
@@ -1988,7 +1962,7 @@ const Profile = () => {
                       <label htmlFor="" className="w-72">
                         KTP Pemilik
                       </label>
-                      <div className="hidden min-[612px]:block">:</div>
+                      
                     </div>
                     <div className="text-[10px] text-gray-500">
                       Max size 2 mb
@@ -2057,7 +2031,7 @@ const Profile = () => {
                       <label htmlFor="" className="w-72">
                         KTP Penganggung Jawab
                       </label>
-                      <div className="hidden min-[612px]:block">:</div>
+                      
                     </div>
                     <div className="text-[10px] text-gray-500">
                       Max size 2 mb
@@ -2133,7 +2107,7 @@ const Profile = () => {
                         Surat Pengukuhan Kena Pajak (SPKP) / Surat Keterangan
                         Non PKP (Bagi Pengusaha Tidak Kena Pajak)
                       </label>
-                      <div className="hidden min-[612px]:block">:</div>
+                      
                     </div>
                     <div className="text-[10px] text-gray-500">
                       Max size 2 mb
@@ -2203,7 +2177,7 @@ const Profile = () => {
                       <label htmlFor="" className="w-72">
                         Nomer Induk Berusaha (NIB)
                       </label>
-                      <div className="hidden min-[612px]:block">:</div>
+                      
                     </div>
                     <div className="text-[10px] text-gray-500">
                       Max size 2 mb
@@ -2273,7 +2247,7 @@ const Profile = () => {
                       <label htmlFor="" className="w-72">
                         Sreenshot Rekening Perusahaan
                       </label>
-                      <div className="hidden min-[612px]:block">:</div>
+                      
                     </div>
                     <div className="text-[10px] text-gray-500">
                       Max size 2 mb
@@ -2343,7 +2317,7 @@ const Profile = () => {
                       <label htmlFor="" className="w-72">
                         Sertifikasi BPOM
                       </label>
-                      <div className="hidden min-[612px]:block">:</div>
+                      
                     </div>
                     <div className="text-[10px] text-gray-500">
                       Max size 1 mb
@@ -2384,7 +2358,7 @@ const Profile = () => {
                   </div>
                   {sertifBpomFileUpload.trim().length > 0 && (
                     <a
-                      href={`${apiExport}fin/transactionact/view_portal_file.jsp?file=${sertifBpomFileUpload}`}
+                      href={`${apiExport}fin/transactionact/view_portal_file.jsp?file=${npwpFileUpload}`}
                       target="_blank"
                       className="underline cursor-pointer text-blue-500"
                       rel="noreferrer"
@@ -2406,82 +2380,6 @@ const Profile = () => {
                       <div className="h-full w-full">
                         <img
                           src={sertifBpomFilePreview}
-                          alt="no"
-                          className="w-full h-full"
-                        />
-                      </div>
-                    </div>
-                  )
-                )}
-                <div className="flex flex-col min-[612px]:flex-row gap-5 min-[612px]:gap-2 mb-3 w-full min-[612px]:items-center">
-                  <div className="flex flex-col gap-1">
-                    <div className=" flex">
-                      <label htmlFor="" className="w-72">
-                        Dokumen pendukung lainnya
-                      </label>
-                      <div className="hidden min-[612px]:block">:</div>
-                    </div>
-                    <div className="text-[10px] text-gray-500">
-                      Max size 1 mb
-                    </div>
-                    <div className="flex gap-1 items-center text-[12px]">
-                      <div>
-                        <PiWarningCircleLight />
-                      </div>
-                      <div>khusus untuk wilayah batam</div>
-                    </div>
-                  </div>
-
-                  <div className=" relative">
-                    <label htmlFor="upload-dokumen-lainnya" className="w-fit">
-                      {dokumenPendukungLainnya === null ? (
-                        <div className="w-fit flex gap-1 items-center bg-blue-400 py-2 px-5 text-white hover:bg-blue-200 rounded-md">
-                          <span>
-                            <FaCloudUploadAlt />
-                          </span>
-                          <div>Upload</div>
-                        </div>
-                      ) : (
-                        <div className="w-fit flex gap-1 items-center bg-blue-400 py-2 px-5 text-white hover:bg-blue-200 rounded-md">
-                          <span>
-                            <FaCloudUploadAlt />
-                          </span>
-                          <div>1 File</div>
-                        </div>
-                      )}
-                    </label>
-                    <input
-                      onChange={onChangeDokumenLainnyaFile}
-                      type="file"
-                      id="upload-dokumen-lainnya"
-                      accept=".jpg,.pdf"
-                      className="hidden w-full h-[36px] border border-slate-300 rounded-sm focus:border focus:border-[#0077b6]  "
-                    />
-                  </div>
-                  {dokumenLainnyaUpload.trim().length > 0 && (
-                    <a
-                      href={`${apiExport}fin/transactionact/view_portal_file.jsp?file=${dokumenLainnyaUpload}`}
-                      target="_blank"
-                      className="underline cursor-pointer text-blue-500"
-                      rel="noreferrer"
-                    >
-                      File terupload
-                    </a>
-                  )}
-                </div>
-                {dokumenPendukungLainnya !== null &&
-                RegExp("\\bpdf\\b").test(dokumenPendukungLainnya.split(",")[0]) ? (
-                  <div className="h-[500px] w-[500px] max-[612px]:w-full mb-5">
-                    <div className="h-full w-full">
-                      <Viewer fileUrl={dokumenPendukungLainnyaPreview} />
-                    </div>
-                  </div>
-                ) : (
-                  dokumenPendukungLainnya !== null && (
-                    <div className="h-[500px] w-[400px] max-[612px]:w-full mb-5">
-                      <div className="h-full w-full">
-                        <img
-                          src={dokumenPendukungLainnyaPreview}
                           alt="no"
                           className="w-full h-full"
                         />
@@ -2535,7 +2433,7 @@ const Profile = () => {
         >
           <Fade in={open}>
             <div
-              className={`border-0 bg-white py-5 px-7 absolute top-[50%] left-1/2 translate-x-[-50%] translate-y-[-50%] h-[400px] overflow-y-auto z-[999999]  ${
+              className={`rounded-md border-0 bg-white py-5 px-7 absolute top-[50%] left-1/2 translate-x-[-50%] translate-y-[-50%] h-[400px] overflow-y-auto z-[999999]  ${
                 screenSize <= 548 ? "w-[90%]" : "w-fit"
               }`}
             >

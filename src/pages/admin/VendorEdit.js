@@ -95,7 +95,6 @@ const VendorEdit = () => {
   const [nibFileUpload, setNibFileUpload] = useState("");
   const [ssPerusahaanFileUpload, setSsPerusahaanFileUpload] = useState("");
   const [sertifBpomFileUpload, setSertifBpomFileUpload] = useState("");
-  const [dokumenLainnyaUpload, setDokumenLainnyaUpload] = useState("");
 
   const [npwpFile, setNpwpFile] = useState(null);
   const [npwpFilePreview, setNpwpFilePreview] = useState(null);
@@ -118,9 +117,6 @@ const VendorEdit = () => {
 
   const [sertifBpomFile, setSertifBpomFile] = useState(null);
   const [sertifBpomFilePreview, setSertifBpomFilePreview] = useState(null);
-
-  const [dokumenPendukungLainnya, setDokumenPendukungLainnya] = useState(null);
-  const [dokumenPendukungLainnyaPreview, setDokumenPendukungLainnyaPreview] = useState(null);
 
   const { state } = useLocation();
 
@@ -263,9 +259,6 @@ const VendorEdit = () => {
           }
           if (data.VENDOR_KTP !== undefined) {
             setKtpPemilikFileUpload(data.VENDOR_KTP);
-          }
-          if (data.VENDOR_DOKUMEN !== undefined) {
-            setDokumenLainnyaUpload(data.VENDOR_DOKUMEN);
           }
         } else {
           setOpenBackdrop(false);
@@ -424,8 +417,6 @@ const VendorEdit = () => {
                   ssPerusahaanFile !== null ? ssPerusahaanFile : null,
                 file_sertikasi_bpom:
                   sertifBpomFile !== null ? sertifBpomFile : null,
-                file_dokumen_lainnya:
-                  dokumenPendukungLainnya !== null ? dokumenPendukungLainnya : null,
                 status: status,
                 reason: reason,
                 vendor_id: vendorId,
@@ -667,23 +658,6 @@ const VendorEdit = () => {
     }
   };
 
-  const onChangeDokumenLainnyaFile = (e) => {
-    if (e.target.files[0] !== undefined) {
-      if (e.target.files[0].size <= 2000000) {
-        setDokumenPendukungLainnyaPreview(URL.createObjectURL(e.target.files[0]));
-        GetBase64(e.target.files[0])
-          .then((result) => {
-            setDokumenPendukungLainnya(result);
-          })
-          .catch((err) => {
-            setDokumenPendukungLainnya(null);
-          });
-      } else {
-        setDokumenPendukungLainnya(null);
-      }
-    }
-  }
-
   const onChangeStatusPajak = (item) => {
     setStatusPajak(item);
   };
@@ -812,7 +786,7 @@ const VendorEdit = () => {
                               </label>
                               <div>:</div>
                             </div>
-                            {status === "RE_REGISTER" ? (
+                            {status === "SENT_BACK" ? (
                               <div className="flex items-center gap-1">
                                 <div className="w-full relative">
                                   <input
@@ -2390,82 +2364,6 @@ const VendorEdit = () => {
                     </div>
                   )
                 )}
-                <div className="flex flex-col min-[612px]:flex-row gap-5 min-[612px]:gap-2 mb-3 w-full min-[612px]:items-center">
-                  <div className="flex flex-col gap-1">
-                    <div className=" flex">
-                      <label htmlFor="" className="w-72">
-                        Dokumen pendukung lainnya
-                      </label>
-                      <div className="hidden min-[612px]:block">:</div>
-                    </div>
-                    <div className="text-[10px] text-gray-500">
-                      Max size 1 mb
-                    </div>
-                    <div className="flex gap-1 items-center text-[12px]">
-                      <div>
-                        <PiWarningCircleLight />
-                      </div>
-                      <div>khusus untuk wilayah batam</div>
-                    </div>
-                  </div>
-
-                  <div className=" relative">
-                    <label htmlFor="upload-dokumen-lainnya" className="w-fit">
-                      {dokumenPendukungLainnya === null ? (
-                        <div className="w-fit flex gap-1 items-center bg-blue-400 py-2 px-5 text-white hover:bg-blue-200 rounded-md">
-                          <span>
-                            <FaCloudUploadAlt />
-                          </span>
-                          <div>Upload</div>
-                        </div>
-                      ) : (
-                        <div className="w-fit flex gap-1 items-center bg-blue-400 py-2 px-5 text-white hover:bg-blue-200 rounded-md">
-                          <span>
-                            <FaCloudUploadAlt />
-                          </span>
-                          <div>1 File</div>
-                        </div>
-                      )}
-                    </label>
-                    <input
-                      onChange={onChangeDokumenLainnyaFile}
-                      type="file"
-                      id="upload-dokumen-lainnya"
-                      accept=".jpg,.pdf"
-                      className="hidden w-full h-[36px] border border-slate-300 rounded-sm focus:border focus:border-[#0077b6]  "
-                    />
-                  </div>
-                  {dokumenLainnyaUpload.trim().length > 0 && (
-                    <a
-                      href={`${apiExport}fin/transactionact/view_portal_file.jsp?file=${dokumenLainnyaUpload}`}
-                      target="_blank"
-                      className="underline cursor-pointer text-blue-500"
-                      rel="noreferrer"
-                    >
-                      File terupload
-                    </a>
-                  )}
-                </div>
-                {dokumenPendukungLainnya !== null &&
-                RegExp("\\bpdf\\b").test(dokumenPendukungLainnya.split(",")[0]) ? (
-                  <div className="h-[500px] w-[500px] max-[612px]:w-full mb-5">
-                    <div className="h-full w-full">
-                      <Viewer fileUrl={dokumenPendukungLainnyaPreview} />
-                    </div>
-                  </div>
-                ) : (
-                  dokumenPendukungLainnya !== null && (
-                    <div className="h-[500px] w-[400px] max-[612px]:w-full mb-5">
-                      <div className="h-full w-full">
-                        <img
-                          src={dokumenPendukungLainnyaPreview}
-                          alt="no"
-                          className="w-full h-full"
-                        />
-                      </div>
-                    </div>
-                  )
-                )}
               </form>
             </div>
           </div>
@@ -2510,7 +2408,7 @@ const VendorEdit = () => {
         >
           <Fade in={open}>
             <div
-              className={`border-0 bg-white py-5 px-7 absolute top-[50%] left-1/2 translate-x-[-50%] translate-y-[-50%] h-[400px] overflow-y-auto z-[999999]  ${
+              className={`rounded-md border-0 bg-white py-5 px-7 absolute top-[50%] left-1/2 translate-x-[-50%] translate-y-[-50%] h-[400px] overflow-y-auto z-[999999]  ${
                 screenSize <= 548 ? "w-[90%]" : "w-fit"
               }`}
             >

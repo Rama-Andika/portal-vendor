@@ -36,7 +36,7 @@ const SidebarComponent = ({width}) => {
           >
             <SiShopware />{" "}
             <span className="text-[16px] w-[222px] overflow-ellipsis overflow-hidden">
-              PT KARYA PRIMA UNGGULAN
+              PT My Company
             </span>
           </Link>
         </div>
@@ -91,6 +91,23 @@ const SidebarComponent = ({width}) => {
                     <LiaFileInvoiceSolid />
                   </div>
                   <div>Monitoring</div>
+                </div>
+              </NavLink>
+              <NavLink
+                style={({ isActive }) => ({
+                  backgroundColor: isActive ? "#0077b6" : "",
+                })}
+                to={`/vendor/kartuhutang `}
+                onClick={handleCloseSidebar}
+                className={({ isActive }) =>
+                  isActive ? activeLink : normalLink
+                }
+              >
+                <div className="ms-[-30px] flex items-center gap-3 ">
+                  <div className="text-[24px]">
+                    <LiaFileInvoiceSolid />
+                  </div>
+                  <div>Kartu Hutang</div>
                 </div>
               </NavLink>
             </Sidebar.ItemGroup>

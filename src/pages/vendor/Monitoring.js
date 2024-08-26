@@ -1,4 +1,10 @@
-import { Backdrop, CircularProgress, Fade, Modal, Pagination } from "@mui/material";
+import {
+  Backdrop,
+  CircularProgress,
+  Fade,
+  Modal,
+  Pagination,
+} from "@mui/material";
 import { useStateContext } from "../../contexts/ContextProvider";
 import { useEffect, useState } from "react";
 import { Link, useNavigate } from "react-router-dom";
@@ -17,7 +23,6 @@ const srcStatusOptions = [
   { value: 0, label: "All", key: 0 },
   { value: "APPROVED", label: "Approved", key: 0 },
   { value: "DRAFT", label: "Draft", key: 1 },
-  { value: "REJECT", label: "Reject", key: 1 },
   { value: "Waiting_for_approval", label: "Waiting", key: 1 },
   { value: "CLOSED", label: "Closed", key: 1 },
 ];
@@ -77,16 +82,16 @@ const Monitoring = () => {
       })
         .then((response) => response.json())
         .then((res) => {
-          setTotal(res.total);
-          setCount(Math.ceil(res.total / res.limit));
-          setLimit(res.limit);
           // eslint-disable-next-line array-callback-return
           res.data.map((data) => {
             var total = 0;
+            setTotal(data.total);
+            setCount(Math.ceil(data.total / data.limit));
+            setLimit(data.limit);
             data.nilai_invoices.map((nilai) => (total += nilai));
             setTotalInvoice((prev) => [
               ...prev,
-              {id: data.id, total: total.toFixed(2)}
+              { id: data.id, total: total.toFixed(2) },
             ]);
           });
 
@@ -199,7 +204,7 @@ const Monitoring = () => {
         >
           <div className="mb-20 max-[349px]:mb-5">Monitoring</div>
           <div className="mb-5 w-[80%] max-[638px]:w-full">
-            <div className="mb-5 text-slate-400">Searching Parameter</div>
+            <div className="mb-5 text-slate-400">Parameter Pencarian</div>
             <div>
               <form action="">
                 <div className="flex max-[1254px]:flex-col gap-5 items-center mb-5">
@@ -231,7 +236,7 @@ const Monitoring = () => {
                         htmlFor=""
                         className="w-36 text-[14px] text-slate-400"
                       >
-                        Date Submit
+                        Tanggal Submit
                       </label>
                       <div className="hidden">:</div>
                     </div>
@@ -277,7 +282,7 @@ const Monitoring = () => {
                             checked={ignoreDate === 1 ? true : false}
                           />
                         </div>
-                        <div className="whitespace-nowrap">Ignore</div>
+                        <div className="whitespace-nowrap">Abaikan</div>
                       </div>
                     </div>
                   </div>
@@ -302,7 +307,6 @@ const Monitoring = () => {
                     <td className="p-5 border">No Request </td>
                     <td className="p-5 border">Tanggal Submit</td>
                     <td className="p-5 border">Tanggal Approved</td>
-                    <td className="p-5 border">Tanggal Pembayaran</td>
                     <td className="p-5 border">Nilai Penagihan</td>
                     <td className="p-5 border">Status Penagihan</td>
                     <td className="p-5 border">No Tukar Faktur</td>
@@ -329,10 +333,12 @@ const Monitoring = () => {
                           : ""}
                       </td>
                       <td className="p-5 border">
-                        {item.due_date ? dayjs(item.due_date).format("DD/MM/YYYY") : ""}
-                      </td>
-                      <td className="p-5 border">
-                        Rp. {accountingNumber(totalInvoice.filter((value) => value.id === item.id)[0]?.total)}
+                        Rp.{" "}
+                        {accountingNumber(
+                          totalInvoice.filter(
+                            (value) => value.id === item.id
+                          )[0]?.total
+                        )}
                       </td>
                       <td className="p-5 border">
                         {titleCase(item.status, "_")}
@@ -376,7 +382,7 @@ const Monitoring = () => {
           >
             <Fade in={open}>
               <div
-                className={`border-0 bg-white py-5 px-7 absolute top-[50%] left-1/2 translate-x-[-50%] translate-y-[-50%] h-[400px] overflow-y-auto z-[999999]  ${
+                className={`rounded-md border-0 bg-white py-5 px-7 absolute top-[50%] left-1/2 translate-x-[-50%] translate-y-[-50%] h-[400px] overflow-y-auto z-[999999]  ${
                   screenSize <= 548 ? "w-[90%]" : "w-fit"
                 }`}
               >
@@ -390,9 +396,6 @@ const Monitoring = () => {
                         <div className="w-[270px] whitespace-nowrap font-bold">
                           No Request
                         </div>
-                        <div className="max-[549px]:hidden min-[550px]:block">
-                          :
-                        </div>
                         <div className="w-[240px] whitespace-nowrap overflow-ellipsis overflow-hidden">
                           {detail.no_request}
                         </div>
@@ -401,9 +404,7 @@ const Monitoring = () => {
                         <div className="w-[270px] whitespace-nowrap font-bold">
                           Tanggal Submit
                         </div>
-                        <div className="max-[549px]:hidden min-[550px]:block">
-                          :
-                        </div>
+          
                         <div className="w-[240px] whitespace-nowrap overflow-ellipsis overflow-hidden">
                           {dayjs(detail.created_at).format("DD/MM/YYYY")}
                         </div>
@@ -412,9 +413,7 @@ const Monitoring = () => {
                         <div className="w-[270px] whitespace-nowrap font-bold">
                           Supplier
                         </div>
-                        <div className="max-[549px]:hidden min-[550px]:block">
-                          :
-                        </div>
+                 
                         <div className="w-[240px] whitespace-nowrap overflow-ellipsis overflow-hidden">
                           {detail.vendor.nama}
                         </div>
@@ -423,9 +422,7 @@ const Monitoring = () => {
                         <div className="w-[270px] whitespace-nowrap font-bold">
                           Tipe Penagihan
                         </div>
-                        <div className="max-[549px]:hidden min-[550px]:block">
-                          :
-                        </div>
+                 
                         <div className="w-[240px] whitespace-nowrap overflow-ellipsis overflow-hidden text-red-500">
                           {titleCase(detail.tipe_penagihan, "_")}
                         </div>
@@ -434,9 +431,7 @@ const Monitoring = () => {
                         <div className="w-[270px] whitespace-nowrap font-bold">
                           No Purchase Order (PO)
                         </div>
-                        <div className="max-[549px]:hidden min-[550px]:block">
-                          :
-                        </div>
+                     
                         <div className="w-[240px] whitespace-nowrap overflow-ellipsis overflow-hidden">
                           {detail.nomer_po}
                         </div>
@@ -445,9 +440,7 @@ const Monitoring = () => {
                         <div className="w-[270px] whitespace-nowrap font-bold">
                           Tanggal PO
                         </div>
-                        <div className="max-[549px]:hidden min-[550px]:block">
-                          :
-                        </div>
+                  
                         <div className="w-[240px] whitespace-nowrap overflow-ellipsis overflow-hidden">
                           {dayjs(detail.tanggal_po).format("DD/MM/YYYY")}
                         </div>
@@ -456,9 +449,7 @@ const Monitoring = () => {
                         <div className="w-[270px] whitespace-nowrap font-bold">
                           Delivery Area
                         </div>
-                        <div className="max-[549px]:hidden min-[550px]:block">
-                          :
-                        </div>
+               
                         <div className="w-[240px] whitespace-nowrap overflow-ellipsis overflow-hidden">
                           {detail.delivery_area}
                         </div>
@@ -467,9 +458,7 @@ const Monitoring = () => {
                         <div className="w-[270px] whitespace-nowwrap font-bold">
                           Periode Acuan Penagihan
                         </div>
-                        <div className="max-[549px]:hidden min-[550px]:block">
-                          :
-                        </div>
+                   
                         <div className="w-[240px] whitespace-nowrap overflow-ellipsis overflow-hidden">
                           12/09/23
                         </div>
@@ -478,9 +467,7 @@ const Monitoring = () => {
                         <div className="w-[270px] whitespace-nowrap font-bold">
                           No Invoice
                         </div>
-                        <div className="max-[549px]:hidden min-[550px]:block">
-                          :
-                        </div>
+                  
                         <div className="flex flex-col gap-1">
                           {detail.nomer_invoices.map((nomer) => (
                             <div className="w-[240px] whitespace-nowrap overflow-ellipsis overflow-hidden">
@@ -493,9 +480,7 @@ const Monitoring = () => {
                         <div className="w-[270px] whitespace-nowrap font-bold">
                           Tanggal Invoice
                         </div>
-                        <div className="max-[549px]:hidden min-[550px]:block">
-                          :
-                        </div>
+                     
                         <div className="flex flex-col gap-1">
                           {detail.tanggal_invoices.map((tanggal) => (
                             <div className="w-[240px] whitespace-nowrap overflow-ellipsis overflow-hidden">
@@ -508,9 +493,7 @@ const Monitoring = () => {
                         <div className="w-[270px] whitespace-nowrap font-bold">
                           Nilai Invoice
                         </div>
-                        <div className="max-[549px]:hidden min-[550px]:block">
-                          :
-                        </div>
+                    
                         <div className="flex flex-col gap-1">
                           {detail.nilai_invoices.map((nilai) => (
                             <div className="w-[240px] whitespace-nowrap overflow-ellipsis overflow-hidden">
@@ -523,9 +506,7 @@ const Monitoring = () => {
                         <div className="w-[270px] whitespace-nowrap font-bold">
                           Apakah Barang Termasuk Pajak
                         </div>
-                        <div className="max-[549px]:hidden min-[550px]:block">
-                          :
-                        </div>
+                   
                         <div className="w-[240px] whitespace-nowrap overflow-ellipsis overflow-hidden flex flex-col">
                           <div>{detail.is_pajak === 0 ? "Tidak" : "Ya"}</div>
                         </div>
@@ -534,9 +515,7 @@ const Monitoring = () => {
                         <div className="w-[270px] whitespace-nowrap font-bold">
                           No Seri Faktur Pajak
                         </div>
-                        <div className="max-[549px]:hidden min-[550px]:block">
-                          :
-                        </div>
+                      
                         <div className="flex flex-col gap-1">
                           {detail.nomer_seri_pajak.map((nomer) => (
                             <div className="w-[240px] whitespace-nowrap overflow-ellipsis overflow-hidden">
@@ -549,9 +528,7 @@ const Monitoring = () => {
                         <div className="w-[270px] whitespace-nowrap font-bold">
                           Status
                         </div>
-                        <div className="max-[549px]:hidden min-[550px]:block">
-                          :
-                        </div>
+                   
                         <div className="w-[240px] whitespace-nowrap overflow-ellipsis overflow-hidden flex flex-col underline">
                           <div>{detail.status}</div>
                         </div>
@@ -561,9 +538,7 @@ const Monitoring = () => {
                           <div className="w-[270px] whitespace-nowrap font-bold">
                             Reject Message
                           </div>
-                          <div className="max-[549px]:hidden min-[550px]:block">
-                            :
-                          </div>
+                     
                           <div className="w-[240px] max-[549px]:w-full overflow-hidden flex flex-col">
                             <div>{detail.reason}</div>
                           </div>

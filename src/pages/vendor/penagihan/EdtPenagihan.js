@@ -31,18 +31,16 @@ import titleCase from "../../../components/functions/TitleCase";
 import GetBase64 from "../../../components/functions/GetBase64";
 import Cookies from "js-cookie";
 import accountingNumber from "../../../components/functions/AccountingNumber";
-import accountingNumberV2 from "../../../components/functions/AccountingNumberV2";
 
 const optionsTipePenagihan = [
   { value: "beli putus", label: "Beli Putus", key: 0 },
   { value: "konsinyasi", label: "Konsinyasi", key: 1 },
 ];
 const optionsDeliveryArea = [
-  { value: "tangerang", label: "Tangerang"},
-  { value: "jakarta", label: "Jakarta"},
-  { value: "bali", label: "Bali"},
-  { value: "makassar", label: "Makassar"},
-  { value: "batam", label: "Batam"},
+  { value: "tangerang", label: "Tangerang", key: 0 },
+  { value: "jakarta", label: "Jakarta", key: 1 },
+  { value: "bali", label: "Bali", key: 2 },
+  { value: "makassar", label: "Makassar", key: 3 },
 ];
 const options = [
   { value: 0, label: "Tidak", key: 0 },
@@ -217,7 +215,7 @@ const Penagihan = () => {
             return { value: dayjs(tanggal) };
           });
           const listNilaiInvoice = data.nilai_invoices.map((nilai) => {
-            return { value: accountingNumberV2(nilai.toString()) };
+            return { value: accountingNumber(nilai.toString()) };
           });
 
           let arrayInvoiceTambahan = [];
@@ -301,13 +299,10 @@ const Penagihan = () => {
     // eslint-disable-next-line array-callback-return
     nilaiInvoice.map((nilai) => {
       const value = nilai.value.replace(/\./g, "").split(",").join(".");
-      console.log(value)
       if (nilai.value.trim().length > 0 && !isNaN(value)) {
         countNilaiInvoice += 1;
       }
     });
-
-    
 
     // const invoiceTambahanArray = invoiceTambahan.filter((invoice) => {
     //   return !isEmpty(invoice);
@@ -322,13 +317,6 @@ const Penagihan = () => {
     //     countInvoiceTambahan += 1;
     //   }
     // });
-
-    console.log(nomerPo.trim().length)
-    console.log(tanggalPo !== undefined)
-    console.log(nomerDo.trim().length)
-    console.log(countNomerInvoice === nomerInvoice.length)
-    console.log(countTanggalInvoice === nomerInvoice.length)
-    console.log(countNilaiInvoice === nomerInvoice.length)
 
     if (activeStep === 0) {
       setActiveStep((prevActiveStep) => prevActiveStep + 1);
@@ -593,7 +581,7 @@ const Penagihan = () => {
 
     setNilaiInvoice((s) => {
       const newArr = s.slice();
-      newArr[index].value = accountingNumberV2(
+      newArr[index].value = accountingNumber(
         e.target.value.split(".").join("")
       );
 
@@ -1537,7 +1525,7 @@ const Penagihan = () => {
                         <div className="w-[150px]">
                           <label htmlFor="">Tipe Penagihan</label>
                         </div>
-                        <div>:</div>
+                        
                         <div className="w-[70%]">
                           <Select
                             isDisabled={true}
@@ -1570,7 +1558,7 @@ const Penagihan = () => {
                                 <div>Harus 8 digit</div>
                               </div>
                             </div>
-                            <div>:</div>
+                            
                             <div className="flex items-center gap-1 ">
                               <div>PO</div>
                               <div>
@@ -1603,7 +1591,7 @@ const Penagihan = () => {
                           <div className="flex items-center gap-2 mb-3">
                             <div className="w-[250px]">Tanggal PO</div>
 
-                            <div>:</div>
+                            
                             <div className="flex items-center gap-1">
                               <div className="w-[21.1px]"></div>
                               <div>
@@ -1637,7 +1625,7 @@ const Penagihan = () => {
                             <div className="w-[250px]">
                               No Delivery Order (DO)
                             </div>
-                            <div>:</div>
+                            
                             <div className="flex items-center gap-1 ">
                               <div className="w-[21.1px]"></div>
                               <div>
@@ -1670,7 +1658,7 @@ const Penagihan = () => {
                           </div>
                           <div className="flex items-center gap-2 mb-10">
                             <div className="w-[250px]">Delivery Area</div>
-                            <div>:</div>
+                            
                             <div className="flex items-center gap-1 max-[821px]:w-[249.56px] w-[287.96px]">
                               <div className="w-[24px]"></div>
                               <div className="w-full ">
@@ -1702,13 +1690,13 @@ const Penagihan = () => {
                                 key={i}
                               >
                                 {i === 0 ? (
-                                  <div className="w-[250px]">No Invoice</div>
+                                  <div className="w-[250px]">Nomor Invoice</div>
                                 ) : (
                                   <div className="w-[250px]">
-                                    No Invoice {i + 1}
+                                    Nomor Invoice {i + 1}
                                   </div>
                                 )}
-                                <div>:</div>
+                                
                                 <div className="flex items-center gap-1 ">
                                   <div className="w-[21.1px]"></div>
                                   <div>
@@ -1738,7 +1726,7 @@ const Penagihan = () => {
                                       : "cursor-pointer"
                                   } `}
                                 >
-                                  Delete row
+                                  Delete Invoice
                                 </div>
                               )}
 
@@ -1750,7 +1738,7 @@ const Penagihan = () => {
                                     : "cursor-pointer"
                                 } `}
                               >
-                                Add row
+                                Tambah Invoice
                               </div>
                             </div>
                           </div>
@@ -1768,7 +1756,7 @@ const Penagihan = () => {
                                       Tanggal Invoice {i + 1}
                                     </div>
                                   )}
-                                  <div>:</div>
+                                  
                                   <div className="flex items-center gap-1">
                                     <div className="w-[21.1px]"></div>
                                     <div>
@@ -1804,7 +1792,7 @@ const Penagihan = () => {
                                       Nilai Invoice {i + 1}
                                     </div>
                                   )}
-                                  <div>:</div>
+                                  
                                   <div className="flex items-center gap-1 ">
                                     <div>Rp</div>
                                     <div>
@@ -1826,7 +1814,7 @@ const Penagihan = () => {
                             <div className="w-[250px]">
                               Apakah barang termasuk pajak?
                             </div>
-                            <div>:</div>
+                            
                             <div className="flex items-center gap-1 max-[821px]:w-[249.56px] w-[287.96px]">
                               <div className="w-[24px]"></div>
                               <div className="w-full ">
@@ -1855,7 +1843,7 @@ const Penagihan = () => {
                                 <div>Harus 16 digit</div>
                               </div>
                             </div>
-                            <div>:</div>
+                            
                             <div className="flex items-center gap-1 ">
                               <div className="w-[21.1px]"></div>
                               <div className="flex flex-col gap-1">
@@ -1909,7 +1897,7 @@ const Penagihan = () => {
                                 <div>Harus 8 digit</div>
                               </div>
                             </div>
-                            <div>:</div>
+                            
                             <div className="flex items-center gap-1 ">
                               <div>PO</div>
                               <div>
@@ -1941,7 +1929,7 @@ const Penagihan = () => {
                           </div>
                           <div className="flex items-center gap-2 mb-3">
                             <div className="w-[250px]">Tanggal PO</div>
-                            <div>:</div>
+                            
                             <div className="flex items-center gap-1">
                               <div className="w-[21.1px]"></div>
                               <div>
@@ -1974,7 +1962,7 @@ const Penagihan = () => {
 
                           <div className="flex items-center gap-2 mb-10">
                             <div className="w-[250px]">Delivery Area</div>
-                            <div>:</div>
+                            
                             <div className="flex items-center gap-1 max-[821px]:w-[249.56px] w-[287.96px]">
                               <div className="w-[24px]"></div>
                               <div className="w-full ">
@@ -2004,14 +1992,14 @@ const Penagihan = () => {
                               <div key={i}>
                                 <div className="flex items-center gap-2 mb-3">
                                   {i === 0 ? (
-                                    <div className="w-[250px]">No Invoice</div>
+                                    <div className="w-[250px]">Nomor Invoice</div>
                                   ) : (
                                     <div className="w-[250px]">
-                                      No Invoice {i + 1}
+                                      Nomor Invoice {i + 1}
                                     </div>
                                   )}
 
-                                  <div>:</div>
+                                  
                                   <div className="flex items-center gap-1 ">
                                     <div className="w-[21.1px]"></div>
                                     <div>
@@ -2042,7 +2030,7 @@ const Penagihan = () => {
                                       Tanggal Invoice {i + 1}
                                     </div>
                                   )}
-                                  <div>:</div>
+                                  
                                   <div className="flex items-center gap-1">
                                     <div className="w-[21.1px]"></div>
                                     <div>
@@ -2081,7 +2069,7 @@ const Penagihan = () => {
                                       : "cursor-pointer"
                                   } `}
                                 >
-                                  Delete row
+                                  Delete Invoice
                                 </div>
                               )}
 
@@ -2093,7 +2081,7 @@ const Penagihan = () => {
                                     : "cursor-pointer"
                                 } `}
                               >
-                                Add row
+                                Tambah Invoice
                               </div>
                             </div>
                           </div>
@@ -2111,7 +2099,7 @@ const Penagihan = () => {
                                     Nilai Invoice {i + 1}
                                   </div>
                                 )}
-                                <div>:</div>
+                                
                                 <div className="flex items-center gap-1 ">
                                   <div>Rp</div>
                                   <div>
@@ -2135,7 +2123,7 @@ const Penagihan = () => {
                             <div className="flex flex-col gap-1">
                               <div className="ps-10 flex items-center gap-2">
                                 <div className="w-[210px]">Dari Tanggal</div>
-                                <div>:</div>
+                                
                                 <div className="flex items-center gap-1">
                                   <div className="w-[24px]"></div>
                                   <LocalizationProvider
@@ -2159,7 +2147,7 @@ const Penagihan = () => {
                               </div>
                               <div className="ps-10 flex items-center gap-2">
                                 <div className="w-[210px]">Sampai Tanggal</div>
-                                <div>:</div>
+                                
                                 <div className="flex items-center gap-1">
                                   <div className="w-[24px]"></div>
                                   <LocalizationProvider
@@ -2187,7 +2175,7 @@ const Penagihan = () => {
                             <div className="w-[250px]">
                               Apakah barang termasuk pajak?
                             </div>
-                            <div>:</div>
+                            
                             <div className="flex items-center gap-1 max-[821px]:w-[249.56px] w-[287.96px]">
                               <div className="w-[24px]"></div>
                               <div className="w-full ">
@@ -2216,7 +2204,7 @@ const Penagihan = () => {
                                 <div>Harus 16 digit</div>
                               </div>
                             </div>
-                            <div>:</div>
+                            
                             <div className="flex items-center gap-1 ">
                               <div className="w-[21.1px]"></div>
                               <div className="flex flex-col gap-1">
@@ -2272,7 +2260,7 @@ const Penagihan = () => {
                                   Max size 2 mb
                                 </div>
                               </div>
-                              <div>:</div>
+                              
                               <div className="flex items-center gap-1">
                                 <div>
                                   <label
@@ -2328,7 +2316,7 @@ const Penagihan = () => {
                                 </div>
                               </div>
 
-                              <div>:</div>
+                              
                               <div className="flex items-center gap-1">
                                 <div>
                                   <label
@@ -2381,7 +2369,7 @@ const Penagihan = () => {
                                   Max size 2 mb
                                 </div>
                               </div>
-                              <div>:</div>
+                              
                               <div className="flex items-center gap-1">
                                 <div>
                                   <label
@@ -2444,7 +2432,7 @@ const Penagihan = () => {
                                       </div>
                                     </div>
 
-                                    <div>:</div>
+                                    
                                     <div className="flex items-center gap-1">
                                       <div>
                                         <label
@@ -2508,7 +2496,7 @@ const Penagihan = () => {
                                 </div>
                               </div>
 
-                              <div>:</div>
+                              
                               <div className="flex items-center gap-1">
                                 <div>
                                   <label
@@ -2563,7 +2551,7 @@ const Penagihan = () => {
                                       Max size 2 mb
                                     </div>
                                   </div>
-                                  <div>:</div>
+                                  
                                   <div className="flex items-center gap-1">
                                     <div>
                                       <label
@@ -2627,7 +2615,7 @@ const Penagihan = () => {
                                           </div>
                                         </div>
 
-                                        <div>:</div>
+                                        
                                         <div className="flex items-center gap-1">
                                           <div>
                                             <label
@@ -2694,7 +2682,7 @@ const Penagihan = () => {
                                   Max size 2 mb
                                 </div>
                               </div>
-                              <div>:</div>
+                              
                               <div className="flex items-center gap-1">
                                 <div>
                                   <label
@@ -2740,12 +2728,11 @@ const Penagihan = () => {
                             </div>
                             <div>
                               <div className="italic">
-                                Dokumen asli (hardcopy) sudah di kirimkan ke PT
-                                Karya Prima Unggulan :
+                                Dokumen asli (hardcopy) sudah di kirimkan ke PT My Company :
                               </div>
                               <div className="flex items-center gap-3 mb-3">
                                 <div className="w-[350px]">Tipe Pengiriman</div>
-                                <div>:</div>
+                                
                                 <div className="w-1/4 relative">
                                   <Select
                                     value={tipePengiriman}
@@ -2776,7 +2763,7 @@ const Penagihan = () => {
                                     Max size 2 mb
                                   </div>
                                 </div>
-                                <div>:</div>
+                                
                                 <div className="flex items-center gap-1">
                                   <div>
                                     <label
@@ -2846,7 +2833,7 @@ const Penagihan = () => {
                                   Max size 2 mb
                                 </div>
                               </div>
-                              <div>:</div>
+                              
                               <div className="flex items-center gap-1">
                                 <div>
                                   <label
@@ -2901,7 +2888,7 @@ const Penagihan = () => {
                                 </div>
                               </div>
 
-                              <div>:</div>
+                              
                               <div className="flex items-center gap-1">
                                 <div>
                                   <label
@@ -2954,7 +2941,7 @@ const Penagihan = () => {
                                   Max size 2 mb
                                 </div>
                               </div>
-                              <div>:</div>
+                              
                               <div className="flex items-center gap-1">
                                 <div>
                                   <label
@@ -3017,7 +3004,7 @@ const Penagihan = () => {
                                       </div>
                                     </div>
 
-                                    <div>:</div>
+                                    
                                     <div className="flex items-center gap-1">
                                       <div>
                                         <label
@@ -3080,7 +3067,7 @@ const Penagihan = () => {
                                   bermaterai
                                 </div>
                               </div>
-                              <div>:</div>
+                              
                               <div className="flex items-center gap-1">
                                 <div>
                                   <label
@@ -3135,7 +3122,7 @@ const Penagihan = () => {
                                       Max size 2 mb
                                     </div>
                                   </div>
-                                  <div>:</div>
+                                  
                                   <div className="flex items-center gap-1">
                                     <div>
                                       <label
@@ -3199,7 +3186,7 @@ const Penagihan = () => {
                                           </div>
                                         </div>
 
-                                        <div>:</div>
+                                        
                                         <div className="flex items-center gap-1">
                                           <div>
                                             <label
@@ -3268,7 +3255,7 @@ const Penagihan = () => {
                                   Max size 2 mb
                                 </div>
                               </div>
-                              <div>:</div>
+                              
                               <div className="flex items-center gap-1">
                                 <div>
                                   <label
@@ -3314,12 +3301,11 @@ const Penagihan = () => {
                             </div>
                             <div>
                               <div className="italic">
-                                Dokumen asli (hardcopy) sudah di kirimkan ke PT
-                                Karya Prima Unggulan :
+                                Dokumen asli (hardcopy) sudah di kirimkan ke PT My Company :
                               </div>
                               <div className="flex items-center gap-3 mb-3">
                                 <div className="w-[350px]">Tipe Pengiriman</div>
-                                <div>:</div>
+                                
                                 <div className="w-1/4 relative">
                                   <Select
                                     value={tipePengiriman}
@@ -3345,7 +3331,7 @@ const Penagihan = () => {
                                 <div className="w-[350px]">
                                   Resi Bukti Pengiriman
                                 </div>
-                                <div>:</div>
+                                
                                 <div className="flex items-center gap-1">
                                   <div>
                                     <label
@@ -3691,11 +3677,11 @@ const Penagihan = () => {
                                     >
                                       {i === 0 ? (
                                         <div className="w-[250px]">
-                                          No Invoice *) :
+                                          Nomor Invoice *) :
                                         </div>
                                       ) : (
                                         <div className="w-[250px]">
-                                          No Invoice {i + 1}
+                                          Nomor Invoice {i + 1}
                                         </div>
                                       )}
                                       <div className="fw-full">
@@ -3726,7 +3712,7 @@ const Penagihan = () => {
                                             : "cursor-pointer"
                                         } `}
                                       >
-                                        Delete row
+                                        Delete Invoice
                                       </div>
                                     )}
 
@@ -3738,7 +3724,7 @@ const Penagihan = () => {
                                           : "cursor-pointer"
                                       } `}
                                     >
-                                      Add row
+                                      Tambah Invoice
                                     </div>
                                   </div>
                                 </div>
@@ -4017,11 +4003,11 @@ const Penagihan = () => {
                                       >
                                         {i === 0 ? (
                                           <div className="">
-                                            No Invoice *) :
+                                            Nomor Invoice *) :
                                           </div>
                                         ) : (
                                           <div className="">
-                                            No Invoice {i + 1}
+                                            Nomor Invoice {i + 1}
                                           </div>
                                         )}
                                         <div className="fw-full">
@@ -4095,7 +4081,7 @@ const Penagihan = () => {
                                             : "cursor-pointer"
                                         } `}
                                       >
-                                        Delete row
+                                        Delete Invoice
                                       </div>
                                     )}
 
@@ -4107,7 +4093,7 @@ const Penagihan = () => {
                                           : "cursor-pointer"
                                       } `}
                                     >
-                                      Add row
+                                      Tambah Invoice
                                     </div>
                                   </div>
                                 </div>
@@ -4821,7 +4807,7 @@ const Penagihan = () => {
                                   <div>
                                     <div className="italic">
                                       Dokumen asli (hardcopy) sudah di kirimkan
-                                      ke PT Karya Prima Unggulan :
+                                      ke PT My Company :
                                     </div>
                                     <div className="flex flex-col gap-3 mb-3">
                                       <div>Tipe Pengiriman *) :</div>
@@ -5371,7 +5357,7 @@ const Penagihan = () => {
                                   <div>
                                     <div className="italic">
                                       Dokumen asli (hardcopy) sudah di kirimkan
-                                      ke PT Karya Prima Unggulan :
+                                      ke PT My Company :
                                     </div>
                                     <div className="flex flex-col gap-3 mb-3">
                                       <div className="w-[350px]">

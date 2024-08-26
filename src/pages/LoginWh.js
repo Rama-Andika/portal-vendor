@@ -84,8 +84,7 @@ const LoginWh = () => {
         ></div>
         <div className="font-roboto bg-white px-20 max-[790px]:px-10 flex flex-col justify-center w-full rounded-sm shadow-sm col-span-4 max-[634px]:col-span-12 max-[1275px]:col-span-6">
           <div className="flex flex-col items-center gap-2">
-            <div className="font-semibold text-[#0077b6]">LOGIN</div>
-            <div className="font-semibold mb-10 text-[#0077b6]">ADMIN</div>
+            <div className="font-semibold text-[#0077b6]">ADMIN</div>
           </div>
 
           <form className="flex flex-col gap-4">
@@ -128,7 +127,7 @@ const LoginWh = () => {
               <div className="flex justify-between items-center">
                 <div className="flex items-center gap-2">
                   <Checkbox id="remember" />
-                  <Label htmlFor="remember">Remember me</Label>
+                  <Label htmlFor="remember">Ingatkan Saya</Label>
                 </div>
               </div>
               <Link to="/">
@@ -152,7 +151,7 @@ const LoginWh = () => {
               {loading ? (
                 <CircularProgress size={20} sx={{ color: "white" }} />
               ) : (
-                "LOGIN"
+                "LOGIN ADMIN"
               )}
             </button>
           </form>
