@@ -425,8 +425,9 @@ const ListingPenagihan = () => {
           <table id="table" className="w-full table-monitoring">
             <thead className="sticky top-0">
               <tr className="text-center whitespace-nowrap border-2 bg-[#eaf4f4]">
-                <td className="p-5 border">Nama Supplier </td>
+                <td className="p-5 border text-left">Nama Supplier </td>
                 <td className="p-5 border">Tanggal Penagihan</td>
+                <td className="p-5 border">Tanggal Pembayaran</td>
                 <td className="p-5 border">No Tagihan</td>
                 <td className="p-5 border">Nilai Penagihan (Rp)</td>
                 <td className="p-5 border">Status</td>
@@ -444,6 +445,11 @@ const ListingPenagihan = () => {
                     <td className="p-5 border">{item.vendor.nama}</td>
                     <td className="p-5 border">
                       {dayjs(item.created_at).format("DD/MM/YYYY HH:mm:ss")}
+                    </td>
+                    <td className="p-5 border">
+                      {item.due_date !== undefined
+                        ? dayjs(item.due_date).format("DD/MM/YYYY")
+                        : ""}
                     </td>
                     <td className="p-5 border">{item.doc_receive_number}</td>
                     <td className="p-5 border">
