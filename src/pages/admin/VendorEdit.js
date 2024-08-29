@@ -407,9 +407,9 @@ const VendorEdit = () => {
                 nama_rekening_bank: namaRekening.trim(),
                 kantor_cabang_bank: kantorCabangBank.trim(),
                 metode_pengiriman: metodePengiriman.value,
-                rebate: rebate.trim(),
-                marketing_fee: marketingFee.trim(),
-                listing_fee: listingFee.trim(),
+                rebate: rebate,
+                marketing_fee: marketingFee,
+                listing_fee: listingFee,
                 promotion_found: promotionFund,
                 file_npwp: npwpFile !== null ? npwpFile : null,
                 file_ktp_pemilik:
