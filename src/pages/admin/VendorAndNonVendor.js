@@ -86,7 +86,6 @@ const VendorAndNonVendor = () => {
       .then((response) => response.json())
       .then((res) => {
         if (res.data.length > 0) {
-          console.log(res);
           setTotal(res.total);
           setCount(Math.ceil(res.total / res.limit));
           setLimit(res.limit);
@@ -139,16 +138,17 @@ const VendorAndNonVendor = () => {
             const outstandingDate = dayjs(item.value).format("YYYY-MM-DD");
             const datePayment =
               item.id === listPaymentDate[i].id
-                ? dayjs(listPaymentDate[i]).format("YYYY-MM-DD")
+                ? dayjs(listPaymentDate[i].value).format("YYYY-MM-DD")
                 : undefined;
-
+                
             if (datePayment) {
               if (outstandingDate < datePayment) {
                 status = "Late";
               } else {
-                status = "Ontime";
+                status = "On time";
               }
             }
+
 
             return { id: item.id, value: status };
           });
@@ -407,7 +407,7 @@ const VendorAndNonVendor = () => {
     if (outstdDate < datePayment) {
       status = "Late";
     } else {
-      status = "Ontime";
+      status = "On time";
     }
 
     setStatus((prevItems) =>
@@ -574,7 +574,6 @@ const VendorAndNonVendor = () => {
 
   const onUpdate = (e) => {
     e.preventDefault();
-    console.log(mcmDate);
     const isErrorCopy = [...isError];
     payments.map(async (item, i) => {
       if (
@@ -730,12 +729,10 @@ const VendorAndNonVendor = () => {
   };
 
   const onClickToFirstColumn = () => {
-    console.log('1')
     firstColumnRef.current.scrollIntoView({ behavior: "smooth",block: "start" });
   };
 
   const onClickToLastColumn = () => {
-    console.log('1')
     lastColumnRef.current.scrollIntoView({ behavior: "smooth",block: "start" });
   };
 
