@@ -15,10 +15,6 @@ const LoginWh = () => {
   const navigate = useNavigate();
   const [showPassword, setShowPassword] = useState(false);
   const [loading, setLoading] = useState(false);
-  const unsplashimg = {
-    src: "https://source.unsplash.com/1600x900/?random",
-    alt: "random unsplash image",
-  };
 
   const onSubmitLogin = async () => {
     setLoading(true);

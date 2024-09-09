@@ -10,10 +10,10 @@ import { useEffect, useState } from "react";
 import isEmpty from "../../components/functions/CheckEmptyObject";
 import titleCase from "../../components/functions/TitleCase";
 import Select from "react-select";
-import toast from "react-hot-toast";
 import { PiFileZipDuotone } from "react-icons/pi";
 import Cookies from "js-cookie";
 import { useNavigate } from "react-router-dom";
+import { toast, Toaster } from "sonner";
 
 const options = [
   { value: "APPROVED", label: "APPROVED", key: 0 },
@@ -71,13 +71,13 @@ const VendorRegistrationList = () => {
   // eslint-disable-next-line no-new-object
   const fetchData = async (parameter = new Object()) => {
     setOpenBackdrop(true);
+    parameter["status"] = "PENDING";
     await fetch(`${api}api/portal-vendor/list/vendors`, {
       method: "POST",
       body: JSON.stringify(parameter),
     })
       .then((response) => response.json())
       .then((res) => {
-        console.log(res.data.length);
         if (res.data.length > 0) {
           setTotal(res.total);
           setCount(Math.ceil(res.total / res.limit));
@@ -187,14 +187,6 @@ const VendorRegistrationList = () => {
       handleOpen();
     } else {
       navigate("/admin");
-      toast.error("Silahkan Login Terlebih Dahulu!", {
-        position: "top-right",
-        style: {
-          borderRadius: "10px",
-          background: "#333",
-          color: "#fff",
-        },
-      });
     }
   };
 
@@ -221,23 +213,26 @@ const VendorRegistrationList = () => {
   const onSubmitVendor = async (vendorDetail) => {
     //setOpenBackdrop(true);
     // eslint-disable-next-line no-self-assign
-    vendorDetail.status = status.value;
-    vendorDetail.reason =
+
+    const newVendorDetail = { ...vendorDetail };
+    newVendorDetail.kode = vendorDetail.kode.trim();
+    newVendorDetail.status = status.value;
+    newVendorDetail.reason =
       status.value === "APPROVED" ? "" : vendorDetail.reason;
-    vendorDetail.kode =
+    newVendorDetail.kode =
       status.value === "APPROVED" ? vendorDetail.kode.trim() : "";
-    vendorDetail.file_npwp = null;
-    vendorDetail.file_ktp_pemilik = null;
-    vendorDetail.file_ktp_penanggung_jawab = null;
-    vendorDetail.file_spkp = null;
-    vendorDetail.file_nib = null;
-    vendorDetail.file_screenshot_rekening = null;
-    vendorDetail.file_sertifikasi_bpom = null;
+    newVendorDetail.file_npwp = null;
+    newVendorDetail.file_ktp_pemilik = null;
+    newVendorDetail.file_ktp_penanggung_jawab = null;
+    newVendorDetail.file_spkp = null;
+    newVendorDetail.file_nib = null;
+    newVendorDetail.file_screenshot_rekening = null;
+    newVendorDetail.file_sertifikasi_bpom = null;
 
     if (Cookies.get("admin_token") !== undefined) {
       await fetch(`${api}api/portal-vendor/sign-up`, {
         method: "POST",
-        body: JSON.stringify(vendorDetail),
+        body: JSON.stringify(newVendorDetail),
       })
         .then((response) => response.json())
         .then((res) => {
@@ -245,44 +240,17 @@ const VendorRegistrationList = () => {
             setOpen(false);
             fetchData();
             setOpenBackdrop(false);
-            toast.success("Update Success!", {
-              position: "top-right",
-              style: {
-                borderRadius: "10px",
-                background: "#333",
-                color: "#fff",
-              },
-            });
+            toast.success("Update vendor berhasil");
           } else {
-            setOpen(false);
-            fetchData();
             setOpenBackdrop(false);
-            toast.error(
-              "Vendor belum terdaftar di Oxysystem atau kode salah!",
-              {
-                position: "top-right",
-                style: {
-                  borderRadius: "10px",
-                  background: "#333",
-                  color: "#fff",
-                },
-              }
-            );
+            toast.error(res.message);
           }
         })
         .catch((err) => {
-          setOpenBackdrop(false);
+          toast.error("Update vendor gagal");
         });
     } else {
       navigate("/admin");
-      toast.error("Silahkan Login Terlebih Dahulu!", {
-        position: "top-right",
-        style: {
-          borderRadius: "10px",
-          background: "#333",
-          color: "#fff",
-        },
-      });
     }
   };
 
@@ -291,18 +259,11 @@ const VendorRegistrationList = () => {
       window.location = `${apiExport}fin/transactionact/portalvendorinvoicedownload.jsp?oid=${id}`;
     } else {
       navigate("/admin");
-      toast.error("Silahkan Login Terlebih Dahulu!", {
-        position: "top-right",
-        style: {
-          borderRadius: "10px",
-          background: "#333",
-          color: "#fff",
-        },
-      });
     }
   };
   return (
     <>
+      <Toaster position="top-center" richColors />
       <div
         className={`${
           screenSize < 768 ? "px-5 pt-20" : "px-10 pt-10"
@@ -396,7 +357,9 @@ const VendorRegistrationList = () => {
           <table className="w-full table-monitoring">
             <thead className="sticky top-0">
               <tr className="text-center whitespace-nowrap border-2 bg-[#eaf4f4]">
-                <td className="p-5 border">Action</td>
+                <td className="p-5 border w-[60px] max-w-[60px] min-w-[60px]">
+                  Action
+                </td>
                 <td className="p-5 border">No</td>
                 <td className="p-5 border">Nama</td>
                 <td className="p-5 border">Kode</td>

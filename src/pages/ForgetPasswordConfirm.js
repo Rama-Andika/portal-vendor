@@ -74,6 +74,7 @@ const ForgetPasswordConfirm = () => {
     Cookies.remove("id");
     Cookies.remove("token");
     Cookies.remove("vendor_id");
+    Cookies.remove("vendoroxy_id");
   }, []);
 
   const clickResetPassword = async (e) => {

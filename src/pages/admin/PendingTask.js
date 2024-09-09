@@ -16,11 +16,11 @@ import { RiFileExcel2Line } from "react-icons/ri";
 import Select from "react-select";
 import titleCase from "../../components/functions/TitleCase";
 import isEmpty from "../../components/functions/CheckEmptyObject";
-import toast from "react-hot-toast";
 import accountingNumber from "../../components/functions/AccountingNumber";
 import { PiFileZipDuotone } from "react-icons/pi";
 import Cookies from "js-cookie";
 import { useNavigate } from "react-router-dom";
+import { toast, Toaster } from "sonner";
 
 const options = [
   { value: "APPROVED", label: "APPROVED", key: 0 },
@@ -101,14 +101,6 @@ const PendingTask = () => {
       handleOpen();
       setPenagihanDetail(item);
     } else {
-      toast.error("Silahkan Login Terlebih Dahulu!", {
-        position: "top-right",
-        style: {
-          borderRadius: "10px",
-          background: "#333",
-          color: "#fff",
-        },
-      });
       navigate("/admin");
     }
   };
@@ -123,7 +115,6 @@ const PendingTask = () => {
     })
       .then((response) => response.json())
       .then((data) => {
-        console.log(data);
         setTotal(data.total);
         setCount(Math.ceil(data.total / data.limit));
         setLimit(data.limit);
@@ -191,7 +182,6 @@ const PendingTask = () => {
 
   const onSubmitDocument = async (item) => {
     setOpenBackdrop(true);
-    console.log(item);
     let isSave = false;
     if (item.status === "REJECT") {
       if (item.reason.trim().length > 0) {
@@ -209,6 +199,8 @@ const PendingTask = () => {
       isSave = true;
     }
 
+    const locationIds = item.locations.map((location) => location.id);
+
     if (Cookies.get("admin_token") !== undefined) {
       if (isSave) {
         const initialValue = {
@@ -218,20 +210,28 @@ const PendingTask = () => {
           tipe_penagihan: item.tipe_penagihan,
           tipe_pengiriman: item.tipe_pengiriman,
           nomer_po: item.nomer_po,
-          tanggal_po: dayjs(item.tanggal_po).format("YYYY-MM-DD HH:mm:ss"),
+          tanggal_po:
+            item.tanggal_po !== null
+              ? dayjs(item.tanggal_po).format("YYYY-MM-DD HH:mm:ss")
+              : null,
           nomer_do: item.nomer_do,
           delivery_area: item.delivery_area,
           nomer_invoices: item.nomer_invoices,
           tanggal_invoices: item.tanggal_invoices,
+          start_dates: item.start_dates,
+          end_dates: item.end_dates,
+          location_ids: locationIds.length > 0 ? locationIds : null,
           nilai_invoices: item.nilai_invoices,
           is_pajak: item.is_pajak,
           nomer_seri_pajak: item.nomer_seri_pajak,
-          start_date_periode: dayjs(item.start_date_periode).format(
-            "YYYY-MM-DD HH:mm:ss"
-          ),
-          end_date_periode: dayjs(item.end_date_periode).format(
-            "YYYY-MM-DD HH:mm:ss"
-          ),
+          start_date_periode:
+            item.start_date_periode !== null
+              ? dayjs(item.start_date_periode).format("YYYY-MM-DD HH:mm:ss")
+              : null,
+          end_date_periode:
+            item.end_date_periode !== null
+              ? dayjs(item.end_date_periode).format("YYYY-MM-DD HH:mm:ss")
+              : null,
           created_at: dayjs(item.created_at).format("YYYY-MM-DD HH:mm:ss"),
           updated_at: dayjs(new Date()).format("YYYY-MM-DD HH:mm:ss"),
           reason: item.reason,
@@ -251,70 +251,34 @@ const PendingTask = () => {
           .then((response) => response.json())
           .then((res) => {
             if (res.data === 0) {
-              setOpen(false);
               fetchData();
               setOpenBackdrop(false);
-              toast.error("Penagihan update failed!", {
-                position: "top-right",
-                style: {
-                  borderRadius: "10px",
-                  background: "#333",
-                  color: "#fff",
-                },
-              });
+              toast.error(res.message);
             } else {
               setOpen(false);
               fetchData();
               setOpenBackdrop(false);
-              toast.success("Penagihan update success!", {
-                position: "top-right",
-                style: {
-                  borderRadius: "10px",
-                  background: "#333",
-                  color: "#fff",
-                },
-              });
+              toast.success("Penagihan berhasil di perbaharui");
             }
           })
           .catch((err) => {
+            console.log(err);
             setOpenBackdrop(false);
-            setOpen(false);
             fetchData();
-            toast.error("Penagihan update failed!", {
-              position: "top-right",
-              style: {
-                borderRadius: "10px",
-                background: "#333",
-                color: "#fff",
-              },
-            });
+            toast.error("Penagihan gagal di perbaharui");
           });
       } else {
         setOpenBackdrop(false);
-        toast.error("Ada data yang masih kosong!", {
-          position: "top-right",
-          style: {
-            borderRadius: "10px",
-            background: "#333",
-            color: "#fff",
-          },
-        });
+        toast.error("Ada data yang masih kosong");
       }
     } else {
       navigate("/admin");
-      toast.error("Silahkan Login Terlebih Dahulu!", {
-        position: "top-right",
-        style: {
-          borderRadius: "10px",
-          background: "#333",
-          color: "#fff",
-        },
-      });
     }
   };
 
   return (
     <>
+      <Toaster position="top-center" richColors />
       <div
         className={`${
           screenSize < 768 ? "px-5 pt-20" : "px-10 pt-10"
@@ -522,7 +486,7 @@ const PendingTask = () => {
             <Fade in={open}>
               {!isEmpty(penagihanDetail) && (
                 <div
-                  className={`rounded-md border-0 rounded-md bg-white py-5 px-7 absolute top-[50%] left-1/2 translate-x-[-50%] translate-y-[-50%] h-[400px] overflow-y-auto z-[999999]  ${
+                  className={`border-0 rounded-md bg-white py-5 px-7 absolute top-[50%] left-1/2 translate-x-[-50%] translate-y-[-50%] h-[400px] overflow-y-auto z-[999999]  ${
                     screenSize <= 548 ? "w-[90%]" : "w-fit"
                   }`}
                 >
@@ -541,7 +505,7 @@ const PendingTask = () => {
                       <div className="w-[270px] whitespace-nowrap font-bold">
                         Tipe Penagihan
                       </div>
-  
+
                       <div className="w-[240px] whitespace-nowrap overflow-ellipsis overflow-hidden">
                         {titleCase(penagihanDetail.tipe_penagihan)}
                       </div>
@@ -550,7 +514,7 @@ const PendingTask = () => {
                       <div className="w-[270px] whitespace-nowrap font-bold">
                         No Purchase Order (PO)
                       </div>
-                
+
                       <div className="w-[240px] whitespace-nowrap overflow-ellipsis overflow-hidden">
                         {penagihanDetail.nomer_po}
                       </div>
@@ -559,16 +523,20 @@ const PendingTask = () => {
                       <div className="w-[270px] whitespace-nowrap font-bold">
                         Tanggal PO
                       </div>
-             
+
                       <div className="w-[240px] whitespace-nowrap overflow-ellipsis overflow-hidden">
-                        {dayjs(penagihanDetail.tanggal_po).format("DD/MM/YYYY")}
+                        {penagihanDetail.tanggal_po != null
+                          ? dayjs(penagihanDetail.tanggal_po).format(
+                              "DD/MM/YYYY"
+                            )
+                          : ""}
                       </div>
                     </div>
                     <div className="flex max-[549px]:flex-col max-[549px]:items-start items-center gap-2">
                       <div className="w-[270px] whitespace-nowrap font-bold">
                         No Delivery Order (DO)
                       </div>
-                  
+
                       <div className="w-[240px]">
                         {penagihanDetail.nomer_do}
                       </div>
@@ -577,7 +545,7 @@ const PendingTask = () => {
                       <div className="w-[270px] whitespace-nowrap font-bold">
                         Delivery Area
                       </div>
-                 
+
                       <div className="w-[240px] whitespace-nowrap overflow-ellipsis overflow-hidden">
                         {titleCase(penagihanDetail.delivery_area)}
                       </div>
@@ -586,31 +554,61 @@ const PendingTask = () => {
                       <div className="w-[270px] whitespace-nowrap font-bold">
                         No Invoice
                       </div>
-                  
+
                       <div className="flex flex-col gap-1">
                         {penagihanDetail.nomer_invoices.map((nomer) => (
                           <div className="w-[240px]">{nomer}</div>
                         ))}
                       </div>
                     </div>
-                    <div className="flex max-[549px]:flex-col max-[549px]:items-start gap-2">
-                      <div className="w-[270px] whitespace-nowrap font-bold">
-                        Tanggal Invoice
+                    {penagihanDetail.tanggal_invoices.some(
+                      (invoice) => invoice !== null
+                    ) > 0 && (
+                      <div className="flex max-[549px]:flex-col max-[549px]:items-start gap-2">
+                        <div className="w-[270px] whitespace-nowrap font-bold">
+                          Tanggal Invoice
+                        </div>
+
+                        <div className="flex flex-col gap-1">
+                          {penagihanDetail.tanggal_invoices.map((tanggal) => (
+                            <div className="w-[240px] whitespace-nowrap overflow-ellipsis overflow-hidden">
+                              {dayjs(tanggal).format("DD/MM/YYYY")}
+                            </div>
+                          ))}
+                        </div>
                       </div>
-                   
-                      <div className="flex flex-col gap-1">
-                        {penagihanDetail.tanggal_invoices.map((tanggal) => (
-                          <div className="w-[240px] whitespace-nowrap overflow-ellipsis overflow-hidden">
-                            {dayjs(tanggal).format("DD/MM/YYYY")}
-                          </div>
-                        ))}
+                    )}
+                    {penagihanDetail.start_dates.some(
+                      (invoice) => invoice !== null
+                    ) > 0 && (
+                      <div className="flex max-[549px]:flex-col max-[549px]:items-start gap-2">
+                        <div className="w-[270px] whitespace-nowrap font-bold">
+                          Date
+                        </div>
+
+                        <div className="flex flex-col gap-1">
+                          {penagihanDetail.start_dates.map((date, i) => (
+                            <div className="flex items-center gap-2 w-[240px] ">
+                              <div className="whitespace-nowrap overflow-ellipsis overflow-hidden">
+                                {dayjs(date).format("DD/MM/YYYY")}
+                              </div>
+                              <span>s/d</span>
+                              <div className="whitespace-nowrap overflow-ellipsis overflow-hidden">
+                                {dayjs(penagihanDetail.end_dates[i]).format(
+                                  "DD/MM/YYYY"
+                                )}
+                              </div>
+                            </div>
+                          ))}
+                        </div>
                       </div>
-                    </div>
+                    )}
+
                     <div className="flex max-[549px]:flex-col max-[549px]:items-start gap-2">
                       <div className="w-[270px] whitespace-nowrap font-bold">
                         Nilai Invoice
                       </div>
-                    
+
                       <div className="flex flex-col gap-1">
                         {penagihanDetail.nilai_invoices.map((nilai) => (
                           <div className="w-[240px] whitespace-nowrap overflow-ellipsis overflow-hidden">
@@ -623,7 +621,7 @@ const PendingTask = () => {
                       <div className="w-[270px] whitespace-nowrap font-bold">
                         Apakah Barang Termasuk Pajak
                       </div>
-                 
+
                       <div className="w-[240px] whitespace-nowrap overflow-ellipsis overflow-hidden">
                         {penagihanDetail.is_pajak === 0 ? "Tidak" : "Ya"}
                       </div>
@@ -632,7 +630,7 @@ const PendingTask = () => {
                       <div className="w-[270px] whitespace-nowrap font-bold">
                         No Seri Faktur Pajak
                       </div>
-                
+
                       <div className="flex flex-col gap-1">
                         {penagihanDetail.nomer_seri_pajak.map((nilai) => (
                           <div className="w-[240px] whitespace-nowrap overflow-ellipsis overflow-hidden">
@@ -691,7 +689,7 @@ const PendingTask = () => {
                   {penagihanDetail.status === "APPROVED" && (
                     <>
                       <div className="mt-5 flex flex-col gap-2">
-                        <label htmlFor="">Note</label>
+                        <label htmlFor="">Note *</label>
                         <textarea
                           value={penagihanDetail.note}
                           onChange={(e) =>

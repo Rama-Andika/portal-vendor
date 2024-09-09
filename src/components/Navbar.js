@@ -83,6 +83,7 @@ const Navbar = ({children}) => {
   const logout = () => {
     Cookies.remove("token");
     Cookies.remove("vendor_id");
+    Cookies.remove("vendoroxy_id");
     toast.success("Logout Successfully", {
       duration: 4000,
       position: "top-right",

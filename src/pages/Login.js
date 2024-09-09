@@ -91,6 +91,7 @@ const Login = () => {
     Cookies.remove("id");
     Cookies.remove("token");
     Cookies.remove("vendor_id");
+    Cookies.remove("vendoroxy_id");
     getCompany()
   }, []);
 

@@ -82,12 +82,13 @@ const Monitoring = () => {
       })
         .then((response) => response.json())
         .then((res) => {
+          setTotal(res.total);
+          setCount(Math.ceil(res.total / res.limit));
+          setLimit(res.limit);
           // eslint-disable-next-line array-callback-return
           res.data.map((data) => {
             var total = 0;
-            setTotal(data.total);
-            setCount(Math.ceil(data.total / data.limit));
-            setLimit(data.limit);
+
             data.nilai_invoices.map((nilai) => (total += nilai));
             setTotalInvoice((prev) => [
               ...prev,
@@ -306,7 +307,6 @@ const Monitoring = () => {
                   <tr className="text-center whitespace-nowrap border-2 bg-[#eaf4f4]">
                     <td className="p-5 border">No Request </td>
                     <td className="p-5 border">Tanggal Submit</td>
-                    <td className="p-5 border">Tanggal Approved</td>
                     <td className="p-5 border">Nilai Penagihan</td>
                     <td className="p-5 border">Status Penagihan</td>
                     <td className="p-5 border">No Tukar Faktur</td>
@@ -327,11 +327,7 @@ const Monitoring = () => {
                       <td className="p-5 border">
                         {dayjs(item.created_at).format("DD/MM/YYYY")}
                       </td>
-                      <td className="p-5 border">
-                        {item.status === "APPROVED"
-                          ? dayjs(item.updated_at).format("DD/MM/YYYY")
-                          : ""}
-                      </td>
+
                       <td className="p-5 border">
                         Rp.{" "}
                         {accountingNumber(
@@ -404,7 +400,7 @@ const Monitoring = () => {
                         <div className="w-[270px] whitespace-nowrap font-bold">
                           Tanggal Submit
                         </div>
-          
+
                         <div className="w-[240px] whitespace-nowrap overflow-ellipsis overflow-hidden">
                           {dayjs(detail.created_at).format("DD/MM/YYYY")}
                         </div>
@@ -413,7 +409,7 @@ const Monitoring = () => {
                         <div className="w-[270px] whitespace-nowrap font-bold">
                           Supplier
                         </div>
-                 
+
                         <div className="w-[240px] whitespace-nowrap overflow-ellipsis overflow-hidden">
                           {detail.vendor.nama}
                         </div>
@@ -422,7 +418,7 @@ const Monitoring = () => {
                         <div className="w-[270px] whitespace-nowrap font-bold">
                           Tipe Penagihan
                         </div>
-                 
+
                         <div className="w-[240px] whitespace-nowrap overflow-ellipsis overflow-hidden text-red-500">
                           {titleCase(detail.tipe_penagihan, "_")}
                         </div>
@@ -431,7 +427,7 @@ const Monitoring = () => {
                         <div className="w-[270px] whitespace-nowrap font-bold">
                           No Purchase Order (PO)
                         </div>
-                     
+
                         <div className="w-[240px] whitespace-nowrap overflow-ellipsis overflow-hidden">
                           {detail.nomer_po}
                         </div>
@@ -440,16 +436,18 @@ const Monitoring = () => {
                         <div className="w-[270px] whitespace-nowrap font-bold">
                           Tanggal PO
                         </div>
-                  
+
                         <div className="w-[240px] whitespace-nowrap overflow-ellipsis overflow-hidden">
-                          {dayjs(detail.tanggal_po).format("DD/MM/YYYY")}
+                          {detail.tanggal_po
+                            ? dayjs(detail.tanggal_po).format("DD/MM/YYYY")
+                            : ""}
                         </div>
                       </div>
                       <div className="flex max-[549px]:flex-col max-[549px]:items-start items-center gap-2">
                         <div className="w-[270px] whitespace-nowrap font-bold">
                           Delivery Area
                         </div>
-               
+
                         <div className="w-[240px] whitespace-nowrap overflow-ellipsis overflow-hidden">
                           {detail.delivery_area}
                         </div>
@@ -458,7 +456,7 @@ const Monitoring = () => {
                         <div className="w-[270px] whitespace-nowwrap font-bold">
                           Periode Acuan Penagihan
                         </div>
-                   
+
                         <div className="w-[240px] whitespace-nowrap overflow-ellipsis overflow-hidden">
                           12/09/23
                         </div>
@@ -467,7 +465,7 @@ const Monitoring = () => {
                         <div className="w-[270px] whitespace-nowrap font-bold">
                           No Invoice
                         </div>
-                  
+
                         <div className="flex flex-col gap-1">
                           {detail.nomer_invoices.map((nomer) => (
                             <div className="w-[240px] whitespace-nowrap overflow-ellipsis overflow-hidden">
@@ -476,24 +474,52 @@ const Monitoring = () => {
                           ))}
                         </div>
                       </div>
-                      <div className="flex max-[549px]:flex-col max-[549px]:items-start gap-2">
-                        <div className="w-[270px] whitespace-nowrap font-bold">
-                          Tanggal Invoice
+                      {detail.tanggal_invoices.some(
+                        (invoice) => invoice !== null
+                      ) > 0 && (
+                        <div className="flex max-[549px]:flex-col max-[549px]:items-start gap-2">
+                          <div className="w-[270px] whitespace-nowrap font-bold">
+                            Tanggal Invoice
+                          </div>
+
+                          <div className="flex flex-col gap-1">
+                            {detail.tanggal_invoices.map((tanggal) => (
+                              <div className="w-[240px] whitespace-nowrap overflow-ellipsis overflow-hidden">
+                                {dayjs(tanggal).format("DD/MM/YYYY")}
+                              </div>
+                            ))}
+                          </div>
                         </div>
-                     
-                        <div className="flex flex-col gap-1">
-                          {detail.tanggal_invoices.map((tanggal) => (
-                            <div className="w-[240px] whitespace-nowrap overflow-ellipsis overflow-hidden">
-                              {dayjs(tanggal).format("DD/MM/YYYY")}
-                            </div>
-                          ))}
+                      )}
+                      {detail.start_dates.some((invoice) => invoice !== null) >
+                        0 && (
+                        <div className="flex max-[549px]:flex-col max-[549px]:items-start gap-2">
+                          <div className="w-[270px] whitespace-nowrap font-bold">
+                            Date
+                          </div>
+
+                          <div className="flex flex-col gap-1">
+                            {detail.start_dates.map((date, i) => (
+                              <div className="flex items-center gap-2 w-[240px] ">
+                                <div className="whitespace-nowrap overflow-ellipsis overflow-hidden">
+                                  {dayjs(date).format("DD/MM/YYYY")}
+                                </div>
+                                <span>s/d</span>
+                                <div className="whitespace-nowrap overflow-ellipsis overflow-hidden">
+                                  {dayjs(detail.end_dates[i]).format(
+                                    "DD/MM/YYYY"
+                                  )}
+                                </div>
+                              </div>
+                            ))}
+                          </div>
                         </div>
-                      </div>
+                      )}
                       <div className="flex max-[549px]:flex-col max-[549px]:items-start gap-2">
                         <div className="w-[270px] whitespace-nowrap font-bold">
                           Nilai Invoice
                         </div>
-                    
+
                         <div className="flex flex-col gap-1">
                           {detail.nilai_invoices.map((nilai) => (
                             <div className="w-[240px] whitespace-nowrap overflow-ellipsis overflow-hidden">
@@ -506,7 +532,7 @@ const Monitoring = () => {
                         <div className="w-[270px] whitespace-nowrap font-bold">
                           Apakah Barang Termasuk Pajak
                         </div>
-                   
+
                         <div className="w-[240px] whitespace-nowrap overflow-ellipsis overflow-hidden flex flex-col">
                           <div>{detail.is_pajak === 0 ? "Tidak" : "Ya"}</div>
                         </div>
@@ -515,7 +541,7 @@ const Monitoring = () => {
                         <div className="w-[270px] whitespace-nowrap font-bold">
                           No Seri Faktur Pajak
                         </div>
-                      
+
                         <div className="flex flex-col gap-1">
                           {detail.nomer_seri_pajak.map((nomer) => (
                             <div className="w-[240px] whitespace-nowrap overflow-ellipsis overflow-hidden">
@@ -528,7 +554,7 @@ const Monitoring = () => {
                         <div className="w-[270px] whitespace-nowrap font-bold">
                           Status
                         </div>
-                   
+
                         <div className="w-[240px] whitespace-nowrap overflow-ellipsis overflow-hidden flex flex-col underline">
                           <div>{detail.status}</div>
                         </div>
@@ -538,7 +564,7 @@ const Monitoring = () => {
                           <div className="w-[270px] whitespace-nowrap font-bold">
                             Reject Message
                           </div>
-                     
+
                           <div className="w-[240px] max-[549px]:w-full overflow-hidden flex flex-col">
                             <div>{detail.reason}</div>
                           </div>

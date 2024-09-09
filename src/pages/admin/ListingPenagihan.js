@@ -463,7 +463,7 @@ const ListingPenagihan = () => {
                       onClick={() => onClikOpen(item)}
                       className="p-5 border cursor-pointer"
                     >
-                      <div className="py-2 px-4 rounded-lg bg-gray-200">
+                      <div className="py-2 px-4 rounded-lg bg-gray-200 text-center">
                         Detail
                       </div>
                     </td>
@@ -539,7 +539,7 @@ const ListingPenagihan = () => {
                     <div className="w-[270px] whitespace-nowrap font-bold">
                       Status
                     </div>
-          
+
                     <div className="w-[240px] whitespace-nowrap overflow-ellipsis overflow-hidden">
                       {penagihanDetail.status}
                     </div>
@@ -548,7 +548,7 @@ const ListingPenagihan = () => {
                     <div className="w-[270px] whitespace-nowrap font-bold">
                       Supplier
                     </div>
-                 
+
                     <div className="w-[240px] whitespace-nowrap overflow-ellipsis overflow-hidden">
                       {penagihanDetail.vendor.nama}
                     </div>
@@ -557,7 +557,7 @@ const ListingPenagihan = () => {
                     <div className="w-[270px] whitespace-nowrap font-bold">
                       Tipe Penagihan
                     </div>
-                 
+
                     <div className="w-[240px] whitespace-nowrap overflow-ellipsis overflow-hidden">
                       {titleCase(penagihanDetail.tipe_penagihan)}
                     </div>
@@ -566,7 +566,7 @@ const ListingPenagihan = () => {
                     <div className="w-[270px] whitespace-nowrap font-bold">
                       No Purchase Order (PO)
                     </div>
-                  
+
                     <div className="w-[240px] whitespace-nowrap overflow-ellipsis overflow-hidden">
                       {penagihanDetail.nomer_po}
                     </div>
@@ -575,23 +575,25 @@ const ListingPenagihan = () => {
                     <div className="w-[270px] whitespace-nowrap font-bold">
                       Tanggal PO
                     </div>
-                 
+
                     <div className="w-[240px] whitespace-nowrap overflow-ellipsis overflow-hidden">
-                      {dayjs(penagihanDetail.tanggal_po).format("DD/MM/YYYY")}
+                      {penagihanDetail.tanggal_po
+                        ? dayjs(penagihanDetail.tanggal_po).format("DD/MM/YYYY")
+                        : ""}
                     </div>
                   </div>
                   <div className="flex max-[549px]:flex-col max-[549px]:items-start items-center gap-2">
                     <div className="w-[270px] whitespace-nowrap font-bold">
                       No Delivery Order (DO)
                     </div>
-                 
+
                     <div className="w-[240px]">{penagihanDetail.nomer_do}</div>
                   </div>
                   <div className="flex max-[549px]:flex-col max-[549px]:items-start items-center gap-2">
                     <div className="w-[270px] whitespace-nowrap font-bold">
                       Delivery Area
                     </div>
-                  
+
                     <div className="w-[240px] whitespace-nowrap overflow-ellipsis overflow-hidden">
                       {titleCase(penagihanDetail.delivery_area)}
                     </div>
@@ -600,31 +602,60 @@ const ListingPenagihan = () => {
                     <div className="w-[270px] whitespace-nowrap font-bold">
                       No Invoice
                     </div>
-                 
+
                     <div className="flex flex-col gap-1">
                       {penagihanDetail.nomer_invoices.map((nomer) => (
                         <div className="w-[240px] max-w-[240px]">{nomer}</div>
                       ))}
                     </div>
                   </div>
-                  <div className="flex max-[549px]:flex-col max-[549px]:items-start gap-2">
-                    <div className="w-[270px] whitespace-nowrap font-bold">
-                      Tanggal Invoice
+                  {penagihanDetail.tanggal_invoices.some(
+                    (invoice) => invoice !== null
+                  ) > 0 && (
+                    <div className="flex max-[549px]:flex-col max-[549px]:items-start gap-2">
+                      <div className="w-[270px] whitespace-nowrap font-bold">
+                        Tanggal Invoice
+                      </div>
+
+                      <div className="flex flex-col gap-1">
+                        {penagihanDetail.tanggal_invoices.map((tanggal) => (
+                          <div className="w-[240px] whitespace-nowrap overflow-ellipsis overflow-hidden">
+                            {dayjs(tanggal).format("DD/MM/YYYY")}
+                          </div>
+                        ))}
+                      </div>
                     </div>
-                  
-                    <div className="flex flex-col gap-1">
-                      {penagihanDetail.tanggal_invoices.map((tanggal) => (
-                        <div className="w-[240px] whitespace-nowrap overflow-ellipsis overflow-hidden">
-                          {dayjs(tanggal).format("DD/MM/YYYY")}
-                        </div>
-                      ))}
+                  )}
+                  {penagihanDetail.start_dates.some(
+                    (invoice) => invoice !== null
+                  ) > 0 && (
+                    <div className="flex max-[549px]:flex-col max-[549px]:items-start gap-2">
+                      <div className="w-[270px] whitespace-nowrap font-bold">
+                        Date
+                      </div>
+
+                      <div className="flex flex-col gap-1">
+                        {penagihanDetail.start_dates.map((date, i) => (
+                          <div className="flex items-center gap-2 w-[240px] ">
+                            <div className="whitespace-nowrap overflow-ellipsis overflow-hidden">
+                              {dayjs(date).format("DD/MM/YYYY")}
+                            </div>
+                            <span>s/d</span>
+                            <div className="whitespace-nowrap overflow-ellipsis overflow-hidden">
+                              {dayjs(penagihanDetail.end_dates[i]).format(
+                                "DD/MM/YYYY"
+                              )}
+                            </div>
+                          </div>
+                        ))}
+                      </div>
                     </div>
-                  </div>
+                  )}
                   <div className="flex max-[549px]:flex-col max-[549px]:items-start gap-2">
                     <div className="w-[270px] whitespace-nowrap font-bold">
                       Nilai Invoice
                     </div>
-                  
+
                     <div className="flex flex-col gap-1">
                       {penagihanDetail.nilai_invoices.map((nilai) => (
                         <div className="w-[240px] whitespace-nowrap overflow-ellipsis overflow-hidden">
@@ -637,7 +668,7 @@ const ListingPenagihan = () => {
                     <div className="w-[270px] whitespace-nowrap font-bold">
                       Apakah Barang Termasuk Pajak
                     </div>
-                
+
                     <div className="w-[240px] whitespace-nowrap overflow-ellipsis overflow-hidden">
                       {penagihanDetail.is_pajak === 0 ? "Tidak" : "Ya"}
                     </div>
@@ -646,7 +677,7 @@ const ListingPenagihan = () => {
                     <div className="w-[270px] whitespace-nowrap font-bold">
                       No Seri Faktur Pajak
                     </div>
-           
+
                     <div className="flex flex-col gap-1">
                       {penagihanDetail.nomer_seri_pajak.map((nilai) => (
                         <div className="w-[240px] whitespace-nowrap overflow-ellipsis overflow-hidden">
@@ -660,7 +691,7 @@ const ListingPenagihan = () => {
                       <div className="w-[270px] whitespace-nowrap font-bold">
                         Reason Reject
                       </div>
-            
+
                       <div className="flex flex-col gap-1">
                         <div className="w-[240px] ">
                           {penagihanDetail.reason}

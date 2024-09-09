@@ -301,10 +301,6 @@ const VendorEdit = () => {
       kodePos.trim().length > 0 &&
       !isEmpty(tipePembelian) &&
       !isEmpty(statusPajak) &&
-      namaPemilikPerusahaan.trim().length > 0 &&
-      namaPenanggungJawab.trim().length > 0 &&
-      jabatanPenanggungJawab.trim().length > 0 &&
-      noTelpKantor.trim().length > 0 &&
       whatsappPO.trim().length > 0 &&
       namaKontak.trim().length > 0 &&
       whatsappKeuangan.trim().length > 0 &&

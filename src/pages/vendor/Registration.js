@@ -40,8 +40,8 @@ const options = [
 ];
 
 const optionTipePembelian = [
-  { value: "konsinyasi", label: "Konsinyasi", key: 1 },
-  { value: "beli putus", label: "Beli Putus", key: 2 },
+  { value: "beli putus", label: "Beli Putus" },
+  { value: "konsinyasi", label: "Konsinyasi" },
 ];
 
 const optionStatusPajak = [
@@ -74,7 +74,10 @@ const Registration = () => {
   const [provinsi, setProvinsi] = useState({});
   const [kota, setKota] = useState("");
   const [kodePos, setKodePos] = useState("");
-  const [tipePembelian, setTipePembelian] = useState({});
+  const [tipePembelian, setTipePembelian] = useState({
+    value: "beli putus",
+    label: "Beli Putus",
+  });
   const [npwp, setNpwp] = useState("");
   const [statusPajak, setStatusPajak] = useState({
     value: "NPKP",
@@ -106,6 +109,7 @@ const Registration = () => {
   const [marketingFee, setMarketingFee] = useState("");
   const [listingFee, setListingFee] = useState("");
   const [promotionFund, setPromotionFund] = useState("");
+  const [otherFee, setOtherFee] = useState("");
 
   const [npwpFile, setNpwpFile] = useState(null);
   const [npwpFilePreview, setNpwpFilePreview] = useState(null);
@@ -176,50 +180,50 @@ const Registration = () => {
                     name: namaPerusahaan.trim(),
                   }),
                 })
-                .then((response) => response.json())
-                .then(async (res) => {
-                  if (!res.data) {
-                    setIsError(true);
-                    setMessage("Nama Perusahaan Sudah ada!")
-                  }
-                  else{
-                    if (statusPajak.value === "PKP") {
-                      if (npwp.trim().length === 21) {
-                        setIsError(false);
-                      } else {
-                        setMessage("Data Belum Lengkap!");
-                        setLoading(false);
-                        return setIsError(true);
-                      }
-                    }
-    
-                    if (!isEmpty(tipePerusahaan)) {
-                      if (tipePerusahaan.value === "lainnya") {
-                        if (tipePerusahaanText.trim().length > 0) {
+                  .then((response) => response.json())
+                  .then(async (res) => {
+                    if (!res.data) {
+                      setIsError(true);
+                      setMessage("Nama Perusahaan Sudah ada!");
+                    } else {
+                      if (statusPajak.value === "PKP") {
+                        if (npwp.trim().length === 21) {
                           setIsError(false);
-                          setActiveStep((prevActiveStep) => prevActiveStep + 1);
                         } else {
                           setMessage("Data Belum Lengkap!");
-                          setIsError(true);
+                          setLoading(false);
+                          return setIsError(true);
+                        }
+                      }
+
+                      if (!isEmpty(tipePerusahaan)) {
+                        if (tipePerusahaan.value === "lainnya") {
+                          if (tipePerusahaanText.trim().length > 0) {
+                            setIsError(false);
+                            setActiveStep(
+                              (prevActiveStep) => prevActiveStep + 1
+                            );
+                          } else {
+                            setMessage("Data Belum Lengkap!");
+                            setIsError(true);
+                          }
+                        } else {
+                          setIsError(false);
+                          setActiveStep((prevActiveStep) => prevActiveStep + 1);
                         }
                       } else {
-                        setIsError(false);
-                        setActiveStep((prevActiveStep) => prevActiveStep + 1);
+                        setMessage("Data Belum Lengkap!");
+                        setIsError(true);
                       }
-                    } else {
-                      setMessage("Data Belum Lengkap!");
-                      setIsError(true);
                     }
-                  }
-                  setLoading(false);
-                })
-                .catch((err) => {
-                  setLoading(false);
-                  setMessage("Terjadi Kesalahan!");
-                  setIsError(true)
-                  console.log(err);
-                });
-                
+                    setLoading(false);
+                  })
+                  .catch((err) => {
+                    setLoading(false);
+                    setMessage("Terjadi Kesalahan!");
+                    setIsError(true);
+                    console.log(err);
+                  });
               }
             })
             .catch((err) => {
@@ -230,14 +234,10 @@ const Registration = () => {
       } else {
         setMessage("Data Belum Lengkap!");
         setIsError(true);
-        setLoading(false)
+        setLoading(false);
       }
     } else if (activeStep === 1) {
       if (
-        namaPemilikPerusahaan.trim().length > 0 &&
-        namaPenanggungJawab.trim().length > 0 &&
-        jabatanPenanggungJawab.trim().length > 0 &&
-        noTelpKantor.trim().length > 0 &&
         whatsappPO.trim().length > 0 &&
         namaKontak.trim().length > 0 &&
         whatsappKeuangan.trim().length > 0 &&
@@ -247,10 +247,10 @@ const Registration = () => {
       ) {
         setIsError(false);
         setActiveStep((prevActiveStep) => prevActiveStep + 1);
-        setLoading(false)
+        setLoading(false);
       } else {
         setIsError(true);
-        setLoading(false)
+        setLoading(false);
         setMessage("Data Belum Lengkap!");
       }
     } else if (activeStep === 2) {
@@ -264,11 +264,11 @@ const Registration = () => {
         pengembalianBarang.trim().length > 0
       ) {
         setIsError(false);
-        setLoading(false)
+        setLoading(false);
         setActiveStep((prevActiveStep) => prevActiveStep + 1);
       } else {
         setIsError(true);
-        setLoading(false)
+        setLoading(false);
         setMessage("Data Belum Lengkap!");
       }
     } else if (activeStep === 3) {
@@ -287,9 +287,9 @@ const Registration = () => {
           setIsError(false);
           saveVendor();
         }
-        setLoading(false)
+        setLoading(false);
       } else {
-        setLoading(false)
+        setLoading(false);
         setIsError(true);
         setMessage(
           "File yang bertanda *) tidak boleh kosong atau maksimal size file adalah 2 mb!"
@@ -443,10 +443,11 @@ const Registration = () => {
       nama_rekening_bank: namaRekening.trim(),
       kantor_cabang_bank: kantorCabangBank.trim(),
       metode_pengiriman: metodePengiriman.value,
-      rebate: rebate.trim(),
-      marketing_fee: marketingFee.trim(),
-      listing_fee: listingFee.trim(),
-      promotion_found: promotionFund.trim(),
+      rebate: rebate,
+      marketing_fee: marketingFee,
+      listing_fee: listingFee,
+      promotion_found: promotionFund,
+      other_fee: otherFee,
       file_npwp: npwpFile !== null ? npwpFile : null,
       file_ktp_pemilik: ktpPemilikFile !== null ? ktpPemilikFile : null,
       file_ktp_penanggung_jawab:
@@ -471,14 +472,17 @@ const Registration = () => {
         setLoading(false);
         if (res.data !== 0) {
           setOpenBackdrop(false);
-          toast.success("Menunggu proses verifikasi dari admin ditunggu dalam waktu 1 x 24 jam", {
-            position: "top-right",
-            style: {
-              borderRadius: "10px",
-              background: "#333",
-              color: "#fff",
-            },
-          });
+          toast.success(
+            "Menunggu proses verifikasi dari admin ditunggu dalam waktu 1 x 24 jam",
+            {
+              position: "top-right",
+              style: {
+                borderRadius: "10px",
+                background: "#333",
+                color: "#fff",
+              },
+            }
+          );
           navigate(`/`);
         } else {
           setOpenBackdrop(false);
@@ -779,7 +783,6 @@ const Registration = () => {
         GetBase64(e.target.files[0])
           .then((result) => {
             setSertifBpomFile(result);
-      
           })
           .catch((err) => {
             setSertifBpomFile(null);
@@ -851,7 +854,6 @@ const Registration = () => {
                         <label htmlFor="" className="w-36">
                           Username
                         </label>
-                        
                       </div>
                       <div className="w-1/2 relative">
                         <input
@@ -861,7 +863,6 @@ const Registration = () => {
                             evt.key === " " && evt.preventDefault()
                           }
                           type="text"
-                         
                           className={`w-full h-[36px] rounded-sm focus:border focus:border-[#0077b6] ${
                             isError && username.trim().length === 0
                               ? "border-red-400"
@@ -884,7 +885,6 @@ const Registration = () => {
                         <label htmlFor="" className="w-36">
                           Email
                         </label>
-                        
                       </div>
                       <div className="w-1/2 relative">
                         <input
@@ -895,7 +895,6 @@ const Registration = () => {
                             evt.key === " " && evt.preventDefault()
                           }
                           type="email"
-                       
                           className={`w-full h-[36px] rounded-sm focus:border focus:border-[#0077b6] ${
                             isError && email.trim().length === 0
                               ? "border-red-400"
@@ -918,7 +917,6 @@ const Registration = () => {
                         <label htmlFor="" className="w-36">
                           Password
                         </label>
-                        
                       </div>
                       <div className="w-1/2 relative">
                         <input
@@ -928,7 +926,6 @@ const Registration = () => {
                             evt.key === " " && evt.preventDefault()
                           }
                           type={`${showPassword ? "text" : "password"}`}
-                         
                           className={`w-full h-[36px] rounded-sm focus:border focus:border-[#0077b6] ${
                             isError && password.trim().length === 0
                               ? "border-red-400"
@@ -957,7 +954,6 @@ const Registration = () => {
                         <label htmlFor="" className="w-36">
                           Tipe Perusahaan
                         </label>
-                        
                       </div>
                       <div className="w-1/2 relative flex flex-col gap-1">
                         <Select
@@ -986,7 +982,6 @@ const Registration = () => {
                                 setTipePerusahaanText(e.target.value)
                               }
                               type="text"
-                            
                               placeholder="Tulis tipe perusahaan..."
                               className={`w-full h-[36px] border border-slate-300 rounded-sm focus:border focus:border-[#0077b6] ${
                                 isError &&
@@ -1014,14 +1009,14 @@ const Registration = () => {
                         <label htmlFor="" className="w-36">
                           Nama Perusahaan
                         </label>
-                        
                       </div>
                       <div className="w-1/2 relative">
                         <input
                           value={namaPerusahaan}
-                          onChange={(e) => setNamaPerusahaan(e.target.value.toUpperCase())}
+                          onChange={(e) =>
+                            setNamaPerusahaan(e.target.value.toUpperCase())
+                          }
                           type="text"
-                          
                           className={`w-full h-[36px] rounded-sm focus:border focus:border-[#0077b6] ${
                             isError && namaPerusahaan.trim().length === 0
                               ? "border-red-400"
@@ -1045,14 +1040,12 @@ const Registration = () => {
                         <label htmlFor="" className="w-36">
                           Alamat
                         </label>
-                        
                       </div>
                       <div className="w-1/2 relative">
                         <textarea
                           rows={5}
                           value={alamat}
                           onChange={(e) => setAlamat(e.target.value)}
-                       
                           className={`w-full borderrounded-sm focus:border focus:border-[#0077b6] ${
                             isError && alamat.trim().length === 0
                               ? "border-red-400"
@@ -1075,7 +1068,6 @@ const Registration = () => {
                         <label htmlFor="" className="w-36">
                           Provinsi
                         </label>
-                        
                       </div>
                       <div className="w-1/2 relative">
                         <Select
@@ -1103,14 +1095,12 @@ const Registration = () => {
                         <label htmlFor="" className="w-36">
                           Kabupaten/Kota
                         </label>
-                        
                       </div>
                       <div className="w-1/2 relative">
                         <input
                           value={kota}
                           onChange={(e) => setKota(e.target.value)}
                           type="text"
-                          
                           className={`w-full h-[36px] rounded-sm focus:border focus:border-[#0077b6] ${
                             isError && kota.trim().length === 0
                               ? "border-red-400"
@@ -1133,14 +1123,12 @@ const Registration = () => {
                         <label htmlFor="" className="w-36">
                           Kode Pos
                         </label>
-                        
                       </div>
                       <div className="w-1/2 relative">
                         <input
                           value={kodePos}
                           onChange={(e) => setKodePos(e.target.value)}
                           type="text"
-                          
                           className={`w-full h-[36px] rounded-sm focus:border focus:border-[#0077b6] ${
                             isError && kodePos.trim().length === 0
                               ? "border-red-400"
@@ -1163,7 +1151,6 @@ const Registration = () => {
                         <label htmlFor="" className="w-36">
                           Tipe Pembelian
                         </label>
-                        
                       </div>
                       <div className="w-1/2 relative">
                         <Select
@@ -1191,7 +1178,6 @@ const Registration = () => {
                         <label htmlFor="" className="w-36">
                           Status Pajak
                         </label>
-                        
                       </div>
                       <div className="w-1/2 relative">
                         <Select
@@ -1235,7 +1221,6 @@ const Registration = () => {
                         <input
                           maxLength={21}
                           type="text"
-                        
                           className={`w-full h-[36px] rounded-sm focus:border focus:border-[#0077b6] ${
                             isError &&
                             statusPajak.value === "PKP" &&
@@ -1266,14 +1251,12 @@ const Registration = () => {
                         <label htmlFor="" className="w-36">
                           Website
                         </label>
-                        
                       </div>
                       <div className="w-1/2">
                         <input
                           value={website}
                           onChange={(e) => setWebsite(e.target.value)}
                           type="text"
-                          
                           className="w-full h-[36px] border border-slate-300 rounded-sm focus:border focus:border-[#0077b6]  "
                         />
                       </div>
@@ -1297,16 +1280,13 @@ const Registration = () => {
                     <div className="me-2">:</div>
                     <div>* = Tidak boleh kosong</div>
                   </div>
-                  <div className="mt-10 font-semibold underline">
-                      Pemilik
-                  </div>
+                  <div className="mt-10 font-semibold underline">Pemilik</div>
                   <form action="">
                     <div className="flex gap-2 items-center mb-3">
                       <div className="whitespace-nowrap flex">
                         <label htmlFor="" className="w-72">
                           Nama Pemilik Perusahaan
                         </label>
-                        
                       </div>
                       <div className="w-1/2 relative">
                         <input
@@ -1315,23 +1295,8 @@ const Registration = () => {
                             setNamaPemilikPerusahaan(e.target.value)
                           }
                           type="text"
-                         
-                          className={`w-full h-[36px] rounded-sm focus:border focus:border-[#0077b6] ${
-                            isError && namaPemilikPerusahaan.trim().length === 0
-                              ? "border-red-400"
-                              : "border-slate-300"
-                          }  `}
+                          className="w-full h-[36px] rounded-sm focus:border focus:border-[#0077b6] border-slate-300"
                         />
-                        <div className="absolute right-[-20px] top-0">
-                          {isError &&
-                          namaPemilikPerusahaan.trim().length === 0 ? (
-                            <div className="text-red-500">
-                              <PiWarningCircleLight />
-                            </div>
-                          ) : (
-                            "*)"
-                          )}
-                        </div>
                       </div>
                     </div>
                     <div className="flex gap-2 items-center mb-3">
@@ -1339,7 +1304,6 @@ const Registration = () => {
                         <label htmlFor="" className="w-72">
                           Nama Penanggung Jawab
                         </label>
-                        
                       </div>
                       <div className="w-1/2 relative">
                         <input
@@ -1348,23 +1312,8 @@ const Registration = () => {
                             setNamaPenanggungJawab(e.target.value)
                           }
                           type="text"
-                        
-                          className={`w-full h-[36px] rounded-sm focus:border focus:border-[#0077b6] ${
-                            isError && namaPenanggungJawab.trim().length === 0
-                              ? "border-red-400"
-                              : "border-slate-300"
-                          }  `}
+                          className="w-full h-[36px] rounded-sm focus:border focus:border-[#0077b6] border-slate-300  "
                         />
-                        <div className="absolute right-[-20px] top-0">
-                          {isError &&
-                          namaPenanggungJawab.trim().length === 0 ? (
-                            <div className="text-red-500">
-                              <PiWarningCircleLight />
-                            </div>
-                          ) : (
-                            "*)"
-                          )}
-                        </div>
                       </div>
                     </div>
                     <div className="flex gap-2 mb-3 items-center">
@@ -1372,7 +1321,6 @@ const Registration = () => {
                         <label htmlFor="" className="w-72">
                           Jabatan Penanggung Jawab
                         </label>
-                        
                       </div>
                       <div className="w-1/2 relative">
                         <input
@@ -1381,24 +1329,8 @@ const Registration = () => {
                             setJabatanPenanggungJawab(e.target.value)
                           }
                           type="text"
-                       
-                          className={`w-full h-[36px] rounded-sm focus:border focus:border-[#0077b6] ${
-                            isError &&
-                            jabatanPenanggungJawab.trim().length === 0
-                              ? "border-red-400"
-                              : "border-slate-300"
-                          }  `}
+                          className="w-full h-[36px] rounded-sm focus:border focus:border-[#0077b6] border-slate-300"
                         />
-                        <div className="absolute right-[-20px] top-0">
-                          {isError &&
-                          jabatanPenanggungJawab.trim().length === 0 ? (
-                            <div className="text-red-500">
-                              <PiWarningCircleLight />
-                            </div>
-                          ) : (
-                            "*)"
-                          )}
-                        </div>
                       </div>
                     </div>
                     <div className="flex gap-2 items-center mb-3">
@@ -1406,47 +1338,30 @@ const Registration = () => {
                         <label htmlFor="" className="w-72">
                           Nomor Telepon Kantor
                         </label>
-                        
                       </div>
                       <div className="w-1/2 relative">
                         <input
                           value={noTelpKantor}
                           onChange={(e) => onChangeNoTelpKantor(e)}
                           type="text"
-                         
                           pattern="[0-9]*"
-                          className={`w-full h-[36px] rounded-sm focus:border focus:border-[#0077b6] ${
-                            isError && noTelpKantor.trim().length === 0
-                              ? "border-red-400"
-                              : "border-slate-300"
-                          }  `}
+                          className="w-full h-[36px] rounded-sm focus:border focus:border-[#0077b6] border-slate-300 "
                         />
-                        <div className="absolute right-[-20px] top-0">
-                          {isError && noTelpKantor.trim().length === 0 ? (
-                            <div className="text-red-500">
-                              <PiWarningCircleLight />
-                            </div>
-                          ) : (
-                            "*)"
-                          )}
-                        </div>
                       </div>
                     </div>
                     <div className="mt-10 font-semibold underline">
-                      Kontak korenspondensi notifikasi
+                      Kontak korenspondensi PO
                     </div>
                     <div className="flex gap-2 items-center mb-3 mt-2">
                       <div className="whitespace-nowrap flex">
                         <label htmlFor="" className="w-72">
                           No Whatsapp Purchase Order (PO)
                         </label>
-                        
                       </div>
                       <div className="w-1/2 relative">
                         <input
                           type="text"
                           pattern="[0-9]*"
-                        
                           value={whatsappPO}
                           onChange={(e) => onChangeWhatsappPO(e)}
                           className={`w-full h-[36px]  rounded-sm focus:border focus:border-[#0077b6] ${
@@ -1471,7 +1386,6 @@ const Registration = () => {
                         <label htmlFor="" className="w-72">
                           Email Korespondensi PO
                         </label>
-                        
                       </div>
                       <div className="w-1/2 relative">
                         <input
@@ -1480,7 +1394,6 @@ const Registration = () => {
                             setEmailKorespondensiPo(e.target.value)
                           }
                           type="email"
-                         
                           className={`w-full h-[36px]  rounded-sm focus:border focus:border-[#0077b6] ${
                             isError && emailKorespondensiPo.trim().length === 0
                               ? "border-red-400"
@@ -1504,14 +1417,12 @@ const Registration = () => {
                         <label htmlFor="" className="w-72">
                           Nama Kontak
                         </label>
-                        
                       </div>
                       <div className="w-1/2 relative">
                         <input
                           value={namaKontak}
                           onChange={(e) => setNamaKontak(e.target.value)}
                           type="text"
-                          
                           className={`w-full h-[36px] rounded-sm focus:border focus:border-[#0077b6]  ${
                             isError && namaKontak.trim().length === 0
                               ? "border-red-400"
@@ -1534,32 +1445,31 @@ const Registration = () => {
                         <label htmlFor="" className="w-72">
                           Jabatan
                         </label>
-                        
                       </div>
                       <div className="w-1/2">
                         <input
                           value={jabatan}
                           onChange={(e) => setJabatan(e.target.value)}
                           type="text"
-                          
                           className="w-full h-[36px] border border-slate-300 rounded-sm focus:border focus:border-[#0077b6]  "
                         />
                       </div>
                     </div>
 
-                    <div className="flex gap-2 items-center mb-3 mt-10">
+                    <div className="font-semibold underline mt-10">
+                      Kontak Korespondensi Keuangan
+                    </div>
+                    <div className="flex gap-2 items-center mb-3 mt-2">
                       <div className="whitespace-nowrap flex">
                         <label htmlFor="" className="w-72">
                           No Whatsapp Keuangan
                         </label>
-                        
                       </div>
                       <div className="w-1/2 relative">
                         <input
                           maxLength={20}
                           pattern="[0-9]*"
                           type="text"
-                         
                           value={whatsappKeuangan}
                           onChange={(e) => onChangeWhatsappKeuangan(e)}
                           className={`w-full h-[36px] rounded-sm focus:border focus:border-[#0077b6] ${
@@ -1584,7 +1494,6 @@ const Registration = () => {
                         <label htmlFor="" className="w-72">
                           Email Korespondensi Keuangan
                         </label>
-                        
                       </div>
                       <div className="w-1/2 relative">
                         <input
@@ -1593,7 +1502,6 @@ const Registration = () => {
                             setEmailKorespondensiKeuangan(e.target.value)
                           }
                           type="email"
-                          
                           className="w-full h-[36px] border border-slate-300 rounded-sm focus:border focus:border-[#0077b6]  "
                         />
                       </div>
@@ -1603,7 +1511,6 @@ const Registration = () => {
                         <label htmlFor="" className="w-72">
                           Nama Kontak
                         </label>
-                        
                       </div>
                       <div className="w-1/2 relative">
                         <input
@@ -1613,7 +1520,6 @@ const Registration = () => {
                           }
                           maxLength={20}
                           type="text"
-                         
                           className={`w-full h-[36px] rounded-sm focus:border focus:border-[#0077b6] ${
                             isError && namaKontakKeuangan.trim().length === 0
                               ? "border-red-400"
@@ -1636,7 +1542,6 @@ const Registration = () => {
                         <label htmlFor="" className="w-72">
                           Jabatan
                         </label>
-                        
                       </div>
                       <div className="w-1/2 relative">
                         <input
@@ -1644,7 +1549,6 @@ const Registration = () => {
                           onChange={(e) => setJabatanKeuangan(e.target.value)}
                           maxLength={20}
                           type="text"
-                          
                           className={`w-full h-[36px] rounded-sm focus:border focus:border-[#0077b6] ${
                             isError && jabatanKeuangan.trim().length === 0
                               ? "border-red-400"
@@ -1691,13 +1595,11 @@ const Registration = () => {
                         <label htmlFor="" className="w-44">
                           Term Pembayaran
                         </label>
-                        
                       </div>
                       <div className="w-1/2 relative flex items-center gap-2">
                         <input
                           type="text"
                           pattern="[0-9]*"
-                        
                           value={termPembayaran}
                           onChange={onChangeTermPembayaran}
                           className={`w-full h-[36px] rounded-sm focus:border focus:border-[#0077b6] ${
@@ -1723,14 +1625,12 @@ const Registration = () => {
                         <label htmlFor="" className="w-44">
                           Bank
                         </label>
-                        
                       </div>
                       <div className="w-1/2 relative">
                         <input
                           value={bank}
                           onChange={(e) => setBank(e.target.value)}
                           type="text"
-                          
                           className={`w-full h-[36px]  rounded-sm focus:border focus:border-[#0077b6] ${
                             isError && bank.trim().length === 0
                               ? "border-red-400"
@@ -1753,14 +1653,12 @@ const Registration = () => {
                         <label htmlFor="" className="w-44">
                           No. Rekening Bank
                         </label>
-                        
                       </div>
                       <div className="w-1/2 relative">
                         <input
                           value={nomorRekening}
                           onChange={(e) => setRekening(e.target.value)}
                           type="text"
-                         
                           className={`w-full h-[36px] rounded-sm focus:border focus:border-[#0077b6] ${
                             isError && nomorRekening.trim().length === 0
                               ? "border-red-400"
@@ -1783,14 +1681,12 @@ const Registration = () => {
                         <label htmlFor="" className="w-44">
                           Nama Rekening Bank
                         </label>
-                        
                       </div>
                       <div className="w-1/2 relative">
                         <input
                           value={namaRekening}
                           onChange={(e) => setNamaRekening(e.target.value)}
                           type="text"
-                          
                           className={`w-full h-[36px] rounded-sm focus:border focus:border-[#0077b6] ${
                             isError && namaRekening.trim().length === 0
                               ? "border-red-400"
@@ -1813,7 +1709,6 @@ const Registration = () => {
                         <label htmlFor="" className="w-44">
                           Kantor Cabang Bank
                         </label>
-                        
                       </div>
                       <div className="w-1/2 relative flex items-center gap-2">
                         <div>KCP</div>
@@ -1821,7 +1716,6 @@ const Registration = () => {
                           value={kantorCabangBank}
                           onChange={(e) => setKantorCabangBank(e.target.value)}
                           type="text"
-                          
                           className={`w-full h-[36px] rounded-sm focus:border focus:border-[#0077b6] ${
                             isError && kantorCabangBank.trim().length === 0
                               ? "border-red-400"
@@ -1844,7 +1738,6 @@ const Registration = () => {
                         <label htmlFor="" className="w-44">
                           Metode Pengiriman
                         </label>
-                        
                       </div>
                       <div className="w-1/2 relative">
                         <Select
@@ -1872,13 +1765,11 @@ const Registration = () => {
                         <label htmlFor="" className="w-44">
                           Pengembalian Barang
                         </label>
-                        
                       </div>
                       <div className="w-1/2 relative flex items-center gap-2">
                         <input
                           type="text"
                           pattern="[0-9]*"
-                          
                           value={pengembalianBarang}
                           onChange={onChangePengembalianBarang}
                           className={`w-full h-[36px] rounded-sm focus:border focus:border-[#0077b6] ${
@@ -1905,7 +1796,6 @@ const Registration = () => {
                         <label htmlFor="" className="w-44">
                           Rebate
                         </label>
-                        
                       </div>
                       <div className="w-1/2 relative">
                         <input
@@ -1928,7 +1818,6 @@ const Registration = () => {
                         <label htmlFor="" className="w-44">
                           Marketing fee
                         </label>
-                        
                       </div>
                       <div className="w-1/2 relative">
                         <input
@@ -1950,7 +1839,6 @@ const Registration = () => {
                         <label htmlFor="" className="w-44">
                           Listing Fee
                         </label>
-                        
                       </div>
                       <div className="w-1/2 relative">
                         <input
@@ -1972,7 +1860,6 @@ const Registration = () => {
                         <label htmlFor="" className="w-44">
                           Promotion Found
                         </label>
-                        
                       </div>
                       <div className="w-1/2 relative">
                         <input
@@ -1981,6 +1868,27 @@ const Registration = () => {
                           step={0.01}
                           value={promotionFund}
                           onChange={onChangePromotionFund}
+                          onKeyDown={(evt) =>
+                            (evt.key === "e" || evt.key === "-") &&
+                            evt.preventDefault()
+                          }
+                          className="w-full h-[36px] border border-slate-300 rounded-sm focus:border focus:border-[#0077b6]  "
+                        />
+                      </div>
+                    </div>
+                    <div className="flex gap-2 items-center mb-3">
+                      <div className="whitespace-nowrap flex">
+                        <label htmlFor="" className="w-44">
+                          Other Fee
+                        </label>
+                      </div>
+                      <div className="w-1/2 relative">
+                        <input
+                          type="number"
+                          min={0}
+                          step={0.01}
+                          value={otherFee}
+                          onChange={(e) => setOtherFee(e.target.value)}
                           onKeyDown={(evt) =>
                             (evt.key === "e" || evt.key === "-") &&
                             evt.preventDefault()
@@ -2024,7 +1932,6 @@ const Registration = () => {
                           <label htmlFor="" className="w-72">
                             NPWP / Surat Keterangan Bebas Pajak
                           </label>
-                          
                         </div>
                         <div className="text-[10px] text-gray-500">
                           Max size 2 mb
@@ -2035,7 +1942,6 @@ const Registration = () => {
                         <input
                           type="file"
                           onChange={onChangeNpwpFile}
-                       
                           accept=".jpg,.pdf"
                           className={`w-full h-[36px] border rounded-sm focus:border focus:border-[#0077b6] ${
                             isError && npwpFile === null
@@ -2079,9 +1985,8 @@ const Registration = () => {
                       <div className="flex flex-col gap-1">
                         <div className="whitespace-nowrap flex">
                           <label htmlFor="" className="w-72">
-                            KTP Pemilik
+                            KTP Pemilik / Direktur
                           </label>
-                          
                         </div>
                         <div className="text-[10px] text-gray-500">
                           Max size 2 mb
@@ -2091,7 +1996,6 @@ const Registration = () => {
                         <input
                           type="file"
                           onChange={onChangeKtpPemilikFile}
-                         
                           accept=".jpg,.pdf"
                           className={` w-full h-[36px] border rounded-sm focus:border focus:border-[#0077b6] ${
                             isError && ktpPemilikFile === null
@@ -2137,7 +2041,6 @@ const Registration = () => {
                           <label htmlFor="" className="w-72">
                             KTP Penanggung Jawab
                           </label>
-                          
                         </div>
                         <div className="text-[10px] text-gray-500">
                           Max size 2 mb
@@ -2147,7 +2050,6 @@ const Registration = () => {
                         <input
                           type="file"
                           onChange={onChangeKtpPenanggungJawabFile}
-                         
                           accept=".jpg,.pdf"
                           className={` w-full h-[36px] border rounded-sm focus:border focus:border-[#0077b6] ${
                             isError && ktpPenanggungJawabFile === null
@@ -2199,7 +2101,6 @@ const Registration = () => {
                             Surat Pengukuhan Kena Pajak (SPKP) / Surat
                             Keterangan Non PKP (Bagi Pengusaha Tidak Kena Pajak)
                           </label>
-                          
                         </div>
                         <div className="text-[10px] text-gray-500">
                           Max size 2 mb
@@ -2209,7 +2110,6 @@ const Registration = () => {
                         <input
                           type="file"
                           onChange={onChangeSpkpFile}
-                         
                           accept=".jpg,.pdf"
                           className={` w-full h-[36px] border rounded-sm focus:border focus:border-[#0077b6] ${
                             isError && spkpFile === null
@@ -2255,7 +2155,6 @@ const Registration = () => {
                           <label htmlFor="" className="w-72">
                             Nomer Induk Berusaha (NIB)
                           </label>
-                          
                         </div>
                         <div className="text-[10px] text-gray-500">
                           Max size 2 mb
@@ -2266,7 +2165,6 @@ const Registration = () => {
                           type="file"
                           onChange={onChangeNibFile}
                           accept=".jpg,.pdf"
-                    
                           className={` w-full h-[36px] border rounded-sm focus:border focus:border-[#0077b6] ${
                             isError && nibFile === null
                               ? "border-red-400"
@@ -2311,7 +2209,6 @@ const Registration = () => {
                           <label htmlFor="" className="w-72">
                             Screenshot Rekening Perusahaan
                           </label>
-                          
                         </div>
                         <div className="text-[10px] text-gray-500">
                           Max size 2 mb
@@ -2321,7 +2218,6 @@ const Registration = () => {
                         <input
                           type="file"
                           onChange={onChangeSsRekeningFile}
-                        
                           accept=".jpg,.pdf"
                           className={` w-full h-[36px] border rounded-sm focus:border focus:border-[#0077b6] ${
                             isError && ssPerusahaanFile === null
@@ -2361,14 +2257,14 @@ const Registration = () => {
                       )
                     )}
 
-                    <div className="flex items-center mb-3">
+                    <div className="flex items-center mb-3 gap-2">
                       <div className="flex flex-col gap-1">
                         <div className="whitespace-nowrap flex">
-                          <label htmlFor="" className="w-72">
+                          <label htmlFor="" className="w-72 min-w-72">
                             Sertifikasi BPOM
                           </label>
                         </div>
-                        
+
                         <div className="text-[10px] text-gray-500">
                           Max size 2 mb
                         </div>
@@ -2379,12 +2275,11 @@ const Registration = () => {
                           <div>Untuk supplier makanan & minuman</div>
                         </div>
                       </div>
-                  
+
                       <div className="w-1/2 relative">
                         <input
                           type="file"
                           onChange={onChangeBpomFile}
-                         
                           accept=".jpg,.pdf"
                           className=" w-full h-[36px] border border-slate-300 rounded-sm focus:border focus:border-[#0077b6]  "
                         />
@@ -2531,7 +2426,6 @@ const Registration = () => {
                                 }
                                 onChange={(e) => setUsername(e.target.value)}
                                 type="text"
-                               
                                 className={`w-full h-[36px] rounded-sm focus:border focus:border-[#0077b6] ${
                                   isError && username.trim().length === 0
                                     ? "border-red-400"
@@ -2565,7 +2459,6 @@ const Registration = () => {
                                   evt.key === " " && evt.preventDefault()
                                 }
                                 type="email"
-                               
                                 className={`w-full h-[36px] rounded-sm focus:border focus:border-[#0077b6] ${
                                   isError && email.trim().length === 0
                                     ? "border-red-400"
@@ -2598,8 +2491,6 @@ const Registration = () => {
                                   evt.key === " " && evt.preventDefault()
                                 }
                                 type={`${showPassword ? "text" : "password"}`}
-                               
-                              
                                 className={`w-full h-[36px] rounded-sm focus:border focus:border-[#0077b6] ${
                                   isError && password.trim().length === 0
                                     ? "border-red-400"
@@ -2647,7 +2538,6 @@ const Registration = () => {
                                     setTipePerusahaanText(e.target.value)
                                   }
                                   type="text"
-                                  
                                   placeholder="Tulis tipe perusahaan..."
                                   className={`w-full h-[36px] rounded-sm focus:border focus:border-[#0077b6] ${
                                     isError &&
@@ -2680,10 +2570,11 @@ const Registration = () => {
                               <input
                                 value={namaPerusahaan}
                                 onChange={(e) =>
-                                  setNamaPerusahaan(e.target.value.toUpperCase())
+                                  setNamaPerusahaan(
+                                    e.target.value.toUpperCase()
+                                  )
                                 }
                                 type="text"
-                               
                                 className={`w-full h-[36px] rounded-sm focus:border focus:border-[#0077b6] ${
                                   isError && namaPerusahaan.trim().length === 0
                                     ? "border-red-400"
@@ -2714,7 +2605,6 @@ const Registration = () => {
                                 rows={5}
                                 value={alamat}
                                 onChange={(e) => setAlamat(e.target.value)}
-                               
                                 className={`w-full rounded-sm focus:border focus:border-[#0077b6] ${
                                   isError && alamat.trim().length === 0
                                     ? "border-red-400"
@@ -2772,7 +2662,6 @@ const Registration = () => {
                                 value={kota}
                                 onChange={(e) => setKota(e.target.value)}
                                 type="text"
-                                
                                 className={`w-full h-[36px] border rounded-sm focus:border focus:border-[#0077b6] ${
                                   isError && kota.trim().length === 0
                                     ? "border-red-400"
@@ -2802,7 +2691,6 @@ const Registration = () => {
                                 value={kodePos}
                                 onChange={(e) => setKodePos(e.target.value)}
                                 type="text"
-                              
                                 className={`w-full h-[36px] border rounded-sm focus:border focus:border-[#0077b6] ${
                                   isError && kodePos.trim().length === 0
                                     ? "border-red-400"
@@ -2905,7 +2793,6 @@ const Registration = () => {
                                 type="text"
                                 pattern="[0-9]*"
                                 maxLength={21}
-                               
                                 className={`w-full h-[36px] rounded-sm focus:border focus:border-[#0077b6] ${
                                   isError &&
                                   npwp.trim().length !== 21 &&
@@ -2929,7 +2816,6 @@ const Registration = () => {
                                 value={website}
                                 onChange={(e) => setWebsite(e.target.value)}
                                 type="text"
-                               
                                 className="w-full h-[36px] border border-slate-300 rounded-sm focus:border focus:border-[#0077b6]  "
                               />
                             </div>
@@ -2990,7 +2876,7 @@ const Registration = () => {
                           <div>* = Tidak boleh kosong</div>
                         </div>
                         <div className="mt-10 font-semibold underline">
-                            Pemilik
+                          Pemilik
                         </div>
                         <form action="">
                           <div className="flex flex-col gap-2 mb-3">
@@ -3000,14 +2886,6 @@ const Registration = () => {
                                 className="flex gap-1 items-center"
                               >
                                 Nama Pemilik Perusahaan{" "}
-                                {isError &&
-                                namaPemilikPerusahaan.trim().length === 0 ? (
-                                  <span className="text-red-400">
-                                    <PiWarningCircleLight />
-                                  </span>
-                                ) : (
-                                  "*"
-                                )}
                               </label>
                             </div>
                             <div className="w-full whitespace-nowrap">
@@ -3017,13 +2895,10 @@ const Registration = () => {
                                   setNamaPemilikPerusahaan(e.target.value)
                                 }
                                 type="text"
-                               
-                                className={`w-full h-[36px] rounded-sm focus:border focus:border-[#0077b6] ${
-                                  isError &&
-                                  namaPemilikPerusahaan.trim().length === 0
-                                    ? "border-red-400"
-                                    : "border-slate-300"
-                                } `}
+                                className="w-full h-[36px] rounded-sm focus:border focus:border-[#0077b6] 
+                                 
+                                    border-slate-300
+                                 "
                               />
                             </div>
                           </div>
@@ -3034,14 +2909,6 @@ const Registration = () => {
                                 className=" flex gap-1 items-center"
                               >
                                 Nama Penanggung Jawab{" "}
-                                {isError &&
-                                namaPenanggungJawab.trim().length === 0 ? (
-                                  <span className="text-red-400">
-                                    <PiWarningCircleLight />
-                                  </span>
-                                ) : (
-                                  "*"
-                                )}
                               </label>
                             </div>
                             <div className="whitespace-nowrap">
@@ -3051,13 +2918,7 @@ const Registration = () => {
                                   setNamaPenanggungJawab(e.target.value)
                                 }
                                 type="text"
-                               
-                                className={`w-full h-[36px] rounded-sm focus:border focus:border-[#0077b6] ${
-                                  isError &&
-                                  namaPenanggungJawab.trim().length === 0
-                                    ? "border-red-400"
-                                    : "border-slate-300"
-                                } `}
+                                className="w-full h-[36px] rounded-sm focus:border focus:border-[#0077b6] border-slate-300"
                               />
                             </div>
                           </div>
@@ -3068,14 +2929,6 @@ const Registration = () => {
                                 className=" flex gap-1 items-center"
                               >
                                 Jabatan Penanggung Jawab{" "}
-                                {isError &&
-                                jabatanPenanggungJawab.trim().length === 0 ? (
-                                  <span className="text-red-400">
-                                    <PiWarningCircleLight />
-                                  </span>
-                                ) : (
-                                  "*"
-                                )}
                               </label>
                             </div>
                             <div>
@@ -3085,13 +2938,7 @@ const Registration = () => {
                                   setJabatanPenanggungJawab(e.target.value)
                                 }
                                 type="text"
-                             
-                                className={`w-full h-[36px] rounded-sm focus:border focus:border-[#0077b6] ${
-                                  isError &&
-                                  jabatanPenanggungJawab.trim().length === 0
-                                    ? "border-red-400"
-                                    : "border-slate-300"
-                                } `}
+                                className="w-full h-[36px] rounded-sm focus:border focus:border-[#0077b6] border-slate-300"
                               />
                             </div>
                           </div>
@@ -3102,13 +2949,6 @@ const Registration = () => {
                                 className=" flex gap-1 items-center"
                               >
                                 Nomor Telepon Kantor{" "}
-                                {isError && noTelpKantor.trim().length === 0 ? (
-                                  <span className="text-red-400">
-                                    <PiWarningCircleLight />
-                                  </span>
-                                ) : (
-                                  "*"
-                                )}
                               </label>
                             </div>
                             <div className=" whitespace-nowrap">
@@ -3118,17 +2958,12 @@ const Registration = () => {
                                   setNoTelpKantor(e.target.value)
                                 }
                                 type="text"
-                               
-                                className={`w-full h-[36px] border rounded-sm focus:border focus:border-[#0077b6] ${
-                                  isError && noTelpKantor.trim().length === 0
-                                    ? "border-red-400"
-                                    : "border-slate-300"
-                                } `}
+                                className="w-full h-[36px] border rounded-sm focus:border focus:border-[#0077b6] border-slate-300"
                               />
                             </div>
                           </div>
                           <div className="font-semibold underline mt-10">
-                            Kontak Korespondensi Notifikasi
+                            Kontak Korespondensi PO
                           </div>
                           <div className="flex flex-col gap-2 mb-3 mt-2">
                             <div className="flex">
@@ -3150,7 +2985,6 @@ const Registration = () => {
                               <input
                                 type="text"
                                 pattern="[0-9]*"
-                                
                                 value={whatsappPO}
                                 onChange={(e) => onChangeWhatsappPO(e)}
                                 className={`w-full h-[36px] rounded-sm focus:border focus:border-[#0077b6] ${
@@ -3174,7 +3008,6 @@ const Registration = () => {
                                   setEmailKorespondensiPo(e.target.value)
                                 }
                                 type="email"
-                               
                                 className="w-full h-[36px] border border-slate-300 rounded-sm focus:border focus:border-[#0077b6]  "
                               />
                             </div>
@@ -3200,7 +3033,6 @@ const Registration = () => {
                                 value={namaKontak}
                                 onChange={(e) => setNamaKontak(e.target.value)}
                                 type="text"
-                              
                                 className={`w-full h-[36px] rounded-sm focus:border focus:border-[#0077b6] ${
                                   isError && namaKontak.trim().length === 0
                                     ? "border-red-400"
@@ -3220,12 +3052,14 @@ const Registration = () => {
                                 value={jabatan}
                                 onChange={(e) => setJabatan(e.target.value)}
                                 type="text"
-                              
                                 className="w-full h-[36px] border border-slate-300 rounded-sm focus:border focus:border-[#0077b6]  "
                               />
                             </div>
                           </div>
-                          <div className="flex flex-col gap-2 mb-3 mt-10">
+                          <div className="font-semibold underline mt-10">
+                            Kontak Korespondensi Keuangan
+                          </div>
+                          <div className="flex flex-col gap-2 mb-3 mt-2">
                             <div className="whitespace-nowrap flex">
                               <label
                                 htmlFor=""
@@ -3247,7 +3081,6 @@ const Registration = () => {
                                 type="text"
                                 pattern="[0-9]*"
                                 maxLength={15}
-                               
                                 value={whatsappKeuangan}
                                 onChange={(e) => onChangeWhatsappKeuangan(e)}
                                 className={`w-full h-[36px] rounded-sm focus:border focus:border-[#0077b6] ${
@@ -3272,7 +3105,6 @@ const Registration = () => {
                                   setEmailKorespondensiKeuangan(e.target.value)
                                 }
                                 type="email"
-                               
                                 className="w-full h-[36px] border border-slate-300 rounded-sm focus:border focus:border-[#0077b6]  "
                               />
                             </div>
@@ -3301,7 +3133,6 @@ const Registration = () => {
                                   setNamaKontakKeuangan(e.target.value)
                                 }
                                 type="text"
-                              
                                 className={`w-full h-[36px] rounded-sm focus:border focus:border-[#0077b6] ${
                                   isError &&
                                   namaKontakKeuangan.trim().length === 0
@@ -3335,7 +3166,6 @@ const Registration = () => {
                                   setJabatanKeuangan(e.target.value)
                                 }
                                 type="text"
-                                
                                 className={`w-full h-[36px] rounded-sm focus:border focus:border-[#0077b6] ${
                                   isError && jabatanKeuangan.trim().length === 0
                                     ? "border-red-400"
@@ -3426,7 +3256,6 @@ const Registration = () => {
                               <input
                                 type="text"
                                 pattern="[0-9]*"
-                               
                                 value={termPembayaran}
                                 onChange={onChangeTermPembayaran}
                                 className={`w-full h-[36px] rounded-sm focus:border focus:border-[#0077b6]  ${
@@ -3459,7 +3288,6 @@ const Registration = () => {
                                 value={bank}
                                 onChange={(e) => setBank(e.target.value)}
                                 type="text"
-                             
                                 className={`w-full h-[36px] rounded-sm focus:border focus:border-[#0077b6] ${
                                   isError && bank.trim().length === 0
                                     ? "border-red-400"
@@ -3490,8 +3318,6 @@ const Registration = () => {
                                 value={nomorRekening}
                                 onChange={(e) => setRekening(e.target.value)}
                                 type="text"
-                                
-                              
                                 className={`w-full h-[36px] rounded-sm focus:border focus:border-[#0077b6] ${
                                   isError && nomorRekening.trim().length === 0
                                     ? "border-red-400"
@@ -3523,7 +3349,6 @@ const Registration = () => {
                                   setNamaRekening(e.target.value)
                                 }
                                 type="text"
-                               
                                 className={`w-full h-[36px] rounded-sm focus:border focus:border-[#0077b6] ${
                                   isError && namaRekening.trim().length === 0
                                     ? "border-red-400"
@@ -3557,7 +3382,6 @@ const Registration = () => {
                                   setKantorCabangBank(e.target.value)
                                 }
                                 type="text"
-                                
                                 className={`w-full h-[36px] rounded-sm focus:border focus:border-[#0077b6] ${
                                   isError &&
                                   kantorCabangBank.trim().length === 0
@@ -3617,7 +3441,6 @@ const Registration = () => {
                               <input
                                 type="text"
                                 pattern="[0-9]*"
-                               
                                 value={pengembalianBarang}
                                 onChange={onChangePengembalianBarang}
                                 className={`w-full h-[36px] rounded-sm focus:border focus:border-[#0077b6] ${
@@ -3707,6 +3530,27 @@ const Registration = () => {
                                 step={0.01}
                                 value={promotionFund}
                                 onChange={onChangePromotionFund}
+                                onKeyDown={(evt) =>
+                                  (evt.key === "e" || evt.key === "-") &&
+                                  evt.preventDefault()
+                                }
+                                className="w-full h-[36px] border border-slate-300 rounded-sm focus:border focus:border-[#0077b6]  "
+                              />
+                            </div>
+                          </div>
+                          <div className="flex flex-col gap-2 mb-3">
+                            <div className="whitespace-nowrap flex">
+                              <label htmlFor="" className="w-44">
+                                Other Fee
+                              </label>
+                            </div>
+                            <div className=" relative">
+                              <input
+                                type="number"
+                                min={0}
+                                step={0.01}
+                                value={otherFee}
+                                onChange={(e) => setOtherFee(e.target.value)}
                                 onKeyDown={(evt) =>
                                   (evt.key === "e" || evt.key === "-") &&
                                   evt.preventDefault()
@@ -3807,7 +3651,6 @@ const Registration = () => {
                               <input
                                 type="file"
                                 onChange={onChangeNpwpFile}
-                               
                                 accept="image/jpeg,.pdf"
                                 className=" w-full h-[36px] border border-slate-300 rounded-sm focus:border focus:border-[#0077b6]  "
                               />
@@ -3840,7 +3683,7 @@ const Registration = () => {
                                   htmlFor=""
                                   className=" flex gap-1 items-center"
                                 >
-                                  KTP Pemilik{" "}
+                                  KTP Pemilik / Direktur{" "}
                                   {isError && ktpPemilikFile === null ? (
                                     <span className="text-red-400">
                                       <PiWarningCircleLight />
@@ -3858,7 +3701,6 @@ const Registration = () => {
                               <input
                                 type="file"
                                 onChange={onChangeKtpPemilikFile}
-                            
                                 accept="image/jpg,.pdf"
                                 className=" w-full h-[36px] border border-slate-300 rounded-sm focus:border focus:border-[#0077b6]  "
                               />
@@ -3913,7 +3755,6 @@ const Registration = () => {
                               <input
                                 type="file"
                                 onChange={onChangeKtpPenanggungJawabFile}
-                              
                                 accept="image/jpg,.pdf"
                                 className=" w-full h-[36px] border border-slate-300 rounded-sm focus:border focus:border-[#0077b6]  "
                               />
@@ -3971,7 +3812,6 @@ const Registration = () => {
                               <input
                                 type="file"
                                 onChange={onChangeSpkpFile}
-                               
                                 accept="image/jpg,.pdf"
                                 className=" w-full h-[36px] border border-slate-300 rounded-sm focus:border focus:border-[#0077b6]  "
                               />
@@ -4024,7 +3864,6 @@ const Registration = () => {
                                 type="file"
                                 onChange={onChangeNibFile}
                                 accept="image/jpg,.pdf"
-                              
                                 className=" w-full h-[36px] border border-slate-300 rounded-sm focus:border focus:border-[#0077b6]  "
                               />
                             </div>
@@ -4075,7 +3914,6 @@ const Registration = () => {
                               <input
                                 type="file"
                                 onChange={onChangeSsRekeningFile}
-                            
                                 accept="image/jpg,.pdf"
                                 className=" w-full h-[36px] border border-slate-300 rounded-sm focus:border focus:border-[#0077b6]  "
                               />
@@ -4126,7 +3964,6 @@ const Registration = () => {
                               <input
                                 type="file"
                                 onChange={onChangeBpomFile}
-                              
                                 accept="image/jpg,.pdf"
                                 className=" w-full h-[36px] border border-slate-300 rounded-sm focus:border focus:border-[#0077b6]  "
                               />

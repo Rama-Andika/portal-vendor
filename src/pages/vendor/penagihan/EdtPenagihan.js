@@ -16,7 +16,7 @@ import {
   stepConnectorClasses,
   styled,
 } from "@mui/material";
-import { useEffect, useState } from "react";
+import { useCallback, useEffect, useRef, useState } from "react";
 import { useLocation, useNavigate, useParams } from "react-router-dom";
 import Select from "react-select";
 import { DatePicker, LocalizationProvider } from "@mui/x-date-pickers";
@@ -25,12 +25,13 @@ import { DemoContainer } from "@mui/x-date-pickers/internals/demo";
 import dayjs from "dayjs";
 import { PiWarningCircleLight } from "react-icons/pi";
 import isEmpty from "../../../components/functions/CheckEmptyObject";
-import toast from "react-hot-toast";
 import { FaCloudUploadAlt } from "react-icons/fa";
 import titleCase from "../../../components/functions/TitleCase";
 import GetBase64 from "../../../components/functions/GetBase64";
 import Cookies from "js-cookie";
-import accountingNumber from "../../../components/functions/AccountingNumber";
+import TableInvoice from "./table/TableInvoice";
+import { IoIosAdd } from "react-icons/io";
+import { toast, Toaster } from "sonner";
 
 const optionsTipePenagihan = [
   { value: "beli putus", label: "Beli Putus", key: 0 },
@@ -47,49 +48,15 @@ const options = [
   { value: 1, label: "Ya", key: 1 },
 ];
 const optionsTipePengiriman = [
-  { value: 0, label: "Drop Box Gudang PT KPU", key: 0 },
+  { value: 0, label: "Drop Box Gudang", key: 0 },
   { value: 1, label: "Kurir", key: 1 },
-  { value: 2, label: "Diantar langsung ke office PT KPU", key: 2 },
+  { value: 2, label: "Diantar langsung ke office", key: 2 },
 ];
 
 const api = process.env.REACT_APP_BASEURL;
 const apiExport = process.env.REACT_APP_EXPORT_URL;
 const Penagihan = () => {
-  const inputArr = [
-    {
-      type: "text",
-      id: 1,
-      value: "",
-    },
-  ];
-
-  const inputNilaiInvoice = [
-    {
-      value: "",
-    },
-  ];
-
-  const inputTanggalInvoice = [{}];
-
-  const inputTanggalInvoice2 = [{}];
-
   const inputNoSeriFakturPajak = [
-    {
-      type: "text",
-      value: "",
-    },
-    {
-      type: "text",
-      value: "",
-    },
-    {
-      type: "text",
-      value: "",
-    },
-    {
-      type: "text",
-      value: "",
-    },
     {
       type: "text",
       value: "",
@@ -103,10 +70,9 @@ const Penagihan = () => {
     label: "Beli Putus",
     key: 0,
   });
+  const [optionLokasi, setOptionLokasi] = useState([]);
   const [nomerPo, setNomerPo] = useState("");
-  const [tanggalPo, setTanggalPo] = useState();
-  const [tanggalInvoice, setTanggalInvoice] = useState(inputTanggalInvoice);
-  const [tanggalInvoice2, setTanggalInvoice2] = useState(inputTanggalInvoice2);
+  const [tanggalPo, setTanggalPo] = useState(undefined);
   const [startDatePeriode, setStartDatePeriode] = useState();
   const [endDatePeriode, setEndDatePeriode] = useState();
   const [nomerDo, setNomerDo] = useState("");
@@ -115,14 +81,23 @@ const Penagihan = () => {
     label: "Tangerang",
     key: 0,
   });
-  const [nomerInvoice, setNomerInvoice] = useState(inputArr);
-  const [nilaiInvoice, setNilaiInvoice] = useState(inputNilaiInvoice);
+  const [addMode, setAddMode] = useState(true);
+  const inputNomorInvoiceRef = useRef(null);
+  const [invoice, setInvoice] = useState({
+    nomorInvoice: "",
+    tanggalInvoice: dayjs(new Date()).format("YYYY-MM-DD"),
+    startDate: dayjs(new Date()).format("YYYY-MM-DD"),
+    endDate: dayjs(new Date()).format("YYYY-MM-DD"),
+    nilaiInvoice: "",
+    lokasi: { value: "", label: "" },
+    editMode: false,
+  });
+  const [invoices, setInvoices] = useState([]);
   const [invoiceTambahan, setInvoiceTambahan] = useState([]);
   const [fakturPajakTambahan, setFakturPajakTambahan] = useState([]);
   const [tipePengiriman, setTipePengiriman] = useState({
     value: 0,
-    label: "Drop Box Gudang PT KPU",
-    key: 0,
+    label: "Drop Box Gudang",
   });
 
   const [isPajak, setIsPajak] = useState({ value: 0, label: "Tidak", key: 0 });
@@ -182,6 +157,32 @@ const Penagihan = () => {
       });
   };
 
+  const getLocation = useCallback(async () => {
+    try {
+      const response = await fetch(`${api}api/location`, {
+        method: "POST",
+      });
+
+      if (!response.ok) {
+        throw new Error(response.statusText);
+      }
+
+      const result = await response.json();
+      if (result.data) {
+        const { data } = result;
+
+        const options = data.map((d) => ({
+          value: d.id,
+          label: d.name,
+        }));
+
+        setOptionLokasi(options);
+      }
+    } catch (error) {
+      console.log(error);
+    }
+  }, []);
+
   const fetchData = async () => {
     setOpenBackdrop(true);
     await fetch(`${api}api/portal-vendor/list/penagihan`, {
@@ -199,7 +200,9 @@ const Penagihan = () => {
             value: data.tipe_penagihan,
             label: titleCase(data.tipe_penagihan),
           });
-          setNomerPo(data.nomer_po.split("PO")[1]);
+          setNomerPo(
+            data.nomer_po.length > 0 ? data.nomer_po.split("PO")[1] : ""
+          );
           setTanggalPo(dayjs(data.tanggal_po));
           setNomerDo(data.nomer_do);
           setDeliveryArea({
@@ -207,38 +210,47 @@ const Penagihan = () => {
             label: titleCase(data.delivery_area),
           });
 
-          setTipePengiriman(optionsTipePengiriman[data.tipe_pengiriman]);
-          const listInvoice = data.nomer_invoices.map((invoice) => {
-            return { type: "text", value: invoice, id: 0 };
-          });
-          const listTanggalInvoice = data.tanggal_invoices.map((tanggal) => {
-            return { value: dayjs(tanggal) };
-          });
-          const listNilaiInvoice = data.nilai_invoices.map((nilai) => {
-            return { value: accountingNumber(nilai.toString()) };
-          });
+          if (data.nomer_invoices.length > 0) {
+            const newInvoices = data.nomer_invoices.map((nomor, i) => {
+              return {
+                nomorInvoice: nomor,
+                tanggalInvoice:
+                  data.tanggal_invoices[i] !== undefined
+                    ? data.tanggal_invoices[i]
+                    : dayjs(new Date()).format("YYYY-MM-DD"),
+                startDate:
+                  data.start_dates[i] !== undefined
+                    ? data.start_dates[i]
+                    : dayjs(new Date()).format("YYYY-MM-DD"),
+                endDate:
+                  data.end_dates[i] !== undefined
+                    ? data.end_dates[i]
+                    : dayjs(new Date()).format("YYYY-MM-DD"),
+                lokasi:
+                  data.locations[i] !== undefined
+                    ? {
+                        value: data.locations[i].id,
+                        label: data.locations[i].name,
+                      }
+                    : { value: "", label: "" },
+                nilaiInvoice: data.nilai_invoices[i],
+              };
+            });
 
-          let arrayInvoiceTambahan = [];
-          let arrayFakturPajakTambahan = [];
-          for (let index = 0; index < data.nomer_invoices.length - 1; index++) {
-            arrayInvoiceTambahan[index] = {};
-            arrayFakturPajakTambahan[index] = {};
+            setInvoices(newInvoices);
           }
+          setTipePengiriman(optionsTipePengiriman[data.tipe_pengiriman]);
 
           // eslint-disable-next-line array-callback-return
-          var listSeriPajak = data.nomer_seri_pajak.map((nomer) => {
-            if (nomer !== null) {
-              return { type: "text", value: nomer };
-            } else {
-              return { type: "text", value: "" };
-            }
-          });
+          // var listSeriPajak = data.nomer_seri_pajak.map((nomer) => {
+          //   if (nomer !== null) {
+          //     return { type: "text", value: nomer };
+          //   } else {
+          //     return { type: "text", value: "" };
+          //   }
+          // });
 
-          setNomerInvoice(listInvoice);
-          setTanggalInvoice(listTanggalInvoice);
-          setTanggalInvoice2(listTanggalInvoice);
-          setNilaiInvoice(listNilaiInvoice);
-          setNomerSeriFakturPajak(listSeriPajak);
+          // setNomerSeriFakturPajak(listSeriPajak);
           setIsPajak({
             value: data.is_pajak,
             label: data.is_pajak === 0 ? "Tidak" : "Ya",
@@ -270,65 +282,15 @@ const Penagihan = () => {
             return file;
           });
           setFakturPajakFileUpload(_fakturPajakFiles);
-          setInvoiceTambahan(arrayInvoiceTambahan);
-          setFakturPajakTambahan(arrayFakturPajakTambahan);
         }
       });
   };
 
   const handleNext = () => {
-    let countNomerInvoice = 0;
-    let countTanggalInvoice = 0;
-    let countNilaiInvoice = 0;
-    //let countInvoiceTambahan = 0;
-
-    // eslint-disable-next-line array-callback-return
-    nomerInvoice.map((invoice) => {
-      if (invoice.value.trim().length > 0) {
-        countNomerInvoice += 1;
-      }
-    });
-
-    // eslint-disable-next-line array-callback-return
-    tanggalInvoice.map((tanggal) => {
-      if (!isEmpty(tanggal)) {
-        countTanggalInvoice += 1;
-      }
-    });
-
-    // eslint-disable-next-line array-callback-return
-    nilaiInvoice.map((nilai) => {
-      const value = nilai.value.replace(/\./g, "").split(",").join(".");
-      if (nilai.value.trim().length > 0 && !isNaN(value)) {
-        countNilaiInvoice += 1;
-      }
-    });
-
-    // const invoiceTambahanArray = invoiceTambahan.filter((invoice) => {
-    //   return !isEmpty(invoice);
-    // });
-
-    // const fakturPajakTambahanArray = fakturPajakTambahan.filter((invoice) => {
-    //   return !isEmpty(invoice);
-    // });
-
-    // nomerInvoice.map((invoice) => {
-    //   if (!isEmpty(invoice)) {
-    //     countInvoiceTambahan += 1;
-    //   }
-    // });
-
     if (activeStep === 0) {
       setActiveStep((prevActiveStep) => prevActiveStep + 1);
     } else if (activeStep === 1) {
-      if (
-        nomerPo.trim().length === 8 &&
-        tanggalPo !== undefined &&
-        nomerDo.trim().length > 0 &&
-        countNomerInvoice === nomerInvoice.length &&
-        countTanggalInvoice === nomerInvoice.length &&
-        countNilaiInvoice === nomerInvoice.length
-      ) {
+      if (invoices.length > 0) {
         if (isPajak.value === 0) {
           setIsError(false);
           setActiveStep((prevActiveStep) => prevActiveStep + 1);
@@ -349,59 +311,10 @@ const Penagihan = () => {
   };
 
   const handleNext2 = () => {
-    let countNomerInvoice = 0;
-    let countTanggalInvoice = 0;
-    let countNilaiInvoice = 0;
-    //let countInvoiceTambahan = 0;
-
-    // eslint-disable-next-line array-callback-return
-    nomerInvoice.map((invoice) => {
-      if (invoice.value.trim().length > 0) {
-        countNomerInvoice += 1;
-      }
-    });
-
-    // eslint-disable-next-line array-callback-return
-    tanggalInvoice2.map((tanggal) => {
-      if (!isEmpty(tanggal)) {
-        countTanggalInvoice += 1;
-      }
-    });
-
-    // eslint-disable-next-line array-callback-return
-    nilaiInvoice.map((nilai) => {
-      const value = nilai.value.replace(/\./g, "").split(",").join(".");
-      if (nilai.value.trim().length > 0 && !isNaN(value)) {
-        countNilaiInvoice += 1;
-      }
-    });
-
-    // const invoiceTambahanArray = invoiceTambahan.filter((invoice) => {
-    //   return !isEmpty(invoice);
-    // });
-
-    // const fakturPajakTambahanArray = fakturPajakTambahan.filter((invoice) => {
-    //   return !isEmpty(invoice);
-    // });
-
-    // nomerInvoice.map((invoice) => {
-    //   if (!isEmpty(invoice)) {
-    //     countInvoiceTambahan += 1;
-    //   }
-    // });
-
     if (activeStep === 0) {
       setActiveStep((prevActiveStep) => prevActiveStep + 1);
     } else if (activeStep === 1) {
-      if (
-        nomerPo.trim().length === 8 &&
-        tanggalPo !== undefined &&
-        countNomerInvoice === nomerInvoice.length &&
-        countTanggalInvoice === nomerInvoice.length &&
-        countNilaiInvoice === nomerInvoice.length &&
-        startDatePeriode !== undefined &&
-        endDatePeriode !== undefined
-      ) {
+      if (invoices.length > 0) {
         if (isPajak.value === 0) {
           setIsError(false);
           setActiveStep((prevActiveStep) => prevActiveStep + 1);
@@ -522,6 +435,7 @@ const Penagihan = () => {
 
   useEffect(() => {
     fetchData();
+    getLocation();
 
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, []);
@@ -548,54 +462,8 @@ const Penagihan = () => {
     setTanggalPo(value);
   };
 
-  const onChangeTanggalInvoice = (item, i) => {
-    setTanggalInvoice((s) => {
-      const newArr = s.slice();
-      newArr[i].value = item;
-
-      return newArr;
-    });
-  };
-
   const onChangeDeliveryArea = (item) => {
     setDeliveryArea(item);
-  };
-
-  const onChangeInvoice = (e) => {
-    e.preventDefault();
-
-    const index = e.target.id;
-
-    setNomerInvoice((s) => {
-      const newArr = s.slice();
-      newArr[index].value = e.target.value;
-
-      return newArr;
-    });
-  };
-
-  const onChangeNilaiInvoice = (e) => {
-    e.preventDefault();
-
-    const index = e.target.id;
-
-    setNilaiInvoice((s) => {
-      const newArr = s.slice();
-      newArr[index].value = accountingNumber(
-        e.target.value.split(".").join("")
-      );
-
-      return newArr;
-    });
-  };
-
-  const onChangeTanggalInvoice2 = (item, i) => {
-    setTanggalInvoice2((s) => {
-      const newArr = s.slice();
-      newArr[i].value = item;
-
-      return newArr;
-    });
   };
 
   const onChangeIsPajak = (item) => {
@@ -643,101 +511,6 @@ const Penagihan = () => {
 
     setTipePengiriman(item);
   };
-
-  const addInput = () => {
-    if (nomerInvoice.length < 4) {
-      setNomerInvoice((s) => {
-        return [
-          ...s,
-          {
-            type: "text",
-            value: "",
-          },
-        ];
-      });
-
-      setNilaiInvoice((s) => {
-        return [
-          ...s,
-          {
-            value: "",
-          },
-        ];
-      });
-
-      setTanggalInvoice((s) => {
-        return [...s, {}];
-      });
-
-      setTanggalInvoice2((s) => {
-        return [...s, {}];
-      });
-
-      setInvoiceTambahan((s) => {
-        return [...s, {}];
-      });
-
-      setFakturPajakTambahan((s) => {
-        return [...s, {}];
-      });
-
-      setNomerSeriFakturPajak((s) => {
-        return [
-          ...s,
-          {
-            type: "text",
-            value: "",
-          },
-        ];
-      });
-    }
-  };
-
-  const deleteInput = () => {
-    setNomerInvoice((array) => {
-      return array.filter((_, i) => i !== nomerInvoice.length - 1);
-    });
-
-    setNilaiInvoice((array) => {
-      return array.filter((_, i) => i !== nilaiInvoice.length - 1);
-    });
-
-    setTanggalInvoice((array) => {
-      return array.filter((_, i) => i !== tanggalInvoice.length - 1);
-    });
-
-    setTanggalInvoice2((array) => {
-      return array.filter((_, i) => i !== tanggalInvoice2.length - 1);
-    });
-
-    setInvoiceTambahan((array) => {
-      return array.filter((_, i) => i !== invoiceTambahan.length - 1);
-    });
-
-    setFakturPajakTambahan((array) => {
-      return array.filter((_, i) => i !== fakturPajakTambahan.length - 1);
-    });
-
-    setNomerSeriFakturPajak((array) => {
-      return array.filter((_, i) => i !== nomerSeriFakturPajak.length - 1);
-    });
-  };
-
-  // const addInvoiceTambahan = () => {
-  //   if (invoiceTambahan.length < 5) {
-  //     setInvoiceTambahan((s) => {
-  //       return [...s, {}];
-  //     });
-  //   }
-  // };
-
-  // const addFakturPajakFile = () => {
-  //   if (fakturPajakTambahan.length < 5) {
-  //     setFakturPajakTambahan((s) => {
-  //       return [...s, {}];
-  //     });
-  //   }
-  // };
 
   const formatFakturPajak = (value, i) => {
     try {
@@ -858,22 +631,6 @@ const Penagihan = () => {
     }
   };
 
-  const onChangeReceivingNoteFile = (e) => {
-    if (e.target.files[0] !== undefined) {
-      if (e.target.files[0].size <= 2000000) {
-        GetBase64(e.target.files[0])
-          .then((result) => {
-            setReceivingNoteFile(result);
-          })
-          .catch((err) => {
-            setReceivingNoteFile(null);
-          });
-      } else {
-        setReceivingNoteFile(null);
-      }
-    }
-  };
-
   const onChangeResiBuktiPengirimanFile = (e) => {
     if (e.target.files[0] !== undefined) {
       if (e.target.files[0].size <= 2000000) {
@@ -890,30 +647,174 @@ const Penagihan = () => {
     }
   };
 
+  const clearValue = useCallback(() => {
+    setInvoice({
+      nomorInvoice: "",
+      tanggalInvoice: dayjs(new Date()).format("YYYY-MM-DD"),
+      startDate: dayjs(new Date()).format("YYYY-MM-DD"),
+      endDate: dayjs(new Date()).format("YYYY-MM-DD"),
+      nilaiInvoice: "",
+      lokasi: { value: "", label: "" },
+    });
+  }, [invoice]);
+
+  const onClickAdd = useCallback(() => {
+    setAddMode(true);
+    clearValue();
+    if (invoices.length > 0) {
+      const newInvoices = invoices.map((invoice) => {
+        invoice.editMode = false;
+        return invoice;
+      });
+      if (newInvoices) {
+        setInvoices(newInvoices);
+      }
+    }
+  }, [invoices]);
+
+  const onClickSave = useCallback(
+    (index = undefined) => {
+      const newInvoice = {
+        nomorInvoice: invoice.nomorInvoice.trim(),
+        tanggalInvoice: invoice.tanggalInvoice,
+        startDate: invoice.startDate,
+        endDate: invoice.endDate,
+        nilaiInvoice: invoice.nilaiInvoice,
+        lokasi: invoice.lokasi,
+        editMode: false,
+      };
+
+      if (newInvoice.nomorInvoice.length === 0) {
+        toast.error("Nomor invoice tidak boleh kosong");
+        return;
+      }
+
+      if (tipePenagihan.label !== "Beli Putus") {
+        if (newInvoice.lokasi.value.length === 0) {
+          toast.error("Lokasi tidak boleh kosong");
+          return;
+        }
+      }
+
+      if (invoices.length === 0) {
+        setInvoices([newInvoice]);
+      } else {
+        if (index !== undefined) {
+          let isExists = false;
+
+          if (tipePenagihan.label === "Beli Putus") {
+            isExists = invoices
+              .filter((_, i) => i !== index)
+              .some((inv) => inv.nomorInvoice === invoice.nomorInvoice.trim());
+
+            if (isExists) {
+              toast.error("Nomor invoice sudah ada pada tabel");
+              return;
+            }
+          } else {
+            isExists = invoices
+              .filter((_, i) => i !== index)
+              .some(
+                (inv) =>
+                  inv.nomorInvoice === invoice.nomorInvoice.trim() ||
+                  inv.lokasi.value === invoice.lokasi.value
+              );
+
+            if (isExists) {
+              toast.error("Nomor invoice atau lokasi sudah ada pada tabel");
+              return;
+            }
+          }
+
+          setInvoices((prevInvoices) =>
+            prevInvoices.map((invoice, i) =>
+              i === index ? newInvoice : invoice
+            )
+          );
+        } else {
+          let isExists = false;
+
+          if (tipePenagihan.label === "Beli Putus") {
+            isExists = invoices.some(
+              (inv) => inv.nomorInvoice === invoice.nomorInvoice.trim()
+            );
+
+            if (isExists) {
+              toast.error("Nomor invoice sudah ada pada tabel");
+              return;
+            }
+          } else {
+            isExists = invoices.some(
+              (inv) =>
+                inv.nomorInvoice === invoice.nomorInvoice.trim() ||
+                inv.lokasi.value === invoice.lokasi.value
+            );
+
+            if (isExists) {
+              toast.error("Nomor invoice atau lokasi sudah ada pada tabel");
+              return;
+            }
+          }
+          setInvoices([...invoices, newInvoice]);
+        }
+      }
+
+      if (inputNomorInvoiceRef.current) {
+        inputNomorInvoiceRef.current.focus();
+      }
+      clearValue();
+    },
+    [invoice]
+  );
+
+  const onClickCancel = useCallback(() => {
+    setAddMode(false);
+    clearValue();
+
+    if (invoices.length > 0) {
+      const newInvoices = invoices.map((invoice) => {
+        invoice.editMode = false;
+        return invoice;
+      });
+      if (newInvoices) {
+        setInvoices(newInvoices);
+      }
+    }
+  }, [invoices]);
+
+  const onClickDelete = useCallback(
+    (index) => {
+      const newInvoices = invoices.filter((_, i) => i !== index);
+      setInvoices(newInvoices);
+    },
+    [invoices]
+  );
+
+  const onClickEdit = useCallback(
+    (data, index) => {
+      setAddMode(false);
+      setInvoices((prevInvoices) =>
+        prevInvoices.map((prev, i) =>
+          i === index
+            ? { ...prev, editMode: true }
+            : { ...prev, editMode: false }
+        )
+      );
+      setInvoice({
+        nomorInvoice: data?.nomorInvoice,
+        tanggalInvoice: data?.tanggalInvoice,
+        startDate: data?.startDate,
+        endDate: data?.endDate,
+        nilaiInvoice: data?.nilaiInvoice,
+        lokasi: data?.lokasi,
+      });
+    },
+    [invoice]
+  );
+
   const saveDraft = async () => {
     setOpenBackdrop(true);
     let isSave = true;
-
-    // eslint-disable-next-line array-callback-return
-    const invoiceList = nomerInvoice.map((invoice) => {
-      if (invoice.value.trim().length > 0) {
-        return invoice.value;
-      }
-    });
-
-    // eslint-disable-next-line array-callback-return
-    const tanggalList = tanggalInvoice.map((tanggal) => {
-      if (!isEmpty(tanggal)) {
-        return dayjs(tanggal.value).format("YYYY-MM-DD");
-      }
-    });
-
-    // eslint-disable-next-line array-callback-return
-    const nilaiInvoiceList = nilaiInvoice.map((nilai) => {
-      const value = nilai.value.replace(/\./g, "").split(",").join(".");
-
-      return parseFloat(value);
-    });
 
     // eslint-disable-next-line array-callback-return
     const nomerSeriFakturPajakList = nomerSeriFakturPajak.map((nomer) => {
@@ -922,25 +823,11 @@ const Penagihan = () => {
       }
     });
 
-    // eslint-disable-next-line array-callback-return
-    const invoiceTambahanList = invoiceTambahan.map((invoice) => {
-      if (!isEmpty(invoice)) {
-        return invoice.file;
-      }
-    });
-
-    // eslint-disable-next-line array-callback-return
-    const fakturPajakTambahanList = fakturPajakTambahan.map((faktur) => {
-      if (!isEmpty(faktur)) {
-        return faktur.file;
-      }
-    });
-
-    const validationFakturPajakTambahan = fakturPajakTambahan.filter(
-      (faktur) => {
-        return !isEmpty(faktur);
-      }
+    const nomorInvoices = invoices.map((invoice) =>
+      invoice.nomorInvoice.trim()
     );
+    const tanggalInvoices = invoices.map((invoice) => invoice.tanggalInvoice);
+    const nilaiInvoices = invoices.map((invoice) => invoice.nilaiInvoice);
 
     if (Cookies.get("token") !== undefined) {
       if (isSave) {
@@ -950,13 +837,16 @@ const Penagihan = () => {
           no_request: nomerRequest,
           tipe_penagihan: tipePenagihan.value,
           tipe_pengiriman: tipePengiriman.value,
-          nomer_po: "PO" + nomerPo,
-          tanggal_po: dayjs(tanggalPo).format("YYYY-MM-DD HH:mm:ss"),
-          nomer_do: "DO" + nomerDo,
+          nomer_po: nomerPo.length > 0 ? "PO" + nomerPo : "",
+          tanggal_po:
+            tanggalPo !== undefined
+              ? dayjs(tanggalPo).format("YYYY-MM-DD HH:mm:ss")
+              : null,
+          nomer_do: nomerDo.length > 0 ? "DO" + nomerDo : "",
           delivery_area: deliveryArea.value,
-          nomer_invoices: invoiceList,
-          tanggal_invoices: tanggalList,
-          nilai_invoices: nilaiInvoiceList,
+          nomer_invoices: nomorInvoices,
+          tanggal_invoices: tanggalInvoices,
+          nilai_invoices: nilaiInvoices,
           is_pajak: isPajak.value,
           nomer_seri_pajak: nomerSeriFakturPajakList,
           start_date_periode: null,
@@ -966,13 +856,8 @@ const Penagihan = () => {
           po_file: purchaseOrderFile !== null ? purchaseOrderFile : null,
           do_file: deliveryOrderFile !== null ? deliveryOrderFile : null,
           invoice_file: invoiceFile !== null ? invoiceFile : null,
-          invoice_tambahan_file: invoiceTambahanList,
           kwitansi_file: kwitansiFile !== null ? kwitansiFile : null,
           faktur_pajak_file: fakturPajakFile !== null ? fakturPajakFile : null,
-          faktur_pajak_tambahan_file:
-            validationFakturPajakTambahan.length > 0
-              ? fakturPajakTambahanList
-              : null,
           note_file: receivingNoteFile !== null ? receivingNoteFile : null,
           resi_file: resiFile !== null ? resiFile : null,
           scan_report_sales_file:
@@ -989,53 +874,26 @@ const Penagihan = () => {
           .then((res) => {
             if (res.data === 0) {
               setOpenBackdrop(false);
-              toast.error("Penagihan update failed!", {
-                position: "top-right",
-                style: {
-                  borderRadius: "10px",
-                  background: "#333",
-                  color: "#fff",
-                },
-              });
+              toast.error("penagihan gagal di perbaharui");
             } else {
               setId(res.data);
               setCreatedAt(res.data.created_at);
               navigate("/vendor/monitoring");
               setOpenBackdrop(false);
-              toast.success("Penagihan update success!", {
-                position: "top-right",
-                style: {
-                  borderRadius: "10px",
-                  background: "#333",
-                  color: "#fff",
-                },
-              });
+
+              toast.success("penagihan berhasil di perbaharui");
             }
           })
           .catch((err) => {
             setOpenBackdrop(false);
-            toast.error("Penagihan update failed!", {
-              position: "top-right",
-              style: {
-                borderRadius: "10px",
-                background: "#333",
-                color: "#fff",
-              },
-            });
+            toast.error("penagihan gagal di perbaharui");
           });
       } else {
         setOpenBackdrop(false);
       }
     } else {
       navigate("/");
-      toast.error("Silahkan Login Terlebih Dahulu!", {
-        position: "top-right",
-        style: {
-          borderRadius: "10px",
-          background: "#333",
-          color: "#fff",
-        },
-      });
+      toast.error("Silahkan login terlebih dahulu");
     }
   };
 
@@ -1044,52 +902,19 @@ const Penagihan = () => {
     let isSave = true;
 
     // eslint-disable-next-line array-callback-return
-    const invoiceList = nomerInvoice.map((invoice) => {
-      if (invoice.value.trim().length > 0) {
-        return invoice.value;
-      }
-    });
-
-    // eslint-disable-next-line array-callback-return
-    const tanggalList = tanggalInvoice2.map((tanggal) => {
-      if (!isEmpty(tanggal)) {
-        return dayjs(tanggal.value).format("YYYY-MM-DD");
-      }
-    });
-
-    // eslint-disable-next-line array-callback-return
-    const nilaiInvoiceList = nilaiInvoice.map((nilai) => {
-      const value = nilai.value.replace(/\./g, "").split(",").join(".");
-
-      return parseFloat(value);
-    });
-
-    // eslint-disable-next-line array-callback-return
     const nomerSeriFakturPajakList = nomerSeriFakturPajak.map((nomer) => {
       if (nomer.value.trim().length === 19 && nomer.value.trim().length > 0) {
         return nomer.value;
       }
     });
 
-    // eslint-disable-next-line array-callback-return
-    const invoiceTambahanList = invoiceTambahan.map((invoice) => {
-      if (!isEmpty(invoice)) {
-        return invoice.file;
-      }
-    });
-
-    // eslint-disable-next-line array-callback-return
-    const fakturPajakTambahanList = fakturPajakTambahan.map((faktur) => {
-      if (!isEmpty(faktur)) {
-        return faktur.file;
-      }
-    });
-
-    const validationFakturPajakTambahan = fakturPajakTambahan.filter(
-      (faktur) => {
-        return !isEmpty(faktur);
-      }
+    const nomorInvoices = invoices.map((invoice) =>
+      invoice.nomorInvoice.trim()
     );
+    const startDates = invoices.map((invoice) => invoice.startDate);
+    const endDates = invoices.map((invoice) => invoice.endDate);
+    const locationIds = invoices.map((invoice) => invoice.lokasi.value);
+    const nilaiInvoices = invoices.map((invoice) => invoice.nilaiInvoice);
 
     if (Cookies.get("token") !== undefined) {
       if (isSave) {
@@ -1099,31 +924,29 @@ const Penagihan = () => {
           no_request: nomerRequest,
           tipe_penagihan: tipePenagihan.value,
           tipe_pengiriman: tipePengiriman.value,
-          nomer_po: "PO" + nomerPo,
-          tanggal_po: dayjs(tanggalPo).format("YYYY-MM-DD HH:mm:ss"),
-          nomer_do: "DO" + nomerDo,
+          nomer_po: nomerPo.length > 0 ? "PO" + nomerPo : "",
+          tanggal_po:
+            tanggalPo !== undefined
+              ? dayjs(tanggalPo).format("YYYY-MM-DD HH:mm:ss")
+              : null,
+          nomer_do: nomerDo.length > 0 ? "DO" + nomerDo : "",
           delivery_area: deliveryArea.value,
-          nomer_invoices: invoiceList,
-          tanggal_invoices: tanggalList,
-          nilai_invoices: nilaiInvoiceList,
+          nomer_invoices: nomorInvoices,
+          start_dates: startDates,
+          end_dates: endDates,
+          location_ids: locationIds,
+          nilai_invoices: nilaiInvoices,
           is_pajak: isPajak.value,
           nomer_seri_pajak: nomerSeriFakturPajakList,
-          start_date_periode: dayjs(startDatePeriode).format(
-            "YYYY-MM-DD HH:mm:ss"
-          ),
-          end_date_periode: dayjs(endDatePeriode).format("YYYY-MM-DD HH:mm:ss"),
+          start_date_periode: null,
+          end_date_periode: null,
           created_at: createdAt,
           updated_at: dayjs(new Date()).format("YYYY-MM-DD HH:mm:ss"),
           po_file: purchaseOrderFile !== null ? purchaseOrderFile : null,
           do_file: deliveryOrderFile !== null ? deliveryOrderFile : null,
           invoice_file: invoiceFile !== null ? invoiceFile : null,
-          invoice_tambahan_file: invoiceTambahanList,
           kwitansi_file: kwitansiFile !== null ? kwitansiFile : null,
           faktur_pajak_file: fakturPajakFile !== null ? fakturPajakFile : null,
-          faktur_pajak_tambahan_file:
-            validationFakturPajakTambahan.length > 0
-              ? fakturPajakTambahanList
-              : null,
           note_file: receivingNoteFile !== null ? receivingNoteFile : null,
           resi_file: resiFile !== null ? resiFile : null,
           scan_report_sales_file:
@@ -1140,81 +963,28 @@ const Penagihan = () => {
           .then((res) => {
             if (res.data === 0) {
               setOpenBackdrop(false);
-              toast.error("Penagihan update failed!", {
-                position: "top-right",
-                style: {
-                  borderRadius: "10px",
-                  background: "#333",
-                  color: "#fff",
-                },
-              });
+              toast.error("penagihan gagal di perbaharui");
             } else {
               setId(res.data);
               navigate("/vendor/monitoring");
               setOpenBackdrop(false);
-              toast.success("Penagihan update success!", {
-                position: "top-right",
-                style: {
-                  borderRadius: "10px",
-                  background: "#333",
-                  color: "#fff",
-                },
-              });
+              toast.success("penagihan berhasil di perbaharui");
             }
           })
           .catch((err) => {
             setOpenBackdrop(false);
-            toast.error("Penagihan update failed!", {
-              position: "top-right",
-              style: {
-                borderRadius: "10px",
-                background: "#333",
-                color: "#fff",
-              },
-            });
+            toast.error("penagihan gagal di perbaharui");
           });
       } else {
         setOpenBackdrop(false);
       }
     } else {
       navigate("/");
-      toast.error("Silahkan Login Terlebih Dahulu!", {
-        position: "top-right",
-        style: {
-          borderRadius: "10px",
-          background: "#333",
-          color: "#fff",
-        },
-      });
     }
   };
 
   const onSubmitButton = async () => {
     setOpenBackdrop(true);
-
-    // eslint-disable-next-line array-callback-return
-    const invoiceList = nomerInvoice.map((invoice) => {
-      if (invoice.value.trim().length > 0) {
-        return invoice.value;
-      }
-    });
-
-    // eslint-disable-next-line array-callback-return
-    const tanggalList = tanggalInvoice.map((tanggal) => {
-      if (!isEmpty(tanggal)) {
-        return dayjs(tanggal.value).format("YYYY-MM-DD");
-      }
-    });
-
-    // eslint-disable-next-line array-callback-return
-    const nilaiInvoiceList = nilaiInvoice.map((nilai) => {
-      const value = nilai.value.replace(/\./g, "").split(",").join(".");
-
-      return parseFloat(value);
-      // if (nilai.value.trim().length > 0) {
-      //   return parseFloat(nilai.value);
-      // }
-    });
 
     // eslint-disable-next-line array-callback-return
     const nomerSeriFakturPajakList = nomerSeriFakturPajak.map((nomer) => {
@@ -1223,25 +993,11 @@ const Penagihan = () => {
       }
     });
 
-    // eslint-disable-next-line array-callback-return
-    const invoiceTambahanList = invoiceTambahan.map((invoice) => {
-      if (!isEmpty(invoice)) {
-        return invoice.file;
-      }
-    });
-
-    // eslint-disable-next-line array-callback-return
-    const fakturPajakTambahanList = fakturPajakTambahan.map((faktur) => {
-      if (!isEmpty(faktur)) {
-        return faktur.file;
-      }
-    });
-
-    const validationFakturPajakTambahan = fakturPajakTambahan.filter(
-      (faktur) => {
-        return !isEmpty(faktur);
-      }
+    const nomorInvoices = invoices.map((invoice) =>
+      invoice.nomorInvoice.trim()
     );
+    const tanggalInvoices = invoices.map((invoice) => invoice.tanggalInvoice);
+    const nilaiInvoices = invoices.map((invoice) => invoice.nilaiInvoice);
 
     if (Cookies.get("token") !== undefined) {
       const initialValue = {
@@ -1250,13 +1006,16 @@ const Penagihan = () => {
         no_request: nomerRequest,
         tipe_penagihan: tipePenagihan.value,
         tipe_pengiriman: tipePengiriman.value,
-        nomer_po: "PO" + nomerPo,
-        tanggal_po: dayjs(tanggalPo).format("YYYY-MM-DD HH:mm:ss"),
-        nomer_do: "DO" + nomerDo,
+        nomer_po: nomerPo.length > 0 ? "PO" + nomerPo : "",
+        tanggal_po:
+          tanggalPo !== undefined
+            ? dayjs(tanggalPo).format("YYYY-MM-DD HH:mm:ss")
+            : "",
+        nomer_do: nomerDo.length > 0 ? "DO" + nomerDo : "",
         delivery_area: deliveryArea.value,
-        nomer_invoices: invoiceList,
-        tanggal_invoices: tanggalList,
-        nilai_invoices: nilaiInvoiceList,
+        nomer_invoices: nomorInvoices,
+        tanggal_invoices: tanggalInvoices,
+        nilai_invoices: nilaiInvoices,
         is_pajak: isPajak.value,
         nomer_seri_pajak: nomerSeriFakturPajakList,
         start_date_periode: null,
@@ -1266,13 +1025,8 @@ const Penagihan = () => {
         po_file: purchaseOrderFile !== null ? purchaseOrderFile : null,
         do_file: deliveryOrderFile !== null ? deliveryOrderFile : null,
         invoice_file: invoiceFile !== null ? invoiceFile : null,
-        invoice_tambahan_file: invoiceTambahanList,
         kwitansi_file: kwitansiFile !== null ? kwitansiFile : null,
         faktur_pajak_file: fakturPajakFile !== null ? fakturPajakFile : null,
-        faktur_pajak_tambahan_file:
-          validationFakturPajakTambahan.length > 0
-            ? fakturPajakTambahanList
-            : null,
         note_file: receivingNoteFile !== null ? receivingNoteFile : null,
         resi_file: resiFile !== null ? resiFile : null,
         scan_report_sales_file:
@@ -1289,75 +1043,25 @@ const Penagihan = () => {
         .then((res) => {
           if (res.data === 0) {
             setOpenBackdrop(false);
-            toast.error("Penagihan update failed!", {
-              position: "top-right",
-              style: {
-                borderRadius: "10px",
-                background: "#333",
-                color: "#fff",
-              },
-            });
+            toast.error("penagihan gagal di perbaharui");
           } else {
             setId(res.data);
             navigate("/vendor/monitoring");
             setOpenBackdrop(false);
-            toast.success("Penagihan update success!", {
-              position: "top-right",
-              style: {
-                borderRadius: "10px",
-                background: "#333",
-                color: "#fff",
-              },
-            });
+            toast.success("penagihan berhasil di perbaharui");
           }
         })
         .catch((err) => {
           setOpenBackdrop(false);
-          toast.error("Penagihan update failed!", {
-            position: "top-right",
-            style: {
-              borderRadius: "10px",
-              background: "#333",
-              color: "#fff",
-            },
-          });
+          toast.error("penagihan gagal di perbaharui");
         });
     } else {
       navigate("/");
-      toast.error("Silahkan Login Terlebih Dahulu!", {
-        position: "top-right",
-        style: {
-          borderRadius: "10px",
-          background: "#333",
-          color: "#fff",
-        },
-      });
     }
   };
 
   const onSubmitButton2 = async () => {
     setOpenBackdrop(true);
-
-    // eslint-disable-next-line array-callback-return
-    const invoiceList = nomerInvoice.map((invoice) => {
-      if (invoice.value.trim().length > 0) {
-        return invoice.value;
-      }
-    });
-
-    // eslint-disable-next-line array-callback-return
-    const tanggalList = tanggalInvoice2.map((tanggal) => {
-      if (!isEmpty(tanggal)) {
-        return dayjs(tanggal.value).format("YYYY-MM-DD");
-      }
-    });
-
-    // eslint-disable-next-line array-callback-return
-    const nilaiInvoiceList = nilaiInvoice.map((nilai) => {
-      const value = nilai.value.replace(/\./g, "").split(",").join(".");
-
-      return parseFloat(value);
-    });
 
     // eslint-disable-next-line array-callback-return
     const nomerSeriFakturPajakList = nomerSeriFakturPajak.map((nomer) => {
@@ -1366,25 +1070,13 @@ const Penagihan = () => {
       }
     });
 
-    // eslint-disable-next-line array-callback-return
-    const invoiceTambahanList = invoiceTambahan.map((invoice) => {
-      if (!isEmpty(invoice)) {
-        return invoice.file;
-      }
-    });
-
-    // eslint-disable-next-line array-callback-return
-    const fakturPajakTambahanList = fakturPajakTambahan.map((faktur) => {
-      if (!isEmpty(faktur)) {
-        return faktur.file;
-      }
-    });
-
-    const validationFakturPajakTambahan = fakturPajakTambahan.filter(
-      (faktur) => {
-        return !isEmpty(faktur);
-      }
+    const nomorInvoices = invoices.map((invoice) =>
+      invoice.nomorInvoice.trim()
     );
+    const startDates = invoices.map((invoice) => invoice.startDate);
+    const endDates = invoices.map((invoice) => invoice.endDate);
+    const locationIds = invoices.map((invoice) => invoice.lokasi.value);
+    const nilaiInvoices = invoices.map((invoice) => invoice.nilaiInvoice);
 
     if (Cookies.get("token") !== undefined) {
       const initialValue = {
@@ -1393,31 +1085,29 @@ const Penagihan = () => {
         no_request: nomerRequest,
         tipe_penagihan: tipePenagihan.value,
         tipe_pengiriman: tipePengiriman.value,
-        nomer_po: "PO" + nomerPo,
-        tanggal_po: dayjs(tanggalPo).format("YYYY-MM-DD HH:mm:ss"),
-        nomer_do: "DO" + nomerDo,
+        nomer_po: nomerPo.length > 0 ? "PO" + nomerPo : "",
+        tanggal_po:
+          tanggalPo !== undefined
+            ? dayjs(tanggalPo).format("YYYY-MM-DD HH:mm:ss")
+            : null,
+        nomer_do: nomerDo.length > 0 ? "DO" + nomerDo : "",
         delivery_area: deliveryArea.value,
-        nomer_invoices: invoiceList,
-        tanggal_invoices: tanggalList,
-        nilai_invoices: nilaiInvoiceList,
+        nomer_invoices: nomorInvoices,
+        start_dates: startDates,
+        end_dates: endDates,
+        location_ids: locationIds,
+        nilai_invoices: nilaiInvoices,
         is_pajak: isPajak.value,
         nomer_seri_pajak: nomerSeriFakturPajakList,
-        start_date_periode: dayjs(startDatePeriode).format(
-          "YYYY-MM-DD HH:mm:ss"
-        ),
-        end_date_periode: dayjs(endDatePeriode).format("YYYY-MM-DD HH:mm:ss"),
+        start_date_periode: null,
+        end_date_periode: null,
         created_at: createdAt,
         updated_at: dayjs(new Date()).format("YYYY-MM-DD HH:mm:ss"),
         po_file: purchaseOrderFile !== null ? purchaseOrderFile : null,
         do_file: deliveryOrderFile !== null ? deliveryOrderFile : null,
         invoice_file: invoiceFile !== null ? invoiceFile : null,
-        invoice_tambahan_file: invoiceTambahanList,
         kwitansi_file: kwitansiFile !== null ? kwitansiFile : null,
         faktur_pajak_file: fakturPajakFile !== null ? fakturPajakFile : null,
-        faktur_pajak_tambahan_file:
-          validationFakturPajakTambahan.length > 0
-            ? fakturPajakTambahanList
-            : null,
         note_file: receivingNoteFile !== null ? receivingNoteFile : null,
         resi_file: resiFile !== null ? resiFile : null,
         scan_report_sales_file:
@@ -1434,55 +1124,27 @@ const Penagihan = () => {
         .then((res) => {
           if (res.data === 0) {
             setOpenBackdrop(false);
-            toast.error("Penagihan update failed!", {
-              position: "top-right",
-              style: {
-                borderRadius: "10px",
-                background: "#333",
-                color: "#fff",
-              },
-            });
+            toast.error("penagihan gagal di perbaharui");
           } else {
             setId(res.data);
             navigate("/vendor/monitoring");
             setOpenBackdrop(false);
-            toast.success("Penagihan update success!", {
-              position: "top-right",
-              style: {
-                borderRadius: "10px",
-                background: "#333",
-                color: "#fff",
-              },
-            });
+            toast.success("penagihan berhasil di perbaharui");
           }
         })
         .catch((err) => {
           setOpenBackdrop(false);
-          toast.error("Penagihan update failed!", {
-            position: "top-right",
-            style: {
-              borderRadius: "10px",
-              background: "#333",
-              color: "#fff",
-            },
-          });
+          toast.error("penagihan gagal di perbaharui");
         });
     } else {
       navigate("/");
-      toast.error("Silahkan Login Terlebih Dahulu!", {
-        position: "top-right",
-        style: {
-          borderRadius: "10px",
-          background: "#333",
-          color: "#fff",
-        },
-      });
     }
   };
 
   const steps = ["Tipe Penagihan", "Billing", "Dokumen"];
   return (
     <>
+      <Toaster position="top-center" richColors />
       <div
         className={`${
           screenSize < 768 ? "px-5 pt-20" : "px-10"
@@ -1525,7 +1187,7 @@ const Penagihan = () => {
                         <div className="w-[150px]">
                           <label htmlFor="">Tipe Penagihan</label>
                         </div>
-                        
+
                         <div className="w-[70%]">
                           <Select
                             isDisabled={true}
@@ -1558,7 +1220,7 @@ const Penagihan = () => {
                                 <div>Harus 8 digit</div>
                               </div>
                             </div>
-                            
+
                             <div className="flex items-center gap-1 ">
                               <div>PO</div>
                               <div>
@@ -1570,28 +1232,14 @@ const Penagihan = () => {
                                   id=""
                                   value={nomerPo}
                                   onChange={(e) => onChangeNomerPo(e)}
-                                  className={`last:max-[821px]:w-full w-[246.4px] h-[40px] rounded-sm focus:border focus:border-[#0077b6] bg-[#ddebf7] ${
-                                    isError && nomerPo.trim().length === 0
-                                      ? "border-red-400"
-                                      : "border-slate-300"
-                                  } `}
+                                  className="last:max-[821px]:w-full w-[246.4px] h-[40px] rounded-sm focus:border focus:border-[#0077b6] bg-[#ddebf7] border-slate-300"
                                 />
-                              </div>
-                              <div>
-                                {isError && nomerPo.trim().length === 0 ? (
-                                  <div className="text-red-500">
-                                    <PiWarningCircleLight />
-                                  </div>
-                                ) : (
-                                  "*)"
-                                )}
                               </div>
                             </div>
                           </div>
                           <div className="flex items-center gap-2 mb-3">
                             <div className="w-[250px]">Tanggal PO</div>
 
-                            
                             <div className="flex items-center gap-1">
                               <div className="w-[21.1px]"></div>
                               <div>
@@ -1610,22 +1258,13 @@ const Penagihan = () => {
                                   </DemoContainer>
                                 </LocalizationProvider>
                               </div>
-                              <div>
-                                {isError && tanggalPo === undefined ? (
-                                  <div className="text-red-500">
-                                    <PiWarningCircleLight />
-                                  </div>
-                                ) : (
-                                  "*)"
-                                )}
-                              </div>
                             </div>
                           </div>
                           <div className="flex items-center gap-2 mb-3">
                             <div className="w-[250px]">
                               No Delivery Order (DO)
                             </div>
-                            
+
                             <div className="flex items-center gap-1 ">
                               <div className="w-[21.1px]"></div>
                               <div>
@@ -1638,27 +1277,14 @@ const Penagihan = () => {
                                     evt.key === " " && evt.preventDefault()
                                   }
                                   onChange={(e) => setNomerDo(e.target.value)}
-                                  className={`max-[821px]:w-full w-[246.4px] h-[40px] rounded-sm focus:border focus:border-[#0077b6] bg-[#ddebf7] ${
-                                    isError && nomerDo.trim().length === 0
-                                      ? "border-red-400"
-                                      : "border-slate-300"
-                                  } `}
+                                  className="max-[821px]:w-full w-[246.4px] h-[40px] rounded-sm focus:border focus:border-[#0077b6] bg-[#ddebf7] border-slate-300"
                                 />
-                              </div>
-                              <div>
-                                {isError && nomerDo.trim().length === 0 ? (
-                                  <div className="text-red-500">
-                                    <PiWarningCircleLight />
-                                  </div>
-                                ) : (
-                                  "*)"
-                                )}
                               </div>
                             </div>
                           </div>
                           <div className="flex items-center gap-2 mb-10">
                             <div className="w-[250px]">Delivery Area</div>
-                            
+
                             <div className="flex items-center gap-1 max-[821px]:w-[249.56px] w-[287.96px]">
                               <div className="w-[24px]"></div>
                               <div className="w-full ">
@@ -1684,137 +1310,37 @@ const Penagihan = () => {
                             </div>
                           </div>
                           <div className="mb-10">
-                            {nomerInvoice.map((item, i) => (
-                              <div
-                                className="flex items-center gap-2 mb-3"
-                                key={i}
-                              >
-                                {i === 0 ? (
-                                  <div className="w-[250px]">Nomor Invoice</div>
-                                ) : (
-                                  <div className="w-[250px]">
-                                    Nomor Invoice {i + 1}
-                                  </div>
-                                )}
-                                
-                                <div className="flex items-center gap-1 ">
-                                  <div className="w-[21.1px]"></div>
-                                  <div>
-                                    <input
-                                      type="text"
-                                      name=""
-                                      id={i}
-                                      value={item.value}
-                                      onChange={onChangeInvoice}
-                                      onKeyDown={(evt) =>
-                                        evt.key === " " && evt.preventDefault()
-                                      }
-                                      className="max-[821px]:w-full w-[246.4px] h-[40px] border border-slate-300 rounded-sm focus:border focus:border-[#0077b6] bg-[#ddebf7]"
-                                    />
-                                  </div>
-                                  <div>{i === 0 && "*)"}</div>
-                                </div>
-                              </div>
-                            ))}
-                            <div className="flex items-center gap-5">
-                              {nomerInvoice.length > 1 && (
-                                <div
-                                  onClick={deleteInput}
-                                  className={`py-1 px-4 rounded-sm shadow-sm text-white bg-red-500  w-fit ${
-                                    nomerInvoice.length === 4
-                                      ? "cursor-not-allowed"
-                                      : "cursor-pointer"
-                                  } `}
-                                >
-                                  Delete Invoice
-                                </div>
-                              )}
-
-                              <div
-                                onClick={addInput}
-                                className={`py-1 px-4 rounded-sm shadow-sm text-white bg-[#305496]  w-fit ${
-                                  nomerInvoice.length === 4
-                                    ? "cursor-not-allowed"
-                                    : "cursor-pointer"
-                                } `}
-                              >
-                                Tambah Invoice
-                              </div>
+                            <div className="mb-2">Daftar Invoice</div>
+                            <div className="overflow-auto max-h-[400px]">
+                              <TableInvoice
+                                data={invoice}
+                                setData={setInvoice}
+                                inputNomorInvoiceRef={inputNomorInvoiceRef}
+                                addMode={addMode}
+                                invoices={invoices}
+                                vendorType={tipePenagihan.label}
+                                optionLokasi={optionLokasi}
+                                onClickSave={onClickSave}
+                                onClickCancel={onClickCancel}
+                                onClickEdit={onClickEdit}
+                                onClickDelete={onClickDelete}
+                              />
                             </div>
+                            {!addMode && (
+                              <div
+                                className="bg-[#305496] rounded-full shadow-md w-fit mt-2 cursor-pointer"
+                                onClick={onClickAdd}
+                              >
+                                <IoIosAdd className="text-white text-xl" />
+                              </div>
+                            )}
                           </div>
 
-                          <div className="mb-3">
-                            {nomerInvoice.map((item, i) => (
-                              <div key={i}>
-                                <div className="flex items-center gap-2 mb-3">
-                                  {i === 0 ? (
-                                    <div className="w-[250px]">
-                                      Tanggal Invoice
-                                    </div>
-                                  ) : (
-                                    <div className="w-[250px]">
-                                      Tanggal Invoice {i + 1}
-                                    </div>
-                                  )}
-                                  
-                                  <div className="flex items-center gap-1">
-                                    <div className="w-[21.1px]"></div>
-                                    <div>
-                                      <LocalizationProvider
-                                        dateAdapter={AdapterDayjs}
-                                      >
-                                        <DemoContainer
-                                          components={["DatePicker"]}
-                                        >
-                                          <DatePicker
-                                            className="w-full bg-[#ddebf7]"
-                                            value={tanggalInvoice[i].value}
-                                            onChange={(item) =>
-                                              onChangeTanggalInvoice(item, i)
-                                            }
-                                            slotProps={{
-                                              textField: { size: "small" },
-                                            }}
-                                          />
-                                        </DemoContainer>
-                                      </LocalizationProvider>
-                                    </div>
-                                    <div>{i === 0 && "*)"}</div>
-                                  </div>
-                                </div>
-                                <div className="flex items-center gap-2 mb-3">
-                                  {i === 0 ? (
-                                    <div className="w-[250px]">
-                                      Nilai Invoice
-                                    </div>
-                                  ) : (
-                                    <div className="w-[250px]">
-                                      Nilai Invoice {i + 1}
-                                    </div>
-                                  )}
-                                  
-                                  <div className="flex items-center gap-1 ">
-                                    <div>Rp</div>
-                                    <div>
-                                      <input
-                                        id={i}
-                                        type="text"
-                                        value={nilaiInvoice[i].value}
-                                        onChange={onChangeNilaiInvoice}
-                                        className="max-[821px]:w-[208px] w-[246.4px] h-[40px] border border-slate-300 rounded-sm focus:border focus:border-[#0077b6] bg-[#ddebf7]"
-                                      />
-                                    </div>
-                                    <div>{i === 0 && "*)"}</div>
-                                  </div>
-                                </div>
-                              </div>
-                            ))}
-                          </div>
                           <div className="flex items-center gap-2 mb-10 mt-10">
                             <div className="w-[250px]">
                               Apakah barang termasuk pajak?
                             </div>
-                            
+
                             <div className="flex items-center gap-1 max-[821px]:w-[249.56px] w-[287.96px]">
                               <div className="w-[24px]"></div>
                               <div className="w-full ">
@@ -1843,7 +1369,7 @@ const Penagihan = () => {
                                 <div>Harus 16 digit</div>
                               </div>
                             </div>
-                            
+
                             <div className="flex items-center gap-1 ">
                               <div className="w-[21.1px]"></div>
                               <div className="flex flex-col gap-1">
@@ -1897,7 +1423,7 @@ const Penagihan = () => {
                                 <div>Harus 8 digit</div>
                               </div>
                             </div>
-                            
+
                             <div className="flex items-center gap-1 ">
                               <div>PO</div>
                               <div>
@@ -1909,27 +1435,14 @@ const Penagihan = () => {
                                   id=""
                                   value={nomerPo}
                                   onChange={(e) => onChangeNomerPo(e)}
-                                  className={`max-[821px]:w-full w-[246.4px] h-[40px] rounded-sm focus:border focus:border-[#0077b6] bg-[#fff2cc] ${
-                                    isError && nomerPo.trim().length === 0
-                                      ? "border-red-400"
-                                      : "border-slate-300"
-                                  } `}
+                                  className="max-[821px]:w-full w-[246.4px] h-[40px] rounded-sm focus:border focus:border-[#0077b6] bg-[#fff2cc] border-slate-300"
                                 />
-                              </div>
-                              <div>
-                                {isError && nomerPo.trim().length === 0 ? (
-                                  <div className="text-red-500">
-                                    <PiWarningCircleLight />
-                                  </div>
-                                ) : (
-                                  "*)"
-                                )}
                               </div>
                             </div>
                           </div>
                           <div className="flex items-center gap-2 mb-3">
                             <div className="w-[250px]">Tanggal PO</div>
-                            
+
                             <div className="flex items-center gap-1">
                               <div className="w-[21.1px]"></div>
                               <div>
@@ -1948,21 +1461,12 @@ const Penagihan = () => {
                                   </DemoContainer>
                                 </LocalizationProvider>
                               </div>
-                              <div>
-                                {isError && tanggalPo === undefined ? (
-                                  <div className="text-red-500">
-                                    <PiWarningCircleLight />
-                                  </div>
-                                ) : (
-                                  "*)"
-                                )}
-                              </div>
                             </div>
                           </div>
 
                           <div className="flex items-center gap-2 mb-10">
                             <div className="w-[250px]">Delivery Area</div>
-                            
+
                             <div className="flex items-center gap-1 max-[821px]:w-[249.56px] w-[287.96px]">
                               <div className="w-[24px]"></div>
                               <div className="w-full ">
@@ -1988,194 +1492,37 @@ const Penagihan = () => {
                             </div>
                           </div>
                           <div className="mb-10">
-                            {nomerInvoice.map((item, i) => (
-                              <div key={i}>
-                                <div className="flex items-center gap-2 mb-3">
-                                  {i === 0 ? (
-                                    <div className="w-[250px]">Nomor Invoice</div>
-                                  ) : (
-                                    <div className="w-[250px]">
-                                      Nomor Invoice {i + 1}
-                                    </div>
-                                  )}
-
-                                  
-                                  <div className="flex items-center gap-1 ">
-                                    <div className="w-[21.1px]"></div>
-                                    <div>
-                                      <input
-                                        type="text"
-                                        name=""
-                                        id={i}
-                                        value={item.value}
-                                        onChange={onChangeInvoice}
-                                        onKeyDown={(evt) =>
-                                          evt.key === " " &&
-                                          evt.preventDefault()
-                                        }
-                                        className="max-[821px]:w-full w-[246.4px] h-[40px] border border-slate-300 rounded-sm focus:border focus:border-[#0077b6] bg-[#fff2cc]"
-                                      />
-                                    </div>
-                                    <div>{i === 0 && "*)"}</div>
-                                  </div>
-                                </div>
-
-                                <div className="flex items-center gap-2 mb-3">
-                                  {i === 0 ? (
-                                    <div className="w-[250px]">
-                                      Tanggal Invoice
-                                    </div>
-                                  ) : (
-                                    <div className="w-[250px]">
-                                      Tanggal Invoice {i + 1}
-                                    </div>
-                                  )}
-                                  
-                                  <div className="flex items-center gap-1">
-                                    <div className="w-[21.1px]"></div>
-                                    <div>
-                                      <LocalizationProvider
-                                        dateAdapter={AdapterDayjs}
-                                      >
-                                        <DemoContainer
-                                          components={["DatePicker"]}
-                                        >
-                                          <DatePicker
-                                            className="w-full bg-[#fff2cc]"
-                                            id={i}
-                                            value={tanggalInvoice2[i].value}
-                                            onChange={(item) =>
-                                              onChangeTanggalInvoice2(item, i)
-                                            }
-                                            slotProps={{
-                                              textField: { size: "small" },
-                                            }}
-                                          />
-                                        </DemoContainer>
-                                      </LocalizationProvider>
-                                    </div>
-                                    <div>{i === 0 && "*)"}</div>
-                                  </div>
-                                </div>
-                              </div>
-                            ))}
-                            <div className="flex items-center gap-5">
-                              {nomerInvoice.length > 1 && (
-                                <div
-                                  onClick={deleteInput}
-                                  className={`py-1 px-4 rounded-sm shadow-sm text-white bg-red-500  w-fit ${
-                                    nomerInvoice.length === 4
-                                      ? "cursor-not-allowed"
-                                      : "cursor-pointer"
-                                  } `}
-                                >
-                                  Delete Invoice
-                                </div>
-                              )}
-
+                            <div className="mb-2">Daftar Invoice</div>
+                            <div className="overflow-auto max-h-[400px]">
+                              <TableInvoice
+                                data={invoice}
+                                setData={setInvoice}
+                                inputNomorInvoiceRef={inputNomorInvoiceRef}
+                                addMode={addMode}
+                                invoices={invoices}
+                                optionLokasi={optionLokasi}
+                                vendorType={tipePenagihan.label}
+                                onClickSave={onClickSave}
+                                onClickCancel={onClickCancel}
+                                onClickEdit={onClickEdit}
+                                onClickDelete={onClickDelete}
+                              />
+                            </div>
+                            {!addMode && (
                               <div
-                                onClick={addInput}
-                                className={`py-1 px-4 rounded-sm shadow-sm text-white bg-[#305496]  w-fit ${
-                                  nomerInvoice.length === 4
-                                    ? "cursor-not-allowed"
-                                    : "cursor-pointer"
-                                } `}
+                                className="bg-[#305496] rounded-full shadow-md w-fit mt-2 cursor-pointer"
+                                onClick={onClickAdd}
                               >
-                                Tambah Invoice
+                                <IoIosAdd className="text-white text-xl" />
                               </div>
-                            </div>
+                            )}
                           </div>
 
-                          <div className="mb-10">
-                            {nomerInvoice.map((item, i) => (
-                              <div
-                                key={i}
-                                className="flex items-center gap-2 mb-3"
-                              >
-                                {i === 0 ? (
-                                  <div className="w-[250px]">Nilai Invoice</div>
-                                ) : (
-                                  <div className="w-[250px]">
-                                    Nilai Invoice {i + 1}
-                                  </div>
-                                )}
-                                
-                                <div className="flex items-center gap-1 ">
-                                  <div>Rp</div>
-                                  <div>
-                                    <input
-                                      id={i}
-                                      type="text"
-                                      value={nilaiInvoice[i].value}
-                                      onChange={onChangeNilaiInvoice}
-                                      className="max-[821px]:w-[208px] w-[246.4px] h-[40px] border border-slate-300 rounded-sm focus:border focus:border-[#0077b6] bg-[#fff2cc]"
-                                    />
-                                  </div>
-                                  <div>{i === 0 && "*)"}</div>
-                                </div>
-                              </div>
-                            ))}
-                          </div>
-                          <div className="mb-3">
-                            <div className="w-[250px]">
-                              Periode Acuan Penagihan :
-                            </div>
-                            <div className="flex flex-col gap-1">
-                              <div className="ps-10 flex items-center gap-2">
-                                <div className="w-[210px]">Dari Tanggal</div>
-                                
-                                <div className="flex items-center gap-1">
-                                  <div className="w-[24px]"></div>
-                                  <LocalizationProvider
-                                    dateAdapter={AdapterDayjs}
-                                  >
-                                    <DemoContainer components={["DatePicker"]}>
-                                      <DatePicker
-                                        className="w-full bg-[#fff2cc]"
-                                        value={startDatePeriode}
-                                        onChange={(item) =>
-                                          setStartDatePeriode(item)
-                                        }
-                                        slotProps={{
-                                          textField: { size: "small" },
-                                        }}
-                                      />
-                                    </DemoContainer>
-                                  </LocalizationProvider>
-                                  <div>*)</div>
-                                </div>
-                              </div>
-                              <div className="ps-10 flex items-center gap-2">
-                                <div className="w-[210px]">Sampai Tanggal</div>
-                                
-                                <div className="flex items-center gap-1">
-                                  <div className="w-[24px]"></div>
-                                  <LocalizationProvider
-                                    dateAdapter={AdapterDayjs}
-                                  >
-                                    <DemoContainer components={["DatePicker"]}>
-                                      <DatePicker
-                                        className="w-full bg-[#fff2cc]"
-                                        value={endDatePeriode}
-                                        onChange={(item) =>
-                                          setEndDatePeriode(item)
-                                        }
-                                        slotProps={{
-                                          textField: { size: "small" },
-                                        }}
-                                      />
-                                    </DemoContainer>
-                                  </LocalizationProvider>
-                                  <div>*)</div>
-                                </div>
-                              </div>
-                            </div>
-                          </div>
                           <div className="flex items-center gap-2 mb-10">
                             <div className="w-[250px]">
                               Apakah barang termasuk pajak?
                             </div>
-                            
+
                             <div className="flex items-center gap-1 max-[821px]:w-[249.56px] w-[287.96px]">
                               <div className="w-[24px]"></div>
                               <div className="w-full ">
@@ -2204,7 +1551,7 @@ const Penagihan = () => {
                                 <div>Harus 16 digit</div>
                               </div>
                             </div>
-                            
+
                             <div className="flex items-center gap-1 ">
                               <div className="w-[21.1px]"></div>
                               <div className="flex flex-col gap-1">
@@ -2260,7 +1607,7 @@ const Penagihan = () => {
                                   Max size 2 mb
                                 </div>
                               </div>
-                              
+
                               <div className="flex items-center gap-1">
                                 <div>
                                   <label
@@ -2291,7 +1638,6 @@ const Penagihan = () => {
                                     className="hidden w-full h-[40px] border border-slate-300 rounded-sm focus:border focus:border-[#0077b6]  "
                                   />
                                 </div>
-                                <div>*)</div>
                               </div>
 
                               {purchaseOrderFileUpload.trim().length > 0 && (
@@ -2316,7 +1662,6 @@ const Penagihan = () => {
                                 </div>
                               </div>
 
-                              
                               <div className="flex items-center gap-1">
                                 <div>
                                   <label
@@ -2347,7 +1692,6 @@ const Penagihan = () => {
                                     className="hidden w-full h-[40px] border border-slate-300 rounded-sm focus:border focus:border-[#0077b6]  "
                                   />
                                 </div>
-                                <div>*)</div>
                               </div>
                               {deliveryOrderFileUpload.trim().length > 0 && (
                                 <a
@@ -2369,7 +1713,7 @@ const Penagihan = () => {
                                   Max size 2 mb
                                 </div>
                               </div>
-                              
+
                               <div className="flex items-center gap-1">
                                 <div>
                                   <label
@@ -2432,7 +1776,6 @@ const Penagihan = () => {
                                       </div>
                                     </div>
 
-                                    
                                     <div className="flex items-center gap-1">
                                       <div>
                                         <label
@@ -2496,7 +1839,6 @@ const Penagihan = () => {
                                 </div>
                               </div>
 
-                              
                               <div className="flex items-center gap-1">
                                 <div>
                                   <label
@@ -2551,7 +1893,7 @@ const Penagihan = () => {
                                       Max size 2 mb
                                     </div>
                                   </div>
-                                  
+
                                   <div className="flex items-center gap-1">
                                     <div>
                                       <label
@@ -2615,7 +1957,6 @@ const Penagihan = () => {
                                           </div>
                                         </div>
 
-                                        
                                         <div className="flex items-center gap-1">
                                           <div>
                                             <label
@@ -2675,64 +2016,13 @@ const Penagihan = () => {
                               </>
                             )}
 
-                            <div className="flex items-center gap-3 mb-20">
-                              <div className="flex flex-col gap-1">
-                                <div className="w-[350px]">Receiving Note</div>
-                                <div className="text-[10px] text-gray-500">
-                                  Max size 2 mb
-                                </div>
-                              </div>
-                              
-                              <div className="flex items-center gap-1">
-                                <div>
-                                  <label
-                                    htmlFor="upload-receivingnote"
-                                    className="w-fit"
-                                  >
-                                    {receivingNoteFile === null ? (
-                                      <div className="w-fit flex gap-1 items-center bg-blue-400 py-2 px-5 text-white hover:bg-blue-200 rounded-md">
-                                        <span>
-                                          <FaCloudUploadAlt />
-                                        </span>
-                                        <div>Upload</div>
-                                      </div>
-                                    ) : (
-                                      <div className="w-fit flex gap-1 items-center bg-blue-400 py-2 px-5 text-white hover:bg-blue-200 rounded-md">
-                                        <span>
-                                          <FaCloudUploadAlt />
-                                        </span>
-                                        <div>1 File</div>
-                                      </div>
-                                    )}
-                                  </label>
-                                  <input
-                                    onChange={onChangeReceivingNoteFile}
-                                    type="file"
-                                    id="upload-receivingnote"
-                                    accept=".jpg,.pdf"
-                                    className="hidden w-full h-[40px] border border-slate-300 rounded-sm focus:border focus:border-[#0077b6]  "
-                                  />
-                                </div>
-                                <div>*)</div>
-                              </div>
-                              {receivingNoteFileUpload.trim().length > 0 && (
-                                <a
-                                  href={`${apiExport}fin/transactionact/view_portal_file.jsp?file=${receivingNoteFileUpload}`}
-                                  target="_blank"
-                                  className="underline cursor-pointer text-blue-500"
-                                  rel="noreferrer"
-                                >
-                                  File terupload
-                                </a>
-                              )}
-                            </div>
                             <div>
                               <div className="italic">
-                                Dokumen asli (hardcopy) sudah di kirimkan ke PT My Company :
+                                Dokumen asli (hardcopy) sudah di kirimkan:
                               </div>
                               <div className="flex items-center gap-3 mb-3">
                                 <div className="w-[350px]">Tipe Pengiriman</div>
-                                
+
                                 <div className="w-1/4 relative">
                                   <Select
                                     value={tipePengiriman}
@@ -2763,7 +2053,7 @@ const Penagihan = () => {
                                     Max size 2 mb
                                   </div>
                                 </div>
-                                
+
                                 <div className="flex items-center gap-1">
                                   <div>
                                     <label
@@ -2833,7 +2123,7 @@ const Penagihan = () => {
                                   Max size 2 mb
                                 </div>
                               </div>
-                              
+
                               <div className="flex items-center gap-1">
                                 <div>
                                   <label
@@ -2864,7 +2154,6 @@ const Penagihan = () => {
                                     className="hidden w-full h-[40px] border border-slate-300 rounded-sm focus:border focus:border-[#0077b6]  "
                                   />
                                 </div>
-                                <div>*)</div>
                               </div>
                               {purchaseOrderFileUpload.trim().length > 0 && (
                                 <a
@@ -2888,7 +2177,6 @@ const Penagihan = () => {
                                 </div>
                               </div>
 
-                              
                               <div className="flex items-center gap-1">
                                 <div>
                                   <label
@@ -2919,7 +2207,6 @@ const Penagihan = () => {
                                     className="hidden w-full h-[40px] border border-slate-300 rounded-sm focus:border focus:border-[#0077b6]  "
                                   />
                                 </div>
-                                <div>*)</div>
                               </div>
                               {deliveryOrderFileUpload.trim().length > 0 && (
                                 <a
@@ -2941,7 +2228,7 @@ const Penagihan = () => {
                                   Max size 2 mb
                                 </div>
                               </div>
-                              
+
                               <div className="flex items-center gap-1">
                                 <div>
                                   <label
@@ -3004,7 +2291,6 @@ const Penagihan = () => {
                                       </div>
                                     </div>
 
-                                    
                                     <div className="flex items-center gap-1">
                                       <div>
                                         <label
@@ -3067,7 +2353,7 @@ const Penagihan = () => {
                                   bermaterai
                                 </div>
                               </div>
-                              
+
                               <div className="flex items-center gap-1">
                                 <div>
                                   <label
@@ -3122,7 +2408,7 @@ const Penagihan = () => {
                                       Max size 2 mb
                                     </div>
                                   </div>
-                                  
+
                                   <div className="flex items-center gap-1">
                                     <div>
                                       <label
@@ -3186,7 +2472,6 @@ const Penagihan = () => {
                                           </div>
                                         </div>
 
-                                        
                                         <div className="flex items-center gap-1">
                                           <div>
                                             <label
@@ -3246,66 +2531,14 @@ const Penagihan = () => {
                               </>
                             )}
 
-                            <div className="flex items-center gap-3 mb-20">
-                              <div className="flex flex-col gap-1">
-                                <div className="w-[350px]">
-                                  Scan Report Sales
-                                </div>
-                                <div className="text-[10px] text-gray-500">
-                                  Max size 2 mb
-                                </div>
-                              </div>
-                              
-                              <div className="flex items-center gap-1">
-                                <div>
-                                  <label
-                                    htmlFor="upload-scanreportsales"
-                                    className="w-fit"
-                                  >
-                                    {scanReportSalesFile === null ? (
-                                      <div className="w-fit flex gap-1 items-center bg-[#fff2cc] py-2 px-5 hover:bg-yellow-100 rounded-md">
-                                        <span>
-                                          <FaCloudUploadAlt />
-                                        </span>
-                                        <div>Upload</div>
-                                      </div>
-                                    ) : (
-                                      <div className="w-fit flex gap-1 items-center bg-[#fff2cc] py-2 px-5 hover:bg-yellow-100 rounded-md">
-                                        <span>
-                                          <FaCloudUploadAlt />
-                                        </span>
-                                        <div>1 File</div>
-                                      </div>
-                                    )}
-                                  </label>
-                                  <input
-                                    type="file"
-                                    id="upload-scanreportsales"
-                                    accept=".jpg,.pdf"
-                                    onChange={onChangeScanReportSalesFile}
-                                    className="hidden w-full h-[40px] border border-slate-300 rounded-sm focus:border focus:border-[#0077b6]  "
-                                  />
-                                </div>
-                                <div>*)</div>
-                              </div>
-                              {scanReportSalesFileUpload.trim().length > 0 && (
-                                <a
-                                  href={`${apiExport}fin/transactionact/view_portal_file.jsp?file=${scanReportSalesFileUpload}`}
-                                  target="_blank"
-                                  className="underline cursor-pointer text-blue-500"
-                                  rel="noreferrer"
-                                >
-                                  File terupload
-                                </a>
-                              )}
-                            </div>
                             <div>
                               <div className="italic">
-                                Dokumen asli (hardcopy) sudah di kirimkan ke PT My Company :
+                                Dokumen asli (hardcopy) sudah di kirimkan ke PT
+                                My Company :
                               </div>
                               <div className="flex items-center gap-3 mb-3">
                                 <div className="w-[350px]">Tipe Pengiriman</div>
-                                
+
                                 <div className="w-1/4 relative">
                                   <Select
                                     value={tipePengiriman}
@@ -3331,7 +2564,7 @@ const Penagihan = () => {
                                 <div className="w-[350px]">
                                   Resi Bukti Pengiriman
                                 </div>
-                                
+
                                 <div className="flex items-center gap-1">
                                   <div>
                                     <label
@@ -3521,14 +2754,6 @@ const Penagihan = () => {
                                       className="flex gap-1 items-center"
                                     >
                                       No Purchase Order{" "}
-                                      {isError &&
-                                      nomerPo.trim().length === 0 ? (
-                                        <span className="text-red-400">
-                                          <PiWarningCircleLight />
-                                        </span>
-                                      ) : (
-                                        "*"
-                                      )}
                                     </label>
                                     <div className="flex gap-1 items-center text-[12px]">
                                       <div>
@@ -3548,11 +2773,7 @@ const Penagihan = () => {
                                         id=""
                                         value={nomerPo}
                                         onChange={(e) => onChangeNomerPo(e)}
-                                        className={`w-full h-[40px] rounded-sm focus:border focus:border-[#0077b6] bg-[#ddebf7] ${
-                                          isError && nomerPo.trim().length === 0
-                                            ? "border-red-400"
-                                            : "border-slate-300"
-                                        } `}
+                                        className="w-full h-[40px] rounded-sm focus:border focus:border-[#0077b6] bg-[#ddebf7] border-slate-300"
                                       />
                                     </div>
                                   </div>
@@ -3564,13 +2785,6 @@ const Penagihan = () => {
                                       className="flex gap-1 items-center"
                                     >
                                       Tanggal PO{" "}
-                                      {isError && tanggalPo === undefined ? (
-                                        <span className="text-red-400">
-                                          <PiWarningCircleLight />
-                                        </span>
-                                      ) : (
-                                        "*"
-                                      )}
                                     </label>
                                   </div>
 
@@ -3602,14 +2816,6 @@ const Penagihan = () => {
                                       className="flex gap-1 items-center"
                                     >
                                       No Delivery Order{" "}
-                                      {isError &&
-                                      nomerDo.trim().length === 0 ? (
-                                        <span className="text-red-400">
-                                          <PiWarningCircleLight />
-                                        </span>
-                                      ) : (
-                                        "*"
-                                      )}
                                     </label>
                                   </div>
 
@@ -3627,11 +2833,7 @@ const Penagihan = () => {
                                         onChange={(e) =>
                                           setNomerDo(e.target.value)
                                         }
-                                        className={`max-[821px]:w-full w-[246.4px] h-[40px] rounded-sm focus:border focus:border-[#0077b6] bg-[#ddebf7] ${
-                                          isError && nomerDo.trim().length === 0
-                                            ? "border-red-400"
-                                            : "border-slate-300"
-                                        } `}
+                                        className="max-[821px]:w-full w-[246.4px] h-[40px] rounded-sm focus:border focus:border-[#0077b6] bg-[#ddebf7] border-slate-300"
                                       />
                                     </div>
                                   </div>
@@ -3670,134 +2872,34 @@ const Penagihan = () => {
                                   </div>
                                 </div>
                                 <div className="mb-10">
-                                  {nomerInvoice.map((item, i) => (
-                                    <div
-                                      className="flex flex-col gap-2 mb-3"
-                                      key={i}
-                                    >
-                                      {i === 0 ? (
-                                        <div className="w-[250px]">
-                                          Nomor Invoice *) :
-                                        </div>
-                                      ) : (
-                                        <div className="w-[250px]">
-                                          Nomor Invoice {i + 1}
-                                        </div>
-                                      )}
-                                      <div className="fw-full">
-                                        <div>
-                                          <input
-                                            type="text"
-                                            name=""
-                                            id={i}
-                                            value={item.value}
-                                            onChange={onChangeInvoice}
-                                            onKeyDown={(evt) =>
-                                              evt.key === " " &&
-                                              evt.preventDefault()
-                                            }
-                                            className="max-[821px]:w-full w-[246.4px] h-[40px] border border-slate-300 rounded-sm focus:border focus:border-[#0077b6] bg-[#ddebf7]"
-                                          />
-                                        </div>
-                                      </div>
-                                    </div>
-                                  ))}
-                                  <div className="flex items-center justify-between max-[357px]:flex-col max-[357px]:items-start max-[357px]:gap-2">
-                                    {nomerInvoice.length > 1 && (
-                                      <div
-                                        onClick={deleteInput}
-                                        className={`py-1 px-4 text-center rounded-sm shadow-sm text-white bg-red-500 w-fit max-[357px]:w-full ${
-                                          nomerInvoice.length === 4
-                                            ? "cursor-not-allowed"
-                                            : "cursor-pointer"
-                                        } `}
-                                      >
-                                        Delete Invoice
-                                      </div>
-                                    )}
-
-                                    <div
-                                      onClick={addInput}
-                                      className={`py-1 px-4 text-center rounded-sm shadow-sm text-white bg-[#305496]  w-fit max-[357px]:w-full ${
-                                        nomerInvoice.length === 4
-                                          ? "cursor-not-allowed"
-                                          : "cursor-pointer"
-                                      } `}
-                                    >
-                                      Tambah Invoice
-                                    </div>
+                                  <div className="mb-2">Daftar Invoice</div>
+                                  <div className="overflow-auto max-h-[400px]">
+                                    <TableInvoice
+                                      data={invoice}
+                                      setData={setInvoice}
+                                      inputNomorInvoiceRef={
+                                        inputNomorInvoiceRef
+                                      }
+                                      addMode={addMode}
+                                      invoices={invoices}
+                                      vendorType={tipePenagihan.label}
+                                      optionLokasi={optionLokasi}
+                                      onClickSave={onClickSave}
+                                      onClickCancel={onClickCancel}
+                                      onClickEdit={onClickEdit}
+                                      onClickDelete={onClickDelete}
+                                    />
                                   </div>
-                                </div>
-
-                                <div className="mb-10">
-                                  {nomerInvoice.map((item, i) => (
-                                    <div key={i}>
-                                      <div className="flex flex-col gap-2 mb-3">
-                                        {i === 0 ? (
-                                          <div className="w-[250px]">
-                                            Tanggal Invoice *) :
-                                          </div>
-                                        ) : (
-                                          <div className="w-[250px]">
-                                            Tanggal Invoice {i + 1}
-                                          </div>
-                                        )}
-
-                                        <div className="w-full">
-                                          <div>
-                                            <LocalizationProvider
-                                              dateAdapter={AdapterDayjs}
-                                            >
-                                              <DemoContainer
-                                                components={["DatePicker"]}
-                                              >
-                                                <DatePicker
-                                                  className="w-full bg-[#ddebf7]"
-                                                  value={
-                                                    tanggalInvoice[i].value
-                                                  }
-                                                  onChange={(item) =>
-                                                    onChangeTanggalInvoice(
-                                                      item,
-                                                      i
-                                                    )
-                                                  }
-                                                  slotProps={{
-                                                    textField: {
-                                                      size: "small",
-                                                    },
-                                                  }}
-                                                />
-                                              </DemoContainer>
-                                            </LocalizationProvider>
-                                          </div>
-                                        </div>
-                                      </div>
-                                      <div className="flex flex-col gap-2 mb-3">
-                                        {i === 0 ? (
-                                          <div className="w-[250px]">
-                                            Nilai Invoice *) :
-                                          </div>
-                                        ) : (
-                                          <div className="w-[250px]">
-                                            Nilai Invoice {i + 1}
-                                          </div>
-                                        )}
-                                        <div className="fw-full">
-                                          <div>
-                                            <input
-                                              id={i}
-                                              type="text"
-                                              value={nilaiInvoice[i].value}
-                                              onChange={onChangeNilaiInvoice}
-                                              className="max-[821px]:w-full w-[246.4px] h-[40px] border border-slate-300 rounded-sm focus:border focus:border-[#0077b6] bg-[#ddebf7]"
-                                            />
-                                          </div>
-                                        </div>
-                                      </div>
+                                  {!addMode && (
+                                    <div
+                                      className="bg-[#305496] rounded-full shadow-md w-fit mt-2 cursor-pointer"
+                                      onClick={onClickAdd}
+                                    >
+                                      <IoIosAdd className="text-white text-xl" />
                                     </div>
-                                  ))}
+                                  )}
                                 </div>
+
                                 <div className="flex flex-col gap-2 mb-3">
                                   <div>Apakah barang termasuk pajak? *) : </div>
 
@@ -3886,14 +2988,6 @@ const Penagihan = () => {
                                       className="flex gap-1 items-center"
                                     >
                                       No Purchase Order{" "}
-                                      {isError &&
-                                      nomerPo.trim().length === 0 ? (
-                                        <span className="text-red-400">
-                                          <PiWarningCircleLight />
-                                        </span>
-                                      ) : (
-                                        "*"
-                                      )}
                                     </label>
                                     <div className="flex gap-1 items-center text-[12px]">
                                       <div>
@@ -3913,11 +3007,7 @@ const Penagihan = () => {
                                         id=""
                                         value={nomerPo}
                                         onChange={(e) => onChangeNomerPo(e)}
-                                        className={`w-full h-[40px] rounded-sm focus:border focus:border-[#0077b6] bg-[#fff2cc] ${
-                                          isError && nomerPo.trim().length === 0
-                                            ? "border-red-400"
-                                            : "border-slate-400"
-                                        } `}
+                                        className="w-full h-[40px] rounded-sm focus:border focus:border-[#0077b6] bg-[#fff2cc] border-slate-400"
                                       />
                                     </div>
                                   </div>
@@ -3929,13 +3019,6 @@ const Penagihan = () => {
                                       className="flex gap-1 items-center"
                                     >
                                       Tanggal PO{" "}
-                                      {isError && tanggalPo === undefined ? (
-                                        <span className="text-red-400">
-                                          <PiWarningCircleLight />
-                                        </span>
-                                      ) : (
-                                        "*"
-                                      )}
                                     </label>
                                   </div>
 
@@ -3994,190 +3077,35 @@ const Penagihan = () => {
                                     </div>
                                   </div>
                                 </div>
-                                <div className="mb-3">
-                                  {nomerInvoice.map((item, i) => (
-                                    <div key={i}>
-                                      <div
-                                        className="flex flex-col gap-2 mb-3"
-                                        key={i}
-                                      >
-                                        {i === 0 ? (
-                                          <div className="">
-                                            Nomor Invoice *) :
-                                          </div>
-                                        ) : (
-                                          <div className="">
-                                            Nomor Invoice {i + 1}
-                                          </div>
-                                        )}
-                                        <div className="fw-full">
-                                          <div>
-                                            <input
-                                              type="text"
-                                              name=""
-                                              id={i}
-                                              value={item.value}
-                                              onChange={onChangeInvoice}
-                                              onKeyDown={(evt) =>
-                                                evt.key === " " &&
-                                                evt.preventDefault()
-                                              }
-                                              className="max-[821px]:w-full w-[246.4px] h-[40px] border border-slate-300 rounded-sm focus:border focus:border-[#0077b6] bg-[#fff2cc]"
-                                            />
-                                          </div>
-                                        </div>
-                                      </div>
-
-                                      <div className="flex flex-col gap-2 mb-3">
-                                        {i === 0 ? (
-                                          <div className="">
-                                            Tanggal Invoice *) :
-                                          </div>
-                                        ) : (
-                                          <div className="">
-                                            Tanggal Invoice {i + 1}
-                                          </div>
-                                        )}
-
-                                        <div className="w-full">
-                                          <div>
-                                            <LocalizationProvider
-                                              dateAdapter={AdapterDayjs}
-                                            >
-                                              <DemoContainer
-                                                components={["DatePicker"]}
-                                              >
-                                                <DatePicker
-                                                  className="w-full bg-[#fff2cc]"
-                                                  value={
-                                                    tanggalInvoice2[i].value
-                                                  }
-                                                  onChange={(item) =>
-                                                    onChangeTanggalInvoice2(
-                                                      item,
-                                                      i
-                                                    )
-                                                  }
-                                                  slotProps={{
-                                                    textField: {
-                                                      size: "small",
-                                                    },
-                                                  }}
-                                                />
-                                              </DemoContainer>
-                                            </LocalizationProvider>
-                                          </div>
-                                        </div>
-                                      </div>
-                                    </div>
-                                  ))}
-                                  <div className="flex items-center justify-between max-[357px]:flex-col max-[357px]:items-start max-[357px]:gap-2">
-                                    {nomerInvoice.length > 1 && (
-                                      <div
-                                        onClick={deleteInput}
-                                        className={`py-1 px-4 text-center rounded-sm shadow-sm text-white bg-red-500 w-fit max-[357px]:w-full ${
-                                          nomerInvoice.length === 4
-                                            ? "cursor-not-allowed"
-                                            : "cursor-pointer"
-                                        } `}
-                                      >
-                                        Delete Invoice
-                                      </div>
-                                    )}
-
+                                <div className="mb-10">
+                                  <div className="mb-2">Daftar Invoice</div>
+                                  <div className="overflow-auto max-h-[400px]">
+                                    <TableInvoice
+                                      data={invoice}
+                                      setData={setInvoice}
+                                      inputNomorInvoiceRef={
+                                        inputNomorInvoiceRef
+                                      }
+                                      addMode={addMode}
+                                      invoices={invoices}
+                                      vendorType={tipePenagihan.label}
+                                      optionLokasi={optionLokasi}
+                                      onClickSave={onClickSave}
+                                      onClickCancel={onClickCancel}
+                                      onClickEdit={onClickEdit}
+                                      onClickDelete={onClickDelete}
+                                    />
+                                  </div>
+                                  {!addMode && (
                                     <div
-                                      onClick={addInput}
-                                      className={`py-1 px-4 text-center rounded-sm shadow-sm text-white bg-[#305496]  w-fit max-[357px]:w-full ${
-                                        nomerInvoice.length === 4
-                                          ? "cursor-not-allowed"
-                                          : "cursor-pointer"
-                                      } `}
+                                      className="bg-[#305496] rounded-full shadow-md w-fit mt-2 cursor-pointer"
+                                      onClick={onClickAdd}
                                     >
-                                      Tambah Invoice
+                                      <IoIosAdd className="text-white text-xl" />
                                     </div>
-                                  </div>
+                                  )}
                                 </div>
 
-                                <div className="mb-10 mt-10">
-                                  {nomerInvoice.map((item, i) => (
-                                    <div
-                                      className="flex flex-col gap-2 mb-3"
-                                      key={i}
-                                    >
-                                      {i === 0 ? (
-                                        <div className="w-[250px]">
-                                          Nilai Invoice *) :
-                                        </div>
-                                      ) : (
-                                        <div className="w-[250px]">
-                                          Nilai Invoice {i + 1}
-                                        </div>
-                                      )}
-                                      <div className="fw-full">
-                                        <div>
-                                          <input
-                                            id={i}
-                                            type="text"
-                                            value={nilaiInvoice[i].value}
-                                            onChange={onChangeNilaiInvoice}
-                                            className="max-[821px]:w-full w-[246.4px] h-[40px] border border-slate-300 rounded-sm focus:border focus:border-[#0077b6] bg-[#fff2cc]"
-                                          />
-                                        </div>
-                                      </div>
-                                    </div>
-                                  ))}
-                                </div>
-                                <div className="mb-3">
-                                  <div className="w-[250px]">
-                                    Periode Acuan Penagihan :
-                                  </div>
-                                  <div className="ps-5 flex flex-col gap-1 mt-2">
-                                    <div>Dari tanggal *)</div>
-                                    <div>
-                                      <LocalizationProvider
-                                        dateAdapter={AdapterDayjs}
-                                      >
-                                        <DemoContainer
-                                          components={["DatePicker"]}
-                                        >
-                                          <DatePicker
-                                            className="w-full bg-[#fff2cc]"
-                                            value={startDatePeriode}
-                                            onChange={(item) =>
-                                              setStartDatePeriode(item)
-                                            }
-                                            slotProps={{
-                                              textField: { size: "small" },
-                                            }}
-                                          />
-                                        </DemoContainer>
-                                      </LocalizationProvider>
-                                    </div>
-                                  </div>
-                                  <div className="ps-5 flex flex-col gap-1 mt-2">
-                                    <div>Sampai tanggal *)</div>
-                                    <div>
-                                      <LocalizationProvider
-                                        dateAdapter={AdapterDayjs}
-                                      >
-                                        <DemoContainer
-                                          components={["DatePicker"]}
-                                        >
-                                          <DatePicker
-                                            className="w-full bg-[#fff2cc]"
-                                            value={endDatePeriode}
-                                            onChange={(item) =>
-                                              setEndDatePeriode(item)
-                                            }
-                                            slotProps={{
-                                              textField: { size: "small" },
-                                            }}
-                                          />
-                                        </DemoContainer>
-                                      </LocalizationProvider>
-                                    </div>
-                                  </div>
-                                </div>
                                 <div className="flex flex-col gap-2 mb-3">
                                   <div>Apakah barang termasuk pajak? *) : </div>
 
@@ -4354,7 +3282,7 @@ const Penagihan = () => {
                                   <div className="flex flex-col gap-3 mb-3">
                                     <div className="flex flex-col gap-1">
                                       <div className="w-[350px]">
-                                        Purchase Order *) :
+                                        Purchase Order
                                       </div>
                                       <div className="text-[10px] text-gray-500">
                                         Max size 2 mb
@@ -4406,7 +3334,7 @@ const Penagihan = () => {
                                     <div className="flex flex-col gap-1">
                                       <div className="">
                                         Delivery Order (DO) / Packing List
-                                        (Surat Jalan) *) :
+                                        (Surat Jalan)
                                       </div>
                                       <div className="text-[10px] text-gray-500">
                                         Max size 2 mb
@@ -4753,57 +3681,6 @@ const Penagihan = () => {
                                     </>
                                   )}
 
-                                  <div className="flex flex-col gap-3 mb-20">
-                                    <div className="flex flex-col gap-1">
-                                      <div className="">
-                                        Receiving Note *) :
-                                      </div>
-                                      <div className="text-[10px] text-gray-500">
-                                        Max size 2 mb
-                                      </div>
-                                    </div>
-
-                                    <div>
-                                      <label
-                                        htmlFor="upload-receivingnote"
-                                        className="w-fit"
-                                      >
-                                        {receivingNoteFile === null ? (
-                                          <div className="w-fit flex gap-1 items-center bg-blue-400 py-2 px-5 text-white hover:bg-blue-200 rounded-md">
-                                            <span>
-                                              <FaCloudUploadAlt />
-                                            </span>
-                                            <div>Upload</div>
-                                          </div>
-                                        ) : (
-                                          <div className="w-fit flex gap-1 items-center bg-blue-400 py-2 px-5 text-white hover:bg-blue-200 rounded-md">
-                                            <span>
-                                              <FaCloudUploadAlt />
-                                            </span>
-                                            <div>1 File</div>
-                                          </div>
-                                        )}
-                                      </label>
-                                      <input
-                                        type="file"
-                                        id="upload-receivingnote"
-                                        accept=".jpg,.pdf"
-                                        onChange={onChangeReceivingNoteFile}
-                                        className="hidden w-full h-[40px] border border-slate-300 rounded-sm focus:border focus:border-[#0077b6]  "
-                                      />
-                                    </div>
-                                    {receivingNoteFileUpload.trim().length >
-                                      0 && (
-                                      <a
-                                        href={`${apiExport}fin/transactionact/view_portal_file.jsp?file=${receivingNoteFileUpload}`}
-                                        target="_blank"
-                                        className="underline cursor-pointer text-blue-500"
-                                        rel="noreferrer"
-                                      >
-                                        File terupload
-                                      </a>
-                                    )}
-                                  </div>
                                   <div>
                                     <div className="italic">
                                       Dokumen asli (hardcopy) sudah di kirimkan
@@ -4903,9 +3780,7 @@ const Penagihan = () => {
                                 <>
                                   <div className="flex flex-col gap-3 mb-3">
                                     <div className="flex flex-col gap-1">
-                                      <div className="">
-                                        Purchase Order *) :
-                                      </div>
+                                      <div className="">Purchase Order</div>
                                       <div className="text-[10px] text-gray-500">
                                         Max size 2 mb
                                       </div>
@@ -4956,7 +3831,7 @@ const Penagihan = () => {
                                     <div className="flex flex-col gap-1">
                                       <div className="">
                                         Delivery Order (DO) / Packing List
-                                        (Surat Jalan) *) :
+                                        (Surat Jalan)
                                       </div>
                                       <div className="text-[10px] text-gray-500">
                                         Max size 2 mb
@@ -5303,57 +4178,6 @@ const Penagihan = () => {
                                     </>
                                   )}
 
-                                  <div className="flex flex-col gap-3 mb-20">
-                                    <div className="flex flex-col gap-1">
-                                      <div className="">
-                                        Scan Report Sales *) :
-                                      </div>
-                                      <div className="text-[10px] text-gray-500">
-                                        Max size 2 mb
-                                      </div>
-                                    </div>
-
-                                    <div>
-                                      <label
-                                        htmlFor="upload-scanreportsales"
-                                        className="w-fit"
-                                      >
-                                        {scanReportSalesFile === null ? (
-                                          <div className="w-fit flex gap-1 items-center bg-[#fff2cc] py-2 px-5 hover:bg-yellow-100 rounded-md">
-                                            <span>
-                                              <FaCloudUploadAlt />
-                                            </span>
-                                            <div>Upload</div>
-                                          </div>
-                                        ) : (
-                                          <div className="w-fit flex gap-1 items-center bg-[#fff2cc] py-2 px-5 hover:bg-yellow-100 rounded-md">
-                                            <span>
-                                              <FaCloudUploadAlt />
-                                            </span>
-                                            <div>1 File</div>
-                                          </div>
-                                        )}
-                                      </label>
-                                      <input
-                                        type="file"
-                                        id="upload-scanreportsales"
-                                        accept=".jpg,.pdf"
-                                        onChange={onChangeScanReportSalesFile}
-                                        className="hidden w-full h-[40px] border border-slate-300 rounded-sm focus:border focus:border-[#0077b6]  "
-                                      />
-                                    </div>
-                                    {scanReportSalesFileUpload.trim().length >
-                                      0 && (
-                                      <a
-                                        href={`${apiExport}fin/transactionact/view_portal_file.jsp?file=${scanReportSalesFileUpload}`}
-                                        target="_blank"
-                                        className="underline cursor-pointer text-blue-500"
-                                        rel="noreferrer"
-                                      >
-                                        File terupload
-                                      </a>
-                                    )}
-                                  </div>
                                   <div>
                                     <div className="italic">
                                       Dokumen asli (hardcopy) sudah di kirimkan

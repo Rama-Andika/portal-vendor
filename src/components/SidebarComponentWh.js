@@ -1,21 +1,22 @@
-import React, { useEffect } from "react";
+import React, { useEffect, useState } from "react";
 import { SiShopware } from "react-icons/si";
-import { MdOutlineCancel } from "react-icons/md";
 
 import { linksWh } from "../data/dummy";
 import { Link, NavLink } from "react-router-dom";
 import { useStateContext } from "../contexts/ContextProvider";
 import { Sidebar } from "flowbite-react";
-import { PiMonitorLight } from "react-icons/pi";
 import { FaBuilding } from "react-icons/fa";
 import { HiCash } from "react-icons/hi";
 import { TbBuildingCommunity } from "react-icons/tb";
-import { MdMonitor } from "react-icons/md";
 import { LiaFileInvoiceSolid } from "react-icons/lia";
+
+const url = process.env.REACT_APP_BASEURL;
 
 const SidebarComponentWh = ({ width }) => {
   const { activeMenu, setActiveMenu, screenSize, setOpenSidebar } =
     useStateContext();
+
+  const [company, setCompany] = useState(undefined);
 
   const handleCloseSidebar = (i) => {
     if (activeMenu && screenSize <= 900) {
@@ -56,6 +57,23 @@ const SidebarComponentWh = ({ width }) => {
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, []);
 
+  useEffect(() => {
+    const getCompany = async () => {
+      try {
+        const response = await fetch(`${url}api/company`);
+        if (!response.ok) {
+          throw new Error(response.statusText);
+        }
+        const result = await response.json();
+        setCompany(result.data);
+      } catch (error) {
+        console.log(error);
+      }
+    };
+
+    getCompany();
+  }, []);
+
   const activeLink =
     "flex items-center gap-3 pt-3 pl-[40px] pb-2.5 rounded-lg text-white text=md ";
   const normalLink =
@@ -64,19 +82,20 @@ const SidebarComponentWh = ({ width }) => {
     <div
       className={`border-r min-h-screen max-[646px]:h-full ${width} shadow-md overflow-y-auto pb-10 z-10 bg-white relative shrink-0 transition-all ease-in-out duration-200`}
     >
-      <div onClick={() => setActiveMenu((prevActiveMenu) => !prevActiveMenu)} className="absolute top-2 right-2 shadow-md p-2 rounded-full text-xs cursor-pointer">
-          X
+      <div
+        onClick={() => setActiveMenu((prevActiveMenu) => !prevActiveMenu)}
+        className="absolute top-2 right-2 shadow-md p-2 rounded-full text-xs cursor-pointer"
+      >
+        X
       </div>
       <div className="flex items-center py-[20px] px-[24px] justify-between">
         <div className="flex items-center gap-[10px]">
           <Link
-
             onClick={handleCloseSidebar}
             className="items-center gap-3 mt-4 flex text-xl font-extrabold tracking-tight dark:text-white text-slate-900"
           >
-            <SiShopware />{" "}
             <span className="text-[16px] w-[222px] overflow-ellipsis overflow-hidden">
-              PT My Company
+              {company ? company.name : ""}
             </span>
           </Link>
         </div>
@@ -85,7 +104,7 @@ const SidebarComponentWh = ({ width }) => {
         <Sidebar aria-label="Sidebar with multi-level dropdown example ">
           <Sidebar.Items>
             <Sidebar.ItemGroup>
-              <Sidebar.Collapse
+              {/* <Sidebar.Collapse
                 label="Monitor Pembayaran"
                 icon={MdMonitor}
                 open={false}
@@ -105,7 +124,7 @@ const SidebarComponentWh = ({ width }) => {
                     vendor
                   </span>
                 </NavLink>
-                {/* <NavLink
+                <NavLink
                   style={({ isActive }) => ({
                     backgroundColor: isActive ? "#0077b6" : "",
                   })}
@@ -119,8 +138,8 @@ const SidebarComponentWh = ({ width }) => {
                   <span className="capitalize whitespace-nowrap text-[14px]">
                     COD
                   </span>
-                </NavLink> */}
-              </Sidebar.Collapse>
+                </NavLink>
+              </Sidebar.Collapse> */}
               <Sidebar.Collapse label="Vendor" icon={TbBuildingCommunity} open>
                 <NavLink
                   style={({ isActive }) => ({
@@ -179,7 +198,7 @@ const SidebarComponentWh = ({ width }) => {
                 >
                   <HiCash />
                   <span className="capitalize whitespace-nowrap text-[14px]">
-                     Penagihan
+                    Penagihan
                   </span>
                 </NavLink>
               </Sidebar.Collapse>
