@@ -4,6 +4,10 @@ import { FaRegEdit, FaRegSave } from "react-icons/fa";
 import { MdOutlineCancel, MdOutlineDelete } from "react-icons/md";
 import accountingNumber from "../../../../components/functions/AccountingNumber";
 import Select from "react-select";
+import { toast, Toaster } from "sonner";
+import GetBase64 from "../../../../components/functions/GetBase64";
+
+const apiExport = process.env.REACT_APP_EXPORT_URL;
 
 const TableInvoice = React.memo(
   ({
@@ -12,12 +16,19 @@ const TableInvoice = React.memo(
     inputNomorInvoiceRef,
     addMode = false,
     invoices = [],
+    invoiceFiles = [],
+    invoiceFilesUploaded = [],
+    setInvoiceFiles,
+    pajakFilesUploaded = [],
+    pajakFiles = [],
+    setPajakFiles,
     vendorType,
     optionLokasi,
     onClickSave,
     onClickCancel,
     onClickEdit,
     onClickDelete,
+    activeStep = 0,
   }) => {
     const customeStyles = {
       control: (baseStyles) => ({
@@ -47,104 +58,318 @@ const TableInvoice = React.memo(
         setData({ ...data, nilaiInvoice: nilai });
       }
     };
+
+    const onChangeInvoiceFile = (e, index) => {
+      if (e.target.files[0] !== undefined) {
+        const file = e.target.files[0];
+        if (file.size <= 2000000) {
+          GetBase64(file)
+            .then((result) => {
+              const isExists = invoiceFiles.some((_, i) => i === index);
+
+              if (isExists) {
+                setInvoiceFiles((prev) =>
+                  prev.map((invoice, i) =>
+                    i === index
+                      ? { ...invoice, base64: result, name: file.name }
+                      : invoice
+                  )
+                );
+              } else {
+                setInvoiceFiles([
+                  ...invoiceFiles,
+                  { base64: result, name: file.name },
+                ]);
+              }
+            })
+            .catch((err) => {
+              console.log(err);
+            });
+        } else {
+          toast.error("Maksimal ukuran file adalah 2mb");
+          return;
+        }
+      }
+    };
+
+    const onChangePajakFile = (e, index) => {
+      if (e.target.files[0] !== undefined) {
+        const file = e.target.files[0];
+        if (file.size <= 2000000) {
+          GetBase64(file)
+            .then((result) => {
+              const isExists = pajakFiles.some((_, i) => i === index);
+
+              if (isExists) {
+                setPajakFiles((prev) =>
+                  prev.map((pajak, i) =>
+                    i === index
+                      ? { ...pajak, base64: result, name: file.name }
+                      : pajak
+                  )
+                );
+              } else {
+                setPajakFiles([
+                  ...pajakFiles,
+                  { base64: result, name: file.name },
+                ]);
+              }
+            })
+            .catch((err) => {
+              console.log(err);
+            });
+        } else {
+          toast.error("Maksimal ukuran file adalah 2mb");
+          return;
+        }
+      }
+    };
+
+    console.log(pajakFilesUploaded)
     return (
-      <table>
-        <thead className="bg-[#305496] text-white ">
-          <tr>
-            <td className="w-[80px] min-w-[80px] max-w-[80px] text-start p-2 rounded-tl-md">
-              Action
-            </td>
-            {vendorType !== "Beli Putus" && (
+      <>
+        <Toaster richColors position="top-center" />
+        <table>
+          <thead className="bg-[#305496] text-white ">
+            <tr>
+              {activeStep !== 2 && (
+                <td className="w-[80px] min-w-[80px] max-w-[80px] text-start p-2 rounded-tl-md">
+                  Action
+                </td>
+              )}
+
+              {vendorType !== "Beli Putus" && (
+                <td className="w-[250px] min-w-[250px] max-w-[250px] text-start p-2">
+                  Lokasi
+                </td>
+              )}
               <td className="w-[250px] min-w-[250px] max-w-[250px] text-start p-2">
-                Lokasi
+                Nomor Invoice
               </td>
-            )}
-            <td className="w-[250px] min-w-[250px] max-w-[250px] text-start p-2">
-              Nomor Invoice
-            </td>
-            {vendorType !== "Beli Putus" && (
-              <>
-                <td className="w-[250px] min-w-[150px] max-w-[150px] text-start p-2">
-                  Start Date
+              {vendorType === "Beli Putus" && (
+                <td className="!w-[180px] !min-w-[150px] !max-w-[150px] text-start p-2">
+                  Tanggal Invoice
                 </td>
-                <td className="w-[250px] min-w-[150px] max-w-[150px] text-start p-2">
-                  End Date
-                </td>
-              </>
-            )}
+              )}
 
-            {vendorType === "Beli Putus" && (
-              <td className="!w-[180px] !min-w-[150px] !max-w-[150px] text-start p-2">
-                Tanggal Invoice
+              <td
+                className={`w-[150px] min-w-[150px] max-w-[150px] text-start p-2 ${
+                  activeStep !== 2 && "rounded-tr-md"
+                }  `}
+              >
+                Nilai Invoice
               </td>
-            )}
 
-            <td className="w-[150px] min-w-[150px] max-w-[150px] text-start p-2 rounded-tr-md">
-              Nilai Invoice
-            </td>
-          </tr>
-        </thead>
-        <tbody>
-          {invoices.length > 0 &&
-            invoices.map((invoice, i) =>
-              !invoice.editMode ? (
-                <tr key={i}>
-                  <td className="p-2">
-                    <div className="flex gap-1">
-                      <FaRegEdit
-                        className="text-sky-600 cursor-pointer"
-                        onClick={() => onClickEdit(invoice, i)}
-                      />
-                      <MdOutlineDelete
-                        className="text-red-600 cursor-pointer"
-                        onClick={() => onClickDelete(i)}
-                      />
-                    </div>
+              {vendorType !== "Beli Putus" && activeStep === 2 && (
+                <>
+                  <td className="w-[250px] min-w-[250px] max-w-[250px] text-start p-2">
+                    Invoice File
                   </td>
-                  {vendorType !== "Beli Putus" && (
-                    <td className="p-2">
-                      <div>{invoice.lokasi?.label}</div>
+                  <td className="w-[250px] min-w-[250px] max-w-[250px] text-start p-2 rounded-tr-md">
+                    Faktur Pajak FIle
+                  </td>
+                </>
+              )}
+            </tr>
+          </thead>
+          <tbody>
+            {invoices.length > 0 &&
+              invoices.map((invoice, i) =>
+                !invoice.editMode ? (
+                  <tr key={i}>
+                    {activeStep !== 2 && (
+                      <td className="p-2 ">
+                        <div className="flex gap-1">
+                          <FaRegEdit
+                            className="text-sky-600 cursor-pointer"
+                            onClick={() => onClickEdit(invoice, i)}
+                          />
+                          <MdOutlineDelete
+                            className="text-red-600 cursor-pointer"
+                            onClick={() => onClickDelete(i)}
+                          />
+                        </div>
+                      </td>
+                    )}
+
+                    {vendorType !== "Beli Putus" && (
+                      <td className="p-2 align-top">
+                        <div>{invoice.lokasi?.label}</div>
+                      </td>
+                    )}
+
+                    <td className="p-2 align-top">
+                      <div>{invoice.nomorInvoice}</div>
                     </td>
-                  )}
 
-                  <td className="p-2">
-                    <div>{invoice.nomorInvoice}</div>
-                  </td>
-
-                  {vendorType !== "Beli Putus" && (
-                    <>
+                    {vendorType === "Beli Putus" && (
                       <td className="p-2">
                         <div>
-                          {dayjs(invoice.startDate).format("DD MMMM, YYYY")}
+                          {dayjs(invoice.tanggalInvoice).format(
+                            "DD MMMM, YYYY"
+                          )}
                         </div>
                       </td>
-                      <td className="w-[250px] min-w-[250px] max-w-[250px] text-start p-2">
-                        <div>
-                          {dayjs(invoice.endDate).format("DD MMMM, YYYY")}
-                        </div>
-                      </td>
-                    </>
-                  )}
+                    )}
 
-                  {vendorType === "Beli Putus" && (
-                    <td className="p-2">
-                      <div>
-                        {dayjs(invoice.tanggalInvoice).format("DD MMMM, YYYY")}
-                      </div>
+                    <td className="p-2 align-top">
+                      <div>{accountingNumber(invoice.nilaiInvoice)}</div>
                     </td>
-                  )}
 
-                  <td className="p-2">
-                    <div>{accountingNumber(invoice.nilaiInvoice)}</div>
-                  </td>
-                </tr>
-              ) : (
-                <tr key={i}>
+                    {vendorType !== "Beli Putus" && activeStep === 2 && (
+                      <>
+                        <td className=" p-2 align-top">
+                          <div className="flex flex-col gap-2 w-[108px]">
+                            <label
+                              htmlFor={`invoiceFile${i}`}
+                              className="cursor-pointer border rounded-md py-2 px-3 bg-[#fff2cc]"
+                            >
+                              Browse File
+                            </label>
+                            <input
+                              className="hidden"
+                              type="file"
+                              name={`invoiceFile${i}`}
+                              id={`invoiceFile${i}`}
+                              accept="image/*, .pdf"
+                              onChange={(e) => onChangeInvoiceFile(e, i)}
+                            />
+                            {invoiceFiles[i] !== undefined ? (
+                              <p className="mt-3 text-sm">
+                                {invoiceFiles[i]?.name}
+                              </p>
+                            ) : (
+                              invoiceFilesUploaded[i] && (
+                                <a
+                                  href={`${apiExport}fin/transactionact/view_portal_file.jsp?file=${invoiceFilesUploaded[i]}`}
+                                  target="_blank"
+                                  className="underline cursor-pointer text-blue-500"
+                                  rel="noreferrer"
+                                >
+                                  File terupload
+                                </a>
+                              )
+                            )}
+                          </div>
+                        </td>
+                        <td className=" p-2 align-top">
+                          <div className="flex flex-col gap-2 w-[108px]">
+                            <label
+                              htmlFor={`pajakFile${i}`}
+                              className="cursor-pointer border rounded-md py-2 px-3 bg-[#fff2cc]"
+                            >
+                              Browse File
+                            </label>
+                            <input
+                              className="hidden"
+                              type="file"
+                              name={`pajakFile${i}`}
+                              id={`pajakFile${i}`}
+                              accept="image/*, .pdf"
+                              onChange={(e) => onChangePajakFile(e, i)}
+                            />
+                            {pajakFiles[i] !== undefined ? (
+                              <p className="mt-3 text-sm">
+                                {pajakFiles[i]?.name}
+                              </p>
+                            ) : (
+                              pajakFilesUploaded[i] && (
+                                <a
+                                  href={`${apiExport}fin/transactionact/view_portal_file.jsp?file=${pajakFilesUploaded[i]}`}
+                                  target="_blank"
+                                  className="underline cursor-pointer text-blue-500"
+                                  rel="noreferrer"
+                                >
+                                  File terupload
+                                </a>
+                              )
+                            )}
+                          </div>
+                        </td>
+                      </>
+                    )}
+                  </tr>
+                ) : (
+                  <tr key={i}>
+                    {activeStep !== 2 && (
+                      <td className="p-2">
+                        <div className="flex gap-1">
+                          <FaRegSave
+                            className="text-sky-600 cursor-pointer"
+                            onClick={() => onClickSave(i)}
+                          />
+                          <MdOutlineCancel
+                            className="text-red-600 cursor-pointer"
+                            onClick={onClickCancel}
+                          />
+                        </div>
+                      </td>
+                    )}
+
+                    {vendorType !== "Beli Putus" && (
+                      <td className="p-2">
+                        <Select
+                          value={data.lokasi}
+                          menuPlacement="auto"
+                          menuPortalTarget={document.body}
+                          onChange={(item) =>
+                            setData({ ...data, lokasi: item })
+                          }
+                          className="whitespace-nowrap"
+                          options={optionLokasi}
+                          noOptionsMessage={() => "Data not found"}
+                          styles={customeStyles}
+                          required
+                        />
+                      </td>
+                    )}
+                    <td className="p-2">
+                      <input
+                        ref={inputNomorInvoiceRef}
+                        autoFocus
+                        type="text"
+                        className="border-gray-400 rounded-sm h-[38px] w-full"
+                        value={data.nomorInvoice}
+                        onChange={(e) =>
+                          setData({ ...data, nomorInvoice: e.target.value })
+                        }
+                      />
+                    </td>
+
+                    {vendorType === "Beli Putus" && (
+                      <td className="p-2">
+                        <input
+                          type="date"
+                          className="border-gray-400 rounded-sm h-[38px] w-full"
+                          value={data.tanggalInvoice}
+                          onChange={(e) =>
+                            setData({ ...data, tanggalInvoice: e.target.value })
+                          }
+                        />
+                      </td>
+                    )}
+
+                    <td className="p-2">
+                      <input
+                        type="number"
+                        className="border-gray-400 rounded-sm h-[38px] w-full"
+                        value={data.nilaiInvoice}
+                        onChange={onChangeNilaiInvoice}
+                        onKeyUp={(e) => e.code === "Enter" && onClickSave(i)}
+                      />
+                    </td>
+                  </tr>
+                )
+              )}
+
+            {addMode && activeStep !== 2 && (
+              <tr>
+                {activeStep !== 2 && (
                   <td className="p-2">
                     <div className="flex gap-1">
                       <FaRegSave
                         className="text-sky-600 cursor-pointer"
-                        onClick={() => onClickSave(i)}
+                        onClick={() => onClickSave()}
                       />
                       <MdOutlineCancel
                         className="text-red-600 cursor-pointer"
@@ -152,177 +377,62 @@ const TableInvoice = React.memo(
                       />
                     </div>
                   </td>
-                  {vendorType !== "Beli Putus" && (
-                    <td className="p-2">
-                      <Select
-                        value={data.lokasi}
-                        menuPlacement="auto"
-                        menuPortalTarget={document.body}
-                        onChange={(item) => setData({ ...data, lokasi: item })}
-                        className="whitespace-nowrap"
-                        options={optionLokasi}
-                        noOptionsMessage={() => "Data not found"}
-                        styles={customeStyles}
-                        required
-                      />
-                    </td>
-                  )}
+                )}
+
+                {vendorType !== "Beli Putus" && (
                   <td className="p-2">
-                    <input
-                      ref={inputNomorInvoiceRef}
-                      autoFocus
-                      type="text"
-                      className="border-gray-400 rounded-sm h-[38px] w-full"
-                      value={data.nomorInvoice}
-                      onChange={(e) =>
-                        setData({ ...data, nomorInvoice: e.target.value })
-                      }
+                    <Select
+                      value={data.lokasi}
+                      menuPlacement="auto"
+                      menuPortalTarget={document.body}
+                      onChange={(item) => setData({ ...data, lokasi: item })}
+                      className="whitespace-nowrap"
+                      options={optionLokasi}
+                      noOptionsMessage={() => "Data not found"}
+                      styles={customeStyles}
+                      required
                     />
                   </td>
-
-                  {vendorType !== "Beli Putus" && (
-                    <>
-                      <td className="p-2">
-                        <input
-                          type="date"
-                          className="border-gray-400 rounded-sm h-[38px] w-full"
-                          value={data.startDate}
-                          onChange={(e) =>
-                            setData({ ...data, startDate: e.target.value })
-                          }
-                        />
-                      </td>
-                      <td className="p-2">
-                        <input
-                          type="date"
-                          className="border-gray-400 rounded-sm h-[38px] w-full"
-                          value={data.endDate}
-                          onChange={(e) =>
-                            setData({ ...data, endDate: e.target.value })
-                          }
-                        />
-                      </td>
-                    </>
-                  )}
-
-                  {vendorType === "Beli Putus" && (
-                    <td className="p-2">
-                      <input
-                        type="date"
-                        className="border-gray-400 rounded-sm h-[38px] w-full"
-                        value={data.tanggalInvoice}
-                        onChange={(e) =>
-                          setData({ ...data, tanggalInvoice: e.target.value })
-                        }
-                      />
-                    </td>
-                  )}
-
-                  <td className="p-2">
-                    <input
-                      type="number"
-                      className="border-gray-400 rounded-sm h-[38px] w-full"
-                      value={data.nilaiInvoice}
-                      onChange={onChangeNilaiInvoice}
-                      onKeyUp={(e) => e.code === "Enter" && onClickSave(i)}
-                    />
-                  </td>
-                </tr>
-              )
-            )}
-
-          {addMode && (
-            <tr>
-              <td className="p-2">
-                <div className="flex gap-1">
-                  <FaRegSave
-                    className="text-sky-600 cursor-pointer"
-                    onClick={() => onClickSave()}
-                  />
-                  <MdOutlineCancel
-                    className="text-red-600 cursor-pointer"
-                    onClick={onClickCancel}
-                  />
-                </div>
-              </td>
-              {vendorType !== "Beli Putus" && (
-                <td className="p-2">
-                  <Select
-                    value={data.lokasi}
-                    menuPlacement="auto"
-                    menuPortalTarget={document.body}
-                    onChange={(item) => setData({ ...data, lokasi: item })}
-                    className="whitespace-nowrap"
-                    options={optionLokasi}
-                    noOptionsMessage={() => "Data not found"}
-                    styles={customeStyles}
-                    required
-                  />
-                </td>
-              )}
-              <td className="p-2">
-                <input
-                  ref={inputNomorInvoiceRef}
-                  autoFocus
-                  type="text"
-                  className="border-gray-400 rounded-sm h-[38px] w-full"
-                  value={data.nomorInvoice}
-                  onChange={(e) =>
-                    setData({ ...data, nomorInvoice: e.target.value })
-                  }
-                />
-              </td>
-
-              {vendorType !== "Beli Putus" && (
-                <>
-                  <td className="p-2">
-                    <input
-                      type="date"
-                      className="border-gray-400 rounded-sm h-[38px] w-full"
-                      value={data.startDate}
-                      onChange={(e) =>
-                        setData({ ...data, startDate: e.target.value })
-                      }
-                    />
-                  </td>
-                  <td className="p-2">
-                    <input
-                      type="date"
-                      className="border-gray-400 rounded-sm h-[38px] w-full"
-                      value={data.endDate}
-                      onChange={(e) =>
-                        setData({ ...data, endDate: e.target.value })
-                      }
-                    />
-                  </td>
-                </>
-              )}
-
-              {vendorType === "Beli Putus" && (
+                )}
                 <td className="p-2">
                   <input
-                    type="date"
+                    ref={inputNomorInvoiceRef}
+                    autoFocus
+                    type="text"
                     className="border-gray-400 rounded-sm h-[38px] w-full"
-                    value={data.tanggalInvoice}
+                    value={data.nomorInvoice}
                     onChange={(e) =>
-                      setData({ ...data, tanggalInvoice: e.target.value })
+                      setData({ ...data, nomorInvoice: e.target.value })
                     }
                   />
                 </td>
-              )}
-              <td className="p-2">
-                <input
-                  type="number"
-                  className="border-gray-400 rounded-sm h-[38px] w-full"
-                  value={data.nilaiInvoice}
-                  onChange={onChangeNilaiInvoice}
-                  onKeyUp={(e) => e.code === "Enter" && onClickSave()}
-                />
-              </td>
-            </tr>
-          )}
-        </tbody>
-      </table>
+
+                {vendorType === "Beli Putus" && (
+                  <td className="p-2">
+                    <input
+                      type="date"
+                      className="border-gray-400 rounded-sm h-[38px] w-full"
+                      value={data.tanggalInvoice}
+                      onChange={(e) =>
+                        setData({ ...data, tanggalInvoice: e.target.value })
+                      }
+                    />
+                  </td>
+                )}
+                <td className="p-2">
+                  <input
+                    type="number"
+                    className="border-gray-400 rounded-sm h-[38px] w-full"
+                    value={data.nilaiInvoice}
+                    onChange={onChangeNilaiInvoice}
+                    onKeyUp={(e) => e.code === "Enter" && onClickSave()}
+                  />
+                </td>
+              </tr>
+            )}
+          </tbody>
+        </table>
+      </>
     );
   }
 );

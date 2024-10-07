@@ -1791,112 +1791,117 @@ const Registration = () => {
                       </div>
                     </div>
 
-                    <div className="flex gap-2 items-center mb-3 mt-10">
-                      <div className="whitespace-nowrap flex">
-                        <label htmlFor="" className="w-44">
-                          Rebate
-                        </label>
-                      </div>
-                      <div className="w-1/2 relative">
-                        <input
-                          type="number"
-                          min={0}
-                          step={0.01}
-                          value={rebate}
-                          onChange={onChangeRebate}
-                          onKeyDown={(evt) =>
-                            (evt.key === "e" || evt.key === "-") &&
-                            evt.preventDefault()
-                          }
-                          className="w-full h-[36px] border border-slate-300 rounded-sm focus:border focus:border-[#0077b6]  "
-                        />
-                      </div>
-                    </div>
+                    {tipePembelian.value === "konsinyasi" && (
+                      <>
+                        <div className="flex gap-2 items-center mb-3 mt-10">
+                          <div className="whitespace-nowrap flex">
+                            <label htmlFor="" className="w-44">
+                              Rebate
+                            </label>
+                          </div>
+                          <div className="w-1/2 relative">
+                            <input
+                              type="number"
+                              min={0}
+                              step={0.01}
+                              value={rebate}
+                              onChange={onChangeRebate}
+                              onKeyDown={(evt) =>
+                                (evt.key === "e" || evt.key === "-") &&
+                                evt.preventDefault()
+                              }
+                              className="w-full h-[36px] border border-slate-300 rounded-sm focus:border focus:border-[#0077b6]  "
+                            />
+                          </div>
+                        </div>
+                        <div className="flex gap-2 items-center mb-3">
+                          <div className="whitespace-nowrap flex">
+                            <label htmlFor="" className="w-44">
+                              Anniversary
+                            </label>
+                          </div>
+                          <div className="w-1/2 relative">
+                            <input
+                              type="number"
+                              min={0}
+                              step={0.01}
+                              value={marketingFee}
+                              onChange={onChangeMarketingFee}
+                              onKeyDown={(evt) =>
+                                (evt.key === "e" || evt.key === "-") &&
+                                evt.preventDefault()
+                              }
+                              className="w-full h-[36px] border border-slate-300 rounded-sm focus:border focus:border-[#0077b6]  "
+                            />
+                          </div>
+                        </div>
+                       
+                        <div className="flex gap-2 items-center mb-3">
+                          <div className="whitespace-nowrap flex">
+                            <label htmlFor="" className="w-44">
+                              Promotion
+                            </label>
+                          </div>
+                          <div className="w-1/2 relative">
+                            <input
+                              type="number"
+                              min={0}
+                              step={0.01}
+                              value={promotionFund}
+                              onChange={onChangePromotionFund}
+                              onKeyDown={(evt) =>
+                                (evt.key === "e" || evt.key === "-") &&
+                                evt.preventDefault()
+                              }
+                              className="w-full h-[36px] border border-slate-300 rounded-sm focus:border focus:border-[#0077b6]  "
+                            />
+                          </div>
+                        </div>
+                        <div className="flex gap-2 items-center mb-3">
+                          <div className="whitespace-nowrap flex">
+                            <label htmlFor="" className="w-44">
+                              Barcode
+                            </label>
+                          </div>
+                          <div className="w-1/2 relative">
+                            <input
+                              type="number"
+                              min={0}
+                              step={0.01}
+                              value={listingFee}
+                              onChange={onChangeListingFee}
+                              onKeyDown={(evt) =>
+                                (evt.key === "e" || evt.key === "-") &&
+                                evt.preventDefault()
+                              }
+                              className="w-full h-[36px] border border-slate-300 rounded-sm focus:border focus:border-[#0077b6]  "
+                            />
+                          </div>
+                        </div>
+                        <div className="flex gap-2 items-center mb-3">
+                          <div className="whitespace-nowrap flex">
+                            <label htmlFor="" className="w-44">
+                              Other Fee
+                            </label>
+                          </div>
+                          <div className="w-1/2 relative">
+                            <input
+                              type="number"
+                              min={0}
+                              step={0.01}
+                              value={otherFee}
+                              onChange={(e) => setOtherFee(e.target.value)}
+                              onKeyDown={(evt) =>
+                                (evt.key === "e" || evt.key === "-") &&
+                                evt.preventDefault()
+                              }
+                              className="w-full h-[36px] border border-slate-300 rounded-sm focus:border focus:border-[#0077b6]  "
+                            />
+                          </div>
+                        </div>
+                      </>
+                    )}
 
-                    <div className="flex gap-2 items-center mb-3">
-                      <div className="whitespace-nowrap flex">
-                        <label htmlFor="" className="w-44">
-                          Marketing fee
-                        </label>
-                      </div>
-                      <div className="w-1/2 relative">
-                        <input
-                          type="number"
-                          min={0}
-                          step={0.01}
-                          value={marketingFee}
-                          onChange={onChangeMarketingFee}
-                          onKeyDown={(evt) =>
-                            (evt.key === "e" || evt.key === "-") &&
-                            evt.preventDefault()
-                          }
-                          className="w-full h-[36px] border border-slate-300 rounded-sm focus:border focus:border-[#0077b6]  "
-                        />
-                      </div>
-                    </div>
-                    <div className="flex gap-2 items-center mb-3">
-                      <div className="whitespace-nowrap flex">
-                        <label htmlFor="" className="w-44">
-                          Listing Fee
-                        </label>
-                      </div>
-                      <div className="w-1/2 relative">
-                        <input
-                          type="number"
-                          min={0}
-                          step={0.01}
-                          value={listingFee}
-                          onChange={onChangeListingFee}
-                          onKeyDown={(evt) =>
-                            (evt.key === "e" || evt.key === "-") &&
-                            evt.preventDefault()
-                          }
-                          className="w-full h-[36px] border border-slate-300 rounded-sm focus:border focus:border-[#0077b6]  "
-                        />
-                      </div>
-                    </div>
-                    <div className="flex gap-2 items-center mb-3">
-                      <div className="whitespace-nowrap flex">
-                        <label htmlFor="" className="w-44">
-                          Promotion Found
-                        </label>
-                      </div>
-                      <div className="w-1/2 relative">
-                        <input
-                          type="number"
-                          min={0}
-                          step={0.01}
-                          value={promotionFund}
-                          onChange={onChangePromotionFund}
-                          onKeyDown={(evt) =>
-                            (evt.key === "e" || evt.key === "-") &&
-                            evt.preventDefault()
-                          }
-                          className="w-full h-[36px] border border-slate-300 rounded-sm focus:border focus:border-[#0077b6]  "
-                        />
-                      </div>
-                    </div>
-                    <div className="flex gap-2 items-center mb-3">
-                      <div className="whitespace-nowrap flex">
-                        <label htmlFor="" className="w-44">
-                          Other Fee
-                        </label>
-                      </div>
-                      <div className="w-1/2 relative">
-                        <input
-                          type="number"
-                          min={0}
-                          step={0.01}
-                          value={otherFee}
-                          onChange={(e) => setOtherFee(e.target.value)}
-                          onKeyDown={(evt) =>
-                            (evt.key === "e" || evt.key === "-") &&
-                            evt.preventDefault()
-                          }
-                          className="w-full h-[36px] border border-slate-300 rounded-sm focus:border focus:border-[#0077b6]  "
-                        />
-                      </div>
-                    </div>
                     {isError && (
                       <div className="mt-10 mb-3">
                         <div className="w-fit flex gap-1 items-center text-[14px] bg-red-500 text-white py-3 px-5 ">
@@ -3453,112 +3458,121 @@ const Registration = () => {
                               <div>Hari</div>
                             </div>
                           </div>
-                          <div className="flex flex-col gap-2 mb-3 mt-10">
-                            <div className="whitespace-nowrap flex">
-                              <label htmlFor="" className="w-44">
-                                Rebate
-                              </label>
-                            </div>
-                            <div className="relative">
-                              <input
-                                type="number"
-                                min={0}
-                                step={0.01}
-                                value={rebate}
-                                onChange={onChangeRebate}
-                                onKeyDown={(evt) =>
-                                  (evt.key === "e" || evt.key === "-") &&
-                                  evt.preventDefault()
-                                }
-                                className="w-full h-[36px] border border-slate-300 rounded-sm focus:border focus:border-[#0077b6]  "
-                              />
-                            </div>
-                          </div>
 
-                          <div className="flex flex-col gap-2 mb-3">
-                            <div className="whitespace-nowrap flex">
-                              <label htmlFor="" className="w-44">
-                                Marketing fee
-                              </label>
-                            </div>
-                            <div className="relative">
-                              <input
-                                type="number"
-                                min={0}
-                                step={0.01}
-                                value={marketingFee}
-                                onChange={onChangeMarketingFee}
-                                onKeyDown={(evt) =>
-                                  (evt.key === "e" || evt.key === "-") &&
-                                  evt.preventDefault()
-                                }
-                                className="w-full h-[36px] border border-slate-300 rounded-sm focus:border focus:border-[#0077b6]  "
-                              />
-                            </div>
-                          </div>
-                          <div className="flex flex-col gap-2 mb-3">
-                            <div className="whitespace-nowrap flex">
-                              <label htmlFor="" className="w-44">
-                                Listing Fee
-                              </label>
-                            </div>
-                            <div className=" relative">
-                              <input
-                                type="number"
-                                min={0}
-                                step={0.01}
-                                value={listingFee}
-                                onChange={onChangeListingFee}
-                                onKeyDown={(evt) =>
-                                  (evt.key === "e" || evt.key === "-") &&
-                                  evt.preventDefault()
-                                }
-                                className="w-full h-[36px] border border-slate-300 rounded-sm focus:border focus:border-[#0077b6]  "
-                              />
-                            </div>
-                          </div>
-                          <div className="flex flex-col gap-2 mb-3">
-                            <div className="whitespace-nowrap flex">
-                              <label htmlFor="" className="w-44">
-                                Promotion Found
-                              </label>
-                            </div>
-                            <div className=" relative">
-                              <input
-                                type="number"
-                                min={0}
-                                step={0.01}
-                                value={promotionFund}
-                                onChange={onChangePromotionFund}
-                                onKeyDown={(evt) =>
-                                  (evt.key === "e" || evt.key === "-") &&
-                                  evt.preventDefault()
-                                }
-                                className="w-full h-[36px] border border-slate-300 rounded-sm focus:border focus:border-[#0077b6]  "
-                              />
-                            </div>
-                          </div>
-                          <div className="flex flex-col gap-2 mb-3">
-                            <div className="whitespace-nowrap flex">
-                              <label htmlFor="" className="w-44">
-                                Other Fee
-                              </label>
-                            </div>
-                            <div className=" relative">
-                              <input
-                                type="number"
-                                min={0}
-                                step={0.01}
-                                value={otherFee}
-                                onChange={(e) => setOtherFee(e.target.value)}
-                                onKeyDown={(evt) =>
-                                  (evt.key === "e" || evt.key === "-") &&
-                                  evt.preventDefault()
-                                }
-                                className="w-full h-[36px] border border-slate-300 rounded-sm focus:border focus:border-[#0077b6]  "
-                              />
-                            </div>
-                          </div>
+                          {tipePembelian.value === "konsinyasi" && (
+                            <>
+                              <div className="flex flex-col gap-2 mb-3 mt-10">
+                                <div className="whitespace-nowrap flex">
+                                  <label htmlFor="" className="w-44">
+                                    Rebate
+                                  </label>
+                                </div>
+                                <div className="relative">
+                                  <input
+                                    type="number"
+                                    min={0}
+                                    step={0.01}
+                                    value={rebate}
+                                    onChange={onChangeRebate}
+                                    onKeyDown={(evt) =>
+                                      (evt.key === "e" || evt.key === "-") &&
+                                      evt.preventDefault()
+                                    }
+                                    className="w-full h-[36px] border border-slate-300 rounded-sm focus:border focus:border-[#0077b6]  "
+                                  />
+                                </div>
+                              </div>
+
+                              <div className="flex flex-col gap-2 mb-3">
+                                <div className="whitespace-nowrap flex">
+                                  <label htmlFor="" className="w-44">
+                                    Anniversary
+                                  </label>
+                                </div>
+                                <div className="relative">
+                                  <input
+                                    type="number"
+                                    min={0}
+                                    step={0.01}
+                                    value={marketingFee}
+                                    onChange={onChangeMarketingFee}
+                                    onKeyDown={(evt) =>
+                                      (evt.key === "e" || evt.key === "-") &&
+                                      evt.preventDefault()
+                                    }
+                                    className="w-full h-[36px] border border-slate-300 rounded-sm focus:border focus:border-[#0077b6]  "
+                                  />
+                                </div>
+                              </div>
+                           
+                              <div className="flex flex-col gap-2 mb-3">
+                                <div className="whitespace-nowrap flex">
+                                  <label htmlFor="" className="w-44">
+                                    Promotion
+                                  </label>
+                                </div>
+                                <div className=" relative">
+                                  <input
+                                    type="number"
+                                    min={0}
+                                    step={0.01}
+                                    value={promotionFund}
+                                    onChange={onChangePromotionFund}
+                                    onKeyDown={(evt) =>
+                                      (evt.key === "e" || evt.key === "-") &&
+                                      evt.preventDefault()
+                                    }
+                                    className="w-full h-[36px] border border-slate-300 rounded-sm focus:border focus:border-[#0077b6]  "
+                                  />
+                                </div>
+                              </div>
+                              <div className="flex flex-col gap-2 mb-3">
+                                <div className="whitespace-nowrap flex">
+                                  <label htmlFor="" className="w-44">
+                                    Barcode
+                                  </label>
+                                </div>
+                                <div className=" relative">
+                                  <input
+                                    type="number"
+                                    min={0}
+                                    step={0.01}
+                                    value={listingFee}
+                                    onChange={onChangeListingFee}
+                                    onKeyDown={(evt) =>
+                                      (evt.key === "e" || evt.key === "-") &&
+                                      evt.preventDefault()
+                                    }
+                                    className="w-full h-[36px] border border-slate-300 rounded-sm focus:border focus:border-[#0077b6]  "
+                                  />
+                                </div>
+                              </div>
+                              <div className="flex flex-col gap-2 mb-3">
+                                <div className="whitespace-nowrap flex">
+                                  <label htmlFor="" className="w-44">
+                                    Other Fee
+                                  </label>
+                                </div>
+                                <div className=" relative">
+                                  <input
+                                    type="number"
+                                    min={0}
+                                    step={0.01}
+                                    value={otherFee}
+                                    onChange={(e) =>
+                                      setOtherFee(e.target.value)
+                                    }
+                                    onKeyDown={(evt) =>
+                                      (evt.key === "e" || evt.key === "-") &&
+                                      evt.preventDefault()
+                                    }
+                                    className="w-full h-[36px] border border-slate-300 rounded-sm focus:border focus:border-[#0077b6]  "
+                                  />
+                                </div>
+                              </div>
+                            </>
+                          )}
+
                           {isError && (
                             <div className="mt-10 mb-3">
                               <div className="w-fit flex gap-1 items-center text-[14px] bg-red-500 text-white py-3 px-5 ">

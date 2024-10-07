@@ -14,6 +14,7 @@ import { PiFileZipDuotone } from "react-icons/pi";
 import Cookies from "js-cookie";
 import { useNavigate } from "react-router-dom";
 import { toast, Toaster } from "sonner";
+import ModalConfirmationVendor from "./modal/ModalConfirmationVendor";
 
 const options = [
   { value: "APPROVED", label: "APPROVED", key: 0 },
@@ -44,6 +45,7 @@ const VendorRegistrationList = () => {
   const [page, setPage] = useState(1);
   //end pagination state
   const [open, setOpen] = useState(false);
+  const [openConfirmation, setOpenConfirmation] = useState(false);
   const [status, setStatus] = useState({
     value: "APPROVED",
     label: "APPROVED",
@@ -238,6 +240,7 @@ const VendorRegistrationList = () => {
         .then((res) => {
           if (res.data !== 0) {
             setOpen(false);
+            setOpenConfirmation(false)
             fetchData();
             setOpenBackdrop(false);
             toast.success("Update vendor berhasil");
@@ -261,6 +264,7 @@ const VendorRegistrationList = () => {
       navigate("/admin");
     }
   };
+
   return (
     <>
       <Toaster position="top-center" richColors />
@@ -645,7 +649,11 @@ const VendorRegistrationList = () => {
                           disabled={
                             vendorDetail.status === "APPROVED" ? true : false
                           }
-                          onClick={() => onSubmitVendor(vendorDetail)}
+                          onClick={() =>
+                            status.value !== "APPROVED"
+                              ? onSubmitVendor(vendorDetail)
+                              : setOpenConfirmation(true)
+                          }
                           className={`rounded-md py-2 px-5 shadow-sm bg-[#0077b6] text-white max-[479px]:w-full cursor-pointer block
                         `}
                         >
@@ -667,6 +675,14 @@ const VendorRegistrationList = () => {
               )}
             </Fade>
           </Modal>
+
+          <ModalConfirmationVendor
+            open={openConfirmation}
+            setOpen={setOpenConfirmation}
+            code={vendorDetail.kode}
+            screenSize={screenSize}
+            onClick={() => onSubmitVendor(vendorDetail)}
+          />
         </div>
       </div>
       <Backdrop

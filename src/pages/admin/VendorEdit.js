@@ -46,7 +46,7 @@ const VendorEdit = () => {
   const [optionProvinsi, setOptionProvinsi] = useState([]);
 
   //user
-  const [username, setUsername] = useState("")
+  const [username, setUsername] = useState("");
 
   const [tipePerusahaan, setTipePerusahaan] = useState({});
   const [tipePerusahaanText, setTipePerusahaanText] = useState("");
@@ -86,6 +86,7 @@ const VendorEdit = () => {
   const [rebate, setRebate] = useState("");
   const [marketingFee, setMarketingFee] = useState("");
   const [listingFee, setListingFee] = useState("");
+  const [otherFee, setOtherFee] = useState("");
   const [promotionFund, setPromotionFund] = useState("");
   const [npwpFileUpload, setNpwpFileUpload] = useState("");
   const [ktpPemilikFileUpload, setKtpPemilikFileUpload] = useState("");
@@ -232,6 +233,7 @@ const VendorEdit = () => {
           setRebate(data.rebate === 0 ? "" : data.rebate);
           setMarketingFee(data.marketing_fee === 0 ? "" : data.marketing_fee);
           setListingFee(data.listing_fee === 0 ? "" : data.listing_fee);
+          setOtherFee(data.other_fee === 0 ? "" : data.other_fee);
           setPromotionFund(
             data.promotion_found === 0 ? "" : data.promotion_found
           );
@@ -270,7 +272,7 @@ const VendorEdit = () => {
   };
 
   const fetchUser = async () => {
-    const arr = [state.vendor_id]
+    const arr = [state.vendor_id];
     fetch(`${api}api/portal-vendor/list/users`, {
       method: "POST",
       body: JSON.stringify({
@@ -396,9 +398,10 @@ const VendorEdit = () => {
                 nama_rekening_bank: namaRekening.trim(),
                 kantor_cabang_bank: kantorCabangBank.trim(),
                 metode_pengiriman: metodePengiriman.value,
-                rebate: rebate.trim(),
-                marketing_fee: marketingFee.trim(),
-                listing_fee: listingFee.trim(),
+                rebate: rebate,
+                marketing_fee: marketingFee,
+                listing_fee: listingFee,
+                other_fee: otherFee,
                 promotion_found: promotionFund,
                 file_npwp: npwpFile !== null ? npwpFile : null,
                 file_ktp_pemilik:
@@ -833,7 +836,7 @@ const VendorEdit = () => {
                               />
                             </div>
                           </div>
-                          
+
                           <div className="flex gap-2 items-center mb-3 w-full">
                             <div className=" flex">
                               <label htmlFor="" className="w-72">
@@ -879,7 +882,9 @@ const VendorEdit = () => {
                               <input
                                 value={namaPerusahaan}
                                 onChange={(e) =>
-                                  setNamaPerusahaan(e.target.value.toUpperCase())
+                                  setNamaPerusahaan(
+                                    e.target.value.toUpperCase()
+                                  )
                                 }
                                 type="text"
                                 name=""
@@ -933,18 +938,17 @@ const VendorEdit = () => {
                                 Username
                               </label>
                             </div>
-                            
-                              <div className="w-full relative">
-                                <input
-                                  value={username}
-                                  disabled
-                                  type="text"
-                                  name=""
-                                  id=""
-                                  className="bg-gray-200 w-full h-[36px] border border-slate-300 rounded-sm focus:border focus:border-[#0077b6]  "
-                                />
-                              </div>
-                            
+
+                            <div className="w-full relative">
+                              <input
+                                value={username}
+                                disabled
+                                type="text"
+                                name=""
+                                id=""
+                                className="bg-gray-200 w-full h-[36px] border border-slate-300 rounded-sm focus:border focus:border-[#0077b6]  "
+                              />
+                            </div>
                           </div>
                           <div className="flex flex-col gap-2 mb-3 w-full">
                             <div className=" flex">
@@ -989,7 +993,9 @@ const VendorEdit = () => {
                               <input
                                 value={namaPerusahaan}
                                 onChange={(e) =>
-                                  setNamaPerusahaan(e.target.value.toUpperCase())
+                                  setNamaPerusahaan(
+                                    e.target.value.toUpperCase()
+                                  )
                                 }
                                 type="text"
                                 name=""
@@ -1447,9 +1453,7 @@ const VendorEdit = () => {
                     />
                   </div>
                 </div>
-                <div className="mt-10 underline">
-                  Kontak Korenspondensi Notifikasi
-                </div>
+                <div className="mt-10 underline">Kontak Korenspondensi PO</div>
                 <div className="flex flex-col min-[612px]:flex-row gap-5 min-[612px]:gap-2 mb-3 w-full min-[612px]:items-center mt-2">
                   <div className="flex">
                     <label htmlFor="" className="w-72">
@@ -1523,7 +1527,11 @@ const VendorEdit = () => {
                     />
                   </div>
                 </div>
-                <div className="flex flex-col min-[612px]:flex-row gap-5 min-[612px]:gap-2 mb-3 w-full min-[612px]:items-center mt-10">
+
+                <div className="mt-10 underline">
+                  Kontak Korenspondensi Keuangan
+                </div>
+                <div className="flex flex-col min-[612px]:flex-row gap-5 min-[612px]:gap-2 mb-3 mt-2 w-full min-[612px]:items-center mt-10">
                   <div className=" flex">
                     <label htmlFor="" className="w-72">
                       No. Whatsapp Keuangan
@@ -1746,94 +1754,121 @@ const VendorEdit = () => {
                   </div>
                 </div>
 
-                <div className="flex flex-col min-[612px]:flex-row gap-5 min-[612px]:gap-2 mb-3 w-full min-[612px]:items-center mt-10">
-                  <div className=" flex">
-                    <label htmlFor="" className="w-72">
-                      Rebate
-                    </label>
-                    <div className="hidden min-[612px]:block">:</div>
-                  </div>
-                  <div className="w-full relative">
-                    <input
-                      value={rebate}
-                      onChange={onChangeRebate}
-                      onKeyDown={(evt) =>
-                        (evt.key === "e" || evt.key === "-") &&
-                        evt.preventDefault()
-                      }
-                      min={0}
-                      step={0.01}
-                      type="number"
-                      className="w-full h-[36px] border border-slate-300 rounded-sm focus:border focus:border-[#0077b6]  "
-                    />
-                  </div>
-                </div>
-                <div className="flex flex-col min-[612px]:flex-row gap-5 min-[612px]:gap-2 mb-3 w-full min-[612px]:items-center">
-                  <div className=" flex">
-                    <label htmlFor="" className="w-72">
-                      Marketing Fee
-                    </label>
-                    <div className="hidden min-[612px]:block">:</div>
-                  </div>
-                  <div className="w-full relative">
-                    <input
-                      type="number"
-                      min={0}
-                      step={0.01}
-                      value={marketingFee}
-                      onChange={onChangeMarketingFee}
-                      onKeyDown={(evt) =>
-                        (evt.key === "e" || evt.key === "-") &&
-                        evt.preventDefault()
-                      }
-                      className="w-full h-[36px] border border-slate-300 rounded-sm focus:border focus:border-[#0077b6]  "
-                    />
-                  </div>
-                </div>
-                <div className="flex flex-col min-[612px]:flex-row gap-5 min-[612px]:gap-2 mb-3 w-full min-[612px]:items-center">
-                  <div className=" flex">
-                    <label htmlFor="" className="w-72">
-                      Listing Fee
-                    </label>
-                    <div className="hidden min-[612px]:block">:</div>
-                  </div>
-                  <div className="w-full relative">
-                    <input
-                      min={0}
-                      step={0.01}
-                      value={listingFee}
-                      onChange={onChangeListingFee}
-                      onKeyDown={(evt) =>
-                        (evt.key === "e" || evt.key === "-") &&
-                        evt.preventDefault()
-                      }
-                      type="number"
-                      className="w-full h-[36px] border border-slate-300 rounded-sm focus:border focus:border-[#0077b6]  "
-                    />
-                  </div>
-                </div>
-                <div className="flex flex-col min-[612px]:flex-row gap-5 min-[612px]:gap-2 mb-3 w-full min-[612px]:items-center">
-                  <div className=" flex">
-                    <label htmlFor="" className="w-72">
-                      Promotion Fund
-                    </label>
-                    <div className="hidden min-[612px]:block">:</div>
-                  </div>
-                  <div className="w-full relative">
-                    <input
-                      min={0}
-                      step={0.01}
-                      value={promotionFund}
-                      onChange={onChangePromotionFund}
-                      onKeyDown={(evt) =>
-                        (evt.key === "e" || evt.key === "-") &&
-                        evt.preventDefault()
-                      }
-                      type="number"
-                      className="w-full h-[36px] border border-slate-300 rounded-sm focus:border focus:border-[#0077b6]  "
-                    />
-                  </div>
-                </div>
+                {tipePembelian.value === "konsinyasi" && (
+                  <>
+                    <div className="flex flex-col min-[612px]:flex-row gap-5 min-[612px]:gap-2 mb-3 w-full min-[612px]:items-center mt-10">
+                      <div className=" flex">
+                        <label htmlFor="" className="w-72">
+                          Rebate
+                        </label>
+                        <div className="hidden min-[612px]:block">:</div>
+                      </div>
+                      <div className="w-full relative">
+                        <input
+                          value={rebate}
+                          onChange={onChangeRebate}
+                          onKeyDown={(evt) =>
+                            (evt.key === "e" || evt.key === "-") &&
+                            evt.preventDefault()
+                          }
+                          min={0}
+                          step={0.01}
+                          type="number"
+                          className="w-full h-[36px] border border-slate-300 rounded-sm focus:border focus:border-[#0077b6]  "
+                        />
+                      </div>
+                    </div>
+                    <div className="flex flex-col min-[612px]:flex-row gap-5 min-[612px]:gap-2 mb-3 w-full min-[612px]:items-center">
+                      <div className=" flex">
+                        <label htmlFor="" className="w-72">
+                          Anniversary
+                        </label>
+                        <div className="hidden min-[612px]:block">:</div>
+                      </div>
+                      <div className="w-full relative">
+                        <input
+                          type="number"
+                          min={0}
+                          step={0.01}
+                          value={marketingFee}
+                          onChange={onChangeMarketingFee}
+                          onKeyDown={(evt) =>
+                            (evt.key === "e" || evt.key === "-") &&
+                            evt.preventDefault()
+                          }
+                          className="w-full h-[36px] border border-slate-300 rounded-sm focus:border focus:border-[#0077b6]  "
+                        />
+                      </div>
+                    </div>
+                   
+                    <div className="flex flex-col min-[612px]:flex-row gap-5 min-[612px]:gap-2 mb-3 w-full min-[612px]:items-center">
+                      <div className=" flex">
+                        <label htmlFor="" className="w-72">
+                          Promotion
+                        </label>
+                        <div className="hidden min-[612px]:block">:</div>
+                      </div>
+                      <div className="w-full relative">
+                        <input
+                          min={0}
+                          step={0.01}
+                          value={promotionFund}
+                          onChange={onChangePromotionFund}
+                          onKeyDown={(evt) =>
+                            (evt.key === "e" || evt.key === "-") &&
+                            evt.preventDefault()
+                          }
+                          type="number"
+                          className="w-full h-[36px] border border-slate-300 rounded-sm focus:border focus:border-[#0077b6]  "
+                        />
+                      </div>
+                    </div>
+                    <div className="flex flex-col min-[612px]:flex-row gap-5 min-[612px]:gap-2 mb-3 w-full min-[612px]:items-center">
+                      <div className=" flex">
+                        <label htmlFor="" className="w-72">
+                          Barcode
+                        </label>
+                        <div className="hidden min-[612px]:block">:</div>
+                      </div>
+                      <div className="w-full relative">
+                        <input
+                          min={0}
+                          step={0.01}
+                          value={listingFee}
+                          onChange={onChangeListingFee}
+                          onKeyDown={(evt) =>
+                            (evt.key === "e" || evt.key === "-") &&
+                            evt.preventDefault()
+                          }
+                          type="number"
+                          className="w-full h-[36px] border border-slate-300 rounded-sm focus:border focus:border-[#0077b6]  "
+                        />
+                      </div>
+                    </div>
+                    <div className="flex flex-col min-[612px]:flex-row gap-5 min-[612px]:gap-2 mb-3 w-full min-[612px]:items-center">
+                      <div className=" flex">
+                        <label htmlFor="" className="w-72">
+                          Other Fee
+                        </label>
+                        <div className="hidden min-[612px]:block">:</div>
+                      </div>
+                      <div className="w-full relative">
+                        <input
+                          min={0}
+                          step={0.01}
+                          value={otherFee}
+                          onChange={(e) => setOtherFee(e.target.value)}
+                          onKeyDown={(evt) =>
+                            (evt.key === "e" || evt.key === "-") &&
+                            evt.preventDefault()
+                          }
+                          type="number"
+                          className="w-full h-[36px] border border-slate-300 rounded-sm focus:border focus:border-[#0077b6]  "
+                        />
+                      </div>
+                    </div>
+                  </>
+                )}
               </form>
               <div className="flex justify-end max-[415px]:w-full py-4">
                 <button
@@ -1933,7 +1968,7 @@ const VendorEdit = () => {
                   <div className="flex flex-col gap-1">
                     <div className=" flex">
                       <label htmlFor="" className="w-72">
-                        KTP Pemilik
+                        KTP Pemilik / Direktur
                       </label>
                       <div className="hidden min-[612px]:block">:</div>
                     </div>

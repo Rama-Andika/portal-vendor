@@ -310,6 +310,8 @@ const Monitoring = () => {
                     <td className="p-5 border">Nilai Penagihan</td>
                     <td className="p-5 border">Status Penagihan</td>
                     <td className="p-5 border">No Tukar Faktur</td>
+                    <td className="p-5 border">Nilai Penagihan Faktur</td>
+                    <td className="p-5 border">Tanggal Pembayaran Terbaru</td>
                   </tr>
                 </thead>
                 <tbody>
@@ -340,6 +342,14 @@ const Monitoring = () => {
                         {titleCase(item.status, "_")}
                       </td>
                       <td className="p-5 border">{item.doc_receive_number}</td>
+                      <td className="p-5 border">
+                        {accountingNumber(item.doc_receive_amount)}
+                      </td>
+                      <td className="p-5 border">
+                        {item.payment_date != null
+                          ? dayjs(item.payment_date).format("DD/MM/YYYY")
+                          : ""}
+                      </td>
                     </tr>
                   ))}
                 </tbody>

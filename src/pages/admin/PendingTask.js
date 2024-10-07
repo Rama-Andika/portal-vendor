@@ -250,7 +250,7 @@ const PendingTask = () => {
         })
           .then((response) => response.json())
           .then((res) => {
-            if (res.data === 0) {
+            if (res.data === "0") {
               fetchData();
               setOpenBackdrop(false);
               toast.error(res.message);
