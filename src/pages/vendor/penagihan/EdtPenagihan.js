@@ -38,11 +38,12 @@ const optionsTipePenagihan = [
   { value: "konsinyasi", label: "Konsinyasi", key: 1 },
 ];
 const optionsDeliveryArea = [
-  { value: "tangerang", label: "Tangerang"},
-  { value: "jakarta", label: "Jakarta"},
-  { value: "bali", label: "Bali"},
-  { value: "makassar", label: "Makassar"},
-  { value: "batam", label: "Batam"},
+  { value: "tangerang", label: "Tangerang" },
+  { value: "jakarta", label: "Jakarta" },
+  { value: "bali", label: "Bali" },
+  { value: "makassar", label: "Makassar" },
+  { value: "batam", label: "Batam" },
+  { value: "medan", label: "Medan" },
 ];
 const options = [
   { value: 0, label: "Tidak", key: 0 },
@@ -301,13 +302,10 @@ const Penagihan = () => {
     // eslint-disable-next-line array-callback-return
     nilaiInvoice.map((nilai) => {
       const value = nilai.value.replace(/\./g, "").split(",").join(".");
-      console.log(value)
       if (nilai.value.trim().length > 0 && !isNaN(value)) {
         countNilaiInvoice += 1;
       }
     });
-
-    
 
     // const invoiceTambahanArray = invoiceTambahan.filter((invoice) => {
     //   return !isEmpty(invoice);
@@ -322,13 +320,6 @@ const Penagihan = () => {
     //     countInvoiceTambahan += 1;
     //   }
     // });
-
-    console.log(nomerPo.trim().length)
-    console.log(tanggalPo !== undefined)
-    console.log(nomerDo.trim().length)
-    console.log(countNomerInvoice === nomerInvoice.length)
-    console.log(countTanggalInvoice === nomerInvoice.length)
-    console.log(countNilaiInvoice === nomerInvoice.length)
 
     if (activeStep === 0) {
       setActiveStep((prevActiveStep) => prevActiveStep + 1);
@@ -345,7 +336,7 @@ const Penagihan = () => {
           setIsError(false);
           setActiveStep((prevActiveStep) => prevActiveStep + 1);
         } else {
-          if (nomerSeriFakturPajak[0].value.trim().length === 19) {
+          if (nomerSeriFakturPajak[0].value.trim().length === 20) {
             setIsError(false);
             setActiveStep((prevActiveStep) => prevActiveStep + 1);
           } else {
@@ -418,7 +409,7 @@ const Penagihan = () => {
           setIsError(false);
           setActiveStep((prevActiveStep) => prevActiveStep + 1);
         } else {
-          if (nomerSeriFakturPajak[0].value.trim().length === 19) {
+          if (nomerSeriFakturPajak[0].value.trim().length === 20) {
             setIsError(false);
             setActiveStep((prevActiveStep) => prevActiveStep + 1);
           } else {
@@ -754,7 +745,7 @@ const Penagihan = () => {
   const formatFakturPajak = (value, i) => {
     try {
       var cleaned = ("" + value).replace(/\D/g, "");
-      var match = cleaned.match(/(\d{0,3})?(\d{0,3})?(\d{0,2})?(\d{0,8})$/);
+      var match = cleaned.match(/(\d{0,3})?(\d{0,3})?(\d{0,2})?(\d{0,9})$/);
 
       var nilai = [
         match[1],
@@ -929,7 +920,7 @@ const Penagihan = () => {
 
     // eslint-disable-next-line array-callback-return
     const nomerSeriFakturPajakList = nomerSeriFakturPajak.map((nomer) => {
-      if (nomer.value.trim().length === 19 && nomer.value.trim().length > 0) {
+      if (nomer.value.trim().length === 20 && nomer.value.trim().length > 0) {
         return nomer.value;
       }
     });
@@ -1078,7 +1069,7 @@ const Penagihan = () => {
 
     // eslint-disable-next-line array-callback-return
     const nomerSeriFakturPajakList = nomerSeriFakturPajak.map((nomer) => {
-      if (nomer.value.trim().length === 19 && nomer.value.trim().length > 0) {
+      if (nomer.value.trim().length === 20 && nomer.value.trim().length > 0) {
         return nomer.value;
       }
     });
@@ -1230,7 +1221,7 @@ const Penagihan = () => {
 
     // eslint-disable-next-line array-callback-return
     const nomerSeriFakturPajakList = nomerSeriFakturPajak.map((nomer) => {
-      if (nomer.value.trim().length === 19 && nomer.value.trim().length > 0) {
+      if (nomer.value.trim().length === 20 && nomer.value.trim().length > 0) {
         return nomer.value;
       }
     });
@@ -1373,7 +1364,7 @@ const Penagihan = () => {
 
     // eslint-disable-next-line array-callback-return
     const nomerSeriFakturPajakList = nomerSeriFakturPajak.map((nomer) => {
-      if (nomer.value.trim().length === 19 && nomer.value.trim().length > 0) {
+      if (nomer.value.trim().length === 20 && nomer.value.trim().length > 0) {
         return nomer.value;
       }
     });
@@ -1865,7 +1856,7 @@ const Penagihan = () => {
                                     className="flex items-center gap-1"
                                   >
                                     <input
-                                      maxLength={19}
+                                      maxLength={20}
                                       disabled={
                                         isPajak.label === "Tidak" ? true : false
                                       }
@@ -2226,7 +2217,7 @@ const Penagihan = () => {
                                     className="flex items-center gap-1"
                                   >
                                     <input
-                                      maxLength={19}
+                                      maxLength={20}
                                       disabled={
                                         isPajak.label === "Tidak" ? true : false
                                       }
@@ -2478,8 +2469,7 @@ const Penagihan = () => {
                                         />
                                       </div>
                                     </div>
-                                    {invoiceFileUpload[i + 1].trim().length >
-                                      0 && (
+                                    {invoiceFileUpload[i + 1]?.length > 0 && (
                                       <a
                                         href={`${apiExport}fin/transactionact/view_portal_file.jsp?file=${
                                           invoiceFileUpload[i + 1]
@@ -2552,7 +2542,7 @@ const Penagihan = () => {
                                 </a>
                               )}
                             </div>
-                            {vendors.status_pajak === "PKP" && (
+                            {isPajak.value === 1 && (
                               <>
                                 <div className="flex items-center gap-3 mb-3">
                                   <div className="flex flex-col gap-1">
@@ -2596,7 +2586,7 @@ const Penagihan = () => {
                                     </div>
                                     <div>*)</div>
                                   </div>
-                                  {fakturPajakFileUpload[0].trim().length >
+                                  {fakturPajakFileUpload[0]?.trim().length >
                                     0 && (
                                     <a
                                       href={`${apiExport}fin/transactionact/view_portal_file.jsp?file=${fakturPajakFileUpload[0]}`}
@@ -2666,7 +2656,7 @@ const Penagihan = () => {
                                             />
                                           </div>
                                         </div>
-                                        {fakturPajakFileUpload[i + 1].trim()
+                                        {fakturPajakFileUpload[i + 1]?.trim()
                                           .length > 0 && (
                                           <a
                                             href={`${apiExport}fin/transactionact/view_portal_file.jsp?file=${
@@ -3051,7 +3041,7 @@ const Penagihan = () => {
                                         />
                                       </div>
                                     </div>
-                                    {invoiceFileUpload[i + 1].trim().length >
+                                    {invoiceFileUpload[i + 1]?.trim().length >
                                       0 && (
                                       <a
                                         href={`${apiExport}fin/transactionact/view_portal_file.jsp?file=${
@@ -3124,7 +3114,7 @@ const Penagihan = () => {
                                 </a>
                               )}
                             </div>
-                            {vendors.status_pajak === "PKP" && (
+                            {isPajak.value === 1 && (
                               <>
                                 <div className="flex items-center gap-3 mb-3">
                                   <div className="flex flex-col gap-1">
@@ -3168,7 +3158,7 @@ const Penagihan = () => {
                                     </div>
                                     <div>*)</div>
                                   </div>
-                                  {fakturPajakFileUpload[0].trim().length >
+                                  {fakturPajakFileUpload[0]?.trim().length >
                                     0 && (
                                     <a
                                       href={`${apiExport}fin/transactionact/view_portal_file.jsp?file=${fakturPajakFileUpload[0]}`}
@@ -3238,7 +3228,7 @@ const Penagihan = () => {
                                             />
                                           </div>
                                         </div>
-                                        {fakturPajakFileUpload[i + 1].trim()
+                                        {fakturPajakFileUpload[i + 1]?.trim()
                                           .length > 0 && (
                                           <a
                                             href={`${apiExport}fin/transactionact/view_portal_file.jsp?file=${
@@ -3854,7 +3844,7 @@ const Penagihan = () => {
                                               className="flex items-center gap-1"
                                             >
                                               <input
-                                                maxLength={19}
+                                                maxLength={20}
                                                 disabled={
                                                   isPajak.label === "Tidak"
                                                     ? true
@@ -4234,7 +4224,7 @@ const Penagihan = () => {
                                               className="flex items-center gap-1"
                                             >
                                               <input
-                                                maxLength={19}
+                                                maxLength={20}
                                                 disabled={
                                                   isPajak.label === "Tidak"
                                                     ? true
@@ -4507,7 +4497,7 @@ const Penagihan = () => {
                                         className="hidden w-full h-[40px] border border-slate-300 rounded-sm focus:border focus:border-[#0077b6]  "
                                       />
                                     </div>
-                                    {invoiceFileUpload[0].trim().length > 0 && (
+                                    {invoiceFileUpload[0].length > 0 && (
                                       <a
                                         href={`${apiExport}fin/transactionact/view_portal_file.jsp?file=${invoiceFileUpload[0]}`}
                                         target="_blank"
@@ -4566,8 +4556,8 @@ const Penagihan = () => {
                                               className="hidden w-full h-[40px] border border-slate-300 rounded-sm focus:border focus:border-[#0077b6] "
                                             />
                                           </div>
-                                          {invoiceFileUpload[i + 1].trim()
-                                            .length > 0 && (
+                                          {invoiceFileUpload[i + 1]?.length >
+                                            0 && (
                                             <a
                                               href={`${apiExport}fin/transactionact/view_portal_file.jsp?file=${
                                                 invoiceFileUpload[i + 1]
@@ -4637,7 +4627,7 @@ const Penagihan = () => {
                                       </a>
                                     )}
                                   </div>
-                                  {vendors.status_pajak === "PKP" && (
+                                  {isPajak.value === 1 && (
                                     <>
                                       <div className="flex flex-col gap-3 mb-3">
                                         <div className="flex flex-col gap-1">
@@ -4678,8 +4668,8 @@ const Penagihan = () => {
                                             className="hidden w-full h-[40px] border border-slate-300 rounded-sm focus:border focus:border-[#0077b6]  "
                                           />
                                         </div>
-                                        {fakturPajakFileUpload[0].trim()
-                                          .length > 0 && (
+                                        {fakturPajakFileUpload[0]?.length >
+                                          0 && (
                                           <a
                                             href={`${apiExport}fin/transactionact/view_portal_file.jsp?file=${fakturPajakFileUpload[0]}`}
                                             target="_blank"
@@ -4746,9 +4736,8 @@ const Penagihan = () => {
                                                   className="hidden w-full h-[40px] border border-slate-300 rounded-sm focus:border focus:border-[#0077b6]  "
                                                 />
                                               </div>
-                                              {fakturPajakFileUpload[
-                                                i + 1
-                                              ].trim().length > 0 && (
+                                              {fakturPajakFileUpload[i + 1]
+                                                ?.length > 0 && (
                                                 <a
                                                   href={`${apiExport}fin/transactionact/view_portal_file.jsp?file=${
                                                     fakturPajakFileUpload[i + 1]
@@ -5057,7 +5046,7 @@ const Penagihan = () => {
                                         className="hidden w-full h-[40px] border border-slate-300 rounded-sm focus:border focus:border-[#0077b6]  "
                                       />
                                     </div>
-                                    {invoiceFileUpload[0].trim().length > 0 && (
+                                    {invoiceFileUpload[0].length > 0 && (
                                       <a
                                         href={`${apiExport}fin/transactionact/view_portal_file.jsp?file=${invoiceFileUpload[0]}`}
                                         target="_blank"
@@ -5116,8 +5105,8 @@ const Penagihan = () => {
                                               className="hidden w-full h-[40px] border border-slate-300 rounded-sm focus:border focus:border-[#0077b6]  "
                                             />
                                           </div>
-                                          {invoiceFileUpload[i + 1].trim()
-                                            .length > 0 && (
+                                          {invoiceFileUpload[i + 1]?.length >
+                                            0 && (
                                             <a
                                               href={`${apiExport}fin/transactionact/view_portal_file.jsp?file=${
                                                 invoiceFileUpload[i + 1]
@@ -5187,7 +5176,7 @@ const Penagihan = () => {
                                       </a>
                                     )}
                                   </div>
-                                  {vendors.status_pajak === "PKP" && (
+                                  {isPajak.value === 1 && (
                                     <>
                                       <div className="flex flex-col gap-3 mb-3">
                                         <div className="flex flex-col gap-1">
@@ -5228,8 +5217,8 @@ const Penagihan = () => {
                                             className="hidden w-full h-[40px] border border-slate-300 rounded-sm focus:border focus:border-[#0077b6]  "
                                           />
                                         </div>
-                                        {fakturPajakFileUpload[0].trim()
-                                          .length > 0 && (
+                                        {fakturPajakFileUpload[0]?.length >
+                                          0 && (
                                           <a
                                             href={`${apiExport}fin/transactionact/view_portal_file.jsp?file=${fakturPajakFileUpload[0]}`}
                                             target="_blank"
@@ -5296,9 +5285,8 @@ const Penagihan = () => {
                                                   className="hidden w-full h-[40px] border border-slate-300 rounded-sm focus:border focus:border-[#0077b6]  "
                                                 />
                                               </div>
-                                              {fakturPajakFileUpload[
-                                                i + 1
-                                              ].trim().length > 0 && (
+                                              {fakturPajakFileUpload[i + 1]
+                                                ?.length > 0 && (
                                                 <a
                                                   href={`${apiExport}fin/transactionact/view_portal_file.jsp?file=${
                                                     fakturPajakFileUpload[i + 1]
@@ -5442,7 +5430,7 @@ const Penagihan = () => {
                                           className="hidden w-full h-[40px] border border-slate-300 rounded-sm focus:border focus:border-[#0077b6] disabled:bg-gray-300 disabled:cursor-not-allowed"
                                         />
                                       </div>
-                                      {resiFileUpload.trim().length > 0 && (
+                                      {resiFileUpload.length > 0 && (
                                         <a
                                           href={`${apiExport}fin/transactionact/view_portal_file.jsp?file=${resiFileUpload}`}
                                           target="_blank"

@@ -43,8 +43,9 @@ const optionsDeliveryArea = [
   { value: "tangerang", label: "Tangerang" },
   { value: "jakarta", label: "Jakarta" },
   { value: "bali", label: "Bali" },
-  { value: "makassar", label: "Makassar"},
-  { value: "batam", label: "Batam"},
+  { value: "makassar", label: "Makassar" },
+  { value: "batam", label: "Batam" },
+  { value: "medan", label: "Medan" },
 ];
 const options = [
   { value: 0, label: "Tidak", key: 0 },
@@ -241,7 +242,7 @@ const Penagihan = () => {
           setIsError(false);
           setActiveStep((prevActiveStep) => prevActiveStep + 1);
         } else {
-          if (nomerSeriFakturPajak[0].value.trim().length === 19) {
+          if (nomerSeriFakturPajak[0].value.trim().length === 20) {
             setIsError(false);
             setActiveStep((prevActiveStep) => prevActiveStep + 1);
           } else {
@@ -260,7 +261,7 @@ const Penagihan = () => {
         kwitansiFile !== null &&
         receivingNoteFile !== null
       ) {
-        if (vendors.status_pajak === "PKP") {
+        if (isPajak.value === 1) {
           if (
             fakturPajakFile !== null &&
             countInvoiceTambahan - 1 === fakturPajakTambahanArray.length
@@ -349,7 +350,7 @@ const Penagihan = () => {
           setIsError(false);
           setActiveStep((prevActiveStep) => prevActiveStep + 1);
         } else {
-          if (nomerSeriFakturPajak[0].value.trim().length === 19) {
+          if (nomerSeriFakturPajak[0].value.trim().length === 20) {
             setIsError(false);
             setActiveStep((prevActiveStep) => prevActiveStep + 1);
           } else {
@@ -368,7 +369,7 @@ const Penagihan = () => {
         kwitansiFile !== null &&
         scanReportSalesFile !== null
       ) {
-        if (vendors.status_pajak === "PKP") {
+        if (isPajak.value === 1) {
           if (
             fakturPajakFile !== null &&
             countInvoiceTambahan - 1 === fakturPajakTambahanArray.length
@@ -727,7 +728,7 @@ const Penagihan = () => {
   const formatFakturPajak = (value, i) => {
     try {
       var cleaned = ("" + value).replace(/\D/g, "");
-      var match = cleaned.match(/(\d{0,3})?(\d{0,3})?(\d{0,2})?(\d{0,8})$/);
+      var match = cleaned.match(/(\d{0,3})?(\d{0,3})?(\d{0,2})?(\d{0,9})$/);
 
       var nilai = [
         match[1],
@@ -912,7 +913,7 @@ const Penagihan = () => {
       kwitansiFile !== null &&
       receivingNoteFile !== null
     ) {
-      if (vendors.status_pajak === "PKP") {
+      if (isPajak.value === 1) {
         if (
           fakturPajakFile !== null &&
           countInvoiceTambahan - 1 === fakturPajakTambahanArray.length
@@ -970,7 +971,7 @@ const Penagihan = () => {
 
     // eslint-disable-next-line array-callback-return
     const nomerSeriFakturPajakList = nomerSeriFakturPajak.map((nomer) => {
-      if (nomer.value.trim().length === 19 && nomer.value.trim().length > 0) {
+      if (nomer.value.trim().length === 20 && nomer.value.trim().length > 0) {
         return nomer.value;
       }
     });
@@ -1195,7 +1196,7 @@ const Penagihan = () => {
       kwitansiFile !== null &&
       scanReportSalesFile !== null
     ) {
-      if (vendors.status_pajak === "PKP") {
+      if (isPajak.value === 1) {
         if (
           fakturPajakFile !== null &&
           countInvoiceTambahan - 1 === fakturPajakTambahanArray.length
@@ -1253,7 +1254,7 @@ const Penagihan = () => {
 
     // eslint-disable-next-line array-callback-return
     const nomerSeriFakturPajakList = nomerSeriFakturPajak.map((nomer) => {
-      if (nomer.value.trim().length === 19) {
+      if (nomer.value.trim().length === 20) {
         return nomer.value;
       }
     });
@@ -1485,7 +1486,7 @@ const Penagihan = () => {
 
     // eslint-disable-next-line array-callback-return
     const nomerSeriFakturPajakList = nomerSeriFakturPajak.map((nomer) => {
-      if (nomer.value.trim().length === 19) {
+      if (nomer.value.trim().length === 20) {
         return nomer.value;
       }
     });
@@ -1705,7 +1706,7 @@ const Penagihan = () => {
 
     // eslint-disable-next-line array-callback-return
     const nomerSeriFakturPajakList = nomerSeriFakturPajak.map((nomer) => {
-      if (nomer.value.trim().length === 19) {
+      if (nomer.value.trim().length === 20) {
         return nomer.value;
       }
     });
@@ -2322,7 +2323,7 @@ const Penagihan = () => {
                                   <div>
                                     <PiWarningCircleLight />
                                   </div>
-                                  <div>Harus 16 digit</div>
+                                  <div>Harus 17 digit</div>
                                 </div>
                               </div>
                               <div>:</div>
@@ -2335,7 +2336,7 @@ const Penagihan = () => {
                                       className="flex items-center gap-1"
                                     >
                                       <input
-                                        maxLength={19}
+                                        maxLength={20}
                                         disabled={
                                           isPajak.label === "Tidak"
                                             ? true
@@ -2695,7 +2696,7 @@ const Penagihan = () => {
                                   <div>
                                     <PiWarningCircleLight />
                                   </div>
-                                  <div>Harus 16 digit</div>
+                                  <div>Harus 17 digit</div>
                                 </div>
                               </div>
                               <div>:</div>
@@ -2708,7 +2709,7 @@ const Penagihan = () => {
                                       className="flex items-center gap-1"
                                     >
                                       <input
-                                        maxLength={19}
+                                        maxLength={20}
                                         disabled={
                                           isPajak.label === "Tidak"
                                             ? true
@@ -3109,7 +3110,7 @@ const Penagihan = () => {
                                   </div>
                                 )
                               )}
-                              {vendors.status_pajak === "PKP" && (
+                              {isPajak.value === 1 && (
                                 <>
                                   <div className="flex items-center gap-3 mb-3">
                                     <div className="flex flex-col gap-1">
@@ -3834,7 +3835,7 @@ const Penagihan = () => {
                                   </div>
                                 )
                               )}
-                              {vendors.status_pajak === "PKP" && (
+                              {isPajak.value === 1 && (
                                 <>
                                   <div className="flex items-center gap-3 mb-3">
                                     <div className="flex flex-col gap-1">
@@ -4630,7 +4631,7 @@ const Penagihan = () => {
                                           <div>
                                             <PiWarningCircleLight />
                                           </div>
-                                          <div>Harus 16 digit</div>
+                                          <div>Harus 17 digit</div>
                                         </div>
                                       </div>
 
@@ -4643,7 +4644,7 @@ const Penagihan = () => {
                                                 className="flex items-center gap-1"
                                               >
                                                 <input
-                                                  maxLength={19}
+                                                  maxLength={20}
                                                   disabled={
                                                     isPajak.label === "Tidak"
                                                       ? true
@@ -5013,7 +5014,7 @@ const Penagihan = () => {
                                           <div>
                                             <PiWarningCircleLight />
                                           </div>
-                                          <div>Harus 16 digit</div>
+                                          <div>Harus 17 digit</div>
                                         </div>
                                       </div>
 
@@ -5026,7 +5027,7 @@ const Penagihan = () => {
                                                 className="flex items-center gap-1"
                                               >
                                                 <input
-                                                  maxLength={19}
+                                                  maxLength={20}
                                                   disabled={
                                                     isPajak.label === "Tidak"
                                                       ? true
@@ -5513,7 +5514,7 @@ const Penagihan = () => {
                                         </div>
                                       )
                                     )}
-                                    {vendors.status_pajak === "PKP" && (
+                                    {isPajak.value === 1 && (
                                       <>
                                         <div className="flex flex-col gap-3 mb-3">
                                           <div className="flex flex-col gap-1">
@@ -6215,7 +6216,7 @@ const Penagihan = () => {
                                         </div>
                                       )
                                     )}
-                                    {vendors.status_pajak === "PKP" && (
+                                    {isPajak.value === 1 && (
                                       <>
                                         <div className="flex flex-col gap-3 mb-3">
                                           <div className="flex flex-col gap-1">

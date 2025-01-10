@@ -447,7 +447,7 @@ const ListingPenagihan = () => {
                       {dayjs(item.created_at).format("DD/MM/YYYY HH:mm:ss")}
                     </td>
                     <td className="p-5 border">
-                      {item.due_date !== undefined
+                      {item.due_date
                         ? dayjs(item.due_date).format("DD/MM/YYYY")
                         : ""}
                     </td>
