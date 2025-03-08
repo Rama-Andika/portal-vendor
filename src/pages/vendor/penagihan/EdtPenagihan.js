@@ -49,11 +49,7 @@ const options = [
   { value: 0, label: "Tidak", key: 0 },
   { value: 1, label: "Ya", key: 1 },
 ];
-const optionsTipePengiriman = [
-  { value: 0, label: "Drop Box Gudang PT KPU", key: 0 },
-  { value: 1, label: "Kurir", key: 1 },
-  { value: 2, label: "Diantar langsung ke office PT KPU", key: 2 },
-];
+
 
 const api = process.env.REACT_APP_BASEURL;
 const apiExport = process.env.REACT_APP_EXPORT_URL;
@@ -122,11 +118,7 @@ const Penagihan = () => {
   const [nilaiInvoice, setNilaiInvoice] = useState(inputNilaiInvoice);
   const [invoiceTambahan, setInvoiceTambahan] = useState([]);
   const [fakturPajakTambahan, setFakturPajakTambahan] = useState([]);
-  const [tipePengiriman, setTipePengiriman] = useState({
-    value: 0,
-    label: "Drop Box Gudang PT KPU",
-    key: 0,
-  });
+
 
   const [isPajak, setIsPajak] = useState({ value: 0, label: "Tidak", key: 0 });
   const [nomerSeriFakturPajak, setNomerSeriFakturPajak] = useState(
@@ -144,8 +136,6 @@ const Penagihan = () => {
   const [fakturPajakFileUpload, setFakturPajakFileUpload] = useState(null);
   const [receivingNoteFile, setReceivingNoteFile] = useState(null);
   const [receivingNoteFileUpload, setReceivingNoteFileUpload] = useState(null);
-  const [resiFile, setResiFile] = useState(null);
-  const [resiFileUpload, setResiFileUpload] = useState(null);
   const [scanReportSalesFile, setScanReportSalesFile] = useState(null);
   const [scanReportSalesFileUpload, setScanReportSalesFileUpload] =
     useState(null);
@@ -210,7 +200,6 @@ const Penagihan = () => {
             label: titleCase(data.delivery_area),
           });
 
-          setTipePengiriman(optionsTipePengiriman[data.tipe_pengiriman]);
           const listInvoice = data.nomer_invoices.map((invoice) => {
             return { type: "text", value: invoice, id: 0 };
           });
@@ -261,7 +250,6 @@ const Penagihan = () => {
           setDeliveryOrderFileUpload(data.file_do ? data.file_do : "");
           setKwitansiFileUpload(data.file_kwitansi ? data.file_kwitansi : "");
           setReceivingNoteFileUpload(data.file_note ? data.file_note : "");
-          setResiFileUpload(data.file_resi ? data.file_resi : "");
           setScanReportSalesFileUpload(data.file_scan ? data.file_scan : "");
 
           const _invoiceFiles = data.file_invoices?.map((file) => {
@@ -639,13 +627,6 @@ const Penagihan = () => {
       });
   };
 
-  const onChangeTipePengiriman = (item) => {
-    if (item.value !== 1) {
-      setResiFile(null);
-    }
-
-    setTipePengiriman(item);
-  };
 
   const addInput = () => {
     if (nomerInvoice.length < 4) {
@@ -877,21 +858,6 @@ const Penagihan = () => {
     }
   };
 
-  const onChangeResiBuktiPengirimanFile = (e) => {
-    if (e.target.files[0] !== undefined) {
-      if (e.target.files[0].size <= 2000000) {
-        GetBase64(e.target.files[0])
-          .then((result) => {
-            setResiFile(result);
-          })
-          .catch((err) => {
-            setResiFile(null);
-          });
-      } else {
-        setResiFile(null);
-      }
-    }
-  };
 
   const saveDraft = async () => {
     setOpenBackdrop(true);
@@ -952,7 +918,6 @@ const Penagihan = () => {
           vendor_id: vendorId,
           no_request: nomerRequest,
           tipe_penagihan: tipePenagihan.value,
-          tipe_pengiriman: tipePengiriman.value,
           nomer_po: "PO" + nomerPo,
           tanggal_po: dayjs(tanggalPo).format("YYYY-MM-DD HH:mm:ss"),
           nomer_do: "DO" + nomerDo,
@@ -977,7 +942,6 @@ const Penagihan = () => {
               ? fakturPajakTambahanList
               : null,
           note_file: receivingNoteFile !== null ? receivingNoteFile : null,
-          resi_file: resiFile !== null ? resiFile : null,
           scan_report_sales_file:
             scanReportSalesFile !== null ? scanReportSalesFile : null,
           status: "DRAFT",
@@ -1101,7 +1065,6 @@ const Penagihan = () => {
           vendor_id: vendorId,
           no_request: nomerRequest,
           tipe_penagihan: tipePenagihan.value,
-          tipe_pengiriman: tipePengiriman.value,
           nomer_po: "PO" + nomerPo,
           tanggal_po: dayjs(tanggalPo).format("YYYY-MM-DD HH:mm:ss"),
           nomer_do: "DO" + nomerDo,
@@ -1128,7 +1091,6 @@ const Penagihan = () => {
               ? fakturPajakTambahanList
               : null,
           note_file: receivingNoteFile !== null ? receivingNoteFile : null,
-          resi_file: resiFile !== null ? resiFile : null,
           scan_report_sales_file:
             scanReportSalesFile !== null ? scanReportSalesFile : null,
           status: "DRAFT",
@@ -1252,7 +1214,6 @@ const Penagihan = () => {
         vendor_id: vendorId,
         no_request: nomerRequest,
         tipe_penagihan: tipePenagihan.value,
-        tipe_pengiriman: tipePengiriman.value,
         nomer_po: "PO" + nomerPo,
         tanggal_po: dayjs(tanggalPo).format("YYYY-MM-DD HH:mm:ss"),
         nomer_do: "DO" + nomerDo,
@@ -1277,7 +1238,6 @@ const Penagihan = () => {
             ? fakturPajakTambahanList
             : null,
         note_file: receivingNoteFile !== null ? receivingNoteFile : null,
-        resi_file: resiFile !== null ? resiFile : null,
         scan_report_sales_file:
           scanReportSalesFile !== null ? scanReportSalesFile : null,
         status: "Waiting_for_approval",
@@ -1395,7 +1355,6 @@ const Penagihan = () => {
         vendor_id: vendorId,
         no_request: nomerRequest,
         tipe_penagihan: tipePenagihan.value,
-        tipe_pengiriman: tipePengiriman.value,
         nomer_po: "PO" + nomerPo,
         tanggal_po: dayjs(tanggalPo).format("YYYY-MM-DD HH:mm:ss"),
         nomer_do: "DO" + nomerDo,
@@ -1422,7 +1381,6 @@ const Penagihan = () => {
             ? fakturPajakTambahanList
             : null,
         note_file: receivingNoteFile !== null ? receivingNoteFile : null,
-        resi_file: resiFile !== null ? resiFile : null,
         scan_report_sales_file:
           scanReportSalesFile !== null ? scanReportSalesFile : null,
         status: "Waiting_for_approval",
@@ -2729,92 +2687,6 @@ const Penagihan = () => {
                               )}
                             </div>
                             <div>
-                              <div className="italic">
-                                Dokumen asli (hardcopy) sudah di kirimkan ke PT
-                                Karya Prima Unggulan :
-                              </div>
-                              <div className="flex items-center gap-3 mb-3">
-                                <div className="w-[350px]">Tipe Pengiriman</div>
-                                <div>:</div>
-                                <div className="w-1/4 relative">
-                                  <Select
-                                    value={tipePengiriman}
-                                    onChange={onChangeTipePengiriman}
-                                    className="whitespace-nowrap"
-                                    options={optionsTipePengiriman}
-                                    noOptionsMessage={() => "Data not found"}
-                                    styles={customeStyles}
-                                    required
-                                  />
-                                  <div className="absolute right-[-20px] top-0">
-                                    {isError && isEmpty(tipePengiriman) ? (
-                                      <div className="text-red-500">
-                                        <PiWarningCircleLight />
-                                      </div>
-                                    ) : (
-                                      "*)"
-                                    )}
-                                  </div>
-                                </div>
-                              </div>
-                              <div className="flex items-center gap-3 mb-3">
-                                <div className="flex flex-col gap-1">
-                                  <div className="w-[350px]">
-                                    Resi Bukti Pengiriman
-                                  </div>
-                                  <div className="text-[10px] text-gray-500">
-                                    Max size 2 mb
-                                  </div>
-                                </div>
-                                <div>:</div>
-                                <div className="flex items-center gap-1">
-                                  <div>
-                                    <label
-                                      htmlFor="upload-resi"
-                                      className="w-fit"
-                                    >
-                                      {resiFile === null ? (
-                                        <div className="w-fit flex gap-1 items-center bg-blue-400 py-2 px-5 text-white hover:bg-blue-200 rounded-md">
-                                          <span>
-                                            <FaCloudUploadAlt />
-                                          </span>
-                                          <div>Upload</div>
-                                        </div>
-                                      ) : (
-                                        <div className="w-fit flex gap-1 items-center bg-blue-400 py-2 px-5 text-white hover:bg-blue-200 rounded-md">
-                                          <span>
-                                            <FaCloudUploadAlt />
-                                          </span>
-                                          <div>1 File</div>
-                                        </div>
-                                      )}
-                                    </label>
-                                    <input
-                                      disabled={
-                                        tipePengiriman.value === 1
-                                          ? false
-                                          : true
-                                      }
-                                      type="file"
-                                      onChange={onChangeResiBuktiPengirimanFile}
-                                      id="upload-resi"
-                                      accept=".jpg,.pdf"
-                                      className="hidden w-full h-[40px] border border-slate-300 rounded-sm focus:border focus:border-[#0077b6] disabled:bg-gray-300 disabled:cursor-not-allowed"
-                                    />
-                                  </div>
-                                  {tipePengiriman.value === 1 && <div>*)</div>}
-                                </div>
-                                {resiFileUpload.trim().length > 0 && (
-                                  <a
-                                    href={`${apiExport}fin/transactionact/view_portal_file.jsp?file=${resiFileUpload}`}
-                                    target="_blank"
-                                    className="underline cursor-pointer text-blue-500"
-                                    rel="noreferrer"
-                                  >
-                                    File terupload
-                                  </a>
-                                )}
-                              </div>
                               {isError && (
                                 <div className="mt-10 mb-3">
                                   <div className="w-fit flex gap-1 items-center text-[14px] bg-red-500 text-white py-3 px-5 ">
@@ -3303,86 +3175,6 @@ const Penagihan = () => {
                               )}
                             </div>
                             <div>
-                              <div className="italic">
-                                Dokumen asli (hardcopy) sudah di kirimkan ke PT
-                                Karya Prima Unggulan :
-                              </div>
-                              <div className="flex items-center gap-3 mb-3">
-                                <div className="w-[350px]">Tipe Pengiriman</div>
-                                <div>:</div>
-                                <div className="w-1/4 relative">
-                                  <Select
-                                    value={tipePengiriman}
-                                    onChange={onChangeTipePengiriman}
-                                    className="whitespace-nowrap"
-                                    options={optionsTipePengiriman}
-                                    noOptionsMessage={() => "Data not found"}
-                                    styles={customeStyles}
-                                    required
-                                  />
-                                  <div className="absolute right-[-20px] top-0">
-                                    {isError && isEmpty(tipePengiriman) ? (
-                                      <div className="text-red-500">
-                                        <PiWarningCircleLight />
-                                      </div>
-                                    ) : (
-                                      "*)"
-                                    )}
-                                  </div>
-                                </div>
-                              </div>
-                              <div className="flex items-center gap-3 mb-3">
-                                <div className="w-[350px]">
-                                  Resi Bukti Pengiriman
-                                </div>
-                                <div>:</div>
-                                <div className="flex items-center gap-1">
-                                  <div>
-                                    <label
-                                      htmlFor="upload-resi"
-                                      className="w-fit"
-                                    >
-                                      {resiFile === null ? (
-                                        <div className="w-fit flex gap-1 items-center bg-[#fff2cc] py-2 px-5 hover:bg-yellow-100 rounded-md">
-                                          <span>
-                                            <FaCloudUploadAlt />
-                                          </span>
-                                          <div>Upload</div>
-                                        </div>
-                                      ) : (
-                                        <div className="w-fit flex gap-1 items-center bg-[#fff2cc] py-2 px-5 hover:bg-yellow-100 rounded-md">
-                                          <span>
-                                            <FaCloudUploadAlt />
-                                          </span>
-                                          <div>1 File</div>
-                                        </div>
-                                      )}
-                                    </label>
-                                    <input
-                                      disabled={
-                                        tipePengiriman.value === 1
-                                          ? false
-                                          : true
-                                      }
-                                      type="file"
-                                      id="upload-resi"
-                                      accept=".jpg,.pdf"
-                                      className="hidden w-full h-[40px] border border-slate-300 rounded-sm focus:border focus:border-[#0077b6] disabled:bg-gray-300 disabled:cursor-not-allowed"
-                                    />
-                                  </div>
-                                  {tipePengiriman.value === 1 && <div>*)</div>}
-                                </div>
-                                {resiFileUpload.trim().length > 0 && (
-                                  <a
-                                    href={`${apiExport}fin/transactionact/view_portal_file.jsp?file=${resiFileUpload}`}
-                                    target="_blank"
-                                    className="underline cursor-pointer text-blue-500"
-                                    rel="noreferrer"
-                                  >
-                                    File terupload
-                                  </a>
-                                )}
-                              </div>
                               {isError && (
                                 <div className="mt-10 mb-3">
                                   <div className="w-fit flex gap-1 items-center text-[14px] bg-red-500 text-white py-3 px-5 ">
@@ -4808,88 +4600,6 @@ const Penagihan = () => {
                                     )}
                                   </div>
                                   <div>
-                                    <div className="italic">
-                                      Dokumen asli (hardcopy) sudah di kirimkan
-                                      ke PT Karya Prima Unggulan :
-                                    </div>
-                                    <div className="flex flex-col gap-3 mb-3">
-                                      <div>Tipe Pengiriman *) :</div>
-
-                                      <div className="w-full">
-                                        <Select
-                                          value={tipePengiriman}
-                                          onChange={onChangeTipePengiriman}
-                                          className="whitespace-nowrap"
-                                          options={optionsTipePengiriman}
-                                          noOptionsMessage={() =>
-                                            "Data not found"
-                                          }
-                                          styles={customeStyles}
-                                          required
-                                        />
-                                      </div>
-                                    </div>
-                                    <div className="flex flex-col gap-3 mb-3">
-                                      <div className="flex flex-col gap-1">
-                                        <div>
-                                          Resi Bukti Pengiriman{" "}
-                                          {tipePengiriman.value === 1
-                                            ? "*)"
-                                            : ""}{" "}
-                                          :
-                                        </div>
-                                        <div className="text-[10px] text-gray-500">
-                                          Max size 2 mb
-                                        </div>
-                                      </div>
-
-                                      <div>
-                                        <label
-                                          htmlFor="upload-resi"
-                                          className="w-fit"
-                                        >
-                                          {resiFile === null ? (
-                                            <div className="w-fit flex gap-1 items-center bg-blue-400 py-2 px-5 text-white hover:bg-blue-200 rounded-md">
-                                              <span>
-                                                <FaCloudUploadAlt />
-                                              </span>
-                                              <div>Upload</div>
-                                            </div>
-                                          ) : (
-                                            <div className="w-fit flex gap-1 items-center bg-blue-400 py-2 px-5 text-white hover:bg-blue-200 rounded-md">
-                                              <span>
-                                                <FaCloudUploadAlt />
-                                              </span>
-                                              <div>1 File</div>
-                                            </div>
-                                          )}
-                                        </label>
-                                        <input
-                                          disabled={
-                                            tipePengiriman.value === 1
-                                              ? false
-                                              : true
-                                          }
-                                          type="file"
-                                          id="upload-resi"
-                                          accept=".jpg,.pdf"
-                                          onChange={
-                                            onChangeResiBuktiPengirimanFile
-                                          }
-                                          className="hidden w-full h-[40px] border border-slate-300 rounded-sm focus:border focus:border-[#0077b6] disabled:bg-gray-300 disabled:cursor-not-allowed"
-                                        />
-                                      </div>
-                                      {resiFileUpload.trim().length > 0 && (
-                                        <a
-                                          href={`${apiExport}fin/transactionact/view_portal_file.jsp?file=${resiFileUpload}`}
-                                          target="_blank"
-                                          className="underline cursor-pointer text-blue-500"
-                                          rel="noreferrer"
-                                        >
-                                          File terupload
-                                        </a>
-                                      )}
-                                    </div>
                                     {isError && (
                                       <div className="mt-10 mb-3">
                                         <div className="w-fit flex gap-1 items-center text-[14px] bg-red-500 text-white py-3 px-5 ">
@@ -5357,90 +5067,6 @@ const Penagihan = () => {
                                     )}
                                   </div>
                                   <div>
-                                    <div className="italic">
-                                      Dokumen asli (hardcopy) sudah di kirimkan
-                                      ke PT Karya Prima Unggulan :
-                                    </div>
-                                    <div className="flex flex-col gap-3 mb-3">
-                                      <div className="w-[350px]">
-                                        Tipe Pengiriman *) :
-                                      </div>
-
-                                      <div className="w-full">
-                                        <Select
-                                          value={tipePengiriman}
-                                          onChange={onChangeTipePengiriman}
-                                          className="whitespace-nowrap"
-                                          options={optionsTipePengiriman}
-                                          noOptionsMessage={() =>
-                                            "Data not found"
-                                          }
-                                          styles={customeStyles}
-                                          required
-                                        />
-                                      </div>
-                                    </div>
-                                    <div className="flex flex-col gap-3 mb-3">
-                                      <div className="flex flex-col gap-1">
-                                        <div>
-                                          Resi Bukti Pengiriman{" "}
-                                          {tipePengiriman.value === 1
-                                            ? "*)"
-                                            : ""}{" "}
-                                          :
-                                        </div>
-                                        <div className="text-[10px] text-gray-500">
-                                          Max size 2 mb
-                                        </div>
-                                      </div>
-
-                                      <div>
-                                        <label
-                                          htmlFor="upload-resi"
-                                          className="w-fit"
-                                        >
-                                          {resiFile === null ? (
-                                            <div className="w-fit flex gap-1 items-center bg-[#fff2cc] py-2 px-5 hover:bg-yellow-100 rounded-md">
-                                              <span>
-                                                <FaCloudUploadAlt />
-                                              </span>
-                                              <div>Upload</div>
-                                            </div>
-                                          ) : (
-                                            <div className="w-fit flex gap-1 items-center bg-[#fff2cc] py-2 px-5 hover:bg-yellow-100 rounded-md">
-                                              <span>
-                                                <FaCloudUploadAlt />
-                                              </span>
-                                              <div>1 File</div>
-                                            </div>
-                                          )}
-                                        </label>
-                                        <input
-                                          disabled={
-                                            tipePengiriman.value === 1
-                                              ? false
-                                              : true
-                                          }
-                                          type="file"
-                                          id="upload-resi"
-                                          onChange={
-                                            onChangeResiBuktiPengirimanFile
-                                          }
-                                          accept=".jpg,.pdf"
-                                          className="hidden w-full h-[40px] border border-slate-300 rounded-sm focus:border focus:border-[#0077b6] disabled:bg-gray-300 disabled:cursor-not-allowed"
-                                        />
-                                      </div>
-                                      {resiFileUpload.length > 0 && (
-                                        <a
-                                          href={`${apiExport}fin/transactionact/view_portal_file.jsp?file=${resiFileUpload}`}
-                                          target="_blank"
-                                          className="underline cursor-pointer text-blue-500"
-                                          rel="noreferrer"
-                                        >
-                                          File terupload
-                                        </a>
-                                      )}
-                                    </div>
                                     {isError && (
                                       <div className="mt-10 mb-3">
                                         <div className="w-fit flex gap-1 items-center text-[14px] bg-red-500 text-white py-3 px-5 ">
