@@ -50,7 +50,6 @@ const options = [
   { value: 1, label: "Ya", key: 1 },
 ];
 
-
 const api = process.env.REACT_APP_BASEURL;
 const apiExport = process.env.REACT_APP_EXPORT_URL;
 const Penagihan = () => {
@@ -118,7 +117,6 @@ const Penagihan = () => {
   const [nilaiInvoice, setNilaiInvoice] = useState(inputNilaiInvoice);
   const [invoiceTambahan, setInvoiceTambahan] = useState([]);
   const [fakturPajakTambahan, setFakturPajakTambahan] = useState([]);
-
 
   const [isPajak, setIsPajak] = useState({ value: 0, label: "Tidak", key: 0 });
   const [nomerSeriFakturPajak, setNomerSeriFakturPajak] = useState(
@@ -627,7 +625,6 @@ const Penagihan = () => {
       });
   };
 
-
   const addInput = () => {
     if (nomerInvoice.length < 4) {
       setNomerInvoice((s) => {
@@ -858,7 +855,6 @@ const Penagihan = () => {
     }
   };
 
-
   const saveDraft = async () => {
     setOpenBackdrop(true);
     let isSave = true;
@@ -929,7 +925,7 @@ const Penagihan = () => {
           nomer_seri_pajak: nomerSeriFakturPajakList,
           start_date_periode: null,
           end_date_periode: null,
-          created_at: createdAt,
+          created_at: dayjs(new Date()).format("YYYY-MM-DD HH:mm:ss"),
           updated_at: dayjs(new Date()).format("YYYY-MM-DD HH:mm:ss"),
           po_file: purchaseOrderFile !== null ? purchaseOrderFile : null,
           do_file: deliveryOrderFile !== null ? deliveryOrderFile : null,
@@ -1078,7 +1074,7 @@ const Penagihan = () => {
             "YYYY-MM-DD HH:mm:ss"
           ),
           end_date_periode: dayjs(endDatePeriode).format("YYYY-MM-DD HH:mm:ss"),
-          created_at: createdAt,
+          created_at: dayjs(new Date()).format("YYYY-MM-DD HH:mm:ss"),
           updated_at: dayjs(new Date()).format("YYYY-MM-DD HH:mm:ss"),
           po_file: purchaseOrderFile !== null ? purchaseOrderFile : null,
           do_file: deliveryOrderFile !== null ? deliveryOrderFile : null,
@@ -1225,7 +1221,7 @@ const Penagihan = () => {
         nomer_seri_pajak: nomerSeriFakturPajakList,
         start_date_periode: null,
         end_date_periode: null,
-        created_at: createdAt,
+        created_at: dayjs(new Date()).format("YYYY-MM-DD HH:mm:ss"),
         updated_at: dayjs(new Date()).format("YYYY-MM-DD HH:mm:ss"),
         po_file: purchaseOrderFile !== null ? purchaseOrderFile : null,
         do_file: deliveryOrderFile !== null ? deliveryOrderFile : null,
@@ -1368,7 +1364,7 @@ const Penagihan = () => {
           "YYYY-MM-DD HH:mm:ss"
         ),
         end_date_periode: dayjs(endDatePeriode).format("YYYY-MM-DD HH:mm:ss"),
-        created_at: createdAt,
+        created_at: dayjs(new Date()).format("YYYY-MM-DD HH:mm:ss"),
         updated_at: dayjs(new Date()).format("YYYY-MM-DD HH:mm:ss"),
         po_file: purchaseOrderFile !== null ? purchaseOrderFile : null,
         do_file: deliveryOrderFile !== null ? deliveryOrderFile : null,
