@@ -590,7 +590,7 @@ const Registration = () => {
       );
 
       var nilai = [
-        match[1] && "0",
+        match[1],
         match[2],
         match[3] ? "." : "",
         match[3],
@@ -1263,7 +1263,7 @@ const Registration = () => {
                           className={`w-full h-[36px] rounded-sm focus:border focus:border-[#0077b6] ${
                             isError &&
                             statusPajak.value === "PKP" &&
-                            namaPerusahaan.trim().length < 20
+                            namaPerusahaan.trim().length < 21
                               ? "border-red-400"
                               : "border-slate-300"
                           } `}
