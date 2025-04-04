@@ -527,7 +527,7 @@ const Profile = () => {
       );
 
       var nilai = [
-        match[1] && "0",
+        match[1],
         match[2],
         match[3] ? "." : "",
         match[3],
