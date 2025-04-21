@@ -13,20 +13,22 @@ import ListingPenagihan from "./pages/admin/ListingPenagihan";
 import Penagihan from "./pages/vendor/penagihan/Penagihan";
 import Monitoring from "./pages/vendor/Monitoring";
 import EdtPenagihan from "./pages/vendor/penagihan/EdtPenagihan";
-import { Toaster } from "react-hot-toast";
 import AdminWhSmith from "./layouts/AdminWhSmith";
 import Admin from "./layouts/Admin";
 import { Worker } from "@react-pdf-viewer/core";
 import VendorEdit from "./pages/admin/VendorEdit";
 import ForgetPasswordConfirm from "./pages/ForgetPasswordConfirm";
 import ForgetPassword from "./pages/ForgetPassword";
+import PrivateRouteAdmin from "./routes/PrivateRouteAdmin";
+import ThirdPartyCompany from "./pages/admin/ThirdPartyCompany";
+import { Toaster } from "sonner";
 
 function App() {
   return (
     <>
-      <Toaster />
+      <Toaster position="top-center" richColors />
       <Worker workerUrl="https://unpkg.com/pdfjs-dist@3.4.120/build/pdf.worker.min.js">
-        <BrowserRouter basename="/portal-vendor" >
+        <BrowserRouter basename="/portal-vendor">
           <Routes>
             <Route path="/" element={<Login />} />
             <Route path="/forgot-password" element={<ForgetPassword />} />
@@ -34,6 +36,13 @@ function App() {
               path="/validation-user"
               element={<ForgetPasswordConfirm />}
             />
+
+            <Route>
+              <Route
+                path="/third-party-company/settlement"
+                element={<ThirdPartyCompany />}
+              />
+            </Route>
             <Route element={<Admin />}>
               <Route path="vendor/profile" element={<Profile />} />
               <Route path="vendor/penagihan" element={<Penagihan />} />
@@ -67,6 +76,10 @@ function App() {
                 element={<ListingPenagihan />}
               />
               <Route path="admin/vendor/edit" element={<VendorEdit />} />
+              <Route
+                path="admin/third-party-company/settlement"
+                element={<ThirdPartyCompany type="admin" />}
+              />
             </Route>
           </Routes>
         </BrowserRouter>

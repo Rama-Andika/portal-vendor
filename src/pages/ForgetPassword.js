@@ -1,10 +1,10 @@
 import {  Label, TextInput } from "flowbite-react";
 import { Link, useLocation, useNavigate } from "react-router-dom";
-import toast from "react-hot-toast";
 import { useState } from "react";
 import { useEffect } from "react";
 import { FaEye, FaEyeSlash } from "react-icons/fa";
 import { CircularProgress } from "@mui/material";
+import { toast } from "sonner";
 
 const api = process.env.REACT_APP_BASEURL;
 const ForgetPassword = () => {
@@ -122,28 +122,12 @@ const ForgetPassword = () => {
 
     if (newPassword.trim().length === 0 || confPassword.trim().length === 0) {
       setLoading(false);
-      return toast.error("Password cannot be empty!", {
-        position: "top-right",
-        duration: 700,
-        style: {
-          borderRadius: "10px",
-          background: "#333",
-          color: "#fff",
-        },
-      });
+      return toast.error("Password cannot be empty!");
     }
 
     if (newPassword.trim() !== confPassword.trim()) {
       setLoading(false);
-      return toast.error("Password is not matched!", {
-        position: "top-right",
-        duration: 700,
-        style: {
-          borderRadius: "10px",
-          background: "#333",
-          color: "#fff",
-        },
-      });
+      return toast.error("Password is not matched!");
     }
 
     await fetch(`${api}api/portal-vendor/user`, {
@@ -159,40 +143,16 @@ const ForgetPassword = () => {
       .then((response) => response.json())
       .then((res) => {
         if (res.data !== 0) {
-          toast.success("Password change success!", {
-            position: "top-right",
-            duration: 700,
-            style: {
-              borderRadius: "10px",
-              background: "#333",
-              color: "#fff",
-            },
-          });
+          toast.success("Password change success!");
           navigate("/");
         } else {
-          toast.error("Password change failed!", {
-            position: "top-right",
-            duration: 700,
-            style: {
-              borderRadius: "10px",
-              background: "#333",
-              color: "#fff",
-            },
-          });
+          toast.error("Password change failed!");
         }
         setLoading(false);
       })
       .catch((err) => {
         setLoading(false);
-        toast.error("Password change failed!", {
-          position: "top-right",
-          duration: 700,
-          style: {
-            borderRadius: "10px",
-            background: "#333",
-            color: "#fff",
-          },
-        });
+        toast.error("Password change failed!");
       });
 
     console.log("save");

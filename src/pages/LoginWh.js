@@ -2,11 +2,11 @@ import { CircularProgress } from "@mui/material";
 import { Checkbox, Label, TextInput } from "flowbite-react";
 import Cookies from "js-cookie";
 import { useState } from "react";
-import toast from "react-hot-toast";
 import { FaEye, FaEyeSlash } from "react-icons/fa";
 import { Link, useNavigate } from "react-router-dom";
 import generateString from "../components/functions/GenerateRandomString";
 import { useEffect } from "react";
+import { toast } from "sonner";
 const api = process.env.REACT_APP_BASEURL;
 const LoginWh = () => {
   const [username, setUsername] = useState("");
@@ -36,35 +36,13 @@ const LoginWh = () => {
           Cookies.set("admin_id", res.data[0].id);
           setLoading(false);
           navigate("/admin/vendor/pending-task", { replace: true });
-          toast.success("Login Success", {
-            position: "top-right",
-            style: {
-              borderRadius: "10px",
-              background: "#333",
-              color: "#fff",
-            },
-          });
         } else {
           setLoading(false);
-          toast.error("Login Failed", {
-            position: "top-right",
-            style: {
-              borderRadius: "10px",
-              background: "#333",
-              color: "#fff",
-            },
-          });
+          toast.error("Login Failed");
         }
       })
       .catch((err) => {
-        toast.error("Login Failed", {
-          position: "top-right",
-          style: {
-            borderRadius: "10px",
-            background: "#333",
-            color: "#fff",
-          },
-        });
+        toast.error("Login Failed");
       });
 
     setLoading(false);

@@ -10,12 +10,14 @@ import { useStateContext } from "../../contexts/ContextProvider";
 import { useEffect, useState } from "react";
 import titleCase from "../../components/functions/TitleCase";
 import Cookies from "js-cookie";
-import toast from "react-hot-toast";
 import { useNavigate } from "react-router-dom";
 import { PiFileZipDuotone } from "react-icons/pi";
 import isEmpty from "../../components/functions/CheckEmptyObject";
 import { IoMdEye } from "react-icons/io";
 import { HiMiniPencil } from "react-icons/hi2";
+import ButtonSearch from "../../components/button/ButtonSearch";
+import { Td, Th } from "../../components/Table";
+import { toast } from "sonner";
 
 const api = process.env.REACT_APP_BASEURL;
 const apiExport = process.env.REACT_APP_EXPORT_URL;
@@ -45,7 +47,7 @@ const VendorList = () => {
   const [vendorDetail, setVendorDetail] = useState({});
 
   const [listUser, setListUser] = useState([]);
-  const [userDetail, setUserDetail] = useState({})
+  const [userDetail, setUserDetail] = useState({});
 
   const navigate = useNavigate();
   const handleOpen = () => setOpen(true);
@@ -141,7 +143,7 @@ const VendorList = () => {
   useEffect(() => {
     window.scrollTo(0, 0);
     fetchData();
-  // eslint-disable-next-line react-hooks/exhaustive-deps
+    // eslint-disable-next-line react-hooks/exhaustive-deps
   }, []);
 
   const onSearch = (e) => {
@@ -165,19 +167,12 @@ const VendorList = () => {
 
   const onClickView = (item, user) => {
     if (Cookies.get("admin_token") !== undefined) {
-      setUserDetail(user)
+      setUserDetail(user);
       setVendorDetail(item);
       handleOpen();
     } else {
       navigate("/admin");
-      toast.error("Silahkan Login Terlebih Dahulu!", {
-        position: "top-right",
-        style: {
-          borderRadius: "10px",
-          background: "#333",
-          color: "#fff",
-        },
-      });
+      toast.error("Silahkan Login Terlebih Dahulu!");
     }
   };
 
@@ -186,14 +181,7 @@ const VendorList = () => {
       navigate("/admin/vendor/edit", { state: { vendor_id: item.id } });
     } else {
       navigate("/admin");
-      toast.error("Silahkan Login Terlebih Dahulu!", {
-        position: "top-right",
-        style: {
-          borderRadius: "10px",
-          background: "#333",
-          color: "#fff",
-        },
-      });
+      toast.error("Silahkan Login Terlebih Dahulu!");
     }
   };
 
@@ -202,14 +190,7 @@ const VendorList = () => {
       window.location = `${apiExport}fin/transactionact/portalvendorinvoicedownload.jsp?oid=${id}`;
     } else {
       navigate("/admin");
-      toast.error("Silahkan Login Terlebih Dahulu!", {
-        position: "top-right",
-        style: {
-          borderRadius: "10px",
-          background: "#333",
-          color: "#fff",
-        },
-      });
+      toast.error("Silahkan Login Terlebih Dahulu!");
     }
   };
 
@@ -317,28 +298,23 @@ const VendorList = () => {
                 </div>
               </div>
               <div className="flex justify-end mt-2">
-                <button
-                  type="submit"
-                  className="py-1 max-[415px]:w-full px-10 rounded-sm shadow-sm bg-[#0077b6] text-white"
-                >
-                  Search
-                </button>
+                <ButtonSearch type="Submit" />
               </div>
             </form>
           </div>
         </div>
-        <div className="w-full overflow-auto max-h-[400px] shadow-md text-[14px]">
-          <table className="w-full table-monitoring">
+        <div className="overflow-auto max-h-[400px] text-[14px]">
+          <table>
             <thead className="sticky top-0 z-10">
-              <tr className="text-center whitespace-nowrap border-2 bg-[#eaf4f4]">
-                <td className="p-5 border">Action</td>
-                <td className="p-5 border">No</td>
-                <td className="p-5 border">Supplier Name</td>
-                <td className="p-5 border">Supplier Code</td>
-                <td className="p-5 border">Term Of Payment</td>
-                <td className="p-5 border">Location</td>
-                <td className="p-5 border">Contact Person</td>
-                <td className="p-5 border">Email</td>
+              <tr className="text-center  h-[40px]">
+                <Th className="!w-[80px] !min-w-[80px]">Action</Th>
+                <Th className="!w-[80px] !min-w-[80px]">No</Th>
+                <Th className="!w-[250px] !min-w-[250px]">Supplier Name</Th>
+                <Th>Supplier Code</Th>
+                <Th>Term Of Payment</Th>
+                <Th>Location</Th>
+                <Th>Contact Person</Th>
+                <Th>Email</Th>
               </tr>
             </thead>
             <tbody>
@@ -346,9 +322,9 @@ const VendorList = () => {
                 listVendor.map((item, index) => (
                   <tr
                     key={index}
-                    className="text-center whitespace-nowrap hover:bg-slate-100 border bg-white"
+                    className="text-center  hover:bg-slate-100 h-[40px]"
                   >
-                    <td className="p-5 border">
+                    <Td>
                       <div className="flex gap-2 items-center justify-center">
                         <div
                           className={`cursor-pointer rounded-md`}
@@ -363,14 +339,14 @@ const VendorList = () => {
                           <HiMiniPencil />
                         </div>
                       </div>
-                    </td>
-                    <td className="p-5 border">{start + index + 1}</td>
-                    <td className="text-left p-5 border">{item.nama}</td>
-                    <td className="p-5 border">{item.kode}</td>
-                    <td className="p-5 border">{item.term_pembayaran}</td>
-                    <td className="p-5 border">{titleCase(item.provinsi)}</td>
-                    <td className="p-5 border">{item.no_wa_purchase_order}</td>
-                    <td className="p-5 border">{item.email_korespondensi}</td>
+                    </Td>
+                    <Td>{start + index + 1}</Td>
+                    <Td>{item.nama}</Td>
+                    <Td>{item.kode}</Td>
+                    <Td>{item.term_pembayaran}</Td>
+                    <Td>{titleCase(item.provinsi)}</Td>
+                    <Td>{item.no_wa_purchase_order}</Td>
+                    <Td>{item.email_korespondensi}</Td>
                   </tr>
                 ))
               ) : (

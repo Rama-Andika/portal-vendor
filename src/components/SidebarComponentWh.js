@@ -1,16 +1,14 @@
 import React, { useEffect } from "react";
 import { SiShopware } from "react-icons/si";
-import { MdOutlineCancel } from "react-icons/md";
-
 import { linksWh } from "../data/dummy";
 import { Link, NavLink } from "react-router-dom";
 import { useStateContext } from "../contexts/ContextProvider";
 import { Sidebar } from "flowbite-react";
-import { PiMonitorLight } from "react-icons/pi";
 import { FaBuilding } from "react-icons/fa";
 import { HiCash } from "react-icons/hi";
 import { TbBuildingCommunity } from "react-icons/tb";
 import { MdMonitor } from "react-icons/md";
+import { LiaFileInvoiceSolid } from "react-icons/lia";
 
 const SidebarComponentWh = ({ width }) => {
   const { activeMenu, setActiveMenu, screenSize, setOpenSidebar } =
@@ -63,13 +61,15 @@ const SidebarComponentWh = ({ width }) => {
     <div
       className={`border-r min-h-screen max-[646px]:h-full ${width} shadow-md overflow-y-auto pb-10 z-10 bg-white relative shrink-0 transition-all ease-in-out duration-200`}
     >
-      <div onClick={() => setActiveMenu((prevActiveMenu) => !prevActiveMenu)} className="absolute top-2 right-2 shadow-md p-2 rounded-full text-xs cursor-pointer">
-          X
+      <div
+        onClick={() => setActiveMenu((prevActiveMenu) => !prevActiveMenu)}
+        className="absolute top-2 right-2 shadow-md p-2 rounded-full text-xs cursor-pointer"
+      >
+        X
       </div>
       <div className="flex items-center py-[20px] px-[24px] justify-between">
         <div className="flex items-center gap-[10px]">
           <Link
-
             onClick={handleCloseSidebar}
             className="items-center gap-3 mt-4 flex text-xl font-extrabold tracking-tight dark:text-white text-slate-900"
           >
@@ -182,6 +182,23 @@ const SidebarComponentWh = ({ width }) => {
                   </span>
                 </NavLink>
               </Sidebar.Collapse>
+              <NavLink
+                style={({ isActive }) => ({
+                  backgroundColor: isActive ? "#0077b6" : "",
+                })}
+                to="/admin/third-party-company/settlement"
+                onClick={handleCloseSidebar}
+                className={({ isActive }) =>
+                  isActive ? activeLink : normalLink
+                }
+              >
+                <div className="ms-[-30px] flex items-center gap-3 ">
+                  <div className="text-[24px]">
+                    <LiaFileInvoiceSolid />
+                  </div>
+                  <div>Edufund</div>
+                </div>
+              </NavLink>
             </Sidebar.ItemGroup>
           </Sidebar.Items>
         </Sidebar>

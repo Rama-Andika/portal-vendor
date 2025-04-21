@@ -1,4 +1,10 @@
-import { Backdrop, CircularProgress, Fade, Modal, Pagination } from "@mui/material";
+import {
+  Backdrop,
+  CircularProgress,
+  Fade,
+  Modal,
+  Pagination,
+} from "@mui/material";
 import { useStateContext } from "../../contexts/ContextProvider";
 import { useEffect, useState } from "react";
 import { Link, useNavigate } from "react-router-dom";
@@ -11,7 +17,8 @@ import { DatePicker, LocalizationProvider } from "@mui/x-date-pickers";
 import { AdapterDayjs } from "@mui/x-date-pickers/AdapterDayjs";
 import { DemoContainer } from "@mui/x-date-pickers/internals/demo";
 import Select from "react-select";
-import toast from "react-hot-toast";
+import ButtonSearch from "../../components/button/ButtonSearch";
+import { toast } from "sonner";
 
 const srcStatusOptions = [
   { value: 0, label: "All", key: 0 },
@@ -86,7 +93,7 @@ const Monitoring = () => {
             data.nilai_invoices.map((nilai) => (total += nilai));
             setTotalInvoice((prev) => [
               ...prev,
-              {id: data.id, total: total.toFixed(2)}
+              { id: data.id, total: total.toFixed(2) },
             ]);
           });
 
@@ -116,14 +123,7 @@ const Monitoring = () => {
       }
     } else {
       navigate("/");
-      toast.error("Silahkan Login Terlebih Dahulu!", {
-        position: "top-right",
-        style: {
-          borderRadius: "10px",
-          background: "#333",
-          color: "#fff",
-        },
-      });
+      toast.error("Silahkan Login Terlebih Dahulu!");
     }
   };
 
@@ -284,12 +284,7 @@ const Monitoring = () => {
                 </div>
 
                 <div className="flex justify-end mt-2">
-                  <button
-                    onClick={(e) => onSearch(e)}
-                    className="py-1 max-[415px]:w-full px-10 rounded-sm shadow-sm bg-[#0077b6] text-white"
-                  >
-                    Search
-                  </button>
+                  <ButtonSearch onClick={(e) => onSearch(e)} />
                 </div>
               </form>
             </div>
@@ -329,10 +324,17 @@ const Monitoring = () => {
                           : ""}
                       </td>
                       <td className="p-5 border">
-                        {item.due_date ? dayjs(item.due_date).format("DD/MM/YYYY") : ""}
+                        {item.due_date
+                          ? dayjs(item.due_date).format("DD/MM/YYYY")
+                          : ""}
                       </td>
                       <td className="p-5 border">
-                        Rp. {accountingNumber(totalInvoice.filter((value) => value.id === item.id)[0]?.total)}
+                        Rp.{" "}
+                        {accountingNumber(
+                          totalInvoice.filter(
+                            (value) => value.id === item.id
+                          )[0]?.total
+                        )}
                       </td>
                       <td className="p-5 border">
                         {titleCase(item.status, "_")}

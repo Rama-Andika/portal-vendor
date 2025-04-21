@@ -1,12 +1,12 @@
 import { Checkbox, Label, TextInput } from "flowbite-react";
 import { Link, useNavigate } from "react-router-dom";
-import toast from "react-hot-toast";
 import { useState } from "react";
 import { useEffect } from "react";
 import Cookies from "js-cookie";
 import generateString from "../components/functions/GenerateRandomString";
 import { FaEye, FaEyeSlash } from "react-icons/fa";
 import { CircularProgress } from "@mui/material";
+import { toast } from "sonner";
 
 
 const api = process.env.REACT_APP_BASEURL;
@@ -38,40 +38,18 @@ const Login = () => {
       .then((data) => {
         setLoading(false);
         if (data.data.length > 0) {
-          toast.success("Login Success", {
-            position: "top-right",
-            style: {
-              borderRadius: "10px",
-              background: "#333",
-              color: "#fff",
-            },
-          });
           Cookies.set("id", data.data[0].id);
           Cookies.set("token", generateString(10));
           Cookies.set("vendor_id", data.data[0].vendor_id);
           navigate(`/vendor/profile`);
           setLoading(false);
         } else {
-          toast.error("Login Failed!", {
-            position: "top-right",
-            style: {
-              borderRadius: "10px",
-              background: "#333",
-              color: "#fff",
-            },
-          });
+          toast.error("Login Failed!");
           setLoading(false);
         }
       })
       .catch((err) => {
-        toast.error("Login Failed!", {
-          position: "top-right",
-          style: {
-            borderRadius: "10px",
-            background: "#333",
-            color: "#fff",
-          },
-        });
+        toast.error("Login Failed!");
         setLoading(false);
       });
   };

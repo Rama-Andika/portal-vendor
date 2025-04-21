@@ -25,13 +25,13 @@ import { DemoContainer } from "@mui/x-date-pickers/internals/demo";
 import dayjs from "dayjs";
 import { PiWarningCircleLight } from "react-icons/pi";
 import isEmpty from "../../../components/functions/CheckEmptyObject";
-import toast from "react-hot-toast";
 import { FaCloudUploadAlt } from "react-icons/fa";
 import titleCase from "../../../components/functions/TitleCase";
 import GetBase64 from "../../../components/functions/GetBase64";
 import Cookies from "js-cookie";
 import accountingNumber from "../../../components/functions/AccountingNumber";
 import accountingNumberV2 from "../../../components/functions/AccountingNumberV2";
+import { toast } from "sonner";
 
 const optionsTipePenagihan = [
   { value: "beli putus", label: "Beli Putus", key: 0 },
@@ -49,7 +49,6 @@ const options = [
   { value: 0, label: "Tidak", key: 0 },
   { value: 1, label: "Ya", key: 1 },
 ];
-
 
 const api = process.env.REACT_APP_BASEURL;
 const apiExport = process.env.REACT_APP_EXPORT_URL;
@@ -118,7 +117,6 @@ const Penagihan = () => {
   const [nilaiInvoice, setNilaiInvoice] = useState(inputNilaiInvoice);
   const [invoiceTambahan, setInvoiceTambahan] = useState([]);
   const [fakturPajakTambahan, setFakturPajakTambahan] = useState([]);
-
 
   const [isPajak, setIsPajak] = useState({ value: 0, label: "Tidak", key: 0 });
   const [nomerSeriFakturPajak, setNomerSeriFakturPajak] = useState(
@@ -627,7 +625,6 @@ const Penagihan = () => {
       });
   };
 
-
   const addInput = () => {
     if (nomerInvoice.length < 4) {
       setNomerInvoice((s) => {
@@ -858,7 +855,6 @@ const Penagihan = () => {
     }
   };
 
-
   const saveDraft = async () => {
     setOpenBackdrop(true);
     let isSave = true;
@@ -929,7 +925,7 @@ const Penagihan = () => {
           nomer_seri_pajak: nomerSeriFakturPajakList,
           start_date_periode: null,
           end_date_periode: null,
-          created_at: createdAt,
+          created_at: dayjs(new Date()).format("YYYY-MM-DD HH:mm:ss"),
           updated_at: dayjs(new Date()).format("YYYY-MM-DD HH:mm:ss"),
           po_file: purchaseOrderFile !== null ? purchaseOrderFile : null,
           do_file: deliveryOrderFile !== null ? deliveryOrderFile : null,
@@ -956,53 +952,25 @@ const Penagihan = () => {
           .then((res) => {
             if (res.data === 0) {
               setOpenBackdrop(false);
-              toast.error("Penagihan update failed!", {
-                position: "top-right",
-                style: {
-                  borderRadius: "10px",
-                  background: "#333",
-                  color: "#fff",
-                },
-              });
+              toast.error("Penagihan update failed!");
             } else {
               setId(res.data);
               setCreatedAt(res.data.created_at);
               navigate("/vendor/monitoring");
               setOpenBackdrop(false);
-              toast.success("Penagihan update success!", {
-                position: "top-right",
-                style: {
-                  borderRadius: "10px",
-                  background: "#333",
-                  color: "#fff",
-                },
-              });
+              toast.success("Penagihan update success!");
             }
           })
           .catch((err) => {
             setOpenBackdrop(false);
-            toast.error("Penagihan update failed!", {
-              position: "top-right",
-              style: {
-                borderRadius: "10px",
-                background: "#333",
-                color: "#fff",
-              },
-            });
+            toast.error("Penagihan update failed!");
           });
       } else {
         setOpenBackdrop(false);
       }
     } else {
       navigate("/");
-      toast.error("Silahkan Login Terlebih Dahulu!", {
-        position: "top-right",
-        style: {
-          borderRadius: "10px",
-          background: "#333",
-          color: "#fff",
-        },
-      });
+      toast.error("Silahkan Login Terlebih Dahulu!");
     }
   };
 
@@ -1078,7 +1046,7 @@ const Penagihan = () => {
             "YYYY-MM-DD HH:mm:ss"
           ),
           end_date_periode: dayjs(endDatePeriode).format("YYYY-MM-DD HH:mm:ss"),
-          created_at: createdAt,
+          created_at: dayjs(new Date()).format("YYYY-MM-DD HH:mm:ss"),
           updated_at: dayjs(new Date()).format("YYYY-MM-DD HH:mm:ss"),
           po_file: purchaseOrderFile !== null ? purchaseOrderFile : null,
           do_file: deliveryOrderFile !== null ? deliveryOrderFile : null,
@@ -1105,52 +1073,24 @@ const Penagihan = () => {
           .then((res) => {
             if (res.data === 0) {
               setOpenBackdrop(false);
-              toast.error("Penagihan update failed!", {
-                position: "top-right",
-                style: {
-                  borderRadius: "10px",
-                  background: "#333",
-                  color: "#fff",
-                },
-              });
+              toast.error("Penagihan update failed!");
             } else {
               setId(res.data);
               navigate("/vendor/monitoring");
               setOpenBackdrop(false);
-              toast.success("Penagihan update success!", {
-                position: "top-right",
-                style: {
-                  borderRadius: "10px",
-                  background: "#333",
-                  color: "#fff",
-                },
-              });
+              toast.success("Penagihan update success!");
             }
           })
           .catch((err) => {
             setOpenBackdrop(false);
-            toast.error("Penagihan update failed!", {
-              position: "top-right",
-              style: {
-                borderRadius: "10px",
-                background: "#333",
-                color: "#fff",
-              },
-            });
+            toast.error("Penagihan update failed!");
           });
       } else {
         setOpenBackdrop(false);
       }
     } else {
       navigate("/");
-      toast.error("Silahkan Login Terlebih Dahulu!", {
-        position: "top-right",
-        style: {
-          borderRadius: "10px",
-          background: "#333",
-          color: "#fff",
-        },
-      });
+      toast.error("Silahkan Login Terlebih Dahulu!");
     }
   };
 
@@ -1225,7 +1165,7 @@ const Penagihan = () => {
         nomer_seri_pajak: nomerSeriFakturPajakList,
         start_date_periode: null,
         end_date_periode: null,
-        created_at: createdAt,
+        created_at: dayjs(new Date()).format("YYYY-MM-DD HH:mm:ss"),
         updated_at: dayjs(new Date()).format("YYYY-MM-DD HH:mm:ss"),
         po_file: purchaseOrderFile !== null ? purchaseOrderFile : null,
         do_file: deliveryOrderFile !== null ? deliveryOrderFile : null,
@@ -1252,49 +1192,21 @@ const Penagihan = () => {
         .then((res) => {
           if (res.data === 0) {
             setOpenBackdrop(false);
-            toast.error("Penagihan update failed!", {
-              position: "top-right",
-              style: {
-                borderRadius: "10px",
-                background: "#333",
-                color: "#fff",
-              },
-            });
+            toast.error("Penagihan update failed!");
           } else {
             setId(res.data);
             navigate("/vendor/monitoring");
             setOpenBackdrop(false);
-            toast.success("Penagihan update success!", {
-              position: "top-right",
-              style: {
-                borderRadius: "10px",
-                background: "#333",
-                color: "#fff",
-              },
-            });
+            toast.success("Penagihan update success!");
           }
         })
         .catch((err) => {
           setOpenBackdrop(false);
-          toast.error("Penagihan update failed!", {
-            position: "top-right",
-            style: {
-              borderRadius: "10px",
-              background: "#333",
-              color: "#fff",
-            },
-          });
+          toast.error("Penagihan update failed!");
         });
     } else {
       navigate("/");
-      toast.error("Silahkan Login Terlebih Dahulu!", {
-        position: "top-right",
-        style: {
-          borderRadius: "10px",
-          background: "#333",
-          color: "#fff",
-        },
-      });
+      toast.error("Silahkan Login Terlebih Dahulu!");
     }
   };
 
@@ -1368,7 +1280,7 @@ const Penagihan = () => {
           "YYYY-MM-DD HH:mm:ss"
         ),
         end_date_periode: dayjs(endDatePeriode).format("YYYY-MM-DD HH:mm:ss"),
-        created_at: createdAt,
+        created_at: dayjs(new Date()).format("YYYY-MM-DD HH:mm:ss"),
         updated_at: dayjs(new Date()).format("YYYY-MM-DD HH:mm:ss"),
         po_file: purchaseOrderFile !== null ? purchaseOrderFile : null,
         do_file: deliveryOrderFile !== null ? deliveryOrderFile : null,
@@ -1395,49 +1307,21 @@ const Penagihan = () => {
         .then((res) => {
           if (res.data === 0) {
             setOpenBackdrop(false);
-            toast.error("Penagihan update failed!", {
-              position: "top-right",
-              style: {
-                borderRadius: "10px",
-                background: "#333",
-                color: "#fff",
-              },
-            });
+            toast.error("Penagihan update failed!");
           } else {
             setId(res.data);
             navigate("/vendor/monitoring");
             setOpenBackdrop(false);
-            toast.success("Penagihan update success!", {
-              position: "top-right",
-              style: {
-                borderRadius: "10px",
-                background: "#333",
-                color: "#fff",
-              },
-            });
+            toast.success("Penagihan update success!");
           }
         })
         .catch((err) => {
           setOpenBackdrop(false);
-          toast.error("Penagihan update failed!", {
-            position: "top-right",
-            style: {
-              borderRadius: "10px",
-              background: "#333",
-              color: "#fff",
-            },
-          });
+          toast.error("Penagihan update failed!");
         });
     } else {
       navigate("/");
-      toast.error("Silahkan Login Terlebih Dahulu!", {
-        position: "top-right",
-        style: {
-          borderRadius: "10px",
-          background: "#333",
-          color: "#fff",
-        },
-      });
+      toast.error("Silahkan Login Terlebih Dahulu!");
     }
   };
 
