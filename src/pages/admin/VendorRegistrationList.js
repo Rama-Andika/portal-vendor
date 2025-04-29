@@ -15,6 +15,7 @@ import Cookies from "js-cookie";
 import { useNavigate } from "react-router-dom";
 import { toast, Toaster } from "sonner";
 import ModalConfirmationVendor from "./modal/ModalConfirmationVendor";
+import ButtonSearch from "../../components/button/ButtonSearch";
 
 const options = [
   { value: "APPROVED", label: "APPROVED", key: 0 },
@@ -240,7 +241,7 @@ const VendorRegistrationList = () => {
         .then((res) => {
           if (res.data !== 0) {
             setOpen(false);
-            setOpenConfirmation(false)
+            setOpenConfirmation(false);
             fetchData();
             setOpenBackdrop(false);
             toast.success("Update vendor berhasil");
@@ -347,12 +348,7 @@ const VendorRegistrationList = () => {
                 </div>
               </div>
               <div className="flex justify-end mt-2">
-                <button
-                  type="submit"
-                  className="py-1 max-[415px]:w-full px-10 rounded-md shadow-sm bg-[#0077b6] text-white"
-                >
-                  Search
-                </button>
+                <ButtonSearch onSearch={(e) => onSearch(e)} />
               </div>
             </form>
           </div>
@@ -654,7 +650,7 @@ const VendorRegistrationList = () => {
                               ? onSubmitVendor(vendorDetail)
                               : setOpenConfirmation(true)
                           }
-                          className={`rounded-md py-2 px-5 shadow-sm bg-[#0077b6] text-white max-[479px]:w-full cursor-pointer block
+                          className={`rounded-md py-2 px-5 shadow-sm bg-main-color max-[479px]:w-full cursor-pointer block
                         `}
                         >
                           Submit

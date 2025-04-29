@@ -16,6 +16,7 @@ import { PiFileZipDuotone } from "react-icons/pi";
 import isEmpty from "../../components/functions/CheckEmptyObject";
 import { IoMdEye } from "react-icons/io";
 import { HiMiniPencil } from "react-icons/hi2";
+import ButtonSearch from "../../components/button/ButtonSearch";
 
 const api = process.env.REACT_APP_BASEURL;
 const apiExport = process.env.REACT_APP_EXPORT_URL;
@@ -317,12 +318,7 @@ const VendorList = () => {
                 </div>
               </div>
               <div className="flex justify-end mt-2">
-                <button
-                  type="submit"
-                  className="py-1 max-[415px]:w-full px-10 rounded-sm shadow-sm bg-[#0077b6] text-white"
-                >
-                  Search
-                </button>
+                <ButtonSearch />
               </div>
             </form>
           </div>
@@ -423,7 +419,7 @@ const VendorList = () => {
                       <div className="w-[270px] whitespace-nowrap font-bold">
                         Nama
                       </div>
-                 
+
                       <div className="w-[240px] whitespace-nowrap overflow-ellipsis overflow-hidden">
                         {titleCase(vendorDetail.nama)}
                       </div>
@@ -432,7 +428,7 @@ const VendorList = () => {
                       <div className="w-[270px] whitespace-nowrap font-bold">
                         Username
                       </div>
-                 
+
                       <div className="w-[240px] whitespace-nowrap overflow-ellipsis overflow-hidden">
                         {userDetail.username}
                       </div>
@@ -441,7 +437,7 @@ const VendorList = () => {
                       <div className="w-[270px] whitespace-nowrap font-bold">
                         Tipe Perusahaan
                       </div>
-                   
+
                       <div className="w-[240px] whitespace-nowrap overflow-ellipsis overflow-hidden">
                         {titleCase(vendorDetail.tipe_perusahaan)}
                       </div>
@@ -450,7 +446,7 @@ const VendorList = () => {
                       <div className="w-[270px] whitespace-nowrap font-bold">
                         Tipe Perusahaan Lainnya
                       </div>
-                    
+
                       <div className="w-[240px] whitespace-nowrap overflow-ellipsis overflow-hidden">
                         {titleCase(vendorDetail.tipe_perusahaan_lainnya)}
                       </div>
@@ -460,7 +456,7 @@ const VendorList = () => {
                       <div className="w-[270px] whitespace-nowrap font-bold">
                         Alamat
                       </div>
-                  
+
                       <div className="w-[240px] max-[549px]:w-full whitespace-pre-wrap">
                         {vendorDetail.alamat}
                       </div>
@@ -469,7 +465,7 @@ const VendorList = () => {
                       <div className="w-[270px] whitespace-nowrap font-bold">
                         Provinsi
                       </div>
-                 
+
                       <div className="w-[240px] whitespace-nowrap overflow-ellipsis overflow-hidden">
                         {titleCase(vendorDetail.provinsi)}
                       </div>
@@ -478,7 +474,7 @@ const VendorList = () => {
                       <div className="w-[270px] whitespace-nowrap font-bold">
                         Kota
                       </div>
-                   
+
                       <div className="w-[240px] whitespace-nowrap overflow-ellipsis overflow-hidden">
                         {titleCase(vendorDetail.kota)}
                       </div>
@@ -487,7 +483,7 @@ const VendorList = () => {
                       <div className="w-[270px] whitespace-nowrap font-bold">
                         Kode Pos
                       </div>
-                   
+
                       <div className="w-[240px] whitespace-nowrap overflow-ellipsis overflow-hidden">
                         {titleCase(vendorDetail.kode_pos)}
                       </div>
@@ -496,7 +492,7 @@ const VendorList = () => {
                       <div className="w-[270px] whitespace-nowrap font-bold">
                         Tipe Pembelian
                       </div>
-                 
+
                       <div className="w-[240px] whitespace-nowrap overflow-ellipsis overflow-hidden">
                         {titleCase(vendorDetail.tipe_pembelian)}
                       </div>
@@ -505,7 +501,7 @@ const VendorList = () => {
                       <div className="w-[270px] whitespace-nowrap font-bold">
                         Status Pajak
                       </div>
-               
+
                       <div className="w-[240px] whitespace-nowrap overflow-ellipsis overflow-hidden">
                         {vendorDetail.status_pajak}
                       </div>
@@ -514,7 +510,7 @@ const VendorList = () => {
                       <div className="w-[270px] whitespace-nowrap font-bold">
                         NPWP
                       </div>
-               
+
                       <div className="w-[240px] whitespace-nowrap overflow-ellipsis overflow-hidden">
                         {vendorDetail.npwp}
                       </div>
@@ -523,7 +519,7 @@ const VendorList = () => {
                       <div className="w-[270px] whitespace-nowrap font-bold">
                         Website
                       </div>
-                   
+
                       <div className="w-[240px] whitespace-nowrap overflow-ellipsis overflow-hidden">
                         {vendorDetail.website}
                       </div>
@@ -532,7 +528,7 @@ const VendorList = () => {
                       <div className="w-[270px] whitespace-nowrap font-bold">
                         Nama Pemilik
                       </div>
-                  
+
                       <div className="w-[240px] whitespace-nowrap overflow-ellipsis overflow-hidden">
                         {titleCase(vendorDetail.nama_pemilik)}
                       </div>
@@ -541,7 +537,7 @@ const VendorList = () => {
                       <div className="w-[270px] whitespace-nowrap font-bold">
                         Nama Penanggung Jawab
                       </div>
-                 
+
                       <div className="w-[240px] whitespace-nowrap overflow-ellipsis overflow-hidden">
                         {titleCase(vendorDetail.nama_penanggung_jawab)}
                       </div>

@@ -20,6 +20,7 @@ import accountingNumber from "../components/functions/AccountingNumber";
 import titleCase from "../components/functions/TitleCase";
 import ButtonPrintExcel from "../components/button/icon/ButtonPrintExcel";
 import ButtonPrintPdf from "../components/button/icon/ButtonPrintPdf";
+import ButtonSearch from "../components/button/ButtonSearch";
 const api = process.env.REACT_APP_BASEURL;
 const apiExport = process.env.REACT_APP_EXPORT_URL;
 
@@ -347,13 +348,7 @@ const KartuHutang = () => {
                 </div>
 
                 <div className="flex justify-end mt-5">
-                  <button
-                    type="submit"
-                    onClick={(e) => onSearch(e)}
-                    className="py-1 max-[415px]:w-full px-10 rounded-sm shadow-sm bg-[#0077b6] text-white"
-                  >
-                    Search
-                  </button>
+                  <ButtonSearch onSearch={(e) => onSearch(e)} />
                 </div>
               </form>
             </div>
@@ -375,7 +370,7 @@ const KartuHutang = () => {
                     </td>
                     <td
                       rowSpan={2}
-                      className="p-3 border border-opacity-40 border-gray-400 w-[500px] max-w-[500px] min-w-[500px]"
+                      className="p-3 border border-opacity-40 border-gray-400 w-[320px] max-w-[320px] min-w-[320px]"
                     >
                       Keterangan
                     </td>
@@ -387,7 +382,7 @@ const KartuHutang = () => {
                     </td>
                     <td
                       rowSpan={2}
-                      className="p-3 border border-opacity-40 border-gray-400 w-[150px] max-w-[150px] min-w-[150px]"
+                      className="p-3 border border-opacity-40 border-gray-400 w-[155px] max-w-[155px] min-w-[155px]"
                     >
                       Tanggal Jatuh Tempo
                     </td>

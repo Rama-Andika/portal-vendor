@@ -11,6 +11,7 @@ import toast from "react-hot-toast";
 import Select from "react-select";
 import isEmpty from "../../components/functions/CheckEmptyObject";
 import { RiFileExcel2Line } from "react-icons/ri";
+import ButtonSearch from "../../components/button/ButtonSearch";
 
 const api = process.env.REACT_APP_BASEURL;
 const apiExport = process.env.REACT_APP_EXPORT_URL;
@@ -861,9 +862,7 @@ const VendorAndNonVendor = () => {
               </div>
             </div> */}
             <div className="flex justify-end mt-2">
-              <button className="py-1 max-[415px]:w-full px-10 rounded-sm shadow-sm bg-[#0077b6] text-white">
-                Search
-              </button>
+              <ButtonSearch  />
             </div>
           </form>
         </div>

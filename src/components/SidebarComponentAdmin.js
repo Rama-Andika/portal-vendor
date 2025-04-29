@@ -1,6 +1,4 @@
 import React, { useEffect, useState } from "react";
-import { SiShopware } from "react-icons/si";
-
 import { linksWh } from "../data/dummy";
 import { Link, NavLink } from "react-router-dom";
 import { useStateContext } from "../contexts/ContextProvider";
@@ -12,7 +10,7 @@ import { LiaFileInvoiceSolid } from "react-icons/lia";
 
 const url = process.env.REACT_APP_BASEURL;
 
-const SidebarComponentWh = ({ width }) => {
+const SidebarComponentAdmin = ({ width }) => {
   const { activeMenu, setActiveMenu, screenSize, setOpenSidebar } =
     useStateContext();
 
@@ -75,7 +73,7 @@ const SidebarComponentWh = ({ width }) => {
   }, []);
 
   const activeLink =
-    "flex items-center gap-3 pt-3 pl-[40px] pb-2.5 rounded-lg text-white text=md ";
+    "flex items-center gap-3 pt-3 pl-[40px] pb-2.5 rounded-lg  text=md ";
   const normalLink =
     "flex items-center gap-3 pt-3 pl-[40px] pb-2.5 rounded-lg text-md text-gray-700 dark:text-gray-200 dark:hover:text-black hover:bg-light-gray";
   return (
@@ -142,13 +140,10 @@ const SidebarComponentWh = ({ width }) => {
               </Sidebar.Collapse> */}
               <Sidebar.Collapse label="Vendor" icon={TbBuildingCommunity} open>
                 <NavLink
-                  style={({ isActive }) => ({
-                    backgroundColor: isActive ? "#0077b6" : "",
-                  })}
                   to={`/admin/vendor/registration-list`}
                   onClick={() => handleCloseSidebar()}
                   className={({ isActive }) =>
-                    isActive ? activeLink : normalLink
+                    isActive ? `${activeLink} bg-main-color` : normalLink
                   }
                 >
                   <FaBuilding />
@@ -157,13 +152,10 @@ const SidebarComponentWh = ({ width }) => {
                   </span>
                 </NavLink>
                 <NavLink
-                  style={({ isActive }) => ({
-                    backgroundColor: isActive ? "#0077b6" : "",
-                  })}
                   to={`/admin/vendor/vendor-list`}
                   onClick={() => handleCloseSidebar()}
                   className={({ isActive }) =>
-                    isActive ? activeLink : normalLink
+                    isActive ? `${activeLink} bg-main-color` : normalLink
                   }
                 >
                   <HiCash />
@@ -172,13 +164,10 @@ const SidebarComponentWh = ({ width }) => {
                   </span>
                 </NavLink>
                 <NavLink
-                  style={({ isActive }) => ({
-                    backgroundColor: isActive ? "#0077b6" : "",
-                  })}
                   to={`/admin/vendor/pending-task`}
                   onClick={() => handleCloseSidebar()}
                   className={({ isActive }) =>
-                    isActive ? activeLink : normalLink
+                    isActive ? `${activeLink} bg-main-color` : normalLink
                   }
                 >
                   <HiCash />
@@ -187,13 +176,10 @@ const SidebarComponentWh = ({ width }) => {
                   </span>
                 </NavLink>
                 <NavLink
-                  style={({ isActive }) => ({
-                    backgroundColor: isActive ? "#0077b6" : "",
-                  })}
                   to={`/admin/vendor/listing-penagihan`}
                   onClick={() => handleCloseSidebar()}
                   className={({ isActive }) =>
-                    isActive ? activeLink : normalLink
+                    isActive ? `${activeLink} bg-main-color` : normalLink
                   }
                 >
                   <HiCash />
@@ -203,13 +189,10 @@ const SidebarComponentWh = ({ width }) => {
                 </NavLink>
               </Sidebar.Collapse>
               <NavLink
-                style={({ isActive }) => ({
-                  backgroundColor: isActive ? "#0077b6" : "",
-                })}
                 to={`/admin/kartuhutang `}
                 onClick={handleCloseSidebar}
                 className={({ isActive }) =>
-                  isActive ? activeLink : normalLink
+                  isActive ? `${activeLink} bg-main-color` : normalLink
                 }
               >
                 <div className="ms-[-30px] flex items-center gap-3 ">
@@ -227,4 +210,4 @@ const SidebarComponentWh = ({ width }) => {
   );
 };
 
-export default SidebarComponentWh;
+export default SidebarComponentAdmin;

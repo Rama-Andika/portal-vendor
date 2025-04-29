@@ -19,7 +19,7 @@ const SidebarComponent = ({ width }) => {
   };
 
   const activeLink =
-    "flex items-center gap-3 pt-3 pl-[40px] pb-2.5 rounded-lg text-white text=md ";
+    "flex items-center gap-3 pt-3 pl-[40px] pb-2.5 rounded-lg text=md ";
   const normalLink =
     "flex items-center gap-3 pt-3 pl-[40px] pb-2.5 rounded-lg text-md text-gray-700 dark:text-gray-200 dark:hover:text-black hover:bg-light-gray";
 
@@ -69,26 +69,20 @@ const SidebarComponent = ({ width }) => {
             <Sidebar.ItemGroup>
               <Sidebar.Collapse label="Company" icon={FiShoppingBag} open>
                 <NavLink
-                  style={({ isActive }) => ({
-                    backgroundColor: isActive ? "#0077b6" : "",
-                  })}
                   to={`/vendor/profile`}
                   onClick={handleCloseSidebar}
                   className={({ isActive }) =>
-                    isActive ? activeLink : normalLink
+                    isActive ? `${activeLink} bg-main-color` : normalLink
                   }
                 >
                   Profile
                 </NavLink>
               </Sidebar.Collapse>
               <NavLink
-                style={({ isActive }) => ({
-                  backgroundColor: isActive ? "#0077b6" : "",
-                })}
                 to={`/vendor/penagihan `}
                 onClick={handleCloseSidebar}
                 className={({ isActive }) =>
-                  isActive ? activeLink : normalLink
+                  isActive ? `${activeLink} bg-main-color` : normalLink
                 }
               >
                 <div className="ms-[-30px] flex items-center gap-3 ">
@@ -99,13 +93,10 @@ const SidebarComponent = ({ width }) => {
                 </div>
               </NavLink>
               <NavLink
-                style={({ isActive }) => ({
-                  backgroundColor: isActive ? "#0077b6" : "",
-                })}
                 to={`/vendor/monitoring `}
                 onClick={handleCloseSidebar}
                 className={({ isActive }) =>
-                  isActive ? activeLink : normalLink
+                  isActive ? `${activeLink} bg-main-color` : normalLink
                 }
               >
                 <div className="ms-[-30px] flex items-center gap-3 ">
@@ -116,13 +107,10 @@ const SidebarComponent = ({ width }) => {
                 </div>
               </NavLink>
               <NavLink
-                style={({ isActive }) => ({
-                  backgroundColor: isActive ? "#0077b6" : "",
-                })}
                 to={`/vendor/kartuhutang `}
                 onClick={handleCloseSidebar}
                 className={({ isActive }) =>
-                  isActive ? activeLink : normalLink
+                  isActive ? `${activeLink} bg-main-color` : normalLink
                 }
               >
                 <div className="ms-[-30px] flex items-center gap-3 ">

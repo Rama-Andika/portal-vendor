@@ -20,6 +20,8 @@ import Cookies from "js-cookie";
 import isEmpty from "../../components/functions/CheckEmptyObject";
 import { PiFileZipDuotone } from "react-icons/pi";
 import Select from "react-select";
+import ButtonSearch from "../../components/button/ButtonSearch";
+import { PenagihanDetail } from "../vendor/Monitoring";
 
 const api = process.env.REACT_APP_BASEURL;
 const apiExport = process.env.REACT_APP_EXPORT_URL;
@@ -411,12 +413,7 @@ const ListingPenagihan = () => {
               </div>
 
               <div className="flex justify-end mt-2">
-                <button
-                  onClick={(e) => onSearch(e)}
-                  className="py-1 max-[415px]:w-full px-10 rounded-sm shadow-sm bg-[#0077b6] text-white"
-                >
-                  Search
-                </button>
+                <ButtonSearch onSearch={(e) => onSearch(e)} />
               </div>
             </form>
           </div>
@@ -562,67 +559,14 @@ const ListingPenagihan = () => {
                       {titleCase(penagihanDetail.tipe_penagihan)}
                     </div>
                   </div>
-                  <div className="flex max-[549px]:flex-col max-[549px]:items-start items-center gap-2">
-                    <div className="w-[270px] whitespace-nowrap font-bold">
-                      No Purchase Order (PO)
-                    </div>
-
-                    <div className="w-[240px] whitespace-nowrap overflow-ellipsis overflow-hidden">
-                      {penagihanDetail.nomer_po}
-                    </div>
-                  </div>
-                  <div className="flex max-[549px]:flex-col max-[549px]:items-start items-center gap-2">
-                    <div className="w-[270px] whitespace-nowrap font-bold">
-                      Tanggal PO
-                    </div>
-
-                    <div className="w-[240px] whitespace-nowrap overflow-ellipsis overflow-hidden">
-                      {penagihanDetail.tanggal_po
-                        ? dayjs(penagihanDetail.tanggal_po).format("DD/MM/YYYY")
-                        : ""}
-                    </div>
-                  </div>
-                  <div className="flex max-[549px]:flex-col max-[549px]:items-start items-center gap-2">
-                    <div className="w-[270px] whitespace-nowrap font-bold">
-                      No Delivery Order (DO)
-                    </div>
-
-                    <div className="w-[240px]">{penagihanDetail.nomer_do}</div>
-                  </div>
-                  <div className="flex max-[549px]:flex-col max-[549px]:items-start items-center gap-2">
-                    <div className="w-[270px] whitespace-nowrap font-bold">
-                      Delivery Area
-                    </div>
-
-                    <div className="w-[240px] whitespace-nowrap overflow-ellipsis overflow-hidden">
-                      {titleCase(penagihanDetail.delivery_area)}
-                    </div>
-                  </div>
-                  <div className="flex max-[549px]:flex-col max-[549px]:items-start  gap-2">
-                    <div className="w-[270px] whitespace-nowrap font-bold">
-                      No Invoice
-                    </div>
-
-                    <div className="flex flex-col gap-1">
-                      {penagihanDetail.nomer_invoices.map((nomer) => (
-                        <div className="w-[240px] max-w-[240px]">{nomer}</div>
-                      ))}
-                    </div>
-                  </div>
-                  {penagihanDetail.tanggal_invoices.some(
-                    (invoice) => invoice !== null
-                  ) > 0 && (
-                    <div className="flex max-[549px]:flex-col max-[549px]:items-start gap-2">
+                  {penagihanDetail.tipe_penagihan === "konsinyasi" && (
+                    <div className="flex max-[549px]:flex-col max-[549px]:items-start items-center gap-2">
                       <div className="w-[270px] whitespace-nowrap font-bold">
-                        Tanggal Invoice
+                        Duration
                       </div>
 
-                      <div className="flex flex-col gap-1">
-                        {penagihanDetail.tanggal_invoices.map((tanggal) => (
-                          <div className="w-[240px] whitespace-nowrap overflow-ellipsis overflow-hidden">
-                            {dayjs(tanggal).format("DD/MM/YYYY")}
-                          </div>
-                        ))}
+                      <div className="w-[240px] whitespace-nowrap overflow-ellipsis overflow-hidden">
+                        {titleCase(penagihanDetail.penagihan_cons_type)}
                       </div>
                     </div>
                   )}
@@ -651,41 +595,7 @@ const ListingPenagihan = () => {
                       </div>
                     </div>
                   )}
-                  <div className="flex max-[549px]:flex-col max-[549px]:items-start gap-2">
-                    <div className="w-[270px] whitespace-nowrap font-bold">
-                      Nilai Invoice
-                    </div>
-
-                    <div className="flex flex-col gap-1">
-                      {penagihanDetail.nilai_invoices.map((nilai) => (
-                        <div className="w-[240px] whitespace-nowrap overflow-ellipsis overflow-hidden">
-                          Rp. {accountingNumber(nilai)}
-                        </div>
-                      ))}
-                    </div>
-                  </div>
-                  <div className="flex max-[549px]:flex-col max-[549px]:items-start items-center gap-2">
-                    <div className="w-[270px] whitespace-nowrap font-bold">
-                      Apakah Barang Termasuk Pajak
-                    </div>
-
-                    <div className="w-[240px] whitespace-nowrap overflow-ellipsis overflow-hidden">
-                      {penagihanDetail.is_pajak === 0 ? "Tidak" : "Ya"}
-                    </div>
-                  </div>
-                  <div className="flex max-[549px]:flex-col max-[549px]:items-start gap-2 mb-5">
-                    <div className="w-[270px] whitespace-nowrap font-bold">
-                      No Seri Faktur Pajak
-                    </div>
-
-                    <div className="flex flex-col gap-1">
-                      {penagihanDetail.nomer_seri_pajak.map((nilai) => (
-                        <div className="w-[240px] whitespace-nowrap overflow-ellipsis overflow-hidden">
-                          {nilai}
-                        </div>
-                      ))}
-                    </div>
-                  </div>
+                  <PenagihanDetail data={penagihanDetail} />
                   {penagihanDetail.status === "REJECT" && (
                     <div className="flex max-[549px]:flex-col max-[549px]:items-start gap-2 mb-5">
                       <div className="w-[270px] whitespace-nowrap font-bold">

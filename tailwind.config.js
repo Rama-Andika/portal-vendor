@@ -1,5 +1,8 @@
 module.exports = {
-  content: ["./src/**/*.{js,jsx,ts,tsx}", "node_modules/flowbite-react/**/*.{js,jsx,ts,tsx}"],
+  content: [
+    "./src/**/*.{js,jsx,ts,tsx}",
+    "node_modules/flowbite-react/**/*.{js,jsx,ts,tsx}",
+  ],
   darkMode: "class",
   theme: {
     fontFamily: {
@@ -7,6 +10,10 @@ module.exports = {
       body: ["Open Sans", "sans-serif"],
     },
     extend: {
+      colors: {
+        "main-color": "#FEDA00",
+        // "main-color": "rgba(254, 218, 0, 0.5)",
+      },
       fontSize: {
         14: "14px",
       },

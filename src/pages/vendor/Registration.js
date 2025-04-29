@@ -242,7 +242,7 @@ const Registration = () => {
         namaKontak.trim().length > 0 &&
         whatsappKeuangan.trim().length > 0 &&
         namaKontakKeuangan.trim().length > 0 &&
-        jabatanKeuangan.trim().length > 0 &&
+        emailKorespondensiKeuangan.trim().length > 0 &&
         emailKorespondensiPo.trim().length > 0
       ) {
         setIsError(false);
@@ -314,13 +314,13 @@ const Registration = () => {
     [`&.${stepConnectorClasses.active}`]: {
       [`& .${stepConnectorClasses.line}`]: {
         backgroundImage:
-          "linear-gradient( 136deg, #0077b6 100%, #0077b6 100%, #0077b6 100%)",
+          "linear-gradient( 136deg, #FEDA00 100%, #FEDA00 100%, #FEDA00 100%)",
       },
     },
     [`&.${stepConnectorClasses.completed}`]: {
       [`& .${stepConnectorClasses.line}`]: {
         backgroundImage:
-          "linear-gradient( 136deg, #0077b6 100%, #0077b6 100%, #0077b6 100%)",
+          "linear-gradient( 136deg, #FEDA00 100%, #FEDA00 100%, #FEDA00 100%)",
       },
     },
     [`& .${stepConnectorClasses.line}`]: {
@@ -336,7 +336,6 @@ const Registration = () => {
     backgroundColor:
       theme.palette.mode === "dark" ? theme.palette.grey[700] : "#ccc",
     zIndex: 1,
-    color: "#fff",
     width: 50,
     height: 50,
     display: "flex",
@@ -345,12 +344,12 @@ const Registration = () => {
     alignItems: "center",
     ...(ownerState.active && {
       backgroundImage:
-        "linear-gradient( 136deg, #0077b6 100%, #0077b6 100%, #0077b6 100%)",
+        "linear-gradient( 136deg, #FEDA00 100%, #FEDA00 100%, #FEDA00 100%)",
       boxShadow: "0 4px 10px 0 rgba(0,0,0,.25)",
     }),
     ...(ownerState.completed && {
       backgroundImage:
-        "linear-gradient( 136deg, #0077b6 100%, #0077b6 100%, #0077b6 100%)",
+        "linear-gradient( 136deg, #FEDA00 100%, #FEDA00 100%, #FEDA00100%)",
     }),
   }));
 
@@ -863,7 +862,7 @@ const Registration = () => {
                             evt.key === " " && evt.preventDefault()
                           }
                           type="text"
-                          className={`w-full h-[36px] rounded-sm focus:border focus:border-[#0077b6] ${
+                          className={`w-full h-[36px] rounded-sm focus:border focus:border-main-color ${
                             isError && username.trim().length === 0
                               ? "border-red-400"
                               : "border-slate-300"
@@ -895,7 +894,7 @@ const Registration = () => {
                             evt.key === " " && evt.preventDefault()
                           }
                           type="email"
-                          className={`w-full h-[36px] rounded-sm focus:border focus:border-[#0077b6] ${
+                          className={`w-full h-[36px] rounded-sm focus:border focus:border-main-color ${
                             isError && email.trim().length === 0
                               ? "border-red-400"
                               : "border-slate-300"
@@ -926,7 +925,7 @@ const Registration = () => {
                             evt.key === " " && evt.preventDefault()
                           }
                           type={`${showPassword ? "text" : "password"}`}
-                          className={`w-full h-[36px] rounded-sm focus:border focus:border-[#0077b6] ${
+                          className={`w-full h-[36px] rounded-sm focus:border focus:border-main-color ${
                             isError && password.trim().length === 0
                               ? "border-red-400"
                               : "border-slate-300"
@@ -983,7 +982,7 @@ const Registration = () => {
                               }
                               type="text"
                               placeholder="Tulis tipe perusahaan..."
-                              className={`w-full h-[36px] border border-slate-300 rounded-sm focus:border focus:border-[#0077b6] ${
+                              className={`w-full h-[36px] border border-slate-300 rounded-sm focus:border focus:border-main-color ${
                                 isError &&
                                 tipePerusahaanText.trim().length === 0 &&
                                 "border-red-400"
@@ -1017,7 +1016,7 @@ const Registration = () => {
                             setNamaPerusahaan(e.target.value.toUpperCase())
                           }
                           type="text"
-                          className={`w-full h-[36px] rounded-sm focus:border focus:border-[#0077b6] ${
+                          className={`w-full h-[36px] rounded-sm focus:border focus:border-main-color ${
                             isError && namaPerusahaan.trim().length === 0
                               ? "border-red-400"
                               : "border-slate-300"
@@ -1046,7 +1045,7 @@ const Registration = () => {
                           rows={5}
                           value={alamat}
                           onChange={(e) => setAlamat(e.target.value)}
-                          className={`w-full borderrounded-sm focus:border focus:border-[#0077b6] ${
+                          className={`w-full borderrounded-sm focus:border focus:border-main-color ${
                             isError && alamat.trim().length === 0
                               ? "border-red-400"
                               : "border-slate-300"
@@ -1101,7 +1100,7 @@ const Registration = () => {
                           value={kota}
                           onChange={(e) => setKota(e.target.value)}
                           type="text"
-                          className={`w-full h-[36px] rounded-sm focus:border focus:border-[#0077b6] ${
+                          className={`w-full h-[36px] rounded-sm focus:border focus:border-main-color ${
                             isError && kota.trim().length === 0
                               ? "border-red-400"
                               : "border-slate-300"
@@ -1129,7 +1128,7 @@ const Registration = () => {
                           value={kodePos}
                           onChange={(e) => setKodePos(e.target.value)}
                           type="text"
-                          className={`w-full h-[36px] rounded-sm focus:border focus:border-[#0077b6] ${
+                          className={`w-full h-[36px] rounded-sm focus:border focus:border-main-color ${
                             isError && kodePos.trim().length === 0
                               ? "border-red-400"
                               : "border-slate-300"
@@ -1221,7 +1220,7 @@ const Registration = () => {
                         <input
                           maxLength={21}
                           type="text"
-                          className={`w-full h-[36px] rounded-sm focus:border focus:border-[#0077b6] ${
+                          className={`w-full h-[36px] rounded-sm focus:border focus:border-main-color ${
                             isError &&
                             statusPajak.value === "PKP" &&
                             namaPerusahaan.trim().length < 20
@@ -1257,7 +1256,7 @@ const Registration = () => {
                           value={website}
                           onChange={(e) => setWebsite(e.target.value)}
                           type="text"
-                          className="w-full h-[36px] border border-slate-300 rounded-sm focus:border focus:border-[#0077b6]  "
+                          className="w-full h-[36px] border border-slate-300 rounded-sm focus:border focus:border-main-color  "
                         />
                       </div>
                     </div>
@@ -1295,7 +1294,7 @@ const Registration = () => {
                             setNamaPemilikPerusahaan(e.target.value)
                           }
                           type="text"
-                          className="w-full h-[36px] rounded-sm focus:border focus:border-[#0077b6] border-slate-300"
+                          className="w-full h-[36px] rounded-sm focus:border focus:border-main-color border-slate-300"
                         />
                       </div>
                     </div>
@@ -1312,7 +1311,7 @@ const Registration = () => {
                             setNamaPenanggungJawab(e.target.value)
                           }
                           type="text"
-                          className="w-full h-[36px] rounded-sm focus:border focus:border-[#0077b6] border-slate-300  "
+                          className="w-full h-[36px] rounded-sm focus:border focus:border-main-color border-slate-300  "
                         />
                       </div>
                     </div>
@@ -1329,7 +1328,7 @@ const Registration = () => {
                             setJabatanPenanggungJawab(e.target.value)
                           }
                           type="text"
-                          className="w-full h-[36px] rounded-sm focus:border focus:border-[#0077b6] border-slate-300"
+                          className="w-full h-[36px] rounded-sm focus:border focus:border-main-color border-slate-300"
                         />
                       </div>
                     </div>
@@ -1345,7 +1344,7 @@ const Registration = () => {
                           onChange={(e) => onChangeNoTelpKantor(e)}
                           type="text"
                           pattern="[0-9]*"
-                          className="w-full h-[36px] rounded-sm focus:border focus:border-[#0077b6] border-slate-300 "
+                          className="w-full h-[36px] rounded-sm focus:border focus:border-main-color border-slate-300 "
                         />
                       </div>
                     </div>
@@ -1364,7 +1363,7 @@ const Registration = () => {
                           pattern="[0-9]*"
                           value={whatsappPO}
                           onChange={(e) => onChangeWhatsappPO(e)}
-                          className={`w-full h-[36px]  rounded-sm focus:border focus:border-[#0077b6] ${
+                          className={`w-full h-[36px]  rounded-sm focus:border focus:border-main-color ${
                             isError && whatsappPO.trim().length === 0
                               ? "border-red-400"
                               : "border-slate-300"
@@ -1394,7 +1393,7 @@ const Registration = () => {
                             setEmailKorespondensiPo(e.target.value)
                           }
                           type="email"
-                          className={`w-full h-[36px]  rounded-sm focus:border focus:border-[#0077b6] ${
+                          className={`w-full h-[36px]  rounded-sm focus:border focus:border-main-color ${
                             isError && emailKorespondensiPo.trim().length === 0
                               ? "border-red-400"
                               : "border-slate-300"
@@ -1423,7 +1422,7 @@ const Registration = () => {
                           value={namaKontak}
                           onChange={(e) => setNamaKontak(e.target.value)}
                           type="text"
-                          className={`w-full h-[36px] rounded-sm focus:border focus:border-[#0077b6]  ${
+                          className={`w-full h-[36px] rounded-sm focus:border focus:border-main-color  ${
                             isError && namaKontak.trim().length === 0
                               ? "border-red-400"
                               : "border-slate-300"
@@ -1451,7 +1450,7 @@ const Registration = () => {
                           value={jabatan}
                           onChange={(e) => setJabatan(e.target.value)}
                           type="text"
-                          className="w-full h-[36px] border border-slate-300 rounded-sm focus:border focus:border-[#0077b6]  "
+                          className="w-full h-[36px] border border-slate-300 rounded-sm focus:border focus:border-main-color  "
                         />
                       </div>
                     </div>
@@ -1472,7 +1471,7 @@ const Registration = () => {
                           type="text"
                           value={whatsappKeuangan}
                           onChange={(e) => onChangeWhatsappKeuangan(e)}
-                          className={`w-full h-[36px] rounded-sm focus:border focus:border-[#0077b6] ${
+                          className={`w-full h-[36px] rounded-sm focus:border focus:border-main-color ${
                             isError && whatsappKeuangan.trim().length === 0
                               ? "border-red-400"
                               : "border-slate-300"
@@ -1502,8 +1501,18 @@ const Registration = () => {
                             setEmailKorespondensiKeuangan(e.target.value)
                           }
                           type="email"
-                          className="w-full h-[36px] border border-slate-300 rounded-sm focus:border focus:border-[#0077b6]  "
+                          className="w-full h-[36px] border border-slate-300 rounded-sm focus:border focus:border-main-color  "
                         />
+                        <div className="absolute right-[-20px] top-0">
+                          {isError &&
+                          emailKorespondensiKeuangan.trim().length === 0 ? (
+                            <div className="text-red-500">
+                              <PiWarningCircleLight />
+                            </div>
+                          ) : (
+                            "*)"
+                          )}
+                        </div>
                       </div>
                     </div>
                     <div className="flex gap-2 items-center mb-3">
@@ -1520,7 +1529,7 @@ const Registration = () => {
                           }
                           maxLength={20}
                           type="text"
-                          className={`w-full h-[36px] rounded-sm focus:border focus:border-[#0077b6] ${
+                          className={`w-full h-[36px] rounded-sm focus:border focus:border-main-color ${
                             isError && namaKontakKeuangan.trim().length === 0
                               ? "border-red-400"
                               : "border-slate-300"
@@ -1549,21 +1558,12 @@ const Registration = () => {
                           onChange={(e) => setJabatanKeuangan(e.target.value)}
                           maxLength={20}
                           type="text"
-                          className={`w-full h-[36px] rounded-sm focus:border focus:border-[#0077b6] ${
+                          className={`w-full h-[36px] rounded-sm focus:border focus:border-main-color ${
                             isError && jabatanKeuangan.trim().length === 0
                               ? "border-red-400"
                               : "border-slate-300"
                           } `}
                         />
-                        <div className="absolute right-[-20px] top-0">
-                          {isError && jabatanKeuangan.trim().length === 0 ? (
-                            <div className="text-red-500">
-                              <PiWarningCircleLight />
-                            </div>
-                          ) : (
-                            "*)"
-                          )}
-                        </div>
                       </div>
                     </div>
 
@@ -1602,7 +1602,7 @@ const Registration = () => {
                           pattern="[0-9]*"
                           value={termPembayaran}
                           onChange={onChangeTermPembayaran}
-                          className={`w-full h-[36px] rounded-sm focus:border focus:border-[#0077b6] ${
+                          className={`w-full h-[36px] rounded-sm focus:border focus:border-main-color ${
                             isError && termPembayaran.trim().length === 0
                               ? "border-red-400"
                               : "border-slate-300"
@@ -1631,7 +1631,7 @@ const Registration = () => {
                           value={bank}
                           onChange={(e) => setBank(e.target.value)}
                           type="text"
-                          className={`w-full h-[36px]  rounded-sm focus:border focus:border-[#0077b6] ${
+                          className={`w-full h-[36px]  rounded-sm focus:border focus:border-main-color ${
                             isError && bank.trim().length === 0
                               ? "border-red-400"
                               : "border-slate-300"
@@ -1659,7 +1659,7 @@ const Registration = () => {
                           value={nomorRekening}
                           onChange={(e) => setRekening(e.target.value)}
                           type="text"
-                          className={`w-full h-[36px] rounded-sm focus:border focus:border-[#0077b6] ${
+                          className={`w-full h-[36px] rounded-sm focus:border focus:border-main-color ${
                             isError && nomorRekening.trim().length === 0
                               ? "border-red-400"
                               : "border-slate-300"
@@ -1687,7 +1687,7 @@ const Registration = () => {
                           value={namaRekening}
                           onChange={(e) => setNamaRekening(e.target.value)}
                           type="text"
-                          className={`w-full h-[36px] rounded-sm focus:border focus:border-[#0077b6] ${
+                          className={`w-full h-[36px] rounded-sm focus:border focus:border-main-color ${
                             isError && namaRekening.trim().length === 0
                               ? "border-red-400"
                               : "border-slate-300"
@@ -1716,7 +1716,7 @@ const Registration = () => {
                           value={kantorCabangBank}
                           onChange={(e) => setKantorCabangBank(e.target.value)}
                           type="text"
-                          className={`w-full h-[36px] rounded-sm focus:border focus:border-[#0077b6] ${
+                          className={`w-full h-[36px] rounded-sm focus:border focus:border-main-color ${
                             isError && kantorCabangBank.trim().length === 0
                               ? "border-red-400"
                               : "border-slate-300"
@@ -1772,7 +1772,7 @@ const Registration = () => {
                           pattern="[0-9]*"
                           value={pengembalianBarang}
                           onChange={onChangePengembalianBarang}
-                          className={`w-full h-[36px] rounded-sm focus:border focus:border-[#0077b6] ${
+                          className={`w-full h-[36px] rounded-sm focus:border focus:border-main-color ${
                             isError && pengembalianBarang.trim().length === 0
                               ? "border-red-400"
                               : "border-slate-300"
@@ -1810,7 +1810,7 @@ const Registration = () => {
                                 (evt.key === "e" || evt.key === "-") &&
                                 evt.preventDefault()
                               }
-                              className="w-full h-[36px] border border-slate-300 rounded-sm focus:border focus:border-[#0077b6]  "
+                              className="w-full h-[36px] border border-slate-300 rounded-sm focus:border focus:border-main-color  "
                             />
                           </div>
                         </div>
@@ -1831,11 +1831,11 @@ const Registration = () => {
                                 (evt.key === "e" || evt.key === "-") &&
                                 evt.preventDefault()
                               }
-                              className="w-full h-[36px] border border-slate-300 rounded-sm focus:border focus:border-[#0077b6]  "
+                              className="w-full h-[36px] border border-slate-300 rounded-sm focus:border focus:border-main-color  "
                             />
                           </div>
                         </div>
-                       
+
                         <div className="flex gap-2 items-center mb-3">
                           <div className="whitespace-nowrap flex">
                             <label htmlFor="" className="w-44">
@@ -1853,7 +1853,7 @@ const Registration = () => {
                                 (evt.key === "e" || evt.key === "-") &&
                                 evt.preventDefault()
                               }
-                              className="w-full h-[36px] border border-slate-300 rounded-sm focus:border focus:border-[#0077b6]  "
+                              className="w-full h-[36px] border border-slate-300 rounded-sm focus:border focus:border-main-color  "
                             />
                           </div>
                         </div>
@@ -1874,7 +1874,7 @@ const Registration = () => {
                                 (evt.key === "e" || evt.key === "-") &&
                                 evt.preventDefault()
                               }
-                              className="w-full h-[36px] border border-slate-300 rounded-sm focus:border focus:border-[#0077b6]  "
+                              className="w-full h-[36px] border border-slate-300 rounded-sm focus:border focus:border-main-color  "
                             />
                           </div>
                         </div>
@@ -1895,7 +1895,7 @@ const Registration = () => {
                                 (evt.key === "e" || evt.key === "-") &&
                                 evt.preventDefault()
                               }
-                              className="w-full h-[36px] border border-slate-300 rounded-sm focus:border focus:border-[#0077b6]  "
+                              className="w-full h-[36px] border border-slate-300 rounded-sm focus:border focus:border-main-color  "
                             />
                           </div>
                         </div>
@@ -1948,7 +1948,7 @@ const Registration = () => {
                           type="file"
                           onChange={onChangeNpwpFile}
                           accept=".jpg,.pdf"
-                          className={`w-full h-[36px] border rounded-sm focus:border focus:border-[#0077b6] ${
+                          className={`w-full h-[36px] border rounded-sm focus:border focus:border-main-color ${
                             isError && npwpFile === null
                               ? "border-red-400"
                               : "border-slate-300"
@@ -2002,7 +2002,7 @@ const Registration = () => {
                           type="file"
                           onChange={onChangeKtpPemilikFile}
                           accept=".jpg,.pdf"
-                          className={` w-full h-[36px] border rounded-sm focus:border focus:border-[#0077b6] ${
+                          className={` w-full h-[36px] border rounded-sm focus:border focus:border-main-color ${
                             isError && ktpPemilikFile === null
                               ? "border-red-400"
                               : "border-slate-300"
@@ -2056,7 +2056,7 @@ const Registration = () => {
                           type="file"
                           onChange={onChangeKtpPenanggungJawabFile}
                           accept=".jpg,.pdf"
-                          className={` w-full h-[36px] border rounded-sm focus:border focus:border-[#0077b6] ${
+                          className={` w-full h-[36px] border rounded-sm focus:border focus:border-main-color ${
                             isError && ktpPenanggungJawabFile === null
                               ? "border-red-400"
                               : "border-slate-300"
@@ -2116,7 +2116,7 @@ const Registration = () => {
                           type="file"
                           onChange={onChangeSpkpFile}
                           accept=".jpg,.pdf"
-                          className={` w-full h-[36px] border rounded-sm focus:border focus:border-[#0077b6] ${
+                          className={` w-full h-[36px] border rounded-sm focus:border focus:border-main-color ${
                             isError && spkpFile === null
                               ? "border-red-400"
                               : "border-slate-300"
@@ -2170,7 +2170,7 @@ const Registration = () => {
                           type="file"
                           onChange={onChangeNibFile}
                           accept=".jpg,.pdf"
-                          className={` w-full h-[36px] border rounded-sm focus:border focus:border-[#0077b6] ${
+                          className={` w-full h-[36px] border rounded-sm focus:border focus:border-main-color ${
                             isError && nibFile === null
                               ? "border-red-400"
                               : "border-slate-300"
@@ -2224,7 +2224,7 @@ const Registration = () => {
                           type="file"
                           onChange={onChangeSsRekeningFile}
                           accept=".jpg,.pdf"
-                          className={` w-full h-[36px] border rounded-sm focus:border focus:border-[#0077b6] ${
+                          className={` w-full h-[36px] border rounded-sm focus:border focus:border-main-color ${
                             isError && ssPerusahaanFile === null
                               ? "border-red-400"
                               : "border-slate-300"
@@ -2286,7 +2286,7 @@ const Registration = () => {
                           type="file"
                           onChange={onChangeBpomFile}
                           accept=".jpg,.pdf"
-                          className=" w-full h-[36px] border border-slate-300 rounded-sm focus:border focus:border-[#0077b6]  "
+                          className=" w-full h-[36px] border border-slate-300 rounded-sm focus:border focus:border-main-color  "
                         />
                       </div>
                     </div>
@@ -2348,7 +2348,7 @@ const Registration = () => {
                 {activeStep === 0 ? (
                   <Link to="/">
                     <button
-                      className={`ms-2 border border-[#00b4d8] px-10 py-2 hover:bg-slate-200 `}
+                      className={`ms-2 border border-main-color px-10 py-2 hover:bg-slate-200 `}
                     >
                       Back
                     </button>
@@ -2357,7 +2357,7 @@ const Registration = () => {
                   <button
                     disabled={activeStep === 0}
                     onClick={handleBack}
-                    className={`ms-2 border border-[#00b4d8] px-10 py-2 hover:bg-slate-200 `}
+                    className={`ms-2 border border-main-color px-10 py-2 hover:bg-slate-200 `}
                   >
                     Back
                   </button>
@@ -2367,7 +2367,7 @@ const Registration = () => {
                   <button
                     onClick={handleNext}
                     disabled={loading ? true : false}
-                    className="bg-[#0077b6] text-white py-2 px-10 rounded-sm shadow-sm hover:bg-[#00b4d8]"
+                    className="bg-main-color py-2 px-10 rounded-sm shadow-sm "
                   >
                     {loading ? (
                       <CircularProgress size={20} sx={{ color: "white" }} />
@@ -2379,7 +2379,7 @@ const Registration = () => {
                   <button
                     onClick={handleNext}
                     disabled={loading ? true : false}
-                    className="bg-[#0077b6] text-white py-2 px-10 rounded-sm shadow-sm hover:bg-[#00b4d8]"
+                    className="bg-main-color  py-2 px-10 rounded-sm shadow-sm "
                   >
                     {loading ? (
                       <CircularProgress size={20} sx={{ color: "white" }} />
@@ -2431,7 +2431,7 @@ const Registration = () => {
                                 }
                                 onChange={(e) => setUsername(e.target.value)}
                                 type="text"
-                                className={`w-full h-[36px] rounded-sm focus:border focus:border-[#0077b6] ${
+                                className={`w-full h-[36px] rounded-sm focus:border focus:border-main-color ${
                                   isError && username.trim().length === 0
                                     ? "border-red-400"
                                     : "border-slate-300"
@@ -2464,7 +2464,7 @@ const Registration = () => {
                                   evt.key === " " && evt.preventDefault()
                                 }
                                 type="email"
-                                className={`w-full h-[36px] rounded-sm focus:border focus:border-[#0077b6] ${
+                                className={`w-full h-[36px] rounded-sm focus:border focus:border-main-color ${
                                   isError && email.trim().length === 0
                                     ? "border-red-400"
                                     : "border-slate-300"
@@ -2496,7 +2496,7 @@ const Registration = () => {
                                   evt.key === " " && evt.preventDefault()
                                 }
                                 type={`${showPassword ? "text" : "password"}`}
-                                className={`w-full h-[36px] rounded-sm focus:border focus:border-[#0077b6] ${
+                                className={`w-full h-[36px] rounded-sm focus:border focus:border-main-color ${
                                   isError && password.trim().length === 0
                                     ? "border-red-400"
                                     : "border-slate-300"
@@ -2544,7 +2544,7 @@ const Registration = () => {
                                   }
                                   type="text"
                                   placeholder="Tulis tipe perusahaan..."
-                                  className={`w-full h-[36px] rounded-sm focus:border focus:border-[#0077b6] ${
+                                  className={`w-full h-[36px] rounded-sm focus:border focus:border-main-color ${
                                     isError &&
                                     tipePerusahaanText.trim().length === 0
                                       ? "border-red-400"
@@ -2580,7 +2580,7 @@ const Registration = () => {
                                   )
                                 }
                                 type="text"
-                                className={`w-full h-[36px] rounded-sm focus:border focus:border-[#0077b6] ${
+                                className={`w-full h-[36px] rounded-sm focus:border focus:border-main-color ${
                                   isError && namaPerusahaan.trim().length === 0
                                     ? "border-red-400"
                                     : "border-x-slate-300"
@@ -2610,7 +2610,7 @@ const Registration = () => {
                                 rows={5}
                                 value={alamat}
                                 onChange={(e) => setAlamat(e.target.value)}
-                                className={`w-full rounded-sm focus:border focus:border-[#0077b6] ${
+                                className={`w-full rounded-sm focus:border focus:border-main-color ${
                                   isError && alamat.trim().length === 0
                                     ? "border-red-400"
                                     : "border-slate-300"
@@ -2667,7 +2667,7 @@ const Registration = () => {
                                 value={kota}
                                 onChange={(e) => setKota(e.target.value)}
                                 type="text"
-                                className={`w-full h-[36px] border rounded-sm focus:border focus:border-[#0077b6] ${
+                                className={`w-full h-[36px] border rounded-sm focus:border focus:border-main-color ${
                                   isError && kota.trim().length === 0
                                     ? "border-red-400"
                                     : "border-slate-300"
@@ -2696,7 +2696,7 @@ const Registration = () => {
                                 value={kodePos}
                                 onChange={(e) => setKodePos(e.target.value)}
                                 type="text"
-                                className={`w-full h-[36px] border rounded-sm focus:border focus:border-[#0077b6] ${
+                                className={`w-full h-[36px] border rounded-sm focus:border focus:border-main-color ${
                                   isError && kodePos.trim().length === 0
                                     ? "border-red-400"
                                     : "border-slate-300"
@@ -2798,7 +2798,7 @@ const Registration = () => {
                                 type="text"
                                 pattern="[0-9]*"
                                 maxLength={21}
-                                className={`w-full h-[36px] rounded-sm focus:border focus:border-[#0077b6] ${
+                                className={`w-full h-[36px] rounded-sm focus:border focus:border-main-color ${
                                   isError &&
                                   npwp.trim().length !== 21 &&
                                   statusPajak.value === "PKP"
@@ -2821,7 +2821,7 @@ const Registration = () => {
                                 value={website}
                                 onChange={(e) => setWebsite(e.target.value)}
                                 type="text"
-                                className="w-full h-[36px] border border-slate-300 rounded-sm focus:border focus:border-[#0077b6]  "
+                                className="w-full h-[36px] border border-slate-300 rounded-sm focus:border focus:border-main-color  "
                               />
                             </div>
                           </div>
@@ -2838,7 +2838,7 @@ const Registration = () => {
                             <>
                               <Link to="/">
                                 <button
-                                  className={`ms-2 border border-[#00b4d8] px-10 py-2 hover:bg-slate-200 `}
+                                  className={`ms-2 border border-main-color px-10 py-2 hover:bg-slate-200 `}
                                 >
                                   Back
                                 </button>
@@ -2847,7 +2847,7 @@ const Registration = () => {
                               <button
                                 onClick={handleNext}
                                 disabled={loading ? true : false}
-                                className="bg-[#0077b6] text-white py-2 px-10 rounded-sm shadow-sm hover:bg-[#00b4d8]"
+                                className="bg-main-color  py-2 px-10 rounded-sm shadow-sm "
                               >
                                 Next
                               </button>
@@ -2857,7 +2857,7 @@ const Registration = () => {
                               <Link to="/">
                                 <button
                                   onClick={handleBack}
-                                  className={`border border-[#00b4d8] px-10 py-2 hover:bg-slate-200 w-full`}
+                                  className={`border border-main-color px-10 py-2 hover:bg-slate-200 w-full`}
                                 >
                                   Back
                                 </button>
@@ -2866,7 +2866,7 @@ const Registration = () => {
                               <button
                                 onClick={handleNext}
                                 disabled={loading ? true : false}
-                                className="bg-[#0077b6] text-white py-2 px-10 rounded-sm shadow-sm hover:bg-[#00b4d8]"
+                                className="bg-main-color  py-2 px-10 rounded-sm shadow-sm hover:bg-main-color"
                               >
                                 Next
                               </button>
@@ -2900,7 +2900,7 @@ const Registration = () => {
                                   setNamaPemilikPerusahaan(e.target.value)
                                 }
                                 type="text"
-                                className="w-full h-[36px] rounded-sm focus:border focus:border-[#0077b6] 
+                                className="w-full h-[36px] rounded-sm focus:border focus:border-main-color 
                                  
                                     border-slate-300
                                  "
@@ -2923,7 +2923,7 @@ const Registration = () => {
                                   setNamaPenanggungJawab(e.target.value)
                                 }
                                 type="text"
-                                className="w-full h-[36px] rounded-sm focus:border focus:border-[#0077b6] border-slate-300"
+                                className="w-full h-[36px] rounded-sm focus:border focus:border-main-color border-slate-300"
                               />
                             </div>
                           </div>
@@ -2943,7 +2943,7 @@ const Registration = () => {
                                   setJabatanPenanggungJawab(e.target.value)
                                 }
                                 type="text"
-                                className="w-full h-[36px] rounded-sm focus:border focus:border-[#0077b6] border-slate-300"
+                                className="w-full h-[36px] rounded-sm focus:border focus:border-main-color border-slate-300"
                               />
                             </div>
                           </div>
@@ -2963,7 +2963,7 @@ const Registration = () => {
                                   setNoTelpKantor(e.target.value)
                                 }
                                 type="text"
-                                className="w-full h-[36px] border rounded-sm focus:border focus:border-[#0077b6] border-slate-300"
+                                className="w-full h-[36px] border rounded-sm focus:border focus:border-main-color border-slate-300"
                               />
                             </div>
                           </div>
@@ -2992,7 +2992,7 @@ const Registration = () => {
                                 pattern="[0-9]*"
                                 value={whatsappPO}
                                 onChange={(e) => onChangeWhatsappPO(e)}
-                                className={`w-full h-[36px] rounded-sm focus:border focus:border-[#0077b6] ${
+                                className={`w-full h-[36px] rounded-sm focus:border focus:border-main-color ${
                                   isError && whatsappPO.trim().length === 0
                                     ? "border-red-400"
                                     : "border-slate-300"
@@ -3013,7 +3013,7 @@ const Registration = () => {
                                   setEmailKorespondensiPo(e.target.value)
                                 }
                                 type="email"
-                                className="w-full h-[36px] border border-slate-300 rounded-sm focus:border focus:border-[#0077b6]  "
+                                className="w-full h-[36px] border border-slate-300 rounded-sm focus:border focus:border-main-color  "
                               />
                             </div>
                           </div>
@@ -3038,7 +3038,7 @@ const Registration = () => {
                                 value={namaKontak}
                                 onChange={(e) => setNamaKontak(e.target.value)}
                                 type="text"
-                                className={`w-full h-[36px] rounded-sm focus:border focus:border-[#0077b6] ${
+                                className={`w-full h-[36px] rounded-sm focus:border focus:border-main-color ${
                                   isError && namaKontak.trim().length === 0
                                     ? "border-red-400"
                                     : "border-slate-300"
@@ -3057,7 +3057,7 @@ const Registration = () => {
                                 value={jabatan}
                                 onChange={(e) => setJabatan(e.target.value)}
                                 type="text"
-                                className="w-full h-[36px] border border-slate-300 rounded-sm focus:border focus:border-[#0077b6]  "
+                                className="w-full h-[36px] border border-slate-300 rounded-sm focus:border focus:border-main-color  "
                               />
                             </div>
                           </div>
@@ -3088,7 +3088,7 @@ const Registration = () => {
                                 maxLength={15}
                                 value={whatsappKeuangan}
                                 onChange={(e) => onChangeWhatsappKeuangan(e)}
-                                className={`w-full h-[36px] rounded-sm focus:border focus:border-[#0077b6] ${
+                                className={`w-full h-[36px] rounded-sm focus:border focus:border-main-color ${
                                   isError &&
                                   whatsappKeuangan.trim().length === 0
                                     ? "border-red-400"
@@ -3101,6 +3101,15 @@ const Registration = () => {
                             <div className="whitespace-nowrap flex">
                               <label htmlFor="" className="w-36">
                                 Email Korespondensi Keuangan
+                                {isError &&
+                                emailKorespondensiKeuangan.trim().length ===
+                                  0 ? (
+                                  <span className="text-red-400">
+                                    <PiWarningCircleLight />
+                                  </span>
+                                ) : (
+                                  "*"
+                                )}
                               </label>
                             </div>
                             <div className="">
@@ -3110,7 +3119,7 @@ const Registration = () => {
                                   setEmailKorespondensiKeuangan(e.target.value)
                                 }
                                 type="email"
-                                className="w-full h-[36px] border border-slate-300 rounded-sm focus:border focus:border-[#0077b6]  "
+                                className="w-full h-[36px] border border-slate-300 rounded-sm focus:border focus:border-main-color  "
                               />
                             </div>
                           </div>
@@ -3138,7 +3147,7 @@ const Registration = () => {
                                   setNamaKontakKeuangan(e.target.value)
                                 }
                                 type="text"
-                                className={`w-full h-[36px] rounded-sm focus:border focus:border-[#0077b6] ${
+                                className={`w-full h-[36px] rounded-sm focus:border focus:border-main-color ${
                                   isError &&
                                   namaKontakKeuangan.trim().length === 0
                                     ? "border-red-400"
@@ -3153,15 +3162,7 @@ const Registration = () => {
                                 htmlFor=""
                                 className=" flex gap-1 items-center"
                               >
-                                Jabatan{" "}
-                                {isError &&
-                                jabatanKeuangan.trim().length === 0 ? (
-                                  <span className="text-red-400">
-                                    <PiWarningCircleLight />
-                                  </span>
-                                ) : (
-                                  "*"
-                                )}
+                                Jabatan
                               </label>
                             </div>
                             <div className="">
@@ -3171,7 +3172,7 @@ const Registration = () => {
                                   setJabatanKeuangan(e.target.value)
                                 }
                                 type="text"
-                                className={`w-full h-[36px] rounded-sm focus:border focus:border-[#0077b6] ${
+                                className={`w-full h-[36px] rounded-sm focus:border focus:border-main-color ${
                                   isError && jabatanKeuangan.trim().length === 0
                                     ? "border-red-400"
                                     : "border-slate-300"
@@ -3192,7 +3193,7 @@ const Registration = () => {
                             <>
                               <button
                                 onClick={handleBack}
-                                className={`ms-2 border border-[#00b4d8] px-10 py-2 hover:bg-slate-200 ${
+                                className={`ms-2 border border-main-color px-10 py-2 hover:bg-slate-200 ${
                                   activeStep === 0 && "cursor-not-allowed"
                                 } `}
                               >
@@ -3202,7 +3203,7 @@ const Registration = () => {
                               <button
                                 onClick={handleNext}
                                 disabled={loading ? true : false}
-                                className="bg-[#0077b6] text-white py-2 px-10 rounded-sm shadow-sm hover:bg-[#00b4d8]"
+                                className="bg-main-color  py-2 px-10 rounded-sm shadow-sm "
                               >
                                 Next
                               </button>
@@ -3221,7 +3222,7 @@ const Registration = () => {
                               <button
                                 onClick={handleNext}
                                 disabled={loading ? true : false}
-                                className="bg-[#0077b6] text-white py-2 px-10 rounded-sm shadow-sm hover:bg-[#00b4d8]"
+                                className="bg-main-color  py-2 px-10 rounded-sm shadow-sm "
                               >
                                 Next
                               </button>
@@ -3263,7 +3264,7 @@ const Registration = () => {
                                 pattern="[0-9]*"
                                 value={termPembayaran}
                                 onChange={onChangeTermPembayaran}
-                                className={`w-full h-[36px] rounded-sm focus:border focus:border-[#0077b6]  ${
+                                className={`w-full h-[36px] rounded-sm focus:border focus:border-main-color ${
                                   isError && termPembayaran.trim().length === 0
                                     ? "border-red-400"
                                     : "border-slate-300"
@@ -3293,7 +3294,7 @@ const Registration = () => {
                                 value={bank}
                                 onChange={(e) => setBank(e.target.value)}
                                 type="text"
-                                className={`w-full h-[36px] rounded-sm focus:border focus:border-[#0077b6] ${
+                                className={`w-full h-[36px] rounded-sm focus:border focus:border-main-color ${
                                   isError && bank.trim().length === 0
                                     ? "border-red-400"
                                     : "border-slate-300"
@@ -3323,7 +3324,7 @@ const Registration = () => {
                                 value={nomorRekening}
                                 onChange={(e) => setRekening(e.target.value)}
                                 type="text"
-                                className={`w-full h-[36px] rounded-sm focus:border focus:border-[#0077b6] ${
+                                className={`w-full h-[36px] rounded-sm focus:border focus:border-main-color ${
                                   isError && nomorRekening.trim().length === 0
                                     ? "border-red-400"
                                     : "border-slate-300"
@@ -3354,7 +3355,7 @@ const Registration = () => {
                                   setNamaRekening(e.target.value)
                                 }
                                 type="text"
-                                className={`w-full h-[36px] rounded-sm focus:border focus:border-[#0077b6] ${
+                                className={`w-full h-[36px] rounded-sm focus:border focus:border-main-color ${
                                   isError && namaRekening.trim().length === 0
                                     ? "border-red-400"
                                     : "border-slate-300"
@@ -3387,7 +3388,7 @@ const Registration = () => {
                                   setKantorCabangBank(e.target.value)
                                 }
                                 type="text"
-                                className={`w-full h-[36px] rounded-sm focus:border focus:border-[#0077b6] ${
+                                className={`w-full h-[36px] rounded-sm focus:border focus:border-main-color ${
                                   isError &&
                                   kantorCabangBank.trim().length === 0
                                     ? "border-red-400"
@@ -3448,7 +3449,7 @@ const Registration = () => {
                                 pattern="[0-9]*"
                                 value={pengembalianBarang}
                                 onChange={onChangePengembalianBarang}
-                                className={`w-full h-[36px] rounded-sm focus:border focus:border-[#0077b6] ${
+                                className={`w-full h-[36px] rounded-sm focus:border focus:border-main-color ${
                                   isError &&
                                   pengembalianBarang.trim().length === 0
                                     ? "border-red-400"
@@ -3478,7 +3479,7 @@ const Registration = () => {
                                       (evt.key === "e" || evt.key === "-") &&
                                       evt.preventDefault()
                                     }
-                                    className="w-full h-[36px] border border-slate-300 rounded-sm focus:border focus:border-[#0077b6]  "
+                                    className="w-full h-[36px] border border-slate-300 rounded-sm focus:border focus:border-main-color  "
                                   />
                                 </div>
                               </div>
@@ -3500,11 +3501,11 @@ const Registration = () => {
                                       (evt.key === "e" || evt.key === "-") &&
                                       evt.preventDefault()
                                     }
-                                    className="w-full h-[36px] border border-slate-300 rounded-sm focus:border focus:border-[#0077b6]  "
+                                    className="w-full h-[36px] border border-slate-300 rounded-sm focus:border focus:border-main-color  "
                                   />
                                 </div>
                               </div>
-                           
+
                               <div className="flex flex-col gap-2 mb-3">
                                 <div className="whitespace-nowrap flex">
                                   <label htmlFor="" className="w-44">
@@ -3522,7 +3523,7 @@ const Registration = () => {
                                       (evt.key === "e" || evt.key === "-") &&
                                       evt.preventDefault()
                                     }
-                                    className="w-full h-[36px] border border-slate-300 rounded-sm focus:border focus:border-[#0077b6]  "
+                                    className="w-full h-[36px] border border-slate-300 rounded-sm focus:border focus:border-main-color  "
                                   />
                                 </div>
                               </div>
@@ -3543,7 +3544,7 @@ const Registration = () => {
                                       (evt.key === "e" || evt.key === "-") &&
                                       evt.preventDefault()
                                     }
-                                    className="w-full h-[36px] border border-slate-300 rounded-sm focus:border focus:border-[#0077b6]  "
+                                    className="w-full h-[36px] border border-slate-300 rounded-sm focus:border focus:border-main-color  "
                                   />
                                 </div>
                               </div>
@@ -3566,7 +3567,7 @@ const Registration = () => {
                                       (evt.key === "e" || evt.key === "-") &&
                                       evt.preventDefault()
                                     }
-                                    className="w-full h-[36px] border border-slate-300 rounded-sm focus:border focus:border-[#0077b6]  "
+                                    className="w-full h-[36px] border border-slate-300 rounded-sm focus:border focus:border-main-color  "
                                   />
                                 </div>
                               </div>
@@ -3586,7 +3587,7 @@ const Registration = () => {
                             <>
                               <button
                                 onClick={handleBack}
-                                className={`ms-2 border border-[#00b4d8] px-10 py-2 hover:bg-slate-200 ${
+                                className={`ms-2 border border-main-color px-10 py-2 hover:bg-slate-200 ${
                                   activeStep === 0 && "cursor-not-allowed"
                                 } `}
                               >
@@ -3596,7 +3597,7 @@ const Registration = () => {
                               <button
                                 onClick={handleNext}
                                 disabled={loading ? true : false}
-                                className="bg-[#0077b6] text-white py-2 px-10 rounded-sm shadow-sm hover:bg-[#00b4d8]"
+                                className="bg-main-color  py-2 px-10 rounded-sm shadow-sm "
                               >
                                 Next
                               </button>
@@ -3605,7 +3606,7 @@ const Registration = () => {
                             <>
                               <button
                                 onClick={handleBack}
-                                className={`border border-[#00b4d8] px-10 py-2 hover:bg-slate-200 ${
+                                className={`border border-main-color px-10 py-2 hover:bg-slate-200 ${
                                   activeStep === 0 && "cursor-not-allowed"
                                 } `}
                               >
@@ -3615,7 +3616,7 @@ const Registration = () => {
                               <button
                                 onClick={handleNext}
                                 disabled={loading ? true : false}
-                                className="bg-[#0077b6] text-white py-2 px-10 rounded-sm shadow-sm hover:bg-[#00b4d8]"
+                                className="bg-main-color  py-2 px-10 rounded-sm shadow-sm "
                               >
                                 Next
                               </button>
@@ -3666,7 +3667,7 @@ const Registration = () => {
                                 type="file"
                                 onChange={onChangeNpwpFile}
                                 accept="image/jpeg,.pdf"
-                                className=" w-full h-[36px] border border-slate-300 rounded-sm focus:border focus:border-[#0077b6]  "
+                                className=" w-full h-[36px] border border-slate-300 rounded-sm focus:border focus:border-main-color  "
                               />
                             </div>
                           </div>
@@ -3716,7 +3717,7 @@ const Registration = () => {
                                 type="file"
                                 onChange={onChangeKtpPemilikFile}
                                 accept="image/jpg,.pdf"
-                                className=" w-full h-[36px] border border-slate-300 rounded-sm focus:border focus:border-[#0077b6]  "
+                                className=" w-full h-[36px] border border-slate-300 rounded-sm focus:border focus:border-main-color  "
                               />
                             </div>
                           </div>
@@ -3770,7 +3771,7 @@ const Registration = () => {
                                 type="file"
                                 onChange={onChangeKtpPenanggungJawabFile}
                                 accept="image/jpg,.pdf"
-                                className=" w-full h-[36px] border border-slate-300 rounded-sm focus:border focus:border-[#0077b6]  "
+                                className=" w-full h-[36px] border border-slate-300 rounded-sm focus:border focus:border-main-color "
                               />
                             </div>
                           </div>
@@ -3827,7 +3828,7 @@ const Registration = () => {
                                 type="file"
                                 onChange={onChangeSpkpFile}
                                 accept="image/jpg,.pdf"
-                                className=" w-full h-[36px] border border-slate-300 rounded-sm focus:border focus:border-[#0077b6]  "
+                                className=" w-full h-[36px] border border-slate-300 rounded-sm focus:border focus:border-main-color  "
                               />
                             </div>
                           </div>
@@ -3878,7 +3879,7 @@ const Registration = () => {
                                 type="file"
                                 onChange={onChangeNibFile}
                                 accept="image/jpg,.pdf"
-                                className=" w-full h-[36px] border border-slate-300 rounded-sm focus:border focus:border-[#0077b6]  "
+                                className=" w-full h-[36px] border border-slate-300 rounded-sm focus:border focus:border-main-color  "
                               />
                             </div>
                           </div>
@@ -3929,7 +3930,7 @@ const Registration = () => {
                                 type="file"
                                 onChange={onChangeSsRekeningFile}
                                 accept="image/jpg,.pdf"
-                                className=" w-full h-[36px] border border-slate-300 rounded-sm focus:border focus:border-[#0077b6]  "
+                                className=" w-full h-[36px] border border-slate-300 rounded-sm focus:border focus:border-main-color  "
                               />
                             </div>
                           </div>
@@ -3979,7 +3980,7 @@ const Registration = () => {
                                 type="file"
                                 onChange={onChangeBpomFile}
                                 accept="image/jpg,.pdf"
-                                className=" w-full h-[36px] border border-slate-300 rounded-sm focus:border focus:border-[#0077b6]  "
+                                className=" w-full h-[36px] border border-slate-300 rounded-sm focus:border focus:border-main-color "
                               />
                             </div>
                           </div>
@@ -4049,7 +4050,7 @@ const Registration = () => {
                               <button
                                 disabled={loading ? true : false}
                                 onClick={handleNext}
-                                className="bg-[#0077b6] text-white py-2 px-10 rounded-sm shadow-sm hover:bg-[#00b4d8]"
+                                className="bg-main-color  py-2 px-10 rounded-sm shadow-sm "
                               >
                                 {loading ? (
                                   <CircularProgress
@@ -4066,7 +4067,7 @@ const Registration = () => {
                               <button
                                 disabled={activeStep === 0}
                                 onClick={handleBack}
-                                className={`border border-[#00b4d8] px-10 py-2 hover:bg-slate-200 ${
+                                className={`border border-main-color px-10 py-2 hover:bg-slate-200 ${
                                   activeStep === 0 && "cursor-not-allowed"
                                 } `}
                               >
@@ -4076,7 +4077,7 @@ const Registration = () => {
                               <button
                                 disabled={loading ? true : false}
                                 onClick={handleNext}
-                                className="bg-[#0077b6] text-white py-2 px-10 rounded-sm shadow-sm hover:bg-[#00b4d8]"
+                                className="bg-main-color  py-2 px-10 rounded-sm shadow-sm "
                               >
                                 {loading ? (
                                   <CircularProgress

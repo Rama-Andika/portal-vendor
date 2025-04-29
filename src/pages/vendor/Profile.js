@@ -294,6 +294,7 @@ const Profile = () => {
     setOpenBackdrop(true);
     let isSave = false;
     setLoading(true);
+
     if (
       namaPerusahaan.trim().length > 0 &&
       alamat.trim().length > 0 &&
@@ -306,7 +307,6 @@ const Profile = () => {
       namaKontak.trim().length > 0 &&
       whatsappKeuangan.trim().length > 0 &&
       namaKontakKeuangan.trim().length > 0 &&
-      jabatanKeuangan.trim().length > 0 &&
       termPembayaran.toString().length > 0 &&
       bank.trim().length > 0 &&
       nomorRekening.trim().length > 0 &&
@@ -1857,7 +1857,7 @@ const Profile = () => {
                 <button
                   type="button"
                   onClick={() => onClickDownload()}
-                  className="mt-5 max-[415px]:w-full rounded-md py-2 px-5 text-white bg-[#0077b6] w-fit cursor-pointer flex gap-1 items-center"
+                  className="mt-5 max-[415px]:w-full rounded-md py-2 px-5  bg-main-color w-fit cursor-pointer flex gap-1 items-center"
                 >
                   <div className="">
                     <PiFileZipDuotone />
@@ -1892,14 +1892,14 @@ const Profile = () => {
                   <div className=" relative">
                     <label htmlFor="upload-npwp" className="w-fit">
                       {npwpFile === null ? (
-                        <div className="w-fit flex gap-1 items-center bg-blue-400 py-2 px-5 text-white hover:bg-blue-200 rounded-md">
+                        <div className="w-fit flex gap-1 items-center bg-main-color py-2 px-5   rounded-md">
                           <span>
                             <FaCloudUploadAlt />
                           </span>
                           <div>Upload</div>
                         </div>
                       ) : (
-                        <div className="w-fit flex gap-1 items-center bg-blue-400 py-2 px-5 text-white hover:bg-blue-200 rounded-md">
+                        <div className="w-fit flex gap-1 items-center bg-main-color py-2 px-5   rounded-md">
                           <span>
                             <FaCloudUploadAlt />
                           </span>
@@ -1960,14 +1960,14 @@ const Profile = () => {
                   <div className=" relative">
                     <label htmlFor="upload-ktppemilik" className="w-fit">
                       {ktpPemilikFile === null ? (
-                        <div className="w-fit flex gap-1 items-center bg-blue-400 py-2 px-5 text-white hover:bg-blue-200 rounded-md">
+                        <div className="w-fit flex gap-1 items-center bg-main-color py-2 px-5  rounded-md">
                           <span>
                             <FaCloudUploadAlt />
                           </span>
                           <div>Upload</div>
                         </div>
                       ) : (
-                        <div className="w-fit flex gap-1 items-center bg-blue-400 py-2 px-5 text-white hover:bg-blue-200 rounded-md">
+                        <div className="w-fit flex gap-1 items-center bg-main-color py-2 px-5  rounded-md">
                           <span>
                             <FaCloudUploadAlt />
                           </span>
@@ -2018,7 +2018,7 @@ const Profile = () => {
                   <div className="flex flex-col gap-1">
                     <div className=" flex">
                       <label htmlFor="" className="w-72">
-                        KTP Penganggung Jawab
+                        KTP Penanggung Jawab
                       </label>
                     </div>
                     <div className="text-[10px] text-gray-500">
@@ -2031,14 +2031,14 @@ const Profile = () => {
                       className="w-fit"
                     >
                       {ktpPenanggungJawabFile === null ? (
-                        <div className="w-fit flex gap-1 items-center bg-blue-400 py-2 px-5 text-white hover:bg-blue-200 rounded-md">
+                        <div className="w-fit flex gap-1 items-center bg-main-color py-2 px-5  rounded-md">
                           <span>
                             <FaCloudUploadAlt />
                           </span>
                           <div>Upload</div>
                         </div>
                       ) : (
-                        <div className="w-fit flex gap-1 items-center bg-blue-400 py-2 px-5 text-white hover:bg-blue-200 rounded-md">
+                        <div className="w-fit flex gap-1 items-center bg-main-color py-2 px-5   rounded-md">
                           <span>
                             <FaCloudUploadAlt />
                           </span>
@@ -2103,14 +2103,14 @@ const Profile = () => {
                   <div className=" relative">
                     <label htmlFor="upload-spkp" className="w-fit">
                       {spkpFile === null ? (
-                        <div className="w-fit flex gap-1 items-center bg-blue-400 py-2 px-5 text-white hover:bg-blue-200 rounded-md">
+                        <div className="w-fit flex gap-1 items-center bg-main-color py-2 px-5 rounded-md">
                           <span>
                             <FaCloudUploadAlt />
                           </span>
                           <div>Upload</div>
                         </div>
                       ) : (
-                        <div className="w-fit flex gap-1 items-center bg-blue-400 py-2 px-5 text-white hover:bg-blue-200 rounded-md">
+                        <div className="w-fit flex gap-1 items-center bg-main-color py-2 px-5 rounded-md">
                           <span>
                             <FaCloudUploadAlt />
                           </span>
@@ -2172,14 +2172,14 @@ const Profile = () => {
                   <div className=" relative">
                     <label htmlFor="upload-nib" className="w-fit">
                       {nibFile === null ? (
-                        <div className="w-fit flex gap-1 items-center bg-blue-400 py-2 px-5 text-white hover:bg-blue-200 rounded-md">
+                        <div className="w-fit flex gap-1 items-center bg-main-color py-2 px-5 rounded-md">
                           <span>
                             <FaCloudUploadAlt />
                           </span>
                           <div>Upload</div>
                         </div>
                       ) : (
-                        <div className="w-fit flex gap-1 items-center bg-blue-400 py-2 px-5 text-white hover:bg-blue-200 rounded-md">
+                        <div className="w-fit flex gap-1 items-center bg-main-color py-2 px-5  rounded-md">
                           <span>
                             <FaCloudUploadAlt />
                           </span>
@@ -2241,14 +2241,14 @@ const Profile = () => {
                   <div className=" relative">
                     <label htmlFor="upload-ssperusahaan" className="w-fit">
                       {ssPerusahaanFile === null ? (
-                        <div className="w-fit flex gap-1 items-center bg-blue-400 py-2 px-5 text-white hover:bg-blue-200 rounded-md">
+                        <div className="w-fit flex gap-1 items-center bg-main-color py-2 px-5  rounded-md">
                           <span>
                             <FaCloudUploadAlt />
                           </span>
                           <div>Upload</div>
                         </div>
                       ) : (
-                        <div className="w-fit flex gap-1 items-center bg-blue-400 py-2 px-5 text-white hover:bg-blue-200 rounded-md">
+                        <div className="w-fit flex gap-1 items-center bg-main-color py-2 px-5  rounded-md">
                           <span>
                             <FaCloudUploadAlt />
                           </span>
@@ -2317,14 +2317,14 @@ const Profile = () => {
                   <div className=" relative">
                     <label htmlFor="upload-bpom" className="w-fit">
                       {sertifBpomFile === null ? (
-                        <div className="w-fit flex gap-1 items-center bg-blue-400 py-2 px-5 text-white hover:bg-blue-200 rounded-md">
+                        <div className="w-fit flex gap-1 items-center bg-main-color py-2 px-5  rounded-md">
                           <span>
                             <FaCloudUploadAlt />
                           </span>
                           <div>Upload</div>
                         </div>
                       ) : (
-                        <div className="w-fit flex gap-1 items-center bg-blue-400 py-2 px-5 text-white hover:bg-blue-200 rounded-md">
+                        <div className="w-fit flex gap-1 items-center bg-main-color py-2 px-5  rounded-md">
                           <span>
                             <FaCloudUploadAlt />
                           </span>

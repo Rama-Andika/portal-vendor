@@ -307,7 +307,6 @@ const VendorEdit = () => {
       namaKontak.trim().length > 0 &&
       whatsappKeuangan.trim().length > 0 &&
       namaKontakKeuangan.trim().length > 0 &&
-      jabatanKeuangan.trim().length > 0 &&
       termPembayaran.toString().length > 0 &&
       bank.trim().length > 0 &&
       nomorRekening.trim().length > 0 &&

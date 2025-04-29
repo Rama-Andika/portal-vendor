@@ -8,7 +8,7 @@ import { Link, useNavigate } from "react-router-dom";
 import generateString from "../components/functions/GenerateRandomString";
 import { useEffect } from "react";
 const api = process.env.REACT_APP_BASEURL;
-const LoginWh = () => {
+const LoginAdmin = () => {
   const [username, setUsername] = useState("");
   const [password, setPassword] = useState("");
 
@@ -73,14 +73,14 @@ const LoginWh = () => {
 
   return (
     <>
-      <div className="grid grid-cols-12 min-h-screen relative font-roboto">
-        <div
+      <div className="min-h-screen relative font-roboto flex justify-center items-center">
+        {/* <div
           className="bg-cover bg-no-repeat bg-center relative col-span-8 max-[634px]:hidden max-[1275px]:col-span-6"
           style={{ backgroundImage: `url(${require('../assets/images/retail.jpg')})` }} 
-        ></div>
-        <div className="font-roboto bg-white px-20 max-[790px]:px-10 flex flex-col justify-center w-full rounded-sm shadow-sm col-span-4 max-[634px]:col-span-12 max-[1275px]:col-span-6">
+        ></div> */}
+        <div className="w-400 font-roboto bg-white max-sm:px-5 flex flex-col justify-center rounded-sm shadow-sm">
           <div className="flex flex-col items-center gap-2">
-            <div className="font-semibold text-[#0077b6]">ADMIN</div>
+            <div className="font-semibold ">ADMIN</div>
           </div>
 
           <form className="flex flex-col gap-4">
@@ -141,7 +141,7 @@ const LoginWh = () => {
             <button
               type="submit"
               disabled={loading ? true : false}
-              className="bg-[#0077b6] py-3 text-white rounded-md shadow-sm "
+              className="bg-main-color py-3 rounded-md shadow-sm "
               onClick={onSubmitLogin}
             >
               {loading ? (
@@ -157,4 +157,4 @@ const LoginWh = () => {
   );
 };
 
-export default LoginWh;
+export default LoginAdmin;

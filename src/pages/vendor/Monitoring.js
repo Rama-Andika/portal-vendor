@@ -18,6 +18,7 @@ import { AdapterDayjs } from "@mui/x-date-pickers/AdapterDayjs";
 import { DemoContainer } from "@mui/x-date-pickers/internals/demo";
 import Select from "react-select";
 import toast from "react-hot-toast";
+import ButtonSearch from "../../components/button/ButtonSearch";
 
 const srcStatusOptions = [
   { value: 0, label: "All", key: 0 },
@@ -28,6 +29,97 @@ const srcStatusOptions = [
 ];
 
 const api = process.env.REACT_APP_BASEURL;
+
+export const PenagihanDetail = ({ data }) => {
+  return (
+    <table>
+      <thead className="bg-[#305496] text-white ">
+        <tr>
+          {data.tipe_penagihan === "beli putus" && (
+            <>
+              <td className="w-[150px] min-w-[150px] max-w-[150px] text-start p-2 !rounded-tl-md">
+                Nomor PO
+              </td>
+              <td className="!w-[180px] !min-w-[150px] !max-w-[150px] text-start p-2">
+                Tanggal PO
+              </td>
+            </>
+          )}
+          {data.tipe_penagihan !== "beli putus" && (
+            <td className="w-[250px] min-w-[250px] max-w-[250px] text-start p-2 !rounded-tl-md">
+              Lokasi
+            </td>
+          )}
+          <td className="w-[150px] min-w-[150px] max-w-[150px] text-start p-2">
+            Nomor Invoice
+          </td>
+          {data.tipe_penagihan === "beli putus" && (
+            <td className="!w-[180px] !min-w-[150px] !max-w-[150px] text-start p-2">
+              Tanggal Invoice
+            </td>
+          )}
+
+          <td className="w-[150px] min-w-[150px] max-w-[150px] text-start p-2">
+            Nilai Invoice
+          </td>
+
+          <td className="w-[250px] min-w-[250px] max-w-[250px] text-start p-2 rounded-tr-md">
+            Nomor Seri Faktur Pajak
+          </td>
+        </tr>
+      </thead>
+      <tbody>
+        {data.nomer_invoices.length > 0 &&
+          data.nomer_invoices.map((invoice, i) => (
+            <tr key={i}>
+              {data.tipe_penagihan === "beli putus" && (
+                <>
+                  <td className="p-2 align-top">
+                    <div>{data.nomer_po[i]}</div>
+                  </td>
+                  <td className="p-2">
+                    <div>
+                      {data?.tanggal_po[i]
+                        ? dayjs(data.tanggal_po[i]).format("DD MMMM, YYYY")
+                        : ""}
+                    </div>
+                  </td>
+                </>
+              )}
+
+              {data.tipe_penagihan !== "beli putus" && (
+                <td className="p-2 align-top">
+                  <div>{data?.locations[i]?.name}</div>
+                </td>
+              )}
+
+              <td className="p-2 align-top">
+                <div>{invoice}</div>
+              </td>
+
+              {data.tipe_penagihan === "beli putus" && (
+                <td className="p-2">
+                  <div>
+                    {data?.tanggal_invoices[i]
+                      ? dayjs(data.tanggal_invoices[i]).format("DD MMMM, YYYY")
+                      : ""}
+                  </div>
+                </td>
+              )}
+
+              <td className="p-2 align-top">
+                <div>{accountingNumber(data.nilai_invoices[i])}</div>
+              </td>
+
+              <td className="p-2 align-top">
+                <div>{data.nomer_seri_pajak[i]}</div>
+              </td>
+            </tr>
+          ))}
+      </tbody>
+    </table>
+  );
+};
 
 const Monitoring = () => {
   const [totalInvoice, setTotalInvoice] = useState([]);
@@ -290,12 +382,7 @@ const Monitoring = () => {
                 </div>
 
                 <div className="flex justify-end mt-2">
-                  <button
-                    onClick={(e) => onSearch(e)}
-                    className="py-1 max-[415px]:w-full px-10 rounded-sm shadow-sm bg-[#0077b6] text-white"
-                  >
-                    Search
-                  </button>
+                  <ButtonSearch onSearch={(e) => onSearch(e)} />
                 </div>
               </form>
             </div>
@@ -389,7 +476,7 @@ const Monitoring = () => {
             <Fade in={open}>
               <div
                 className={`rounded-md border-0 bg-white py-5 px-7 absolute top-[50%] left-1/2 translate-x-[-50%] translate-y-[-50%] h-[400px] overflow-y-auto z-[999999]  ${
-                  screenSize <= 548 ? "w-[90%]" : "w-fit"
+                  screenSize <= 1087 ? "w-[90%]" : "w-fit"
                 }`}
               >
                 {!isEmpty(detail) && (
@@ -410,7 +497,6 @@ const Monitoring = () => {
                         <div className="w-[270px] whitespace-nowrap font-bold">
                           Tanggal Submit
                         </div>
-
                         <div className="w-[240px] whitespace-nowrap overflow-ellipsis overflow-hidden">
                           {dayjs(detail.created_at).format("DD/MM/YYYY")}
                         </div>
@@ -428,79 +514,13 @@ const Monitoring = () => {
                         <div className="w-[270px] whitespace-nowrap font-bold">
                           Tipe Penagihan
                         </div>
-
                         <div className="w-[240px] whitespace-nowrap overflow-ellipsis overflow-hidden text-red-500">
                           {titleCase(detail.tipe_penagihan, "_")}
                         </div>
                       </div>
-                      <div className="flex max-[549px]:flex-col max-[549px]:items-start items-center gap-2">
-                        <div className="w-[270px] whitespace-nowrap font-bold">
-                          No Purchase Order (PO)
-                        </div>
-
-                        <div className="w-[240px] whitespace-nowrap overflow-ellipsis overflow-hidden">
-                          {detail.nomer_po}
-                        </div>
+                      <div className="overflow-auto">
+                        <PenagihanDetail data={detail} />
                       </div>
-                      <div className="flex max-[549px]:flex-col max-[549px]:items-start items-center gap-2">
-                        <div className="w-[270px] whitespace-nowrap font-bold">
-                          Tanggal PO
-                        </div>
-
-                        <div className="w-[240px] whitespace-nowrap overflow-ellipsis overflow-hidden">
-                          {detail.tanggal_po
-                            ? dayjs(detail.tanggal_po).format("DD/MM/YYYY")
-                            : ""}
-                        </div>
-                      </div>
-                      <div className="flex max-[549px]:flex-col max-[549px]:items-start items-center gap-2">
-                        <div className="w-[270px] whitespace-nowrap font-bold">
-                          Delivery Area
-                        </div>
-
-                        <div className="w-[240px] whitespace-nowrap overflow-ellipsis overflow-hidden">
-                          {detail.delivery_area}
-                        </div>
-                      </div>
-                      <div className="flex max-[549px]:flex-col max-[549px]:items-start items-center gap-2">
-                        <div className="w-[270px] whitespace-nowwrap font-bold">
-                          Periode Acuan Penagihan
-                        </div>
-
-                        <div className="w-[240px] whitespace-nowrap overflow-ellipsis overflow-hidden">
-                          12/09/23
-                        </div>
-                      </div>
-                      <div className="flex max-[549px]:flex-col max-[549px]:items-start  gap-2">
-                        <div className="w-[270px] whitespace-nowrap font-bold">
-                          No Invoice
-                        </div>
-
-                        <div className="flex flex-col gap-1">
-                          {detail.nomer_invoices.map((nomer) => (
-                            <div className="w-[240px] whitespace-nowrap overflow-ellipsis overflow-hidden">
-                              {nomer}
-                            </div>
-                          ))}
-                        </div>
-                      </div>
-                      {detail.tanggal_invoices.some(
-                        (invoice) => invoice !== null
-                      ) > 0 && (
-                        <div className="flex max-[549px]:flex-col max-[549px]:items-start gap-2">
-                          <div className="w-[270px] whitespace-nowrap font-bold">
-                            Tanggal Invoice
-                          </div>
-
-                          <div className="flex flex-col gap-1">
-                            {detail.tanggal_invoices.map((tanggal) => (
-                              <div className="w-[240px] whitespace-nowrap overflow-ellipsis overflow-hidden">
-                                {dayjs(tanggal).format("DD/MM/YYYY")}
-                              </div>
-                            ))}
-                          </div>
-                        </div>
-                      )}
                       {detail.start_dates.some((invoice) => invoice !== null) >
                         0 && (
                         <div className="flex max-[549px]:flex-col max-[549px]:items-start gap-2">
@@ -525,41 +545,6 @@ const Monitoring = () => {
                           </div>
                         </div>
                       )}
-                      <div className="flex max-[549px]:flex-col max-[549px]:items-start gap-2">
-                        <div className="w-[270px] whitespace-nowrap font-bold">
-                          Nilai Invoice
-                        </div>
-
-                        <div className="flex flex-col gap-1">
-                          {detail.nilai_invoices.map((nilai) => (
-                            <div className="w-[240px] whitespace-nowrap overflow-ellipsis overflow-hidden">
-                              Rp. {accountingNumber(nilai)}
-                            </div>
-                          ))}
-                        </div>
-                      </div>
-                      <div className="flex max-[549px]:flex-col max-[549px]:items-start items-center gap-2">
-                        <div className="w-[270px] whitespace-nowrap font-bold">
-                          Apakah Barang Termasuk Pajak
-                        </div>
-
-                        <div className="w-[240px] whitespace-nowrap overflow-ellipsis overflow-hidden flex flex-col">
-                          <div>{detail.is_pajak === 0 ? "Tidak" : "Ya"}</div>
-                        </div>
-                      </div>
-                      <div className="flex max-[549px]:flex-col max-[549px]:items-start gap-2">
-                        <div className="w-[270px] whitespace-nowrap font-bold">
-                          No Seri Faktur Pajak
-                        </div>
-
-                        <div className="flex flex-col gap-1">
-                          {detail.nomer_seri_pajak.map((nomer) => (
-                            <div className="w-[240px] whitespace-nowrap overflow-ellipsis overflow-hidden">
-                              {nomer}
-                            </div>
-                          ))}
-                        </div>
-                      </div>
                       <div className="flex max-[549px]:flex-col max-[549px]:items-start items-center gap-2">
                         <div className="w-[270px] whitespace-nowrap font-bold">
                           Status

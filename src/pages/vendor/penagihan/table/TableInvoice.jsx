@@ -13,7 +13,7 @@ const TableInvoice = React.memo(
   ({
     data,
     setData,
-    inputNomorInvoiceRef,
+    inputNomorInvoiceRef = null,
     addMode = false,
     invoices = [],
     invoiceFiles = [],
@@ -56,6 +56,28 @@ const TableInvoice = React.memo(
         setData({ ...data, nilaiInvoice: "" });
       } else {
         setData({ ...data, nilaiInvoice: nilai });
+      }
+    };
+
+    const onChangeNomorSeriFakturPajak = (e) => {
+      const { value } = e.target;
+      try {
+        var cleaned = ("" + value).replace(/\D/g, "");
+        var match = cleaned.match(/(\d{0,3})?(\d{0,3})?(\d{0,2})?(\d{0,8})$/);
+
+        var nilai = [
+          match[1],
+          match[2] ? "." : "",
+          match[2],
+          match[3] ? "-" : "",
+          match[3],
+          match[4] ? "." : "",
+          match[4],
+        ].join("");
+
+        setData({ ...data, nomerSeriFakturPajak: nilai });
+      } catch (err) {
+        return setData({ ...data, nomerSeriFakturPajak: "" });
       }
     };
 
@@ -125,7 +147,6 @@ const TableInvoice = React.memo(
       }
     };
 
-    console.log(pajakFilesUploaded)
     return (
       <>
         <Toaster richColors position="top-center" />
@@ -133,39 +154,52 @@ const TableInvoice = React.memo(
           <thead className="bg-[#305496] text-white ">
             <tr>
               {activeStep !== 2 && (
-                <td className="w-[80px] min-w-[80px] max-w-[80px] text-start p-2 rounded-tl-md">
+                <td className="w-[80px] min-w-[80px] max-w-[80px] text-center p-2 rounded-tl-md">
                   Action
                 </td>
               )}
-
+              {vendorType === "Beli Putus" && (
+                <>
+                  <td className="w-[150px] min-w-[150px] max-w-[150px] text-center p-2">
+                    Nomor PO
+                  </td>
+                  <td className="!w-[180px] !min-w-[150px] !max-w-[150px] text-center p-2">
+                    Tanggal PO
+                  </td>
+                </>
+              )}
               {vendorType !== "Beli Putus" && (
-                <td className="w-[250px] min-w-[250px] max-w-[250px] text-start p-2">
+                <td className="w-[250px] min-w-[250px] max-w-[250px] text-center p-2">
                   Lokasi
                 </td>
               )}
-              <td className="w-[250px] min-w-[250px] max-w-[250px] text-start p-2">
+              <td className="w-[250px] min-w-[250px] max-w-[250px] text-center p-2">
                 Nomor Invoice
               </td>
               {vendorType === "Beli Putus" && (
-                <td className="!w-[180px] !min-w-[150px] !max-w-[150px] text-start p-2">
+                <td className="!w-[180px] !min-w-[150px] !max-w-[150px] text-center p-2">
                   Tanggal Invoice
                 </td>
               )}
 
+              <td className="w-[150px] min-w-[150px] max-w-[150px] text-center p-2">
+                Nilai Invoice
+              </td>
+
               <td
-                className={`w-[150px] min-w-[150px] max-w-[150px] text-start p-2 ${
+                className={`w-[250px] min-w-[250px] max-w-[250px] text-center p-2 ${
                   activeStep !== 2 && "rounded-tr-md"
                 }  `}
               >
-                Nilai Invoice
+                Nomor Seri Faktur Pajak
               </td>
 
               {vendorType !== "Beli Putus" && activeStep === 2 && (
                 <>
-                  <td className="w-[250px] min-w-[250px] max-w-[250px] text-start p-2">
+                  <td className="w-[250px] min-w-[250px] max-w-[250px] text-center p-2">
                     Invoice File
                   </td>
-                  <td className="w-[250px] min-w-[250px] max-w-[250px] text-start p-2 rounded-tr-md">
+                  <td className="w-[250px] min-w-[250px] max-w-[250px] text-center p-2 rounded-tr-md">
                     Faktur Pajak FIle
                   </td>
                 </>
@@ -192,6 +226,19 @@ const TableInvoice = React.memo(
                       </td>
                     )}
 
+                    {vendorType === "Beli Putus" && (
+                      <>
+                        <td className="p-2 align-top">
+                          <div>{invoice.nomorPo}</div>
+                        </td>
+                        <td className="p-2">
+                          <div>
+                            {dayjs(invoice.datePo).format("DD MMMM, YYYY")}
+                          </div>
+                        </td>
+                      </>
+                    )}
+
                     {vendorType !== "Beli Putus" && (
                       <td className="p-2 align-top">
                         <div>{invoice.lokasi?.label}</div>
@@ -213,16 +260,22 @@ const TableInvoice = React.memo(
                     )}
 
                     <td className="p-2 align-top">
-                      <div>{accountingNumber(invoice.nilaiInvoice)}</div>
+                      <div className="text-right">
+                        {accountingNumber(invoice.nilaiInvoice)}
+                      </div>
+                    </td>
+
+                    <td className="p-2 align-top">
+                      <div>{invoice.nomerSeriFakturPajak}</div>
                     </td>
 
                     {vendorType !== "Beli Putus" && activeStep === 2 && (
                       <>
                         <td className=" p-2 align-top">
-                          <div className="flex flex-col gap-2 w-[108px]">
+                          <div className="flex flex-col gap-2 w-[150px]">
                             <label
                               htmlFor={`invoiceFile${i}`}
-                              className="cursor-pointer border rounded-md py-2 px-3 bg-[#fff2cc]"
+                              className="cursor-pointer border rounded-md py-2 px-3 bg-[#fff2cc] text-center"
                             >
                               Browse File
                             </label>
@@ -253,10 +306,10 @@ const TableInvoice = React.memo(
                           </div>
                         </td>
                         <td className=" p-2 align-top">
-                          <div className="flex flex-col gap-2 w-[108px]">
+                          <div className="flex flex-col gap-2 w-[150px]">
                             <label
                               htmlFor={`pajakFile${i}`}
-                              className="cursor-pointer border rounded-md py-2 px-3 bg-[#fff2cc]"
+                              className="cursor-pointer border rounded-md py-2 px-3 bg-[#fff2cc] text-center"
                             >
                               Browse File
                             </label>
@@ -306,6 +359,37 @@ const TableInvoice = React.memo(
                       </td>
                     )}
 
+                    {vendorType === "Beli Putus" && (
+                      <>
+                        <td className="p-2">
+                          <input
+                            type="text"
+                            className="border-gray-400 rounded-sm h-[38px] w-full"
+                            value={data.nomorPo}
+                            onChange={(e) =>
+                              setData({
+                                ...data,
+                                nomorPo: e.target.value.toUpperCase(),
+                              })
+                            }
+                          />
+                        </td>
+                        <td className="p-2">
+                          <input
+                            type="date"
+                            className="border-gray-400 rounded-sm h-[38px] w-full"
+                            value={data.datePo}
+                            onChange={(e) =>
+                              setData({
+                                ...data,
+                                datePo: e.target.value,
+                              })
+                            }
+                          />
+                        </td>
+                      </>
+                    )}
+
                     {vendorType !== "Beli Putus" && (
                       <td className="p-2">
                         <Select
@@ -343,7 +427,10 @@ const TableInvoice = React.memo(
                           className="border-gray-400 rounded-sm h-[38px] w-full"
                           value={data.tanggalInvoice}
                           onChange={(e) =>
-                            setData({ ...data, tanggalInvoice: e.target.value })
+                            setData({
+                              ...data,
+                              tanggalInvoice: e.target.value,
+                            })
                           }
                         />
                       </td>
@@ -355,6 +442,15 @@ const TableInvoice = React.memo(
                         className="border-gray-400 rounded-sm h-[38px] w-full"
                         value={data.nilaiInvoice}
                         onChange={onChangeNilaiInvoice}
+                      />
+                    </td>
+                    <td className="p-2">
+                      <input
+                        type="text"
+                        maxLength={19}
+                        className="border border-gray-400 rounded-sm h-[38px] w-full"
+                        value={data.nomerSeriFakturPajak}
+                        onChange={onChangeNomorSeriFakturPajak}
                         onKeyUp={(e) => e.code === "Enter" && onClickSave(i)}
                       />
                     </td>
@@ -377,6 +473,38 @@ const TableInvoice = React.memo(
                       />
                     </div>
                   </td>
+                )}
+
+                {vendorType === "Beli Putus" && (
+                  <>
+                    <td className="p-2">
+                      <input
+                        type="text"
+                        className="border-gray-400 rounded-sm h-[38px] w-full"
+                        value={data.nomorPo}
+                        onChange={(e) =>
+                          setData({
+                            ...data,
+                            nomorPo: e.target.value.toUpperCase(),
+                          })
+                        }
+                      />
+                    </td>
+
+                    <td className="p-2">
+                      <input
+                        type="date"
+                        className="border-gray-400 rounded-sm h-[38px] w-full"
+                        value={data.datePo}
+                        onChange={(e) =>
+                          setData({
+                            ...data,
+                            datePo: e.target.value,
+                          })
+                        }
+                      />
+                    </td>
+                  </>
                 )}
 
                 {vendorType !== "Beli Putus" && (
@@ -425,6 +553,15 @@ const TableInvoice = React.memo(
                     className="border-gray-400 rounded-sm h-[38px] w-full"
                     value={data.nilaiInvoice}
                     onChange={onChangeNilaiInvoice}
+                  />
+                </td>
+                <td className="p-2">
+                  <input
+                    type="text"
+                    maxLength={19}
+                    className="border border-gray-400 rounded-sm h-[38px] w-full"
+                    value={data.nomerSeriFakturPajak}
+                    onChange={onChangeNomorSeriFakturPajak}
                     onKeyUp={(e) => e.code === "Enter" && onClickSave()}
                   />
                 </td>

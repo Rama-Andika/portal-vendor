@@ -21,6 +21,8 @@ import { PiFileZipDuotone } from "react-icons/pi";
 import Cookies from "js-cookie";
 import { useNavigate } from "react-router-dom";
 import { toast, Toaster } from "sonner";
+import ButtonSearch from "../../components/button/ButtonSearch";
+import { PenagihanDetail } from "../vendor/Monitoring";
 
 const options = [
   { value: "APPROVED", label: "APPROVED", key: 0 },
@@ -210,10 +212,7 @@ const PendingTask = () => {
           tipe_penagihan: item.tipe_penagihan,
           tipe_pengiriman: item.tipe_pengiriman,
           nomer_po: item.nomer_po,
-          tanggal_po:
-            item.tanggal_po !== null
-              ? dayjs(item.tanggal_po).format("YYYY-MM-DD HH:mm:ss")
-              : null,
+          tanggal_po: item.tanggal_po,
           nomer_do: item.nomer_do,
           delivery_area: item.delivery_area,
           nomer_invoices: item.nomer_invoices,
@@ -370,12 +369,7 @@ const PendingTask = () => {
               </div>
 
               <div className="flex justify-end mt-2">
-                <button
-                  onClick={(e) => btnSearch(e)}
-                  className="py-1 max-[415px]:w-full px-10 rounded-sm shadow-sm bg-[#0077b6] text-white"
-                >
-                  Search
-                </button>
+                <ButtonSearch onSearch={(e) => btnSearch(e)} />
               </div>
             </form>
           </div>
@@ -510,71 +504,14 @@ const PendingTask = () => {
                         {titleCase(penagihanDetail.tipe_penagihan)}
                       </div>
                     </div>
-                    <div className="flex max-[549px]:flex-col max-[549px]:items-start items-center gap-2">
-                      <div className="w-[270px] whitespace-nowrap font-bold">
-                        No Purchase Order (PO)
-                      </div>
-
-                      <div className="w-[240px] whitespace-nowrap overflow-ellipsis overflow-hidden">
-                        {penagihanDetail.nomer_po}
-                      </div>
-                    </div>
-                    <div className="flex max-[549px]:flex-col max-[549px]:items-start items-center gap-2">
-                      <div className="w-[270px] whitespace-nowrap font-bold">
-                        Tanggal PO
-                      </div>
-
-                      <div className="w-[240px] whitespace-nowrap overflow-ellipsis overflow-hidden">
-                        {penagihanDetail.tanggal_po != null
-                          ? dayjs(penagihanDetail.tanggal_po).format(
-                              "DD/MM/YYYY"
-                            )
-                          : ""}
-                      </div>
-                    </div>
-                    <div className="flex max-[549px]:flex-col max-[549px]:items-start items-center gap-2">
-                      <div className="w-[270px] whitespace-nowrap font-bold">
-                        No Delivery Order (DO)
-                      </div>
-
-                      <div className="w-[240px]">
-                        {penagihanDetail.nomer_do}
-                      </div>
-                    </div>
-                    <div className="flex max-[549px]:flex-col max-[549px]:items-start items-center gap-2">
-                      <div className="w-[270px] whitespace-nowrap font-bold">
-                        Delivery Area
-                      </div>
-
-                      <div className="w-[240px] whitespace-nowrap overflow-ellipsis overflow-hidden">
-                        {titleCase(penagihanDetail.delivery_area)}
-                      </div>
-                    </div>
-                    <div className="flex max-[549px]:flex-col max-[549px]:items-start  gap-2">
-                      <div className="w-[270px] whitespace-nowrap font-bold">
-                        No Invoice
-                      </div>
-
-                      <div className="flex flex-col gap-1">
-                        {penagihanDetail.nomer_invoices.map((nomer) => (
-                          <div className="w-[240px]">{nomer}</div>
-                        ))}
-                      </div>
-                    </div>
-                    {penagihanDetail.tanggal_invoices.some(
-                      (invoice) => invoice !== null
-                    ) > 0 && (
-                      <div className="flex max-[549px]:flex-col max-[549px]:items-start gap-2">
+                    {penagihanDetail.tipe_penagihan === "konsinyasi" && (
+                      <div className="flex max-[549px]:flex-col max-[549px]:items-start items-center gap-2">
                         <div className="w-[270px] whitespace-nowrap font-bold">
-                          Tanggal Invoice
+                          Duration
                         </div>
 
-                        <div className="flex flex-col gap-1">
-                          {penagihanDetail.tanggal_invoices.map((tanggal) => (
-                            <div className="w-[240px] whitespace-nowrap overflow-ellipsis overflow-hidden">
-                              {dayjs(tanggal).format("DD/MM/YYYY")}
-                            </div>
-                          ))}
+                        <div className="w-[240px] whitespace-nowrap overflow-ellipsis overflow-hidden">
+                          {titleCase(penagihanDetail.penagihan_cons_type)}
                         </div>
                       </div>
                     )}
@@ -603,42 +540,7 @@ const PendingTask = () => {
                         </div>
                       </div>
                     )}
-
-                    <div className="flex max-[549px]:flex-col max-[549px]:items-start gap-2">
-                      <div className="w-[270px] whitespace-nowrap font-bold">
-                        Nilai Invoice
-                      </div>
-
-                      <div className="flex flex-col gap-1">
-                        {penagihanDetail.nilai_invoices.map((nilai) => (
-                          <div className="w-[240px] whitespace-nowrap overflow-ellipsis overflow-hidden">
-                            Rp. {accountingNumber(nilai)}
-                          </div>
-                        ))}
-                      </div>
-                    </div>
-                    <div className="flex max-[549px]:flex-col max-[549px]:items-start items-center gap-2">
-                      <div className="w-[270px] whitespace-nowrap font-bold">
-                        Apakah Barang Termasuk Pajak
-                      </div>
-
-                      <div className="w-[240px] whitespace-nowrap overflow-ellipsis overflow-hidden">
-                        {penagihanDetail.is_pajak === 0 ? "Tidak" : "Ya"}
-                      </div>
-                    </div>
-                    <div className="flex max-[549px]:flex-col max-[549px]:items-start gap-2 mb-5">
-                      <div className="w-[270px] whitespace-nowrap font-bold">
-                        No Seri Faktur Pajak
-                      </div>
-
-                      <div className="flex flex-col gap-1">
-                        {penagihanDetail.nomer_seri_pajak.map((nilai) => (
-                          <div className="w-[240px] whitespace-nowrap overflow-ellipsis overflow-hidden">
-                            {nilai}
-                          </div>
-                        ))}
-                      </div>
-                    </div>
+                    <PenagihanDetail data={penagihanDetail} />
                   </div>
 
                   <a
@@ -737,7 +639,7 @@ const PendingTask = () => {
                     </div>
                     <div
                       onClick={() => onSubmitDocument(penagihanDetail)}
-                      className="rounded-md py-2 px-5 shadow-sm bg-[#0077b6] text-white cursor-pointer max-[479px]:w-full"
+                      className="rounded-md py-2 px-5 shadow-sm bg-main-color text-white cursor-pointer max-[479px]:w-full"
                     >
                       Submit
                     </div>

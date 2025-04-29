@@ -1,6 +1,5 @@
-import Footer from "../components/Footer";
 import NavbarAdmin from "../components/NavbarAdmin";
-import SidebarComponentWh from "../components/SidebarComponentWh";
+import SidebarComponentAdmin from "../components/SidebarComponentAdmin";
 import { useStateContext } from "../contexts/ContextProvider";
 import PrivateRouteAdmin from "../routes/PrivateRouteAdmin";
 
@@ -10,14 +9,14 @@ const AdminWhSmith = ({ children }) => {
     <div className="flex relative">
       {activeMenu ? (
         screenSize > 645 ? (
-          <SidebarComponentWh width="w-[260px]" />
+          <SidebarComponentAdmin width="w-[260px]" />
         ) : (
           <div className="absolute w-full bg-half-transparent h-full z-[9999]">
-            <SidebarComponentWh width="w-[260px]" />
+            <SidebarComponentAdmin width="w-[260px]" />
           </div>
         )
       ) : (
-        <SidebarComponentWh width="w-0" />
+        <SidebarComponentAdmin width="w-0" />
       )}
 
       <NavbarAdmin>

@@ -2,7 +2,6 @@ import "./App.css";
 import { BrowserRouter, Route, Routes } from "react-router-dom";
 import Login from "./pages/Login";
 import Registration from "./pages/vendor/Registration";
-import LoginWh from "./pages/LoginWh";
 import VendorAndNonVendor from "./pages/admin/VendorAndNonVendor";
 import Cod from "./pages/admin/Cod";
 import Profile from "./pages/vendor/Profile";
@@ -21,6 +20,7 @@ import VendorEdit from "./pages/admin/VendorEdit";
 import ForgetPasswordConfirm from "./pages/ForgetPasswordConfirm";
 import ForgetPassword from "./pages/ForgetPassword";
 import KartuHutang from "./pages/KartuHutang";
+import LoginAdmin from "./pages/LoginAdmin";
 
 function App() {
   return (
@@ -46,7 +46,7 @@ function App() {
               <Route path="vendor/kartuhutang" element={<KartuHutang />} />
             </Route>
 
-            <Route path="/admin" element={<LoginWh />} />
+            <Route path="/admin" element={<LoginAdmin />} />
             <Route path="/registration" element={<Registration />} />
 
             <Route element={<AdminWhSmith />}>

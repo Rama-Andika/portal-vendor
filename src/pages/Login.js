@@ -8,7 +8,6 @@ import generateString from "../components/functions/GenerateRandomString";
 import { FaEye, FaEyeSlash } from "react-icons/fa";
 import { CircularProgress } from "@mui/material";
 
-
 const api = process.env.REACT_APP_BASEURL;
 const Login = () => {
   const navigate = useNavigate();
@@ -17,7 +16,7 @@ const Login = () => {
 
   const [showPassword, setShowPassword] = useState(false);
   const [loading, setLoading] = useState(false);
-  const [company, setCompany] = useState({})
+  const [company, setCompany] = useState({});
 
   const onSubmitLogin = async (e) => {
     setLoading(true);
@@ -73,42 +72,44 @@ const Login = () => {
       });
   };
 
-  const getCompany = async() => {
+  const getCompany = async () => {
     try {
-      const response = await fetch(`${api}api/company`)
-      if(!response.ok){
-        throw new Error(response.statusText)
+      const response = await fetch(`${api}api/company`);
+      if (!response.ok) {
+        throw new Error(response.statusText);
       }
-      const result = await response.json()
-      const {data} = result
-      setCompany(data)
+      const result = await response.json();
+      const { data } = result;
+      setCompany(data);
     } catch (error) {
-      console.log(error)
+      console.log(error);
     }
-  }
+  };
 
   useEffect(() => {
     Cookies.remove("id");
     Cookies.remove("token");
     Cookies.remove("vendor_id");
     Cookies.remove("vendoroxy_id");
-    getCompany()
+    getCompany();
   }, []);
 
   return (
     <>
-      <div className="grid grid-cols-12 min-h-screen relative font-roboto">
+      <div className="min-h-screen relative font-roboto flex justify-center items-center">
         {/* <div className="absolute top-0 right-0 py-2 pe-3 text-[24px] font-bold tracking-wide hidden min-[755px]:block">
           PT KARYA PRIMA UNGGULAN
         </div> */}
-        <div
+        {/* <div
           className="bg-cover bg-no-repeat bg-center relative col-span-8 max-[634px]:hidden max-[1275px]:col-span-6 loginImg"
-          style={{ backgroundImage: `url(${require('../assets/images/retail.jpg')})` }} 
-        ></div>
-        <div className="font-roboto bg-white px-20 max-[790px]:px-10 flex flex-col justify-center w-full rounded-sm shadow-sm col-span-4 max-[634px]:col-span-12 max-[1275px]:col-span-6">
+          style={{
+            backgroundImage: `url(${require("../assets/images/retail.jpg")})`,
+          }}
+        ></div> */}
+        <div className="w-400 font-roboto bg-white flex flex-col justify-center rounded-sm shadow-sm max-sm:px-5">
           <div className="flex flex-col items-center gap-2">
-            <div className="font-semibold text-[#0077b6]">{company?.name}</div>
-            <div className="font-semibold mb-10 text-[#0077b6]">Portal Vendor</div>
+            <div className="font-semibold ">{company?.name}</div>
+            <div className="font-semibold mb-10 ">Portal Vendor</div>
           </div>
 
           <form className="flex flex-col gap-4">
@@ -177,7 +178,7 @@ const Login = () => {
             <button
               type="submit"
               disabled={loading ? true : false}
-              className="bg-[#0077b6] py-3 text-white rounded-md shadow-sm "
+              className="bg-main-color py-3  rounded-md shadow-sm "
               onClick={(e) => onSubmitLogin(e)}
             >
               {loading ? (

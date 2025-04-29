@@ -19,35 +19,22 @@ import {
 import { useCallback, useEffect, useRef, useState } from "react";
 import { useNavigate } from "react-router-dom";
 import Select from "react-select";
-import { DatePicker, LocalizationProvider } from "@mui/x-date-pickers";
-import { AdapterDayjs } from "@mui/x-date-pickers/AdapterDayjs";
-import { DemoContainer } from "@mui/x-date-pickers/internals/demo";
 import dayjs from "dayjs";
 import { PiWarningCircleLight } from "react-icons/pi";
 import isEmpty from "../../../components/functions/CheckEmptyObject";
 import Cookies from "js-cookie";
 import { FaCloudUploadAlt } from "react-icons/fa";
-
 import GetBase64 from "../../../components/functions/GetBase64";
 import { Viewer } from "@react-pdf-viewer/core";
 import titleCase from "../../../components/functions/TitleCase";
 import { IoIosAdd } from "react-icons/io";
 import TableInvoice from "./table/TableInvoice";
 import { toast, Toaster } from "sonner";
+import accountingNumber from "../../../components/functions/AccountingNumber";
 
 const optionsTipePenagihan = [
   { value: "beli putus", label: "Beli Putus", key: 0 },
   { value: "konsinyasi", label: "Konsinyasi", key: 1 },
-];
-const optionsDeliveryArea = [
-  { value: "tangerang", label: "Tangerang", key: 0 },
-  { value: "jakarta", label: "Jakarta", key: 1 },
-  { value: "bali", label: "Bali", key: 2 },
-  { value: "makassar", label: "Makassar", key: 3 },
-];
-const options = [
-  { value: 0, label: "Tidak", key: 0 },
-  { value: 1, label: "Ya", key: 1 },
 ];
 const optionsTipePengiriman = [
   { value: 0, label: "Drop Box Gudang", key: 0 },
@@ -57,55 +44,47 @@ const optionsTipePengiriman = [
 
 const api = process.env.REACT_APP_BASEURL;
 
-const Penagihan = () => {
-  const inputNoSeriFakturPajak = [
-    {
-      type: "text",
-      value: "",
-    },
-  ];
+export const GrandTotal = ({ grandTotal }) => {
+  return (
+    <div className="flex items-center justify-end">
+      <p>Grand Total: </p>
+      <p className="font-medium text-lg">{grandTotal}</p>
+    </div>
+  );
+};
 
+const Penagihan = () => {
   const { screenSize } = useStateContext();
   const [activeStep, setActiveStep] = useState(0);
 
+  const [penagihanConsType, setPenagihanConsType] = useState("");
   const [tipePenagihan, setTipePenagihan] = useState({
     value: "beli putus",
     label: "Beli Putus",
     key: 0,
   });
   const [optionLokasi, setOptionLokasi] = useState([]);
-  const [nomerPo, setNomerPo] = useState("");
-  const [tanggalPo, setTanggalPo] = useState(undefined);
-  const [nomerDo, setNomerDo] = useState("");
-  const [deliveryArea, setDeliveryArea] = useState({
-    value: "bali",
-    label: "Bali",
-  });
-
   const [addMode, setAddMode] = useState(true);
   const inputNomorInvoiceRef = useRef(null);
   const [invoice, setInvoice] = useState({
+    nomorPo: "",
+    datePo: dayjs(new Date()).format("YYYY-MM-DD"),
     nomorInvoice: "",
     tanggalInvoice: dayjs(new Date()).format("YYYY-MM-DD"),
     startDate: dayjs(new Date()).format("YYYY-MM-DD"),
     endDate: dayjs(new Date()).format("YYYY-MM-DD"),
     nilaiInvoice: "",
+    nomerSeriFakturPajak: "",
     lokasi: { value: "", label: "" },
     editMode: false,
   });
   const [invoices, setInvoices] = useState([]);
   const [invoiceTambahan, setInvoiceTambahan] = useState([]);
   const [fakturPajakTambahan, setFakturPajakTambahan] = useState([]);
-
   const [tipePengiriman, setTipePengiriman] = useState({
     value: 0,
     label: "Drop Box Gudang",
   });
-
-  const [isPajak, setIsPajak] = useState({ value: 0, label: "Tidak", key: 0 });
-  const [nomerSeriFakturPajak, setNomerSeriFakturPajak] = useState(
-    inputNoSeriFakturPajak
-  );
   const [purchaseOrderFile, setPurchaseOrderFile] = useState(null);
   const [deliveryOrderFile, setDeliveryOrderFile] = useState(null);
   const [invoiceFile, setInvoiceFile] = useState(null);
@@ -133,6 +112,7 @@ const Penagihan = () => {
   const vendorId = Cookies.get("vendor_id");
   const userId = Cookies.get("id");
   const [vendors, setVendors] = useState({});
+  const [grandTotal, setGrandTotal] = useState(0);
 
   const fetchvendor = async () => {
     setOpenBackdrop(true);
@@ -196,15 +176,7 @@ const Penagihan = () => {
       }
     } else if (activeStep === 2) {
       if (invoiceFile !== null && kwitansiFile !== null) {
-        if (vendors.status_pajak === "PKP") {
-          if (fakturPajakFile !== null) {
-            setIsError(false);
-          } else {
-            return setIsError(true);
-          }
-        } else {
-          setIsError(false);
-        }
+        setIsError(false);
 
         if (tipePengiriman.value === 1) {
           if (resiFile !== null) {
@@ -234,18 +206,22 @@ const Penagihan = () => {
         setIsError(true);
       }
     } else if (activeStep === 2) {
-      setIsError(false);
+      if (kwitansiFile !== null) {
+        setIsError(false);
 
-      if (tipePengiriman.value === 1) {
-        if (resiFile !== null) {
+        if (tipePengiriman.value === 1) {
+          if (resiFile !== null) {
+            setIsError(false);
+            onSubmitButton2();
+          } else {
+            return setIsError(true);
+          }
+        } else {
           setIsError(false);
           onSubmitButton2();
-        } else {
-          return setIsError(true);
         }
       } else {
-        setIsError(false);
-        onSubmitButton2();
+        setIsError(true);
       }
     }
   };
@@ -284,13 +260,13 @@ const Penagihan = () => {
     [`&.${stepConnectorClasses.active}`]: {
       [`& .${stepConnectorClasses.line}`]: {
         backgroundImage:
-          "linear-gradient( 136deg, #0077b6 100%, #0077b6 100%, #0077b6 100%)",
+          "linear-gradient( 136deg, #FEDA00 100%, #FEDA00 100%, #FEDA00 100%)",
       },
     },
     [`&.${stepConnectorClasses.completed}`]: {
       [`& .${stepConnectorClasses.line}`]: {
         backgroundImage:
-          "linear-gradient( 136deg, #0077b6 100%, #0077b6 100%, #0077b6 100%)",
+          "linear-gradient( 136deg, #FEDA00 100%, #FEDA00 100%, #FEDA00 100%)",
       },
     },
     [`& .${stepConnectorClasses.line}`]: {
@@ -306,7 +282,6 @@ const Penagihan = () => {
     backgroundColor:
       theme.palette.mode === "dark" ? theme.palette.grey[700] : "#ccc",
     zIndex: 1,
-    color: "#fff",
     width: 50,
     height: 50,
     display: "flex",
@@ -315,12 +290,12 @@ const Penagihan = () => {
     alignItems: "center",
     ...(ownerState.active && {
       backgroundImage:
-        "linear-gradient( 136deg, #0077b6 100%, #0077b6 100%, #0077b6 100%)",
+        "linear-gradient( 136deg, #FEDA00 100%, #FEDA00 100%, #FEDA00 100%)",
       boxShadow: "0 4px 10px 0 rgba(0,0,0,.25)",
     }),
     ...(ownerState.completed && {
       backgroundImage:
-        "linear-gradient( 136deg, #0077b6 100%, #0077b6 100%, #0077b6 100%)",
+        "linear-gradient( 136deg, #FEDA00 100%, #FEDA00 100%, #FEDA00 100%)",
     }),
   }));
 
@@ -344,6 +319,18 @@ const Penagihan = () => {
   }
 
   useEffect(() => {
+    const total = invoices.reduce(
+      (acc, current) =>
+        acc +
+        (Number.isNaN(current?.nilaiInvoice)
+          ? 0
+          : parseFloat(current?.nilaiInvoice)),
+      0
+    );
+    setGrandTotal(accountingNumber(total));
+  }, [invoices]);
+
+  useEffect(() => {
     window.scrollTo(0, 0);
 
     // eslint-disable-next-line react-hooks/exhaustive-deps
@@ -360,32 +347,21 @@ const Penagihan = () => {
     setTipePenagihan(item);
   };
 
-  const onChangeNomerPo = (e) => {
-    if (e.target.validity.valid) {
-      setNomerPo(e.target.value);
-    } else {
-      setNomerPo("");
-    }
-  };
+  // const onChangeNomerPo = (e) => {
+  //   if (e.target.validity.valid) {
+  //     setNomerPo(e.target.value);
+  //   } else {
+  //     setNomerPo("");
+  //   }
+  // };
 
-  const onChangeTanggalPo = (value) => {
-    setTanggalPo(value);
-  };
+  // const onChangeTanggalPo = (value) => {
+  //   setTanggalPo(value);
+  // };
 
-  const onChangeDeliveryArea = (item) => {
-    setDeliveryArea(item);
-  };
-
-  const onChangeIsPajak = (item) => {
-    if (item.label === "Tidak") {
-      nomerSeriFakturPajak.map((faktur, i) => {
-        const nomerSeriFakturPajakCopy = [...nomerSeriFakturPajak];
-        nomerSeriFakturPajakCopy[i].value = "";
-        return nomerSeriFakturPajakCopy[i];
-      });
-    }
-    setIsPajak(item);
-  };
+  // const onChangeDeliveryArea = (item) => {
+  //   setDeliveryArea(item);
+  // };
 
   const onChangeTipePengiriman = (item) => {
     if (item.value !== 1) {
@@ -393,29 +369,6 @@ const Penagihan = () => {
     }
 
     setTipePengiriman(item);
-  };
-
-  const formatFakturPajak = (value, i) => {
-    try {
-      var cleaned = ("" + value).replace(/\D/g, "");
-      var match = cleaned.match(/(\d{0,3})?(\d{0,3})?(\d{0,2})?(\d{0,8})$/);
-
-      var nilai = [
-        match[1],
-        match[2] ? "." : "",
-        match[2],
-        match[3] ? "-" : "",
-        match[3],
-        match[4] ? "." : "",
-        match[4],
-      ].join("");
-
-      const nomerSeriFakturPajakCopy = [...nomerSeriFakturPajak];
-      nomerSeriFakturPajak[i].value = nilai;
-      setNomerSeriFakturPajak(nomerSeriFakturPajakCopy);
-    } catch (err) {
-      return "";
-    }
   };
 
   const onChangePurchaseOrderFile = (e) => {
@@ -523,9 +476,12 @@ const Penagihan = () => {
   const clearValue = useCallback(() => {
     setInvoice({
       ...invoice,
+      nomorPo: "",
+      datePo: dayjs(new Date()).format("YYYY-MM-DD"),
       nomorInvoice: "",
       tanggalInvoice: dayjs(new Date()).format("YYYY-MM-DD"),
       nilaiInvoice: "",
+      nomerSeriFakturPajak: "",
       lokasi: { value: "", label: "" },
     });
   }, [invoice]);
@@ -547,11 +503,14 @@ const Penagihan = () => {
   const onClickSave = useCallback(
     (index = undefined) => {
       const newInvoice = {
+        nomorPo: invoice.nomorPo.trim(),
+        datePo: invoice.datePo,
         nomorInvoice: invoice.nomorInvoice.trim(),
         tanggalInvoice: invoice.tanggalInvoice,
         startDate: invoice.startDate,
         endDate: invoice.endDate,
         nilaiInvoice: invoice.nilaiInvoice,
+        nomerSeriFakturPajak: invoice.nomerSeriFakturPajak,
         lokasi: invoice.lokasi,
         editMode: false,
       };
@@ -575,6 +534,15 @@ const Penagihan = () => {
           let isExists = false;
 
           if (tipePenagihan.label === "Beli Putus") {
+            isExists = invoices
+              .filter((inv, i) => i !== index && inv.nomorPo.trim().length > 0)
+              .some((inv) => inv.nomorPo === invoice.nomorPo.trim());
+
+            if (isExists) {
+              toast.error("Nomor PO sudah ada pada tabel");
+              return;
+            }
+
             isExists = invoices
               .filter((_, i) => i !== index)
               .some((inv) => inv.nomorInvoice === invoice.nomorInvoice.trim());
@@ -607,6 +575,15 @@ const Penagihan = () => {
           let isExists = false;
 
           if (tipePenagihan.label === "Beli Putus") {
+            isExists = invoices
+              .filter((inv, i) => inv.nomorPo.trim().length > 0)
+              .some((inv) => inv.nomorPo === invoice.nomorPo.trim());
+
+            if (isExists) {
+              toast.error("Nomor PO sudah ada pada tabel");
+              return;
+            }
+
             isExists = invoices.some(
               (inv) => inv.nomorInvoice === invoice.nomorInvoice.trim()
             );
@@ -673,11 +650,14 @@ const Penagihan = () => {
         )
       );
       setInvoice({
+        nomorPo: data?.nomorPo,
+        datePo: data?.datePo,
         nomorInvoice: data?.nomorInvoice,
         tanggalInvoice: data?.tanggalInvoice,
         startDate: data?.startDate,
         endDate: data?.endDate,
         nilaiInvoice: data?.nilaiInvoice,
+        nomerSeriFakturPajak: data?.nomerSeriFakturPajak,
         lokasi: data?.lokasi,
       });
     },
@@ -689,18 +669,8 @@ const Penagihan = () => {
     let isSave = false;
 
     if (invoiceFile !== null && kwitansiFile !== null) {
-      if (vendors.status_pajak === "PKP") {
-        if (fakturPajakFile !== null) {
-          setIsError(false);
-          isSave = true;
-        } else {
-          setIsError(true);
-          isSave = false;
-        }
-      } else {
-        setIsError(false);
-        isSave = true;
-      }
+      setIsError(false);
+      isSave = true;
 
       if (isSave) {
         if (tipePengiriman.value === 1) {
@@ -722,12 +692,12 @@ const Penagihan = () => {
     }
 
     // eslint-disable-next-line array-callback-return
-    const nomerSeriFakturPajakList = nomerSeriFakturPajak.map((nomer) => {
-      if (nomer.value.trim().length === 19 && nomer.value.trim().length > 0) {
-        return nomer.value;
-      }
-    });
+    const nomerSeriFakturPajakList = invoices.map(
+      (invoice) => invoice.nomerSeriFakturPajak
+    );
 
+    const nomorPo = invoices.map((invoice) => invoice.nomorPo);
+    const tanggalPo = invoices.map((invoice) => invoice.datePo);
     const nomorInvoices = invoices.map((invoice) =>
       invoice.nomorInvoice.trim()
     );
@@ -742,17 +712,11 @@ const Penagihan = () => {
             vendor_id: vendorId,
             tipe_penagihan: tipePenagihan.value,
             tipe_pengiriman: tipePengiriman.value,
-            nomer_po: nomerPo.length > 0 ? "PO" + nomerPo : "",
-            tanggal_po:
-              tanggalPo !== undefined
-                ? dayjs(tanggalPo).format("YYYY-MM-DD HH:mm:ss")
-                : null,
-            nomer_do: nomerDo.length > 0 ? "DO" + nomerDo : "",
-            delivery_area: deliveryArea.value,
+            nomer_po: nomorPo,
+            tanggal_po: tanggalPo,
             nomer_invoices: nomorInvoices,
             tanggal_invoices: tanggalInvoices,
             nilai_invoices: nilaiInvoices,
-            is_pajak: isPajak.value,
             nomer_seri_pajak: nomerSeriFakturPajakList,
             start_date_periode: null,
             end_date_periode: null,
@@ -797,17 +761,11 @@ const Penagihan = () => {
             vendor_id: vendorId,
             tipe_penagihan: tipePenagihan.value,
             tipe_pengiriman: tipePengiriman.value,
-            nomer_po: nomerPo.length > 0 ? "PO" + nomerPo : "",
-            tanggal_po:
-              tanggalPo !== undefined
-                ? dayjs(tanggalPo).format("YYYY-MM-DD HH:mm:ss")
-                : null,
-            nomer_do: nomerDo.length > 0 ? "DO" + nomerDo : "",
-            delivery_area: deliveryArea.value,
+            nomer_po: nomorPo,
+            tanggal_po: tanggalPo,
             nomer_invoices: nomorInvoices,
             tanggal_invoices: tanggalInvoices,
             nilai_invoices: nilaiInvoices,
-            is_pajak: isPajak.value,
             nomer_seri_pajak: nomerSeriFakturPajakList,
             start_date_periode: null,
             end_date_periode: null,
@@ -859,30 +817,33 @@ const Penagihan = () => {
     setOpenBackdrop(true);
     let isSave = true;
 
-    setIsError(false);
+    if (kwitansiFile !== null) {
+      setIsError(false);
+      isSave = true;
 
-    if (isSave) {
-      if (tipePengiriman.value === 1) {
-        if (resiFile !== null) {
+      if (isSave) {
+        if (tipePengiriman.value === 1) {
+          if (resiFile !== null) {
+            setIsError(false);
+            isSave = true;
+          } else {
+            setIsError(true);
+            isSave = false;
+          }
+        } else {
           setIsError(false);
           isSave = true;
-        } else {
-          setIsError(true);
-          isSave = false;
         }
-      } else {
-        setIsError(false);
-        isSave = true;
       }
+    } else {
+      setIsError(true);
+      isSave = false;
     }
 
     // eslint-disable-next-line array-callback-return
-    const nomerSeriFakturPajakList = nomerSeriFakturPajak.map((nomer) => {
-      if (nomer.value.trim().length === 19) {
-        return nomer.value;
-      }
-    });
-
+    const nomerSeriFakturPajakList = invoices.map(
+      (invoice) => invoice.nomerSeriFakturPajak
+    );
     const nomorInvoices = invoices.map((invoice) =>
       invoice.nomorInvoice.trim()
     );
@@ -900,6 +861,16 @@ const Penagihan = () => {
         : fakturPajakTambahan[i].base64
     );
 
+    if (invoiceTambahanFilesNew.some((inv) => inv === null)) {
+      setIsError(true);
+      isSave = false;
+    }
+
+    if (fakturPajakTambahanFilesNew.some((inv) => inv === null)) {
+      setIsError(true);
+      isSave = false;
+    }
+
     if (Cookies.get("token")) {
       if (isSave) {
         if (id === 0) {
@@ -908,19 +879,12 @@ const Penagihan = () => {
             vendor_id: vendorId,
             tipe_penagihan: tipePenagihan.value,
             tipe_pengiriman: tipePengiriman.value,
-            nomer_po: nomerPo.length > 0 ? "PO" + nomerPo : "",
-            tanggal_po:
-              tanggalPo !== undefined
-                ? dayjs(tanggalPo).format("YYYY-MM-DD HH:mm:ss")
-                : null,
-            nomer_do: nomerDo.length > 0 ? "DO" + nomerDo : "",
-            delivery_area: deliveryArea.value,
+            penagihan_cons_type: penagihanConsType,
             nomer_invoices: nomorInvoices,
             start_dates: startDates,
             end_dates: endDates,
             location_ids: locationIds,
             nilai_invoices: nilaiInvoices,
-            is_pajak: isPajak.value,
             nomer_seri_pajak: nomerSeriFakturPajakList,
             start_date_periode: null,
             end_date_periode: null,
@@ -968,19 +932,12 @@ const Penagihan = () => {
             vendor_id: vendorId,
             tipe_penagihan: tipePenagihan.value,
             tipe_pengiriman: tipePengiriman.value,
-            nomer_po: nomerPo.length > 0 ? "PO" + nomerPo : "",
-            tanggal_po:
-              tanggalPo !== undefined
-                ? dayjs(tanggalPo).format("YYYY-MM-DD HH:mm:ss")
-                : null,
-            nomer_do: nomerDo ? "DO" + nomerDo : "",
-            delivery_area: deliveryArea.value,
+            penagihan_cons_type: penagihanConsType,
             nomer_invoices: nomorInvoices,
             start_dates: startDates,
             end_dates: endDates,
             location_ids: locationIds,
             nilai_invoices: nilaiInvoices,
-            is_pajak: isPajak.value,
             nomer_seri_pajak: nomerSeriFakturPajakList,
             start_date_periode: null,
             end_date_periode: null,
@@ -1035,12 +992,12 @@ const Penagihan = () => {
     setOpenBackdrop(true);
 
     // eslint-disable-next-line array-callback-return
-    const nomerSeriFakturPajakList = nomerSeriFakturPajak.map((nomer) => {
-      if (nomer.value.trim().length === 19) {
-        return nomer.value;
-      }
-    });
+    const nomerSeriFakturPajakList = invoices.map(
+      (invoice) => invoice.nomerSeriFakturPajak
+    );
 
+    const nomorPo = invoices.map((invoice) => invoice.nomorPo);
+    const tanggalPo = invoices.map((invoice) => invoice.datePo);
     const nomorInvoices = invoices.map((invoice) =>
       invoice.nomorInvoice.trim()
     );
@@ -1054,17 +1011,11 @@ const Penagihan = () => {
           vendor_id: vendorId,
           tipe_penagihan: tipePenagihan.value,
           tipe_pengiriman: tipePengiriman.value,
-          nomer_po: nomerPo.length > 0 ? "PO" + nomerPo : "",
-          tanggal_po:
-            tanggalPo !== undefined
-              ? dayjs(tanggalPo).format("YYYY-MM-DD HH:mm:ss")
-              : null,
-          nomer_do: nomerDo.length > 0 ? "DO" + nomerDo : "",
-          delivery_area: deliveryArea.value,
+          nomer_po: nomorPo,
+          tanggal_po: tanggalPo,
           nomer_invoices: nomorInvoices,
           tanggal_invoices: tanggalInvoices,
           nilai_invoices: nilaiInvoices,
-          is_pajak: isPajak.value,
           nomer_seri_pajak: nomerSeriFakturPajakList,
           start_date_periode: null,
           end_date_periode: null,
@@ -1110,17 +1061,11 @@ const Penagihan = () => {
           vendor_id: vendorId,
           tipe_penagihan: tipePenagihan.value,
           tipe_pengiriman: tipePengiriman.value,
-          nomer_po: nomerPo.length > 0 ? "PO" + nomerPo : "",
-          tanggal_po:
-            tanggalPo !== undefined
-              ? dayjs(tanggalPo).format("YYYY-MM-DD HH:mm:ss")
-              : null,
-          nomer_do: nomerDo.length > 0 ? "DO" + nomerDo : "",
-          delivery_area: deliveryArea.value,
+          nomer_po: nomorPo,
+          tanggal_po: tanggalPo,
           nomer_invoices: nomorInvoices,
           tanggal_invoices: tanggalInvoices,
           nilai_invoices: nilaiInvoices,
-          is_pajak: isPajak.value,
           nomer_seri_pajak: nomerSeriFakturPajakList,
           start_date_periode: null,
           end_date_periode: null,
@@ -1170,12 +1115,12 @@ const Penagihan = () => {
     setOpenBackdrop(true);
 
     // eslint-disable-next-line array-callback-return
-    const nomerSeriFakturPajakList = nomerSeriFakturPajak.map((nomer) => {
-      if (nomer.value.trim().length === 19) {
-        return nomer.value;
-      }
-    });
+    const nomerSeriFakturPajakList = invoices.map(
+      (invoice) => invoice.nomerSeriFakturPajak
+    );
 
+    const nomorPo = invoices.map((invoice) => invoice.nomorPo);
+    const tanggalPo = invoices.map((invoice) => invoice.datePo);
     const nomorInvoices = invoices.map((invoice) =>
       invoice.nomorInvoice.trim()
     );
@@ -1200,19 +1145,14 @@ const Penagihan = () => {
           vendor_id: vendorId,
           tipe_penagihan: tipePenagihan.value,
           tipe_pengiriman: tipePengiriman.value,
-          nomer_po: nomerPo.length > 0 ? "PO" + nomerPo : "",
-          tanggal_po:
-            tanggalPo !== undefined
-              ? dayjs(tanggalPo).format("YYYY-MM-DD HH:mm:ss")
-              : null,
-          nomer_do: nomerDo.length > 0 ? "DO" + nomerDo : "",
-          delivery_area: deliveryArea.value,
+          penagihan_cons_type: penagihanConsType,
+          nomer_po: nomorPo,
+          tanggal_po: tanggalPo,
           nomer_invoices: nomorInvoices,
           start_dates: startDates,
           end_dates: endDates,
           location_ids: locationIds,
           nilai_invoices: nilaiInvoices,
-          is_pajak: isPajak.value,
           nomer_seri_pajak: nomerSeriFakturPajakList,
           start_date_periode: null,
           end_date_periode: null,
@@ -1260,19 +1200,12 @@ const Penagihan = () => {
           vendor_id: vendorId,
           tipe_penagihan: tipePenagihan.value,
           tipe_pengiriman: tipePengiriman.value,
-          nomer_po: nomerPo.length > 0 ? "PO" + nomerPo : "",
-          tanggal_po:
-            tanggalPo !== undefined
-              ? dayjs(tanggalPo).format("YYYY-MM-DD HH:mm:ss")
-              : null,
-          nomer_do: nomerDo.length > 0 ? "DO" + nomerDo : "",
-          delivery_area: deliveryArea.value,
+          penagihan_cons_type: penagihanConsType,
           nomer_invoices: nomorInvoices,
           start_dates: startDates,
           end_dates: endDates,
           location_ids: locationIds,
           nilai_invoices: nilaiInvoices,
-          is_pajak: isPajak.value,
           nomer_seri_pajak: nomerSeriFakturPajakList,
           start_date_periode: null,
           end_date_periode: null,
@@ -1389,7 +1322,7 @@ const Penagihan = () => {
                       <form action="">
                         {tipePenagihan.label === "Beli Putus" ? (
                           <>
-                            <div className="flex items-center gap-2 mb-3">
+                            {/* <div className="flex items-center gap-2 mb-3">
                               <div className="flex flex-col gap-1">
                                 <div className="w-[250px]">
                                   No Purchase Order (PO)
@@ -1417,8 +1350,8 @@ const Penagihan = () => {
                                   />
                                 </div>
                               </div>
-                            </div>
-                            <div className="flex items-center gap-2 mb-3">
+                            </div> */}
+                            {/* <div className="flex items-center gap-2 mb-3">
                               <div className="w-[250px]">Tanggal PO</div>
 
                               <div className="flex items-center gap-1">
@@ -1441,8 +1374,8 @@ const Penagihan = () => {
                                   </LocalizationProvider>
                                 </div>
                               </div>
-                            </div>
-                            <div className="flex items-center gap-2 mb-3">
+                            </div> */}
+                            {/* <div className="flex items-center gap-2 mb-3">
                               <div className="w-[250px]">
                                 No Delivery Order (DO)
                               </div>
@@ -1490,24 +1423,28 @@ const Penagihan = () => {
                                   )}
                                 </div>
                               </div>
-                            </div>
+                            </div> */}
                             <div className="mb-10">
                               <div className="mb-2">Daftar Invoice</div>
-                              <div className="overflow-auto max-h-[400px]">
-                                <TableInvoice
-                                  data={invoice}
-                                  setData={setInvoice}
-                                  inputNomorInvoiceRef={inputNomorInvoiceRef}
-                                  addMode={addMode}
-                                  invoices={invoices}
-                                  vendorType={tipePenagihan.label}
-                                  optionLokasi={optionLokasi}
-                                  onClickSave={onClickSave}
-                                  onClickCancel={onClickCancel}
-                                  onClickEdit={onClickEdit}
-                                  onClickDelete={onClickDelete}
-                                />
+                              <div className="flex flex-col gap-1">
+                                <div className="overflow-auto max-h-[400px]">
+                                  <TableInvoice
+                                    data={invoice}
+                                    setData={setInvoice}
+                                    inputNomorInvoiceRef={inputNomorInvoiceRef}
+                                    addMode={addMode}
+                                    invoices={invoices}
+                                    vendorType={tipePenagihan.label}
+                                    optionLokasi={optionLokasi}
+                                    onClickSave={onClickSave}
+                                    onClickCancel={onClickCancel}
+                                    onClickEdit={onClickEdit}
+                                    onClickDelete={onClickDelete}
+                                  />
+                                </div>
+                                <GrandTotal grandTotal={grandTotal} />
                               </div>
+
                               {!addMode && (
                                 <div
                                   className="bg-[#305496] rounded-full shadow-md w-fit mt-2 cursor-pointer"
@@ -1518,7 +1455,7 @@ const Penagihan = () => {
                               )}
                             </div>
 
-                            <div className="flex items-center gap-2 mb-10 mt-10">
+                            {/* <div className="flex items-center gap-2 mb-10 mt-10">
                               <div className="w-[250px]">
                                 Apakah barang termasuk pajak?
                               </div>
@@ -1538,8 +1475,8 @@ const Penagihan = () => {
                                 </div>
                                 <div>*)</div>
                               </div>
-                            </div>
-                            <div className="flex items-start gap-2 mb-3">
+                            </div> */}
+                            {/* <div className="flex items-start gap-2 mb-3">
                               <div className="flex flex-col gap-1">
                                 <div className="w-[250px]">
                                   No Seri Faktur Pajak
@@ -1562,11 +1499,6 @@ const Penagihan = () => {
                                     >
                                       <input
                                         maxLength={19}
-                                        disabled={
-                                          isPajak.label === "Tidak"
-                                            ? true
-                                            : false
-                                        }
                                         type={input.type}
                                         name=""
                                         id=""
@@ -1581,7 +1513,7 @@ const Penagihan = () => {
                                   ))}
                                 </div>
                               </div>
-                            </div>
+                            </div> */}
                             {isError && (
                               <div className="mt-10 mb-3">
                                 <div className="w-fit flex gap-1 items-center text-[14px] bg-red-500 text-white py-3 px-5 ">
@@ -1595,6 +1527,27 @@ const Penagihan = () => {
                           </>
                         ) : (
                           <>
+                            <div className="flex items-center gap-2 mb-3">
+                              <div className="w-[250px]">Periode Penagihan</div>
+
+                              <div className="flex items-center gap-1 max-[821px]:w-[249.56px] w-[287.96px]">
+                                <div className="w-[24px]"></div>
+                                <div className="w-full ">
+                                  <select
+                                    value={penagihanConsType}
+                                    onChange={(e) =>
+                                      setPenagihanConsType(e.target.value)
+                                    }
+                                    className="border-gray-400 rounded-sm h-[38px] w-full bg-[#fff2cc]"
+                                  >
+                                    <option value="1 week">1 Minggu</option>
+                                    <option value="2 week">2 Minggu</option>
+                                    <option value="1 month">1 Bulan</option>
+                                  </select>
+                                </div>
+                                <div>*)</div>
+                              </div>
+                            </div>
                             <div className="flex items-center gap-2 mb-3">
                               <div className="w-[250px]">Start Date</div>
 
@@ -1635,7 +1588,7 @@ const Penagihan = () => {
                                   />
                                 </div>
                                 <div>
-                                  {isError && isEmpty(deliveryArea) ? (
+                                  {isError ? (
                                     <div className="text-red-500">
                                       <PiWarningCircleLight />
                                     </div>
@@ -1647,20 +1600,23 @@ const Penagihan = () => {
                             </div>
                             <div className="mb-10">
                               <div className="mb-2">Daftar Invoice</div>
-                              <div className="overflow-auto max-h-[400px]">
-                                <TableInvoice
-                                  data={invoice}
-                                  setData={setInvoice}
-                                  inputNomorInvoiceRef={inputNomorInvoiceRef}
-                                  addMode={addMode}
-                                  invoices={invoices}
-                                  vendorType={tipePenagihan.label}
-                                  optionLokasi={optionLokasi}
-                                  onClickSave={onClickSave}
-                                  onClickCancel={onClickCancel}
-                                  onClickEdit={onClickEdit}
-                                  onClickDelete={onClickDelete}
-                                />
+                              <div className="flex flex-col gap-1">
+                                <div className="overflow-auto max-h-[400px]">
+                                  <TableInvoice
+                                    data={invoice}
+                                    setData={setInvoice}
+                                    inputNomorInvoiceRef={inputNomorInvoiceRef}
+                                    addMode={addMode}
+                                    invoices={invoices}
+                                    vendorType={tipePenagihan.label}
+                                    optionLokasi={optionLokasi}
+                                    onClickSave={onClickSave}
+                                    onClickCancel={onClickCancel}
+                                    onClickEdit={onClickEdit}
+                                    onClickDelete={onClickDelete}
+                                  />
+                                </div>
+                                <GrandTotal grandTotal={grandTotal} />
                               </div>
                               {!addMode && (
                                 <div
@@ -1672,7 +1628,7 @@ const Penagihan = () => {
                               )}
                             </div>
 
-                            <div className="flex items-center gap-2 mb-10">
+                            {/* <div className="flex items-center gap-2 mb-10">
                               <div className="w-[250px]">
                                 Apakah barang termasuk pajak?
                               </div>
@@ -1692,8 +1648,8 @@ const Penagihan = () => {
                                 </div>
                                 <div>*)</div>
                               </div>
-                            </div>
-                            <div className="flex items-start gap-2 mb-3">
+                            </div> */}
+                            {/* <div className="flex items-start gap-2 mb-3">
                               <div className="flex flex-col gap-1">
                                 <div className="w-[250px]">
                                   No Seri Faktur Pajak
@@ -1716,11 +1672,6 @@ const Penagihan = () => {
                                     >
                                       <input
                                         maxLength={19}
-                                        disabled={
-                                          isPajak.label === "Tidak"
-                                            ? true
-                                            : false
-                                        }
                                         type={input.type}
                                         name=""
                                         id=""
@@ -1735,7 +1686,7 @@ const Penagihan = () => {
                                   ))}
                                 </div>
                               </div>
-                            </div>
+                            </div> */}
                             {isError && (
                               <div className="mt-10 mb-3">
                                 <div className="w-fit flex gap-1 items-center text-[14px] bg-red-500 text-white py-3 px-5 ">
@@ -1823,7 +1774,7 @@ const Penagihan = () => {
                                 )
                               )}
 
-                              <div className="flex items-center gap-3 mb-3">
+                              {/* <div className="flex items-center gap-3 mb-3">
                                 <div className="flex flex-col gap-1">
                                   <div className="w-[350px]">
                                     Delivery Order (DO) / Packing List (Surat
@@ -1889,7 +1840,7 @@ const Penagihan = () => {
                                     </div>
                                   </div>
                                 )
-                              )}
+                              )} */}
                               <div className="flex items-center gap-3 mb-3">
                                 <div className="flex flex-col gap-1">
                                   <div className="w-[350px]">
@@ -2219,29 +2170,32 @@ const Penagihan = () => {
                             </>
                           ) : (
                             <>
-                              <div className="overflow-auto max-h-[400px] mb-10">
-                                <TableInvoice
-                                  data={invoice}
-                                  setData={setInvoice}
-                                  inputNomorInvoiceRef={inputNomorInvoiceRef}
-                                  addMode={addMode}
-                                  invoices={invoices}
-                                  invoiceFiles={invoiceTambahan}
-                                  setInvoiceFiles={setInvoiceTambahan}
-                                  pajakFiles={fakturPajakTambahan}
-                                  setPajakFiles={setFakturPajakTambahan}
-                                  vendorType={tipePenagihan.label}
-                                  optionLokasi={optionLokasi}
-                                  onClickSave={onClickSave}
-                                  onClickCancel={onClickCancel}
-                                  onClickEdit={onClickEdit}
-                                  onClickDelete={onClickDelete}
-                                  activeStep={activeStep}
-                                />
+                              <div className="flex flex-col gap-1">
+                                <div className="overflow-auto max-h-[400px]">
+                                  <TableInvoice
+                                    data={invoice}
+                                    setData={setInvoice}
+                                    inputNomorInvoiceRef={inputNomorInvoiceRef}
+                                    addMode={addMode}
+                                    invoices={invoices}
+                                    invoiceFiles={invoiceTambahan}
+                                    setInvoiceFiles={setInvoiceTambahan}
+                                    pajakFiles={fakturPajakTambahan}
+                                    setPajakFiles={setFakturPajakTambahan}
+                                    vendorType={tipePenagihan.label}
+                                    optionLokasi={optionLokasi}
+                                    onClickSave={onClickSave}
+                                    onClickCancel={onClickCancel}
+                                    onClickEdit={onClickEdit}
+                                    onClickDelete={onClickDelete}
+                                    activeStep={activeStep}
+                                  />
+                                </div>
+                                <GrandTotal grandTotal={grandTotal} />
                               </div>
                               <div className="flex items-center gap-3 mb-10">
                                 <div className="flex flex-col gap-1 w-[350px] ">
-                                  <div>Kwitansi</div>
+                                  <div>Kwitansi </div>
                                   <div className="text-[10px] text-gray-500">
                                     Max size 2 mb
                                   </div>
@@ -2281,6 +2235,7 @@ const Penagihan = () => {
                                       className="hidden w-full h-[40px] border border-slate-300 rounded-sm focus:border focus:border-[#0077b6]  "
                                     />
                                   </div>
+                                  <div>*)</div>
                                 </div>
                               </div>
                               {kwitansiFile !== null &&
@@ -2433,7 +2388,7 @@ const Penagihan = () => {
                   >
                     <button
                       onClick={handleBack}
-                      className={`ms-2 border border-[#00b4d8] px-10 py-2 hover:bg-slate-200 ${
+                      className={`ms-2 border border-main-color px-10 py-2 hover:bg-slate-200 ${
                         activeStep === 0 ? "hidden" : "block"
                       } `}
                     >
@@ -2448,7 +2403,7 @@ const Penagihan = () => {
                               ? saveDraft
                               : saveDraft2
                           }
-                          className={`ms-2 border border-[#00b4d8] px-10 py-2 hover:bg-slate-200 ${
+                          className={`ms-2 border border-main-color px-10 py-2 hover:bg-slate-200 ${
                             activeStep === 0 ? "hidden" : "block"
                           } `}
                         >
@@ -2460,7 +2415,7 @@ const Penagihan = () => {
                               ? handleNext
                               : handleNext2
                           }
-                          className={`bg-[#0077b6] text-white py-2 px-10 rounded-sm shadow-sm hover:bg-[#00b4d8]`}
+                          className="bg-main-color cursor-pointer py-2 px-10 rounded-sm shadow-sm"
                         >
                           Submit
                         </button>
@@ -2472,7 +2427,7 @@ const Penagihan = () => {
                             ? handleNext
                             : handleNext2
                         }
-                        className="bg-[#0077b6] text-white py-2 px-10 rounded-sm shadow-sm hover:bg-[#00b4d8]"
+                        className="bg-main-color cursor-pointer py-2 px-10 rounded-sm shadow-sm"
                       >
                         Next
                       </button>
@@ -2516,7 +2471,7 @@ const Penagihan = () => {
                                 <>
                                   <button
                                     onClick={handleNext}
-                                    className="bg-[#0077b6] text-white py-2 px-10 rounded-sm shadow-sm hover:bg-[#00b4d8]"
+                                    className="bg-main-color cursor-pointer py-2 px-10 rounded-sm shadow-sm"
                                   >
                                     {activeStep === steps.length - 1
                                       ? "Finish"
@@ -2527,7 +2482,7 @@ const Penagihan = () => {
                                 <>
                                   <button
                                     onClick={handleNext}
-                                    className="bg-[#0077b6] text-white py-2 px-10 rounded-sm shadow-sm hover:bg-[#00b4d8]"
+                                    className="bg-main-color cursor-pointer py-2 px-10 rounded-sm shadow-sm"
                                   >
                                     {activeStep === steps.length - 1
                                       ? "Finish"
@@ -2542,7 +2497,7 @@ const Penagihan = () => {
                             <form action="">
                               {tipePenagihan.label === "Beli Putus" ? (
                                 <>
-                                  <div className="flex flex-col gap-2 mb-3">
+                                  {/* <div className="flex flex-col gap-2 mb-3">
                                     <div className="flex flex-col gap-1">
                                       <label
                                         htmlFor=""
@@ -2572,8 +2527,8 @@ const Penagihan = () => {
                                         />
                                       </div>
                                     </div>
-                                  </div>
-                                  <div className="flex flex-col gap-2 mb-3">
+                                  </div> */}
+                                  {/* <div className="flex flex-col gap-2 mb-3">
                                     <div className="flex">
                                       <label
                                         htmlFor=""
@@ -2603,8 +2558,8 @@ const Penagihan = () => {
                                         </LocalizationProvider>
                                       </div>
                                     </div>
-                                  </div>
-                                  <div className="flex flex-col gap-2 mb-3">
+                                  </div> */}
+                                  {/* <div className="flex flex-col gap-2 mb-3">
                                     <div className="flex">
                                       <label
                                         htmlFor=""
@@ -2632,15 +2587,15 @@ const Penagihan = () => {
                                         />
                                       </div>
                                     </div>
-                                  </div>
-                                  <div className="flex flex-col gap-2 mb-10">
+                                  </div> */}
+                                  {/* <div className="flex flex-col gap-2 mb-10">
                                     <div className="flex">
                                       <label
                                         htmlFor=""
                                         className="flex gap-1 items-center"
                                       >
                                         Delivery Area{" "}
-                                        {isError && isEmpty(deliveryArea) ? (
+                                        {isError ? (
                                           <span className="text-red-400">
                                             <PiWarningCircleLight />
                                           </span>
@@ -2665,25 +2620,28 @@ const Penagihan = () => {
                                         />
                                       </div>
                                     </div>
-                                  </div>
+                                  </div> */}
                                   <div className="mb-10">
                                     <div className="mb-2">Daftar Invoice</div>
-                                    <div className="overflow-auto max-h-[400px]">
-                                      <TableInvoice
-                                        data={invoice}
-                                        setData={setInvoice}
-                                        inputNomorInvoiceRef={
-                                          inputNomorInvoiceRef
-                                        }
-                                        addMode={addMode}
-                                        invoices={invoices}
-                                        vendorType={tipePenagihan.label}
-                                        optionLokasi={optionLokasi}
-                                        onClickSave={onClickSave}
-                                        onClickCancel={onClickCancel}
-                                        onClickEdit={onClickEdit}
-                                        onClickDelete={onClickDelete}
-                                      />
+                                    <div className="flex flex-col gap-1">
+                                      <div className="overflow-auto max-h-[400px]">
+                                        <TableInvoice
+                                          data={invoice}
+                                          setData={setInvoice}
+                                          inputNomorInvoiceRef={
+                                            inputNomorInvoiceRef
+                                          }
+                                          addMode={addMode}
+                                          invoices={invoices}
+                                          vendorType={tipePenagihan.label}
+                                          optionLokasi={optionLokasi}
+                                          onClickSave={onClickSave}
+                                          onClickCancel={onClickCancel}
+                                          onClickEdit={onClickEdit}
+                                          onClickDelete={onClickDelete}
+                                        />
+                                      </div>
+                                      <GrandTotal grandTotal={grandTotal} />
                                     </div>
                                     {!addMode && (
                                       <div
@@ -2696,7 +2654,7 @@ const Penagihan = () => {
                                   </div>
 
                                   <div className="mb-10"></div>
-                                  <div className="flex flex-col gap-2 mb-3">
+                                  {/* <div className="flex flex-col gap-2 mb-3">
                                     <div>
                                       Apakah barang termasuk pajak? *) :{" "}
                                     </div>
@@ -2716,8 +2674,8 @@ const Penagihan = () => {
                                         />
                                       </div>
                                     </div>
-                                  </div>
-                                  <div className="mb-3">
+                                  </div> */}
+                                  {/* <div className="mb-3">
                                     <div className="flex flex-col gap-2 mb-3">
                                       <div className="flex flex-col gap-1">
                                         <div className="w-[250px]">
@@ -2741,11 +2699,6 @@ const Penagihan = () => {
                                               >
                                                 <input
                                                   maxLength={19}
-                                                  disabled={
-                                                    isPajak.label === "Tidak"
-                                                      ? true
-                                                      : false
-                                                  }
                                                   type={input.type}
                                                   name=""
                                                   id=""
@@ -2765,7 +2718,7 @@ const Penagihan = () => {
                                         </div>
                                       </div>
                                     </div>
-                                  </div>
+                                  </div> */}
                                   {isError && (
                                     <div className="mt-10 mb-3">
                                       <div className="w-fit flex gap-1 items-center text-[14px] bg-red-500 text-white py-3 px-5 ">
@@ -2785,8 +2738,47 @@ const Penagihan = () => {
                                         htmlFor=""
                                         className="flex gap-1 items-center"
                                       >
+                                        Periode Penagihan{" "}
+                                        {isError ? (
+                                          <span className="text-red-400">
+                                            <PiWarningCircleLight />
+                                          </span>
+                                        ) : (
+                                          "*"
+                                        )}
+                                      </label>
+                                    </div>
+
+                                    <div className="w-full">
+                                      <div>
+                                        <select
+                                          value={penagihanConsType}
+                                          onChange={(e) =>
+                                            setPenagihanConsType(e.target.value)
+                                          }
+                                          className="border-gray-400 rounded-sm h-[38px] w-full bg-[#fff2cc]"
+                                        >
+                                          <option value="1 week">
+                                            1 Minggu
+                                          </option>
+                                          <option value="2 week">
+                                            2 Minggu
+                                          </option>
+                                          <option value="1 month">
+                                            1 Bulan
+                                          </option>
+                                        </select>
+                                      </div>
+                                    </div>
+                                  </div>
+                                  <div className="flex flex-col gap-2 mb-3">
+                                    <div className="flex">
+                                      <label
+                                        htmlFor=""
+                                        className="flex gap-1 items-center"
+                                      >
                                         Start Date{" "}
-                                        {isError && isEmpty(deliveryArea) ? (
+                                        {isError ? (
                                           <span className="text-red-400">
                                             <PiWarningCircleLight />
                                           </span>
@@ -2819,7 +2811,7 @@ const Penagihan = () => {
                                         className="flex gap-1 items-center"
                                       >
                                         End Date{" "}
-                                        {isError && isEmpty(deliveryArea) ? (
+                                        {isError ? (
                                           <span className="text-red-400">
                                             <PiWarningCircleLight />
                                           </span>
@@ -2847,23 +2839,27 @@ const Penagihan = () => {
                                   </div>
                                   <div className="mb-10">
                                     <div className="mb-2">Daftar Invoice</div>
-                                    <div className="overflow-auto max-h-[400px]">
-                                      <TableInvoice
-                                        data={invoice}
-                                        setData={setInvoice}
-                                        inputNomorInvoiceRef={
-                                          inputNomorInvoiceRef
-                                        }
-                                        addMode={addMode}
-                                        invoices={invoices}
-                                        vendorType={tipePenagihan.label}
-                                        optionLokasi={optionLokasi}
-                                        onClickSave={onClickSave}
-                                        onClickCancel={onClickCancel}
-                                        onClickEdit={onClickEdit}
-                                        onClickDelete={onClickDelete}
-                                      />
+                                    <div className="flex flex-col gap-1">
+                                      <div className="overflow-auto max-h-[400px]">
+                                        <TableInvoice
+                                          data={invoice}
+                                          setData={setInvoice}
+                                          inputNomorInvoiceRef={
+                                            inputNomorInvoiceRef
+                                          }
+                                          addMode={addMode}
+                                          invoices={invoices}
+                                          vendorType={tipePenagihan.label}
+                                          optionLokasi={optionLokasi}
+                                          onClickSave={onClickSave}
+                                          onClickCancel={onClickCancel}
+                                          onClickEdit={onClickEdit}
+                                          onClickDelete={onClickDelete}
+                                        />
+                                      </div>
+                                      <GrandTotal grandTotal={grandTotal} />
                                     </div>
+
                                     {!addMode && (
                                       <div
                                         className="bg-[#305496] rounded-full shadow-md w-fit mt-2 cursor-pointer"
@@ -2874,7 +2870,7 @@ const Penagihan = () => {
                                     )}
                                   </div>
 
-                                  <div className="flex flex-col gap-2 mb-3">
+                                  {/* <div className="flex flex-col gap-2 mb-3">
                                     <div>
                                       Apakah barang termasuk pajak? *) :{" "}
                                     </div>
@@ -2894,8 +2890,8 @@ const Penagihan = () => {
                                         />
                                       </div>
                                     </div>
-                                  </div>
-                                  <div className="mb-3">
+                                  </div> */}
+                                  {/* <div className="mb-3">
                                     <div className="flex flex-col gap-2 mb-3">
                                       <div className="flex flex-col gap-1">
                                         <div className="w-[250px]">
@@ -2919,11 +2915,6 @@ const Penagihan = () => {
                                               >
                                                 <input
                                                   maxLength={19}
-                                                  disabled={
-                                                    isPajak.label === "Tidak"
-                                                      ? true
-                                                      : false
-                                                  }
                                                   type={input.type}
                                                   name=""
                                                   id=""
@@ -2943,7 +2934,7 @@ const Penagihan = () => {
                                         </div>
                                       </div>
                                     </div>
-                                  </div>
+                                  </div> */}
                                   {isError && (
                                     <div className="mt-10 mb-3">
                                       <div className="w-fit flex gap-1 items-center text-[14px] bg-red-500 text-white py-3 px-5 ">
@@ -2968,7 +2959,7 @@ const Penagihan = () => {
                                           ? saveDraft
                                           : saveDraft2
                                       }
-                                      className={`ms-2 border border-[#00b4d8] px-10 py-2 hover:bg-slate-200 ${
+                                      className={`ms-2 border border-main-color px-10 py-2 hover:bg-slate-200 ${
                                         activeStep === 0 && "cursor-not-allowed"
                                       } `}
                                     >
@@ -2978,7 +2969,7 @@ const Penagihan = () => {
                                     <button
                                       disabled={activeStep === 0}
                                       onClick={handleBack}
-                                      className={`ms-2 border border-[#00b4d8] px-10 py-2 hover:bg-slate-200 ${
+                                      className={`ms-2 border border-main-color px-10 py-2 hover:bg-slate-200 ${
                                         activeStep === 0 && "cursor-not-allowed"
                                       } `}
                                     >
@@ -2992,7 +2983,7 @@ const Penagihan = () => {
                                         ? handleNext
                                         : handleNext2
                                     }
-                                    className="bg-[#0077b6] text-white py-2 px-10 rounded-sm shadow-sm hover:bg-[#00b4d8]"
+                                    className="bg-main-color cursor-pointer py-2 px-10 rounded-sm shadow-sm"
                                   >
                                     {activeStep === steps.length - 1
                                       ? "Submit"
@@ -3009,7 +3000,7 @@ const Penagihan = () => {
                                           ? saveDraft
                                           : saveDraft2
                                       }
-                                      className={`border border-[#00b4d8] px-10 py-2 hover:bg-slate-200 ${
+                                      className={`border border-main-color px-10 py-2 hover:bg-slate-200 ${
                                         activeStep === 0 && "cursor-not-allowed"
                                       } `}
                                     >
@@ -3019,7 +3010,7 @@ const Penagihan = () => {
                                     <button
                                       disabled={activeStep === 0}
                                       onClick={handleBack}
-                                      className={`border border-[#00b4d8] px-10 py-2 hover:bg-slate-200 ${
+                                      className={`border border-main-color px-10 py-2 hover:bg-slate-200 ${
                                         activeStep === 0 && "cursor-not-allowed"
                                       } `}
                                     >
@@ -3033,7 +3024,7 @@ const Penagihan = () => {
                                         ? handleNext
                                         : handleNext2
                                     }
-                                    className="bg-[#0077b6] text-white py-2 px-10 rounded-sm shadow-sm hover:bg-[#00b4d8]"
+                                    className="bg-main-color cursor-pointer py-2 px-10 rounded-sm shadow-sm"
                                   >
                                     {activeStep === steps.length - 1
                                       ? "Finish"
@@ -3113,7 +3104,7 @@ const Penagihan = () => {
                                         </div>
                                       )
                                     )}
-                                    <div className="flex flex-col gap-3 mb-3">
+                                    {/* <div className="flex flex-col gap-3 mb-3">
                                       <div className="flex flex-col gap-1">
                                         <div className="">
                                           Delivery Order (DO) / Packing List
@@ -3177,7 +3168,7 @@ const Penagihan = () => {
                                           </div>
                                         </div>
                                       )
-                                    )}
+                                    )} */}
                                     <div className="flex flex-col gap-3 mb-3">
                                       <div className="flex flex-col gap-1">
                                         <div className="w-[350px]">
@@ -3490,33 +3481,37 @@ const Penagihan = () => {
                                   </>
                                 ) : (
                                   <>
-                                    <div className="overflow-auto max-h-[400px] mb-10">
-                                      <TableInvoice
-                                        data={invoice}
-                                        setData={setInvoice}
-                                        inputNomorInvoiceRef={
-                                          inputNomorInvoiceRef
-                                        }
-                                        addMode={addMode}
-                                        invoices={invoices}
-                                        invoiceFiles={invoiceTambahan}
-                                        setInvoiceFiles={setInvoiceTambahan}
-                                        pajakFiles={fakturPajakTambahan}
-                                        setPajakFiles={setFakturPajakTambahan}
-                                        vendorType={tipePenagihan.label}
-                                        optionLokasi={optionLokasi}
-                                        onClickSave={onClickSave}
-                                        onClickCancel={onClickCancel}
-                                        onClickEdit={onClickEdit}
-                                        onClickDelete={onClickDelete}
-                                        activeStep={activeStep}
-                                      />
+                                    <div className="flex flex-col gap-1">
+                                      <div className="overflow-auto max-h-[400px] mb-10">
+                                        <TableInvoice
+                                          data={invoice}
+                                          setData={setInvoice}
+                                          inputNomorInvoiceRef={
+                                            inputNomorInvoiceRef
+                                          }
+                                          addMode={addMode}
+                                          invoices={invoices}
+                                          invoiceFiles={invoiceTambahan}
+                                          setInvoiceFiles={setInvoiceTambahan}
+                                          pajakFiles={fakturPajakTambahan}
+                                          setPajakFiles={setFakturPajakTambahan}
+                                          vendorType={tipePenagihan.label}
+                                          optionLokasi={optionLokasi}
+                                          onClickSave={onClickSave}
+                                          onClickCancel={onClickCancel}
+                                          onClickEdit={onClickEdit}
+                                          onClickDelete={onClickDelete}
+                                          activeStep={activeStep}
+                                        />
+                                      </div>
+                                      <GrandTotal grandTotal={grandTotal} />
                                     </div>
+
                                     <div className="flex flex-col gap-3 mb-10">
                                       <div className="flex flex-col gap-1">
                                         <div className="flex flex-col gap-1">
                                           <div className="w-[350px]">
-                                            Kwitansi
+                                            Kwitansi *) :
                                           </div>
                                           <div className="text-[10px] text-gray-500">
                                             Max size 2 mb
@@ -3705,7 +3700,7 @@ const Penagihan = () => {
                                             ? saveDraft
                                             : saveDraft2
                                         }
-                                        className={`ms-2 border border-[#00b4d8] px-10 py-2 hover:bg-slate-200 ${
+                                        className={`ms-2 border border-main-color px-10 py-2 hover:bg-slate-200 ${
                                           activeStep === 0 &&
                                           "cursor-not-allowed"
                                         } `}
@@ -3716,7 +3711,7 @@ const Penagihan = () => {
                                       <button
                                         disabled={activeStep === 0}
                                         onClick={handleBack}
-                                        className={`ms-2 border border-[#00b4d8] px-10 py-2 hover:bg-slate-200 ${
+                                        className={`ms-2 border border-main-color px-10 py-2 hover:bg-slate-200 ${
                                           activeStep === 0 &&
                                           "cursor-not-allowed"
                                         } `}
@@ -3731,7 +3726,7 @@ const Penagihan = () => {
                                           ? handleNext
                                           : handleNext2
                                       }
-                                      className="bg-[#0077b6] text-white py-2 px-10 rounded-sm shadow-sm hover:bg-[#00b4d8]"
+                                      className="bg-main-color cursor-pointer py-2 px-10 rounded-sm shadow-sm"
                                     >
                                       {activeStep === steps.length - 1
                                         ? "Submit"
@@ -3748,7 +3743,7 @@ const Penagihan = () => {
                                             ? saveDraft
                                             : saveDraft2
                                         }
-                                        className={`border border-[#00b4d8] px-10 py-2 hover:bg-slate-200 ${
+                                        className={`border border-main-color px-10 py-2 hover:bg-slate-200 ${
                                           activeStep === 0 &&
                                           "cursor-not-allowed"
                                         } `}
@@ -3759,7 +3754,7 @@ const Penagihan = () => {
                                       <button
                                         disabled={activeStep === 0}
                                         onClick={handleBack}
-                                        className={`border border-[#00b4d8] px-10 py-2 hover:bg-slate-200 ${
+                                        className={`border border-main-color px-10 py-2 hover:bg-slate-200 ${
                                           activeStep === 0 &&
                                           "cursor-not-allowed"
                                         } `}
@@ -3774,7 +3769,7 @@ const Penagihan = () => {
                                           ? handleNext
                                           : handleNext2
                                       }
-                                      className="bg-[#0077b6] text-white py-2 px-10 rounded-sm shadow-sm hover:bg-[#00b4d8]"
+                                      className="bg-main-color cursor-pointer py-2 px-10 rounded-sm shadow-sm"
                                     >
                                       {activeStep === steps.length - 1
                                         ? "Finish"
