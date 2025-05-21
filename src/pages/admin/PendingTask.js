@@ -5,16 +5,25 @@ import { AdapterDayjs } from "@mui/x-date-pickers/AdapterDayjs";
 import { DemoContainer } from "@mui/x-date-pickers/internals/demo";
 import { useEffect, useState } from "react";
 import dayjs from "dayjs";
-import { Backdrop, CircularProgress, Fade, Modal, Pagination } from "@mui/material";
+import {
+  Backdrop,
+  CircularProgress,
+  Fade,
+  Modal,
+  Pagination,
+} from "@mui/material";
 import { RiFileExcel2Line } from "react-icons/ri";
 import Select from "react-select";
 import titleCase from "../../components/functions/TitleCase";
 import isEmpty from "../../components/functions/CheckEmptyObject";
-import toast from "react-hot-toast";
 import accountingNumber from "../../components/functions/AccountingNumber";
 import { PiFileZipDuotone } from "react-icons/pi";
 import Cookies from "js-cookie";
 import { useNavigate } from "react-router-dom";
+import DatePickerComponent from "../../components/form/DatePicker";
+import ButtonSearch from "../../components/button/ButtonSearch";
+import { Th, Td } from "../../components/Table";
+import { toast } from "sonner";
 
 const options = [
   { value: "APPROVED", label: "APPROVED", key: 0 },
@@ -89,21 +98,13 @@ const PendingTask = () => {
     }
     setPenagihanDetail({ ...penagihanDetail, status: item.value });
   };
- 
 
   const onClikOpen = (item) => {
     if (Cookies.get("admin_token") !== undefined) {
       handleOpen();
       setPenagihanDetail(item);
     } else {
-      toast.error("Silahkan Login Terlebih Dahulu!", {
-        position: "top-right",
-        style: {
-          borderRadius: "10px",
-          background: "#333",
-          color: "#fff",
-        },
-      });
+      toast.error("Silahkan Login Terlebih Dahulu!");
       navigate("/admin");
     }
   };
@@ -118,7 +119,7 @@ const PendingTask = () => {
     })
       .then((response) => response.json())
       .then((data) => {
-        console.log(data)
+        console.log(data);
         setTotal(data.total);
         setCount(Math.ceil(data.total / data.limit));
         setLimit(data.limit);
@@ -129,19 +130,17 @@ const PendingTask = () => {
           data.nilai_invoices.map((nilai) => (total += nilai));
           setTotalInvoice((prev) => [
             ...prev,
-            {id: data.id, total: total.toFixed(2)}
+            { id: data.id, total: total.toFixed(2) },
           ]);
         });
 
         setListPenagihan(data.data);
-        
       })
       .catch((err) => {
-        console.log(err)
+        console.log(err);
         setOpenBackdrop(false);
       });
   };
-  
 
   const btnSearch = (e) => {
     e.preventDefault();
@@ -188,7 +187,7 @@ const PendingTask = () => {
 
   const onSubmitDocument = async (item) => {
     setOpenBackdrop(true);
-    console.log(item)
+    console.log(item);
     let isSave = false;
     if (item.status === "REJECT") {
       if (item.reason.trim().length > 0) {
@@ -196,14 +195,13 @@ const PendingTask = () => {
       } else {
         isSave = false;
       }
-    } else if (item.status === "APPROVED"){
-      if(item.note.trim().length > 0){
+    } else if (item.status === "APPROVED") {
+      if (item.note.trim().length > 0) {
         isSave = true;
-      }else{
+      } else {
         isSave = false;
       }
-    } 
-    else {
+    } else {
       isSave = true;
     }
 
@@ -235,8 +233,11 @@ const PendingTask = () => {
           reason: item.reason,
           status: item.status,
           note: item.note,
-          due_date: item.due_date !== null ? dayjs(item.due_date).format("YYYY-MM-DD HH:mm:ss") : dayjs(new Date()).format("YYYY-MM-DD HH:mm:ss"),
-          user_id: Cookies.get("admin_id")
+          due_date:
+            item.due_date !== null
+              ? dayjs(item.due_date).format("YYYY-MM-DD HH:mm:ss")
+              : dayjs(new Date()).format("YYYY-MM-DD HH:mm:ss"),
+          user_id: Cookies.get("admin_id"),
         };
 
         await fetch(`${api}api/portal-vendor/invoice`, {
@@ -249,62 +250,27 @@ const PendingTask = () => {
               setOpen(false);
               fetchData();
               setOpenBackdrop(false);
-              toast.error("Penagihan update failed!", {
-                position: "top-right",
-                style: {
-                  borderRadius: "10px",
-                  background: "#333",
-                  color: "#fff",
-                },
-              });
+              toast.error("Penagihan update failed!");
             } else {
               setOpen(false);
               fetchData();
               setOpenBackdrop(false);
-              toast.success("Penagihan update success!", {
-                position: "top-right",
-                style: {
-                  borderRadius: "10px",
-                  background: "#333",
-                  color: "#fff",
-                },
-              });
+              toast.success("Penagihan update success!");
             }
           })
           .catch((err) => {
             setOpenBackdrop(false);
             setOpen(false);
             fetchData();
-            toast.error("Penagihan update failed!", {
-              position: "top-right",
-              style: {
-                borderRadius: "10px",
-                background: "#333",
-                color: "#fff",
-              },
-            });
+            toast.error("Penagihan update failed!");
           });
       } else {
         setOpenBackdrop(false);
-        toast.error("Ada data yang masih kosong!", {
-          position: "top-right",
-          style: {
-            borderRadius: "10px",
-            background: "#333",
-            color: "#fff",
-          },
-        });
+        toast.error("Ada data yang masih kosong!");
       }
     } else {
       navigate("/admin");
-      toast.error("Silahkan Login Terlebih Dahulu!", {
-        position: "top-right",
-        style: {
-          borderRadius: "10px",
-          background: "#333",
-          color: "#fff",
-        },
-      });
+      toast.error("Silahkan Login Terlebih Dahulu!");
     }
   };
 
@@ -321,7 +287,7 @@ const PendingTask = () => {
           <div>
             <form action="">
               <div className="flex max-[1254px]:flex-col gap-5 items-center mb-5">
-                <div className="flex flex-col gap-3 mb-3 w-full ">
+                <div className="flex flex-col gap-3 w-full ">
                   <div className="whitespace-nowrap flex">
                     <label
                       htmlFor=""
@@ -342,7 +308,7 @@ const PendingTask = () => {
                     />
                   </div>
                 </div>
-                <div className="flex flex-col gap-1 w-full mb-3 ">
+                <div className="flex flex-col gap-3 w-full">
                   <div className="whitespace-nowrap flex">
                     <label
                       htmlFor=""
@@ -356,16 +322,10 @@ const PendingTask = () => {
                     <div className="w-full">
                       <div className="flex max-[501px]:flex-col max-[501px]:gap-2 items-center gap-5">
                         <div className="w-full">
-                          <LocalizationProvider dateAdapter={AdapterDayjs}>
-                            <DemoContainer components={["DatePicker"]}>
-                              <DatePicker
-                                className="w-full"
-                                value={startDate}
-                                onChange={onChangeStartDate}
-                                slotProps={{ textField: { size: "small" } }}
-                              />
-                            </DemoContainer>
-                          </LocalizationProvider>
+                          <DatePickerComponent
+                            value={startDate}
+                            onChange={onChangeStartDate}
+                          />
                         </div>
                         <div>to</div>
                         <div className="w-full">
@@ -401,27 +361,21 @@ const PendingTask = () => {
               </div>
 
               <div className="flex justify-end mt-2">
-                <button
-                  onClick={(e) => btnSearch(e)}
-                  className="py-1 max-[415px]:w-full px-10 rounded-sm shadow-sm bg-[#0077b6] text-white"
-                >
-                  Search
-                </button>
+                <ButtonSearch onClick={(e) => btnSearch(e)} />
               </div>
             </form>
           </div>
         </div>
-        <div className="w-full overflow-auto shadow-md max-h-[400px] text-[14px]">
-          <table className="w-full table-monitoring">
+        <div className="overflow-auto max-h-[400px] text-[14px]">
+          <table>
             <thead className="sticky top-0">
-              <tr className="text-center whitespace-nowrap border-2 bg-[#eaf4f4]">
-                <td className="p-5 border">No Request </td>
-                <td className="p-5 border">Nama Supplier </td>
-                <td className="p-5 border">Kode Supplier</td>
-                <td className="p-5 border">Tanggal Penagihan</td>
-                <td className="p-5 border">No Tagihan</td>
-                <td className="p-5 border">Nilai Penagihan (Rp)</td>
-                <td className="p-5 border">Action</td>
+              <tr className="text-center h-[40px]">
+                <Th>No Request </Th>
+                <Th className="!w-[250px] !min-w-[250px]">Nama Supplier </Th>
+                <Th>Kode Supplier</Th>
+                <Th>Tanggal Penagihan</Th>
+                <Th>Nilai Penagihan (Rp)</Th>
+                <Th>Action</Th>
               </tr>
             </thead>
             <tbody>
@@ -429,28 +383,28 @@ const PendingTask = () => {
                 listPenagihan.map((item, index) => (
                   <tr
                     key={index}
-                    className="text-center whitespace-nowrap hover:bg-slate-100 border bg-white"
+                    className="text-center hover:bg-slate-100 h-[40px]"
                   >
-                    <td className="p-5 border">{item.no_request}</td>
-                    <td className="p-5 border">{item.vendor.nama}</td>
-                    <td className="p-5 border">{item.vendor.kode}</td>
-                    <td className="p-5 border">
-                      {dayjs(item.created_at).format("DD/MM/YYYY")}
-                    </td>
+                    <Td>{item.no_request}</Td>
+                    <Td>{item.vendor.nama}</Td>
+                    <Td>{item.vendor.kode}</Td>
+                    <Td>{dayjs(item.created_at).format("DD/MM/YYYY")}</Td>
+                    <Td>
+                      Rp.{" "}
+                      {accountingNumber(
+                        totalInvoice.filter((value) => value.id === item.id)[0]
+                          ?.total
+                      )}
+                    </Td>
 
-                    <td className="p-5 border"></td>
-                    <td className="p-5 border">
-                      Rp. {accountingNumber(totalInvoice.filter((value) => value.id === item.id)[0]?.total)}
-                    </td>
-
-                    <td
+                    <Td
                       onClick={() => onClikOpen(item)}
-                      className="p-5 border cursor-pointer"
+                      className="p-2 cursor-pointer"
                     >
                       <div className="py-2 px-4 rounded-lg bg-gray-200">
                         Detail
                       </div>
-                    </td>
+                    </Td>
                   </tr>
                 ))
               ) : (
@@ -594,9 +548,7 @@ const PendingTask = () => {
                       </div>
                       <div className="flex flex-col gap-1">
                         {penagihanDetail.nomer_invoices.map((nomer) => (
-                          <div className="w-[240px]">
-                            {nomer}
-                          </div>
+                          <div className="w-[240px]">{nomer}</div>
                         ))}
                       </div>
                     </div>

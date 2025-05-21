@@ -5,7 +5,6 @@ import Select from "react-select";
 //import { MdKeyboardArrowDown } from "react-icons/md";
 import ApiDataWilayahIndonesia from "../../api/ApiDataWilayahIndonesia";
 import { PiFileZipDuotone, PiWarningCircleLight } from "react-icons/pi";
-import toast from "react-hot-toast";
 import Cookies from "js-cookie";
 import { Backdrop, CircularProgress, Fade, Modal } from "@mui/material";
 import { FaCloudUploadAlt } from "react-icons/fa";
@@ -15,6 +14,7 @@ import { useLocation, useNavigate } from "react-router-dom";
 import isEmpty from "../../components/functions/CheckEmptyObject";
 import { Viewer } from "@react-pdf-viewer/core";
 import "@react-pdf-viewer/core/lib/styles/index.css";
+import { toast } from "sonner";
 
 const options = [
   { value: "cv", label: "CV", key: 1 },
@@ -46,7 +46,7 @@ const VendorEdit = () => {
   const [optionProvinsi, setOptionProvinsi] = useState([]);
 
   //user
-  const [username, setUsername] = useState("")
+  const [username, setUsername] = useState("");
 
   const [tipePerusahaan, setTipePerusahaan] = useState({});
   const [tipePerusahaanText, setTipePerusahaanText] = useState("");
@@ -120,7 +120,8 @@ const VendorEdit = () => {
   const [sertifBpomFilePreview, setSertifBpomFilePreview] = useState(null);
 
   const [dokumenPendukungLainnya, setDokumenPendukungLainnya] = useState(null);
-  const [dokumenPendukungLainnyaPreview, setDokumenPendukungLainnyaPreview] = useState(null);
+  const [dokumenPendukungLainnyaPreview, setDokumenPendukungLainnyaPreview] =
+    useState(null);
 
   const { state } = useLocation();
 
@@ -277,7 +278,7 @@ const VendorEdit = () => {
   };
 
   const fetchUser = async () => {
-    const arr = [state.vendor_id]
+    const arr = [state.vendor_id];
     fetch(`${api}api/portal-vendor/list/users`, {
       method: "POST",
       body: JSON.stringify({
@@ -425,7 +426,9 @@ const VendorEdit = () => {
                 file_sertikasi_bpom:
                   sertifBpomFile !== null ? sertifBpomFile : null,
                 file_dokumen_lainnya:
-                  dokumenPendukungLainnya !== null ? dokumenPendukungLainnya : null,
+                  dokumenPendukungLainnya !== null
+                    ? dokumenPendukungLainnya
+                    : null,
                 status: status,
                 reason: reason,
                 vendor_id: vendorId,
@@ -440,25 +443,11 @@ const VendorEdit = () => {
                     if (res.data === 0) {
                       fetchVendor();
                       setOpenBackdrop(false);
-                      toast.error("Update Failed!", {
-                        position: "top-right",
-                        style: {
-                          borderRadius: "10px",
-                          background: "#333",
-                          color: "#fff",
-                        },
-                      });
+                      toast.error("Update Failed!");
                     } else {
                       fetchVendor();
                       setOpenBackdrop(false);
-                      toast.success("Update Success!", {
-                        position: "top-right",
-                        style: {
-                          borderRadius: "10px",
-                          background: "#333",
-                          color: "#fff",
-                        },
-                      });
+                      toast.success("Update Success!");
                     }
                     setLoading(false);
                   })
@@ -466,25 +455,11 @@ const VendorEdit = () => {
                     setLoading(false);
                     fetchVendor();
                     setOpenBackdrop(false);
-                    toast.error("Update Failed!", {
-                      position: "top-right",
-                      style: {
-                        borderRadius: "10px",
-                        background: "#333",
-                        color: "#fff",
-                      },
-                    });
+                    toast.error("Update Failed!");
                   });
               } else {
                 navigate("/");
-                toast.error("Silahkan Login Terlebih Dahulu!", {
-                  position: "top-right",
-                  style: {
-                    borderRadius: "10px",
-                    background: "#333",
-                    color: "#fff",
-                  },
-                });
+                toast.error("Silahkan Login Terlebih Dahulu!");
               }
             }
           }
@@ -670,7 +645,9 @@ const VendorEdit = () => {
   const onChangeDokumenLainnyaFile = (e) => {
     if (e.target.files[0] !== undefined) {
       if (e.target.files[0].size <= 2000000) {
-        setDokumenPendukungLainnyaPreview(URL.createObjectURL(e.target.files[0]));
+        setDokumenPendukungLainnyaPreview(
+          URL.createObjectURL(e.target.files[0])
+        );
         GetBase64(e.target.files[0])
           .then((result) => {
             setDokumenPendukungLainnya(result);
@@ -682,7 +659,7 @@ const VendorEdit = () => {
         setDokumenPendukungLainnya(null);
       }
     }
-  }
+  };
 
   const onChangeStatusPajak = (item) => {
     setStatusPajak(item);
@@ -751,14 +728,7 @@ const VendorEdit = () => {
       window.location = `${apiExport}fin/transactionact/portalvendorinvoicedownload.jsp?oid=${state.vendor_id}`;
     } else {
       navigate("/admin");
-      toast.error("Silahkan Login Terlebih Dahulu!", {
-        position: "top-right",
-        style: {
-          borderRadius: "10px",
-          background: "#333",
-          color: "#fff",
-        },
-      });
+      toast.error("Silahkan Login Terlebih Dahulu!");
     }
   };
 
@@ -863,7 +833,7 @@ const VendorEdit = () => {
                               />
                             </div>
                           </div>
-                          
+
                           <div className="flex gap-2 items-center mb-3 w-full">
                             <div className=" flex">
                               <label htmlFor="" className="w-72">
@@ -909,7 +879,9 @@ const VendorEdit = () => {
                               <input
                                 value={namaPerusahaan}
                                 onChange={(e) =>
-                                  setNamaPerusahaan(e.target.value.toUpperCase())
+                                  setNamaPerusahaan(
+                                    e.target.value.toUpperCase()
+                                  )
                                 }
                                 type="text"
                                 name=""
@@ -963,18 +935,17 @@ const VendorEdit = () => {
                                 Username
                               </label>
                             </div>
-                            
-                              <div className="w-full relative">
-                                <input
-                                  value={username}
-                                  disabled
-                                  type="text"
-                                  name=""
-                                  id=""
-                                  className="bg-gray-200 w-full h-[36px] border border-slate-300 rounded-sm focus:border focus:border-[#0077b6]  "
-                                />
-                              </div>
-                            
+
+                            <div className="w-full relative">
+                              <input
+                                value={username}
+                                disabled
+                                type="text"
+                                name=""
+                                id=""
+                                className="bg-gray-200 w-full h-[36px] border border-slate-300 rounded-sm focus:border focus:border-[#0077b6]  "
+                              />
+                            </div>
                           </div>
                           <div className="flex flex-col gap-2 mb-3 w-full">
                             <div className=" flex">
@@ -1019,7 +990,9 @@ const VendorEdit = () => {
                               <input
                                 value={namaPerusahaan}
                                 onChange={(e) =>
-                                  setNamaPerusahaan(e.target.value.toUpperCase())
+                                  setNamaPerusahaan(
+                                    e.target.value.toUpperCase()
+                                  )
                                 }
                                 type="text"
                                 name=""
@@ -2447,7 +2420,9 @@ const VendorEdit = () => {
                   )}
                 </div>
                 {dokumenPendukungLainnya !== null &&
-                RegExp("\\bpdf\\b").test(dokumenPendukungLainnya.split(",")[0]) ? (
+                RegExp("\\bpdf\\b").test(
+                  dokumenPendukungLainnya.split(",")[0]
+                ) ? (
                   <div className="h-[500px] w-[500px] max-[612px]:w-full mb-5">
                     <div className="h-full w-full">
                       <Viewer fileUrl={dokumenPendukungLainnyaPreview} />

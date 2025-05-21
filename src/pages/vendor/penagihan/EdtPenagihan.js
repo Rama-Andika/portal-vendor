@@ -25,13 +25,13 @@ import { DemoContainer } from "@mui/x-date-pickers/internals/demo";
 import dayjs from "dayjs";
 import { PiWarningCircleLight } from "react-icons/pi";
 import isEmpty from "../../../components/functions/CheckEmptyObject";
-import toast from "react-hot-toast";
 import { FaCloudUploadAlt } from "react-icons/fa";
 import titleCase from "../../../components/functions/TitleCase";
 import GetBase64 from "../../../components/functions/GetBase64";
 import Cookies from "js-cookie";
 import accountingNumber from "../../../components/functions/AccountingNumber";
 import accountingNumberV2 from "../../../components/functions/AccountingNumberV2";
+import { toast } from "sonner";
 
 const optionsTipePenagihan = [
   { value: "beli putus", label: "Beli Putus", key: 0 },
@@ -952,53 +952,25 @@ const Penagihan = () => {
           .then((res) => {
             if (res.data === 0) {
               setOpenBackdrop(false);
-              toast.error("Penagihan update failed!", {
-                position: "top-right",
-                style: {
-                  borderRadius: "10px",
-                  background: "#333",
-                  color: "#fff",
-                },
-              });
+              toast.error("Penagihan update failed!");
             } else {
               setId(res.data);
               setCreatedAt(res.data.created_at);
               navigate("/vendor/monitoring");
               setOpenBackdrop(false);
-              toast.success("Penagihan update success!", {
-                position: "top-right",
-                style: {
-                  borderRadius: "10px",
-                  background: "#333",
-                  color: "#fff",
-                },
-              });
+              toast.success("Penagihan update success!");
             }
           })
           .catch((err) => {
             setOpenBackdrop(false);
-            toast.error("Penagihan update failed!", {
-              position: "top-right",
-              style: {
-                borderRadius: "10px",
-                background: "#333",
-                color: "#fff",
-              },
-            });
+            toast.error("Penagihan update failed!");
           });
       } else {
         setOpenBackdrop(false);
       }
     } else {
       navigate("/");
-      toast.error("Silahkan Login Terlebih Dahulu!", {
-        position: "top-right",
-        style: {
-          borderRadius: "10px",
-          background: "#333",
-          color: "#fff",
-        },
-      });
+      toast.error("Silahkan Login Terlebih Dahulu!");
     }
   };
 
@@ -1101,52 +1073,24 @@ const Penagihan = () => {
           .then((res) => {
             if (res.data === 0) {
               setOpenBackdrop(false);
-              toast.error("Penagihan update failed!", {
-                position: "top-right",
-                style: {
-                  borderRadius: "10px",
-                  background: "#333",
-                  color: "#fff",
-                },
-              });
+              toast.error("Penagihan update failed!");
             } else {
               setId(res.data);
               navigate("/vendor/monitoring");
               setOpenBackdrop(false);
-              toast.success("Penagihan update success!", {
-                position: "top-right",
-                style: {
-                  borderRadius: "10px",
-                  background: "#333",
-                  color: "#fff",
-                },
-              });
+              toast.success("Penagihan update success!");
             }
           })
           .catch((err) => {
             setOpenBackdrop(false);
-            toast.error("Penagihan update failed!", {
-              position: "top-right",
-              style: {
-                borderRadius: "10px",
-                background: "#333",
-                color: "#fff",
-              },
-            });
+            toast.error("Penagihan update failed!");
           });
       } else {
         setOpenBackdrop(false);
       }
     } else {
       navigate("/");
-      toast.error("Silahkan Login Terlebih Dahulu!", {
-        position: "top-right",
-        style: {
-          borderRadius: "10px",
-          background: "#333",
-          color: "#fff",
-        },
-      });
+      toast.error("Silahkan Login Terlebih Dahulu!");
     }
   };
 
@@ -1248,49 +1192,21 @@ const Penagihan = () => {
         .then((res) => {
           if (res.data === 0) {
             setOpenBackdrop(false);
-            toast.error("Penagihan update failed!", {
-              position: "top-right",
-              style: {
-                borderRadius: "10px",
-                background: "#333",
-                color: "#fff",
-              },
-            });
+            toast.error("Penagihan update failed!");
           } else {
             setId(res.data);
             navigate("/vendor/monitoring");
             setOpenBackdrop(false);
-            toast.success("Penagihan update success!", {
-              position: "top-right",
-              style: {
-                borderRadius: "10px",
-                background: "#333",
-                color: "#fff",
-              },
-            });
+            toast.success("Penagihan update success!");
           }
         })
         .catch((err) => {
           setOpenBackdrop(false);
-          toast.error("Penagihan update failed!", {
-            position: "top-right",
-            style: {
-              borderRadius: "10px",
-              background: "#333",
-              color: "#fff",
-            },
-          });
+          toast.error("Penagihan update failed!");
         });
     } else {
       navigate("/");
-      toast.error("Silahkan Login Terlebih Dahulu!", {
-        position: "top-right",
-        style: {
-          borderRadius: "10px",
-          background: "#333",
-          color: "#fff",
-        },
-      });
+      toast.error("Silahkan Login Terlebih Dahulu!");
     }
   };
 
@@ -1391,49 +1307,21 @@ const Penagihan = () => {
         .then((res) => {
           if (res.data === 0) {
             setOpenBackdrop(false);
-            toast.error("Penagihan update failed!", {
-              position: "top-right",
-              style: {
-                borderRadius: "10px",
-                background: "#333",
-                color: "#fff",
-              },
-            });
+            toast.error("Penagihan update failed!");
           } else {
             setId(res.data);
             navigate("/vendor/monitoring");
             setOpenBackdrop(false);
-            toast.success("Penagihan update success!", {
-              position: "top-right",
-              style: {
-                borderRadius: "10px",
-                background: "#333",
-                color: "#fff",
-              },
-            });
+            toast.success("Penagihan update success!");
           }
         })
         .catch((err) => {
           setOpenBackdrop(false);
-          toast.error("Penagihan update failed!", {
-            position: "top-right",
-            style: {
-              borderRadius: "10px",
-              background: "#333",
-              color: "#fff",
-            },
-          });
+          toast.error("Penagihan update failed!");
         });
     } else {
       navigate("/");
-      toast.error("Silahkan Login Terlebih Dahulu!", {
-        position: "top-right",
-        style: {
-          borderRadius: "10px",
-          background: "#333",
-          color: "#fff",
-        },
-      });
+      toast.error("Silahkan Login Terlebih Dahulu!");
     }
   };
 

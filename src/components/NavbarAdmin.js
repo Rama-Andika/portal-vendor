@@ -6,11 +6,11 @@ import { useStateContext } from "../contexts/ContextProvider";
 import { useRef } from "react";
 import { useNavigate } from "react-router-dom";
 import Cookies from "js-cookie";
-import toast from "react-hot-toast";
+import { toast } from "sonner";
 
 const api = process.env.REACT_APP_BASEURL;
 
-const NavButton = ({ title, customFunc, icon, color, dotColor }) => (
+const NavButton = ({ customFunc, icon, color, dotColor }) => (
   <button
     type="button"
     onClick={customFunc}
@@ -25,11 +25,7 @@ const NavButton = ({ title, customFunc, icon, color, dotColor }) => (
   </button>
 );
 
-const NavbarAdmin = ({children}) => {
-  const unsplashimg = {
-    src: "https://source.unsplash.com/1600x900/?random",
-    alt: "random unsplash image",
-  };
+const NavbarAdmin = ({ title = "", className = undefined, children }) => {
   const { setActiveMenu, screenSize, setScreenSize } = useStateContext();
   const [dropdown, setDropdown] = useState(false);
 
@@ -83,38 +79,37 @@ const NavbarAdmin = ({children}) => {
   const logout = () => {
     Cookies.remove("admin_token");
     Cookies.remove("vendor_id");
-    toast.success("Logout Successfully", {
-      duration: 4000,
-      position: "top-right",
-      style: {
-        borderRadius: "10px",
-        background: "#333",
-        color: "#fff",
-      },
-    });
+    toast.success("Logout Successfully");
 
     navigate("/admin");
   };
 
   return (
     <div
-      className="w-full mb-10 py-[16px] px-[26px] overflow-x-hidden"
+      className={`w-full mb-10 py-[16px] px-[26px] overflow-x-hidden ${className}`}
       onClick={() => dropdown && setDropdown(false)}
     >
       <div className="bg-white shadow-[0_2px_4px_0_rgba(165,163,174,0.30)] py-[12px] px-[24px] flex items-center justify-between">
-        <NavButton
-          title="Menu"
-          customFunc={() => setActiveMenu((prevActiveMenu) => !prevActiveMenu)}
-          color="#0077b6"
-          icon={<AiOutlineMenu />}
-        />
+        {title.trim().length > 0 ? (
+          <div className="font-bold">{title}</div>
+        ) : (
+          <NavButton
+            title="Menu"
+            customFunc={() =>
+              setActiveMenu((prevActiveMenu) => !prevActiveMenu)
+            }
+            color="#0077b6"
+            icon={<AiOutlineMenu />}
+          />
+        )}
+
         <div
           onClick={onClickDropdown}
           className="flex relative cursor-pointer z-[20]"
         >
           <div className="flex items-center gap-2 cursor-pointer p-1 hover:bg-light-gray rounded-lg relative">
             <img
-              src={require('../assets/images/user.png')}
+              src={require("../assets/images/user.png")}
               alt="avatar"
               className="rounded-1full w-8 h-8"
             />

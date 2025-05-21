@@ -10,11 +10,13 @@ import { useEffect, useState } from "react";
 import isEmpty from "../../components/functions/CheckEmptyObject";
 import titleCase from "../../components/functions/TitleCase";
 import Select from "react-select";
-import toast from "react-hot-toast";
 import { PiFileZipDuotone } from "react-icons/pi";
 import Cookies from "js-cookie";
 import { useNavigate } from "react-router-dom";
-
+import Input from "../../components/form/Input";
+import ButtonSearch from "../../components/button/ButtonSearch";
+import { Td, Th } from "../../components/Table";
+import { toast } from "sonner";
 
 const options = [
   { value: "APPROVED", label: "APPROVED", key: 0 },
@@ -63,7 +65,7 @@ const VendorRegistrationList = () => {
   const [vendorDetail, setVendorDetail] = useState({});
 
   const [listUser, setListUser] = useState([]);
-  const [userDetail, setUserDetail] = useState({})
+  const [userDetail, setUserDetail] = useState({});
 
   const navigate = useNavigate();
   const handleOpen = () => setOpen(true);
@@ -182,20 +184,13 @@ const VendorRegistrationList = () => {
 
   const onClickEdit = (item, user) => {
     if (Cookies.get("admin_token") !== undefined) {
-      setUserDetail(user)
+      setUserDetail(user);
       setVendorDetail(item);
       setStatus({ value: item.status, label: item.status });
       handleOpen();
     } else {
       navigate("/admin");
-      toast.error("Silahkan Login Terlebih Dahulu!", {
-        position: "top-right",
-        style: {
-          borderRadius: "10px",
-          background: "#333",
-          color: "#fff",
-        },
-      });
+      toast.error("Silahkan Login Terlebih Dahulu!");
     }
   };
 
@@ -246,28 +241,13 @@ const VendorRegistrationList = () => {
               setOpen(false);
               fetchData();
               setOpenBackdrop(false);
-              toast.success("Update Success!", {
-                position: "top-right",
-                style: {
-                  borderRadius: "10px",
-                  background: "#333",
-                  color: "#fff",
-                },
-              });
+              toast.success("Update Success!");
             } else {
               setOpen(false);
               fetchData();
               setOpenBackdrop(false);
               toast.error(
-                "Vendor belum terdaftar di Oxysystem atau kode salah!",
-                {
-                  position: "top-right",
-                  style: {
-                    borderRadius: "10px",
-                    background: "#333",
-                    color: "#fff",
-                  },
-                }
+                "Vendor belum terdaftar di Oxysystem atau kode salah!"
               );
             }
           })
@@ -285,26 +265,12 @@ const VendorRegistrationList = () => {
               setOpen(false);
               fetchData();
               setOpenBackdrop(false);
-              toast.success("Update Success!", {
-                position: "top-right",
-                style: {
-                  borderRadius: "10px",
-                  background: "#333",
-                  color: "#fff",
-                },
-              });
+              toast.success("Update Success!");
             } else {
               setOpen(false);
               fetchData();
               setOpenBackdrop(false);
-              toast.error("Vendor belum terdaftar di Oxysystem!", {
-                position: "top-right",
-                style: {
-                  borderRadius: "10px",
-                  background: "#333",
-                  color: "#fff",
-                },
-              });
+              toast.error("Vendor belum terdaftar di Oxysystem!");
             }
           })
           .catch((err) => {
@@ -314,25 +280,11 @@ const VendorRegistrationList = () => {
         setOpen(false);
         fetchData();
         setOpenBackdrop(false);
-        toast.error("Kode tidak boleh kosong!", {
-          position: "top-right",
-          style: {
-            borderRadius: "10px",
-            background: "#333",
-            color: "#fff",
-          },
-        });
+        toast.error("Kode tidak boleh kosong!");
       }
     } else {
       navigate("/admin");
-      toast.error("Silahkan Login Terlebih Dahulu!", {
-        position: "top-right",
-        style: {
-          borderRadius: "10px",
-          background: "#333",
-          color: "#fff",
-        },
-      });
+      toast.error("Silahkan Login Terlebih Dahulu!");
     }
   };
 
@@ -341,14 +293,7 @@ const VendorRegistrationList = () => {
       window.location = `${apiExport}fin/transactionact/portalvendorinvoicedownload.jsp?oid=${id}`;
     } else {
       navigate("/admin");
-      toast.error("Silahkan Login Terlebih Dahulu!", {
-        position: "top-right",
-        style: {
-          borderRadius: "10px",
-          background: "#333",
-          color: "#fff",
-        },
-      });
+      toast.error("Silahkan Login Terlebih Dahulu!");
     }
   };
   return (
@@ -364,7 +309,7 @@ const VendorRegistrationList = () => {
           <div>
             <form onSubmit={(e) => onSearch(e)}>
               <div className="flex max-[349px]:flex-col gap-5 items-center mb-5">
-                <div className="flex flex-col gap-1  mb-3 w-full ">
+                <div className="flex flex-col gap-1 mb-3 w-full ">
                   <div className="whitespace-nowrap flex">
                     <label
                       htmlFor=""
@@ -375,17 +320,16 @@ const VendorRegistrationList = () => {
                     <div className="hidden">:</div>
                   </div>
                   <div className="w-full relative">
-                    <input
+                    <Input
                       value={srcName}
-                      type="text"
-                      name=""
-                      id=""
                       onChange={(e) => setSrcName(e.target.value)}
-                      className="w-full h-[32px] text-slate-400 border border-slate-300 rounded-sm focus:border focus:border-[#0077b6]  "
                     />
                   </div>
                 </div>
-                <div className="flex flex-col  gap-1  mb-3 w-full ">
+                <div
+                  className="flex flex-col 
+                gap-1 mb-3 w-full "
+                >
                   <div className="whitespace-nowrap flex">
                     <label
                       htmlFor=""
@@ -396,13 +340,9 @@ const VendorRegistrationList = () => {
                     <div className="hidden">:</div>
                   </div>
                   <div className="w-full relative">
-                    <input
+                    <Input
                       value={code}
                       onChange={(e) => setCode(e.target.value)}
-                      type="text"
-                      name=""
-                      id=""
-                      className="w-full h-[32px] text-slate-400 border border-slate-300 rounded-sm focus:border focus:border-[#0077b6]  "
                     />
                   </div>
                 </div>
@@ -432,26 +372,21 @@ const VendorRegistrationList = () => {
                 </div>
               </div>
               <div className="flex justify-end mt-2">
-                <button
-                  type="submit"
-                  className="py-1 max-[415px]:w-full px-10 rounded-md shadow-sm bg-[#0077b6] text-white"
-                >
-                  Search
-                </button>
+                <ButtonSearch type="Submit" />
               </div>
             </form>
           </div>
         </div>
-        <div className="w-full overflow-auto shadow-md max-h-[400px] text-[14px]">
-          <table className="w-full table-monitoring">
-            <thead className="sticky top-0">
-              <tr className="text-center whitespace-nowrap border-2 bg-[#eaf4f4]">
-                <td className="p-5 border">Action</td>
-                <td className="p-5 border">No</td>
-                <td className="p-5 border">Supplier Name</td>
-                <td className="p-5 border">Supplier Code</td>
-                <td className="p-5 border">Status</td>
-                <td className="p-5 border">Check List</td>
+        <div className="overflow-auto max-h-[400px] text-[14px]">
+          <table >
+            <thead className="sticky top-0 z-10">
+              <tr className="text-center h-[40px]">
+                <Th>Action</Th>
+                <Th className="!w-[80px] !min-w-[80px]">No</Th>
+                <Th className="!w-[250px] !min-w-[250px]">Supplier Name</Th>
+                <Th>Supplier Code</Th>
+                <Th>Status</Th>
+                <Th>Check List</Th>
               </tr>
             </thead>
             <tbody>
@@ -459,9 +394,9 @@ const VendorRegistrationList = () => {
                 listVendor.map((item, index) => (
                   <tr
                     key={index}
-                    className="text-center whitespace-nowrap hover:bg-slate-100 border bg-white"
+                    className="text-center hover:bg-slate-100 h-[40px]"
                   >
-                    <td className="p-5 border">
+                    <Td className="py-2">
                       <div className="flex gap-2 items-center justify-center">
                         <div
                           className={`cursor-pointer py-2 px-5 bg-gray-200 rounded-md`}
@@ -470,16 +405,12 @@ const VendorRegistrationList = () => {
                           Detail
                         </div>
                       </div>
-                    </td>
-                    <td className="p-5 border">{start + index + 1}</td>
-                    <td className="text-left p-5 border">{item.nama}</td>
-                    <td className="p-5 border">{item.kode}</td>
-                    <td className="p-5 border">
-                      {titleCase(item.status, "_")}
-                    </td>
-                    <td className="p-5 border">
-                      {item.status === "APPROVED" ? "✓" : "✕"}
-                    </td>
+                    </Td>
+                    <Td>{start + index + 1}</Td>
+                    <Td>{item.nama}</Td>
+                    <Td>{item.kode}</Td>
+                    <Td>{titleCase(item.status, "_")}</Td>
+                    <Td>{item.status === "APPROVED" ? "✓" : "✕"}</Td>
                   </tr>
                 ))
               ) : (

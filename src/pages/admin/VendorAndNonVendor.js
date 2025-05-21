@@ -7,11 +7,12 @@ import { useEffect, useRef, useState } from "react";
 import { CgDanger } from "react-icons/cg";
 import dayjs from "dayjs";
 import accountingNumber from "../../components/functions/AccountingNumber";
-import toast from "react-hot-toast";
-import Select from "react-select";
+import ReactSelect from "react-select";
 import isEmpty from "../../components/functions/CheckEmptyObject";
 import { RiFileExcel2Line } from "react-icons/ri";
-import zIndex from "@mui/material/styles/zIndex";
+import Select from "../../components/form/Select";
+import ButtonSearch from "../../components/button/ButtonSearch";
+import { toast } from "sonner";
 
 const api = process.env.REACT_APP_BASEURL;
 const apiExport = process.env.REACT_APP_EXPORT_URL;
@@ -140,7 +141,7 @@ const VendorAndNonVendor = () => {
               item.id === listPaymentDate[i].id
                 ? dayjs(listPaymentDate[i].value).format("YYYY-MM-DD")
                 : undefined;
-                
+
             if (datePayment) {
               if (outstandingDate < datePayment) {
                 status = "Late";
@@ -148,7 +149,6 @@ const VendorAndNonVendor = () => {
                 status = "On time";
               }
             }
-
 
             return { id: item.id, value: status };
           });
@@ -615,15 +615,7 @@ const VendorAndNonVendor = () => {
                 isErrorCopy[i] = false;
                 setisError(isErrorCopy);
 
-                toast.success(`${mcmReffNo[i].value} success!`, {
-                  position: "top-right",
-                  duration: 500,
-                  style: {
-                    borderRadius: "10px",
-                    background: "#333",
-                    color: "#fff",
-                  },
-                });
+                toast.success(`${mcmReffNo[i].value} success!`);
 
                 document.getElementById("check_all").checked = false;
                 setNumber("");
@@ -635,15 +627,7 @@ const VendorAndNonVendor = () => {
                 isErrorCopy[i] = true;
                 setisError(isErrorCopy);
 
-                toast.error(`${mcmReffNo[i].value} failed!`, {
-                  position: "top-right",
-                  duration: 500,
-                  style: {
-                    borderRadius: "10px",
-                    background: "#333",
-                    color: "#fff",
-                  },
-                });
+                toast.error(`${mcmReffNo[i].value} failed!`);
               }
             })
             .catch((err) => {
@@ -654,16 +638,7 @@ const VendorAndNonVendor = () => {
           toast.error(
             `${
               mcmReffNo[i].value !== undefined ? mcmReffNo[i].value : ""
-            } failed!`,
-            {
-              position: "top-right",
-              duration: 500,
-              style: {
-                borderRadius: "10px",
-                background: "#333",
-                color: "#fff",
-              },
-            }
+            } failed!`
           );
           isErrorCopy[i] = true;
           setisError(isErrorCopy);
@@ -729,11 +704,17 @@ const VendorAndNonVendor = () => {
   };
 
   const onClickToFirstColumn = () => {
-    firstColumnRef.current.scrollIntoView({ behavior: "smooth",block: "start" });
+    firstColumnRef.current.scrollIntoView({
+      behavior: "smooth",
+      block: "start",
+    });
   };
 
   const onClickToLastColumn = () => {
-    lastColumnRef.current.scrollIntoView({ behavior: "smooth",block: "start" });
+    lastColumnRef.current.scrollIntoView({
+      behavior: "smooth",
+      block: "start",
+    });
   };
 
   const onScroll = () => {
@@ -763,7 +744,7 @@ const VendorAndNonVendor = () => {
                   <div className="hidden ">:</div>
                 </div>
                 <div className="w-full">
-                  <Select
+                  <ReactSelect
                     value={srcVendor}
                     onChange={(value) => setSrcVendor(value)}
                     className="whitespace-nowrap"
@@ -802,7 +783,7 @@ const VendorAndNonVendor = () => {
                   <div className="hidden ">:</div>
                 </div>
                 <div className="w-full">
-                  <Select
+                  <ReactSelect
                     value={srcPeriode}
                     onChange={(value) => setSrcPeriode(value)}
                     className="whitespace-nowrap"
@@ -869,7 +850,7 @@ const VendorAndNonVendor = () => {
                   <div className="hidden ">:</div>
                 </div>
                 <div className="w-full">
-                  <Select
+                  <ReactSelect
                     value={srcAccount}
                     onChange={onChangeAccount}
                     className="whitespace-nowrap"
@@ -936,19 +917,16 @@ const VendorAndNonVendor = () => {
                   <div className="hidden ">:</div>
                 </div>
                 <div className="w-full">
-                  <select
-                    name="status"
-                    id="status"
+                  <Select
                     value={srcStatus}
                     onChange={(e) => setSrcStatus(e.target.value)}
-                    className="max-w-[522.69px] border border-slate-300 rounded-sm focus:border focus:border-[#0077b6]"
                   >
                     <option value="0">All</option>
                     <option value="Not Posted">Draft</option>
                     <option value="Posted">Approved</option>
                     <option value="Paid">Paid</option>
                     <option value="Ready To Paid">Ready To Paid</option>
-                  </select>
+                  </Select>
                 </div>
               </div>
             </div>
@@ -1040,9 +1018,7 @@ const VendorAndNonVendor = () => {
               </div>
             </div> */}
             <div className="flex justify-end mt-2">
-              <button className="py-1 max-[415px]:w-full px-10 rounded-sm shadow-sm bg-[#0077b6] text-white">
-                Search
-              </button>
+              <ButtonSearch  />
             </div>
           </form>
         </div>
@@ -1060,12 +1036,10 @@ const VendorAndNonVendor = () => {
         >
           {"<"}
         </div>
-        <div
-          className="w-full overflow-auto shadow-md text-[14px] max-h-[600px]"
-        >
+        <div className="w-full overflow-auto shadow-md text-[14px] max-h-[600px]">
           <table className="w-full table-monitoring">
             <thead className="sticky top-0 z-10">
-            <tr className="text-center whitespace-nowrap border-2 bg-[#eaf4f4]">
+              <tr className="text-center whitespace-nowrap border-2 bg-[#eaf4f4]">
                 <td ref={firstColumnRef} className="p-5 border ">
                   No
                 </td>
@@ -1107,9 +1081,7 @@ const VendorAndNonVendor = () => {
                     key={index}
                     className="text-center whitespace-nowrap hover:bg-slate-100 border bg-white"
                   >
-                    <td className="p-5 border ">
-                      {start + index + 1}{" "}
-                    </td>
+                    <td className="p-5 border ">{start + index + 1} </td>
                     <td className="p-5 border ">
                       {dayjs(item.date).format("MMM DD, YYYY")}
                     </td>
@@ -1121,9 +1093,7 @@ const VendorAndNonVendor = () => {
                         ? item.name_preparer
                         : ""}
                     </td>
-                    <td className="p-5 border ">
-                      {item.pr_number}
-                    </td>
+                    <td className="p-5 border ">{item.pr_number}</td>
                     <td className="text-left ps-2 p-5 border ">
                       {item.supplier}
                     </td>
@@ -1145,9 +1115,7 @@ const VendorAndNonVendor = () => {
                         </div>
                       </div>
                     </td>
-                    <td className="p-5 border ">
-                      {item.currency}
-                    </td>
+                    <td className="p-5 border ">{item.currency}</td>
                     <td className="p-5 border ">
                       {accountingNumber(
                         item.ori_currency !== undefined ? item.ori_currency : 0
@@ -1180,9 +1148,7 @@ const VendorAndNonVendor = () => {
                           : 0
                       )}
                     </td>
-                    <td className="py-5  border ">
-                      {item.due_date}
-                    </td>
+                    <td className="py-5  border ">{item.due_date}</td>
                     <td className="p-5 border ">
                       {dayjs(outStandingDate[index].value).format(
                         "MMM DD, YYYY"
@@ -1283,10 +1249,7 @@ const VendorAndNonVendor = () => {
                     <td className="p-5 border ">
                       {item.status_settle === "Paid" ? "TRUE" : "FALSE"}
                     </td>
-                    <td
-                      ref={checkColumnRef}
-                      className="p-5 border  "
-                    >
+                    <td ref={checkColumnRef} className="p-5 border  ">
                       <div>
                         <input
                           onChange={() => onChangeChecked(item, index)}

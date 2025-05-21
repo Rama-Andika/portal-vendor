@@ -15,11 +15,13 @@ import { RiFileExcel2Line } from "react-icons/ri";
 import titleCase from "../../components/functions/TitleCase";
 import accountingNumber from "../../components/functions/AccountingNumber";
 import { useNavigate } from "react-router-dom";
-import toast from "react-hot-toast";
 import Cookies from "js-cookie";
 import isEmpty from "../../components/functions/CheckEmptyObject";
 import { PiFileZipDuotone } from "react-icons/pi";
 import Select from "react-select";
+import ButtonSearch from "../../components/button/ButtonSearch";
+import { Td, Th } from "../../components/Table";
+import { toast } from "sonner";
 
 const api = process.env.REACT_APP_BASEURL;
 const apiExport = process.env.REACT_APP_EXPORT_URL;
@@ -187,14 +189,7 @@ const ListingPenagihan = () => {
       handleOpen();
       setPenagihanDetail(item);
     } else {
-      toast.error("Silahkan Login Terlebih Dahulu!", {
-        position: "top-right",
-        style: {
-          borderRadius: "10px",
-          background: "#333",
-          color: "#fff",
-        },
-      });
+      toast.error("Silahkan Login Terlebih Dahulu!");
       navigate("/admin");
     }
   };
@@ -246,51 +241,23 @@ const ListingPenagihan = () => {
             setOpen(false);
             fetchData();
             setOpenBackdrop(false);
-            toast.error("Penagihan update failed!", {
-              position: "top-right",
-              style: {
-                borderRadius: "10px",
-                background: "#333",
-                color: "#fff",
-              },
-            });
+            toast.error("Penagihan update failed!");
           } else {
             setOpen(false);
             fetchData();
             setOpenBackdrop(false);
-            toast.success("Penagihan update success!", {
-              position: "top-right",
-              style: {
-                borderRadius: "10px",
-                background: "#333",
-                color: "#fff",
-              },
-            });
+            toast.success("Penagihan update success!");
           }
         })
         .catch((err) => {
           setOpenBackdrop(false);
           setOpen(false);
           fetchData();
-          toast.error("Penagihan update failed!", {
-            position: "top-right",
-            style: {
-              borderRadius: "10px",
-              background: "#333",
-              color: "#fff",
-            },
-          });
+          toast.error("Penagihan update failed!");
         });
     } else {
       navigate("/admin");
-      toast.error("Silahkan Login Terlebih Dahulu!", {
-        position: "top-right",
-        style: {
-          borderRadius: "10px",
-          background: "#333",
-          color: "#fff",
-        },
-      });
+      toast.error("Silahkan Login Terlebih Dahulu!");
     }
   };
 
@@ -307,7 +274,7 @@ const ListingPenagihan = () => {
           <div>
             <form action="">
               <div className="flex max-[1254px]:flex-col gap-5 items-center mb-5">
-                <div className="flex flex-col gap-3 mb-3 w-full ">
+                <div className="flex flex-col gap-3 w-full ">
                   <div className="whitespace-nowrap flex">
                     <label
                       htmlFor=""
@@ -328,7 +295,7 @@ const ListingPenagihan = () => {
                     />
                   </div>
                 </div>
-                <div className="flex flex-col gap-1 w-full mb-3 ">
+                <div className="flex flex-col gap-3 w-full ">
                   <div className="whitespace-nowrap flex">
                     <label
                       htmlFor=""
@@ -411,28 +378,23 @@ const ListingPenagihan = () => {
               </div>
 
               <div className="flex justify-end mt-2">
-                <button
-                  onClick={(e) => onSearch(e)}
-                  className="py-1 max-[415px]:w-full px-10 rounded-sm shadow-sm bg-[#0077b6] text-white"
-                >
-                  Search
-                </button>
+                <ButtonSearch onClick={(e) => onSearch(e)} />
               </div>
             </form>
           </div>
         </div>
-        <div className="w-full overflow-auto shadow-md max-h-[400px] text-[14px]">
-          <table id="table" className="w-full table-monitoring">
+        <div className="overflow-auto shadow-md max-h-[400px] text-[14px]">
+          <table id="table">
             <thead className="sticky top-0">
-              <tr className="text-center whitespace-nowrap border-2 bg-[#eaf4f4]">
-                <td className="p-5 border text-left">Nama Supplier </td>
-                <td className="p-5 border">Tanggal Penagihan</td>
-                <td className="p-5 border">Tanggal Pembayaran</td>
-                <td className="p-5 border">No Tagihan</td>
-                <td className="p-5 border">Nilai Penagihan (Rp)</td>
-                <td className="p-5 border">Status</td>
-                <td className="p-5 border">Update Terakhir</td>
-                <td className="p-5 border">Action</td>
+              <tr className="text-center h-[40px]">
+                <Th className="!w-[250px] !min-w-[250px]">Nama Supplier </Th>
+                <Th>Tanggal Penagihan</Th>
+                <Th>Tanggal Pembayaran</Th>
+                <Th>No Tagihan</Th>
+                <Th>Nilai Penagihan (Rp)</Th>
+                <Th>Status</Th>
+                <Th>Update Terakhir</Th>
+                <Th>Action</Th>
               </tr>
             </thead>
             <tbody>
@@ -440,39 +402,35 @@ const ListingPenagihan = () => {
                 listPenagihan.map((item, index) => (
                   <tr
                     key={index}
-                    className="whitespace-nowrap hover:bg-slate-100 border bg-white"
+                    className="hover:bg-slate-100 text-center h-[40px]"
                   >
-                    <td className="p-5 border">{item.vendor.nama}</td>
-                    <td className="p-5 border">
+                    <Td>{item.vendor.nama} </Td>
+                    <Td>
                       {dayjs(item.created_at).format("DD/MM/YYYY HH:mm:ss")}
-                    </td>
-                    <td className="p-5 border">
+                    </Td>
+                    <Td>
                       {item.due_date
                         ? dayjs(item.due_date).format("DD/MM/YYYY")
                         : ""}
-                    </td>
-                    <td className="p-5 border">{item.doc_receive_number}</td>
-                    <td className="p-5 border">
+                    </Td>
+                    <Td>{item.doc_receive_number}</Td>
+                    <Td>
                       Rp.{" "}
                       {accountingNumber(
                         totalInvoice.filter((value) => value.id === item.id)[0]
                           ?.total
                       )}
-                    </td>
-                    <td className="p-5 border">
-                      {titleCase(item.status, "_")}
-                    </td>
-                    <td className="p-5 border">
+                    </Td>
+                    <Td>{titleCase(item.status, "_")}</Td>
+                    <Td>
                       {dayjs(item.updated_at).format("DD/MM/YYYY HH:mm:ss")}
-                    </td>
-                    <td
+                    </Td>
+                    <Td
                       onClick={() => onClikOpen(item)}
-                      className="p-5 border cursor-pointer"
+                      className="p-5 cursor-pointer"
                     >
-                      <div className="py-2 px-4 rounded-lg bg-gray-200">
-                        Detail
-                      </div>
-                    </td>
+                      <div className="py-2 rounded-lg bg-gray-200">Detail</div>
+                    </Td>
                   </tr>
                 ))
               ) : (

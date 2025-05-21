@@ -24,11 +24,11 @@ import { PiWarningCircleLight } from "react-icons/pi";
 import ApiDataWilayahIndonesia from "../../api/ApiDataWilayahIndonesia";
 import { Link, useNavigate } from "react-router-dom";
 import isEmpty from "../../components/functions/CheckEmptyObject";
-import toast from "react-hot-toast";
 import { FaEye, FaEyeSlash } from "react-icons/fa";
 import GetBase64 from "../../components/functions/GetBase64";
 import { Viewer } from "@react-pdf-viewer/core";
 import "@react-pdf-viewer/core/lib/styles/index.css";
+import { toast } from "sonner";
 
 const steps = ["Company Profile", "Contact Person", "Payment", "Document"];
 const options = [
@@ -476,38 +476,17 @@ const Registration = () => {
         setLoading(false);
         if (res.data !== 0) {
           setOpenBackdrop(false);
-          toast.success("Sign up success!", {
-            position: "top-right",
-            style: {
-              borderRadius: "10px",
-              background: "#333",
-              color: "#fff",
-            },
-          });
+          toast.success("Sign up success!");
           navigate(`/`);
         } else {
           setOpenBackdrop(false);
-          toast.error("Failed to sign up!", {
-            position: "top-right",
-            style: {
-              borderRadius: "10px",
-              background: "#333",
-              color: "#fff",
-            },
-          });
+          toast.error("Failed to sign up!");
         }
       })
       .catch((err) => {
         setLoading(false);
         setOpenBackdrop(false);
-        toast.error("Failed to sign up!", {
-          position: "top-right",
-          style: {
-            borderRadius: "10px",
-            background: "#333",
-            color: "#fff",
-          },
-        });
+        toast.error("Failed to sign up!");
       });
   };
 
