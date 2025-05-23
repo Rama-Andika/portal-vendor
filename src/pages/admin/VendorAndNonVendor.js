@@ -1018,7 +1018,7 @@ const VendorAndNonVendor = () => {
               </div>
             </div> */}
             <div className="flex justify-end mt-2">
-              <ButtonSearch  />
+              <ButtonSearch type="submit" />
             </div>
           </form>
         </div>

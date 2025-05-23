@@ -285,7 +285,7 @@ const PendingTask = () => {
         <div className="mb-5 w-[70%] max-[638px]:w-full">
           <div className="mb-5 text-slate-400">Searching Parameter</div>
           <div>
-            <form action="">
+            <form onSubmit={btnSearch}>
               <div className="flex max-[1254px]:flex-col gap-5 items-center mb-5">
                 <div className="flex flex-col gap-3 w-full ">
                   <div className="whitespace-nowrap flex">
@@ -361,7 +361,7 @@ const PendingTask = () => {
               </div>
 
               <div className="flex justify-end mt-2">
-                <ButtonSearch onClick={(e) => btnSearch(e)} />
+                <ButtonSearch type="submit" />
               </div>
             </form>
           </div>
@@ -374,6 +374,7 @@ const PendingTask = () => {
                 <Th className="!w-[250px] !min-w-[250px]">Nama Supplier </Th>
                 <Th>Kode Supplier</Th>
                 <Th>Tanggal Penagihan</Th>
+                <Th>No Tagihan</Th>
                 <Th>Nilai Penagihan (Rp)</Th>
                 <Th>Action</Th>
               </tr>
@@ -389,6 +390,7 @@ const PendingTask = () => {
                     <Td>{item.vendor.nama}</Td>
                     <Td>{item.vendor.kode}</Td>
                     <Td>{dayjs(item.created_at).format("DD/MM/YYYY")}</Td>
+                    <Td></Td>
                     <Td>
                       Rp.{" "}
                       {accountingNumber(
