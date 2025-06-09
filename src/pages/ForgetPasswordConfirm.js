@@ -10,7 +10,7 @@ const api = process.env.REACT_APP_BASEURL;
 const ForgetPasswordConfirm = () => {
   const navigate = useNavigate();
 
-  const [email, setEmail] = useState("");
+  const [username, setUsername] = useState("");
 
   const [loading, setLoading] = useState(false);
 
@@ -81,9 +81,9 @@ const ForgetPasswordConfirm = () => {
     e.preventDefault();
     setLoading(true);
 
-    if (email.trim().length === 0) {
+    if (username.trim().length === 0) {
       setLoading(false);
-      return toast.error("Email cannot be empty!", {
+      return toast.error("Username cannot be empty!", {
         position: "top-right",
         style: {
           borderRadius: "10px",
@@ -96,15 +96,15 @@ const ForgetPasswordConfirm = () => {
     await fetch(`${api}api/portal-vendor/user/validation`, {
       method: "POST",
       body: JSON.stringify({
-        email: email,
+        username,
       }),
     })
       .then((response) => response.json())
       .then((res) => {
         if (!res.data) {
-          navigate("/forgot-password", { state: { email: email } });
+          navigate("/forgot-password", { state: { username: username } });
         } else {
-          toast.error("Email not registered!", {
+          toast.error("Username not registered!", {
             position: "top-right",
             style: {
               borderRadius: "10px",
@@ -117,7 +117,7 @@ const ForgetPasswordConfirm = () => {
       })
       .catch((err) => {
         setLoading(false);
-        toast.error("Email not registered!", {
+        toast.error("Username not registered!", {
           position: "top-right",
           style: {
             borderRadius: "10px",
@@ -147,16 +147,15 @@ const ForgetPasswordConfirm = () => {
           <form className="flex flex-col gap-4">
             <div>
               <div className="mb-2 block">
-                <Label htmlFor="email" value="Email" />
+                <Label htmlFor="username" value="Username" />
               </div>
               <div className="relative">
                 <TextInput
-                  id="email"
+                  id="username"
                   className="w-full"
                   required
-                  type="email"
-                  value={email}
-                  onChange={(e) => setEmail(e.target.value)}
+                  value={username}
+                  onChange={(e) => setUsername(e.target.value)}
                 />
               </div>
             </div>

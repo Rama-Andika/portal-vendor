@@ -26,10 +26,6 @@ const NavButton = ({ title, customFunc, icon, color, dotColor }) => (
 );
 
 const NavbarAdmin = ({children}) => {
-  const unsplashimg = {
-    src: "https://source.unsplash.com/1600x900/?random",
-    alt: "random unsplash image",
-  };
   const { setActiveMenu, screenSize, setScreenSize } = useStateContext();
   const [dropdown, setDropdown] = useState(false);
 

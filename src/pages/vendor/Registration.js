@@ -164,14 +164,13 @@ const Registration = () => {
             method: "POST",
             body: JSON.stringify({
               username: username,
-              email: email,
             }),
           })
             .then((response) => response.json())
             .then((res) => {
               if (!res.data) {
                 setIsError(true);
-                setMessage("Username atau Email Sudah ada!");
+                setMessage("Username sudah ada!");
                 setLoading(false);
               } else {
                 fetch(`${api}api/portal-vendor/vendor/validation`, {

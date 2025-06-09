@@ -62,20 +62,21 @@ const TableInvoice = React.memo(
     const onChangeNomorSeriFakturPajak = (e) => {
       const { value } = e.target;
       try {
-        var cleaned = ("" + value).replace(/\D/g, "");
-        var match = cleaned.match(/(\d{0,3})?(\d{0,3})?(\d{0,2})?(\d{0,8})$/);
+        // var cleaned = ("" + value).replace(/\D/g, "");
+        // var match = cleaned.match(/(\d{0,3})?(\d{0,3})?(\d{0,2})?(\d{0,8})$/);
 
-        var nilai = [
-          match[1],
-          match[2] ? "." : "",
-          match[2],
-          match[3] ? "-" : "",
-          match[3],
-          match[4] ? "." : "",
-          match[4],
-        ].join("");
-
-        setData({ ...data, nomerSeriFakturPajak: nilai });
+        // var nilai = [
+        //   match[1],
+        //   match[2] ? "." : "",
+        //   match[2],
+        //   match[3] ? "-" : "",
+        //   match[3],
+        //   match[4] ? "." : "",
+        //   match[4],
+        // ].join("");
+        if (/^\d*$/.test(value)) {
+          setData({ ...data, nomerSeriFakturPajak: value });
+        }
       } catch (err) {
         return setData({ ...data, nomerSeriFakturPajak: "" });
       }
@@ -447,7 +448,7 @@ const TableInvoice = React.memo(
                     <td className="p-2">
                       <input
                         type="text"
-                        maxLength={19}
+                        maxLength={17}
                         className="border border-gray-400 rounded-sm h-[38px] w-full"
                         value={data.nomerSeriFakturPajak}
                         onChange={onChangeNomorSeriFakturPajak}
@@ -558,7 +559,7 @@ const TableInvoice = React.memo(
                 <td className="p-2">
                   <input
                     type="text"
-                    maxLength={19}
+                    maxLength={17}
                     className="border border-gray-400 rounded-sm h-[38px] w-full"
                     value={data.nomerSeriFakturPajak}
                     onChange={onChangeNomorSeriFakturPajak}

@@ -1,5 +1,4 @@
 import React, { useEffect, useState } from "react";
-import { SiShopware } from "react-icons/si";
 import { Link, NavLink } from "react-router-dom";
 import { useStateContext } from "../contexts/ContextProvider";
 import { Sidebar } from "flowbite-react";

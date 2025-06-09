@@ -19,10 +19,6 @@ const ForgetPassword = () => {
   const { state } = useLocation();
   const [user, setUser] = useState({});
 
-  const unsplashimg = {
-    src: "https://source.unsplash.com/1600x900/?random",
-    alt: "random unsplash image",
-  };
   //   setLoading(true);
   //   e.preventDefault();
 
@@ -81,7 +77,7 @@ const ForgetPassword = () => {
         await fetch(`${api}api/portal-vendor/list/users`, {
           method: "POST",
           body: JSON.stringify({
-            email: state.email,
+            username: state.username,
           }),
         })
           .then((response) => response.json())
@@ -151,7 +147,6 @@ const ForgetPassword = () => {
       body: JSON.stringify({
         id: user.id,
         vendor_id: user.vendor_id,
-        email: user.email,
         username: user.username,
         password: newPassword,
       }),
