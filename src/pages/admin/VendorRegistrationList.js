@@ -231,6 +231,7 @@ const VendorRegistrationList = () => {
     newVendorDetail.file_nib = null;
     newVendorDetail.file_screenshot_rekening = null;
     newVendorDetail.file_sertifikasi_bpom = null;
+    newVendorDetail.user_id = Cookies.get("admin_id") ?? "";
 
     if (Cookies.get("admin_token") !== undefined) {
       await fetch(`${api}api/portal-vendor/sign-up`, {
@@ -323,30 +324,7 @@ const VendorRegistrationList = () => {
                   </div>
                 </div>
               </div>
-              <div className="flex gap-5 items-center">
-                <div className="flex flex-col min-[863px]:flex-row gap-1 min-[863px]:gap-2 mb-3 w-full min-[863px]:items-center">
-                  <div className="whitespace-nowrap flex">
-                    <label
-                      htmlFor=""
-                      className="w-20 text-[14px] text-slate-400"
-                    >
-                      Status
-                    </label>
-                    <div className="hidden min-[863px]:block">:</div>
-                  </div>
-                  <div className="w-full relative">
-                    <Select
-                      value={srcStatus}
-                      onChange={onChangeSrcStatus}
-                      className="whitespace-nowrap"
-                      options={srcStatusOptions}
-                      noOptionsMessage={() => "Data not found"}
-                      styles={customeStyles}
-                      required
-                    />
-                  </div>
-                </div>
-              </div>
+
               <div className="flex justify-end mt-2">
                 <ButtonSearch onSearch={(e) => onSearch(e)} />
               </div>
