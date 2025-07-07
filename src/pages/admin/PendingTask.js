@@ -250,9 +250,8 @@ const PendingTask = () => {
           .then((response) => response.json())
           .then((res) => {
             if (res.data === "0") {
-              fetchData();
               setOpenBackdrop(false);
-              toast.error(res.message);
+              toast.error("Penagihan gagal di perbaharui, " + res.message);
             } else {
               setOpen(false);
               fetchData();

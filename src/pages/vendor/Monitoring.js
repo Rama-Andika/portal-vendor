@@ -29,6 +29,7 @@ const srcStatusOptions = [
 ];
 
 const api = process.env.REACT_APP_BASEURL;
+const url = process.env.REACT_APP_EXPORT_URL;
 
 export const PenagihanDetail = ({ data }) => {
   return (
@@ -397,6 +398,7 @@ const Monitoring = () => {
                     <td className="p-5 border">Nilai Penagihan</td>
                     <td className="p-5 border">Status Penagihan</td>
                     <td className="p-5 border">No Tukar Faktur</td>
+                    <td className="p-5 border">Tukar Faktur PDF</td>
                     <td className="p-5 border">Nilai Penagihan Faktur</td>
                     <td className="p-5 border">Tanggal Pembayaran Terbaru</td>
                   </tr>
@@ -429,6 +431,18 @@ const Monitoring = () => {
                         {titleCase(item.status, "_")}
                       </td>
                       <td className="p-5 border">{item.doc_receive_number}</td>
+                      <td className="p-5 border text-blue-400 cursor-pointer">
+                        {item.doc_receive_id !== "0" ? (
+                          <a
+                            href={`${url}/servlet/com.project.fms.report.RptBankpoPDF?bankpopayment_id=${item.doc_receive_id}&lang=2`}
+                            target="_blank"
+                          >
+                            PDF File
+                          </a>
+                        ) : (
+                          ""
+                        )}
+                      </td>
                       <td className="p-5 border">
                         {accountingNumber(item.doc_receive_amount)}
                       </td>

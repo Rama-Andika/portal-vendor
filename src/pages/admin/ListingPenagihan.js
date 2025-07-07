@@ -425,6 +425,7 @@ const ListingPenagihan = () => {
                 <td className="p-5 border">Nama Supplier </td>
                 <td className="p-5 border">Tanggal Penagihan</td>
                 <td className="p-5 border">No Tagihan</td>
+                <td className="p-5 border">Print out Tagihan</td>
                 <td className="p-5 border">Nilai Penagihan (Rp)</td>
                 <td className="p-5 border">Status</td>
                 <td className="p-5 border">Update Terakhir</td>
@@ -443,6 +444,18 @@ const ListingPenagihan = () => {
                       {dayjs(item.created_at).format("DD/MM/YYYY HH:mm:ss")}
                     </td>
                     <td className="p-5 border">{item.doc_receive_number}</td>
+                    <td className="p-5 border text-blue-400 cursor-pointer">
+                      {item.doc_receive_id !== "0" ? (
+                        <a
+                          href={`${apiExport}/servlet/com.project.fms.report.RptBankpoPDF?bankpopayment_id=${item.doc_receive_id}&lang=2`}
+                          target="_blank"
+                        >
+                          PDF File
+                        </a>
+                      ) : (
+                        ""
+                      )}
+                    </td>
                     <td className="p-5 border">
                       Rp.{" "}
                       {accountingNumber(
