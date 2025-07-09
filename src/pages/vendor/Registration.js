@@ -186,7 +186,7 @@ const Registration = () => {
                       setMessage("Nama Perusahaan Sudah ada!");
                     } else {
                       if (statusPajak.value === "PKP") {
-                        if (npwp.trim().length === 21) {
+                        if (npwp.trim().length === 16) {
                           setIsError(false);
                         } else {
                           setMessage("Data Belum Lengkap!");
@@ -580,29 +580,11 @@ const Registration = () => {
   }, []);
 
   const formatNpwp = (value) => {
-    try {
-      var cleaned = ("" + value).replace(/\D/g, "");
-      var match = cleaned.match(
-        /(\d{0,1})?(\d{0,2})?(\d{0,3})?(\d{0,3})?(\d{0,1})?(\d{0,3})?(\d{0,3})$/
-      );
-
-      var nilai = [
-        match[1] && "0",
-        match[2],
-        match[3] ? "." : "",
-        match[3],
-        match[4] ? "." : "",
-        match[4],
-        match[5] ? "." : "",
-        match[5],
-        match[6] ? "-" : "",
-        match[6],
-        match[7] ? "." : "",
-        match[7],
-      ].join("");
-      setNpwp(nilai);
-    } catch (err) {
-      return "";
+    console.log(value)
+    if (/^[0-9]+$/.test(value)) {
+      setNpwp(value);
+    }else{
+      setNpwp("")
     }
   };
 
@@ -1217,7 +1199,7 @@ const Registration = () => {
 
                       <div className="w-1/2 relative">
                         <input
-                          maxLength={21}
+                          maxLength={16}
                           type="text"
                           className={`w-full h-[36px] rounded-sm focus:border focus:border-main-color ${
                             isError &&
@@ -1231,7 +1213,7 @@ const Registration = () => {
                         />
                         {statusPajak.value === "PKP" ? (
                           <div className="absolute right-[-20px] top-0">
-                            {isError && npwp.trim().length !== 21 ? (
+                            {isError && npwp.trim().length !== 16 ? (
                               <div className="text-red-500">
                                 <PiWarningCircleLight />
                               </div>
@@ -2770,7 +2752,7 @@ const Registration = () => {
                                     className="w-36 flex gap-1 items-center"
                                   >
                                     NPWP{" "}
-                                    {isError && npwp.trim().length !== 21 ? (
+                                    {isError && npwp.trim().length !== 16 ? (
                                       <span className="text-red-400">
                                         <PiWarningCircleLight />
                                       </span>
@@ -2795,11 +2777,10 @@ const Registration = () => {
                             <div className=" relative">
                               <input
                                 type="text"
-                                pattern="[0-9]*"
-                                maxLength={21}
+                                maxLength={16}
                                 className={`w-full h-[36px] rounded-sm focus:border focus:border-main-color ${
                                   isError &&
-                                  npwp.trim().length !== 21 &&
+                                  npwp.trim().length !== 16 &&
                                   statusPajak.value === "PKP"
                                     ? "border-red-400"
                                     : "border-slate-300"

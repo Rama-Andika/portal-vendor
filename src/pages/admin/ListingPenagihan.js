@@ -22,6 +22,7 @@ import { PiFileZipDuotone } from "react-icons/pi";
 import Select from "react-select";
 import ButtonSearch from "../../components/button/ButtonSearch";
 import { PenagihanDetail } from "../vendor/Monitoring";
+import ButtonPrintExcel from "../../components/button/ButtonPrintExcel";
 
 const api = process.env.REACT_APP_BASEURL;
 const apiExport = process.env.REACT_APP_EXPORT_URL;
@@ -492,8 +493,7 @@ const ListingPenagihan = () => {
 
         {listPenagihan.length > 0 && (
           <>
-            <a
-              //onClick={ExportToExcel(data, "list penagihan")}
+            <ButtonPrintExcel
               href={`${apiExport}servlet/com.project.ccs.report.RptPVPenagihanDetailXLS?vendorName=${
                 vendorName.trim().length > 0 ? vendorName : ""
               }&startDate=${
@@ -501,13 +501,7 @@ const ListingPenagihan = () => {
               }&endDate=${
                 ignoreDate === 0 ? dayjs(endDate).format("YYYY-MM-DD") : ""
               }&status=${srcStatus.value !== 0 ? srcStatus.value : ""} `}
-              className="flex items-center gap-2 mt-5 rounded-sm py-2 px-5 shadow-md bg-[#217346] w-fit text-white cursor-pointer"
-            >
-              <div>
-                <RiFileExcel2Line />
-              </div>
-              <div>Download</div>
-            </a>
+            />
 
             <div className="mt-10">
               <Pagination

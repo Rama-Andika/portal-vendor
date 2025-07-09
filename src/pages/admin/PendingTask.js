@@ -12,7 +12,6 @@ import {
   Modal,
   Pagination,
 } from "@mui/material";
-import { RiFileExcel2Line } from "react-icons/ri";
 import Select from "react-select";
 import titleCase from "../../components/functions/TitleCase";
 import isEmpty from "../../components/functions/CheckEmptyObject";
@@ -23,6 +22,8 @@ import { useNavigate } from "react-router-dom";
 import { toast, Toaster } from "sonner";
 import ButtonSearch from "../../components/button/ButtonSearch";
 import { PenagihanDetail } from "../vendor/Monitoring";
+import ButtonPrintExcel from "../../components/button/ButtonPrintExcel";
+import { Button } from "flowbite-react";
 
 const options = [
   { value: "APPROVED", label: "APPROVED", key: 0 },
@@ -432,8 +433,7 @@ const PendingTask = () => {
 
         {listPenagihan.length > 0 && (
           <>
-            <a
-              //onClick={ExportToExcel(data, "list penagihan")}
+            <ButtonPrintExcel
               href={`${apiExport}servlet/com.project.ccs.report.RptPVPenagihanDetailXLS?status=Waiting_for_approval&vendorName=${
                 name.trim().length > 0 ? name : ""
               }&startDate=${
@@ -441,13 +441,7 @@ const PendingTask = () => {
               }&endDate=${
                 ignoreDate === 0 ? dayjs(endDate).format("YYYY-MM-DD") : ""
               } `}
-              className="flex items-center gap-2 mt-5 rounded-sm py-2 px-5 shadow-md bg-[#217346] w-fit text-white cursor-pointer"
-            >
-              <div>
-                <RiFileExcel2Line />
-              </div>
-              <div>Download</div>
-            </a>
+            />
 
             <div className="mt-10">
               <Pagination
@@ -461,7 +455,6 @@ const PendingTask = () => {
             </div>
           </>
         )}
-
         <div>
           <Modal
             aria-labelledby="transition-modal-title"
@@ -542,15 +535,20 @@ const PendingTask = () => {
                     <PenagihanDetail data={penagihanDetail} />
                   </div>
 
-                  <a
-                    href={`${apiExport}fin/transactionact/portalvendorinvoicedownload.jsp?oid=${penagihanDetail.id}`}
-                    className="mt-5 rounded-sm py-2 px-5 text-white bg-[#d4a373] w-fit cursor-pointer flex gap-1 items-center"
-                  >
-                    <div>
-                      <PiFileZipDuotone />
-                    </div>
-                    <div>Download</div>
-                  </a>
+                  <div className="flex items-center gap-2">
+                    <a
+                      href={`${apiExport}fin/transactionact/portalvendorinvoicedownload.jsp?oid=${penagihanDetail.id}`}
+                      className="mt-5 rounded-sm py-2 px-5 text-white bg-[#d4a373] w-fit cursor-pointer flex gap-1 items-center"
+                    >
+                      <div>
+                        <PiFileZipDuotone />
+                      </div>
+                      <div>Download</div>
+                    </a>
+                    <ButtonPrintExcel
+                      href={`${apiExport}servlet/com.project.ccs.report.RptPVPenagihanDetailXLS2?id=${penagihanDetail.id}&vendorName=${penagihanDetail.vendor.nama}`}
+                    />
+                  </div>
 
                   <div className="flex max-[402px]:flex-col items-center max-[402px]:items-start gap-2 mt-5">
                     <div className="w-[100px]">Set status to</div>
