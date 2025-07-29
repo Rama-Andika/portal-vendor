@@ -1973,77 +1973,76 @@ const Penagihan = () => {
                                   </div>
                                 )
                               )}
-                              {vendors.status_pajak === "PKP" && (
-                                <>
-                                  <div className="flex items-center gap-3 mb-3">
-                                    <div className="flex flex-col gap-1">
-                                      <div className="w-[350px]">
-                                        Faktur Pajak
-                                      </div>
-                                      <div className="text-[10px] text-gray-500">
-                                        Max size 2 mb
-                                      </div>
-                                    </div>
 
-                                    <div className="flex items-center gap-1">
-                                      <div>
-                                        <label
-                                          htmlFor="upload-fakturpajak"
-                                          className="w-fit"
-                                        >
-                                          {fakturPajakFile === null ? (
-                                            <div className="w-fit flex gap-1 items-center bg-blue-400 py-2 px-5 text-white hover:bg-blue-200 rounded-md">
-                                              <span>
-                                                <FaCloudUploadAlt />
-                                              </span>
-                                              <div>Upload</div>
-                                            </div>
-                                          ) : (
-                                            <div className="w-fit flex gap-1 items-center bg-blue-400 py-2 px-5 text-white hover:bg-blue-200 rounded-md">
-                                              <span>
-                                                <FaCloudUploadAlt />
-                                              </span>
-                                              <div>1 File</div>
-                                            </div>
-                                          )}
-                                        </label>
-                                        <input
-                                          onChange={onChangeFakturPajakFile}
-                                          type="file"
-                                          id="upload-fakturpajak"
-                                          accept=".jpg,.pdf"
-                                          className="hidden w-full h-[40px] border border-slate-300 rounded-sm focus:border focus:border-[#0077b6]  "
-                                        />
-                                      </div>
-                                      <div>*)</div>
+                              <>
+                                <div className="flex items-center gap-3 mb-3">
+                                  <div className="flex flex-col gap-1">
+                                    <div className="w-[350px]">
+                                      Faktur Pajak
+                                    </div>
+                                    <div className="text-[10px] text-gray-500">
+                                      Max size 2 mb
                                     </div>
                                   </div>
-                                  {fakturPajakFile !== null &&
-                                  RegExp("\\bpdf\\b").test(
-                                    fakturPajakFile.split(",")[0]
-                                  ) ? (
-                                    <div className="h-[500px] w-[500px] mb-5">
+
+                                  <div className="flex items-center gap-1">
+                                    <div>
+                                      <label
+                                        htmlFor="upload-fakturpajak"
+                                        className="w-fit"
+                                      >
+                                        {fakturPajakFile === null ? (
+                                          <div className="w-fit flex gap-1 items-center bg-blue-400 py-2 px-5 text-white hover:bg-blue-200 rounded-md">
+                                            <span>
+                                              <FaCloudUploadAlt />
+                                            </span>
+                                            <div>Upload</div>
+                                          </div>
+                                        ) : (
+                                          <div className="w-fit flex gap-1 items-center bg-blue-400 py-2 px-5 text-white hover:bg-blue-200 rounded-md">
+                                            <span>
+                                              <FaCloudUploadAlt />
+                                            </span>
+                                            <div>1 File</div>
+                                          </div>
+                                        )}
+                                      </label>
+                                      <input
+                                        onChange={onChangeFakturPajakFile}
+                                        type="file"
+                                        id="upload-fakturpajak"
+                                        accept=".jpg,.pdf"
+                                        className="hidden w-full h-[40px] border border-slate-300 rounded-sm focus:border focus:border-[#0077b6]  "
+                                      />
+                                    </div>
+                                    <div>*)</div>
+                                  </div>
+                                </div>
+                                {fakturPajakFile !== null &&
+                                RegExp("\\bpdf\\b").test(
+                                  fakturPajakFile.split(",")[0]
+                                ) ? (
+                                  <div className="h-[500px] w-[500px] mb-5">
+                                    <div className="h-full w-full">
+                                      <Viewer
+                                        fileUrl={fakturPajakPreviewFile}
+                                      />
+                                    </div>
+                                  </div>
+                                ) : (
+                                  fakturPajakFile !== null && (
+                                    <div className="h-[500px] w-[400px] mb-5">
                                       <div className="h-full w-full">
-                                        <Viewer
-                                          fileUrl={fakturPajakPreviewFile}
+                                        <img
+                                          src={fakturPajakPreviewFile}
+                                          alt="no"
+                                          className="w-full h-full"
                                         />
                                       </div>
                                     </div>
-                                  ) : (
-                                    fakturPajakFile !== null && (
-                                      <div className="h-[500px] w-[400px] mb-5">
-                                        <div className="h-full w-full">
-                                          <img
-                                            src={fakturPajakPreviewFile}
-                                            alt="no"
-                                            className="w-full h-full"
-                                          />
-                                        </div>
-                                      </div>
-                                    )
-                                  )}
-                                </>
-                              )}
+                                  )
+                                )}
+                              </>
 
                               <div>
                                 <div className="italic">
@@ -3303,74 +3302,73 @@ const Penagihan = () => {
                                         </div>
                                       )
                                     )}
-                                    {vendors.status_pajak === "PKP" && (
-                                      <>
-                                        <div className="flex flex-col gap-3 mb-3">
-                                          <div className="flex flex-col gap-1">
-                                            <div className="w-[350px]">
-                                              Faktur Pajak *) :
-                                            </div>
-                                            <div className="text-[10px] text-gray-500">
-                                              Max size 2 mb
-                                            </div>
-                                          </div>
 
-                                          <div>
-                                            <label
-                                              htmlFor="upload-fakturpajak"
-                                              className="w-fit"
-                                            >
-                                              {fakturPajakFile === null ? (
-                                                <div className="w-fit flex gap-1 items-center bg-blue-400 py-2 px-5 text-white hover:bg-blue-200 rounded-md">
-                                                  <span>
-                                                    <FaCloudUploadAlt />
-                                                  </span>
-                                                  <div>Upload</div>
-                                                </div>
-                                              ) : (
-                                                <div className="w-fit flex gap-1 items-center bg-blue-400 py-2 px-5 text-white hover:bg-blue-200 rounded-md">
-                                                  <span>
-                                                    <FaCloudUploadAlt />
-                                                  </span>
-                                                  <div>1 File</div>
-                                                </div>
-                                              )}
-                                            </label>
-                                            <input
-                                              type="file"
-                                              id="upload-fakturpajak"
-                                              accept=".jpg,.pdf"
-                                              onChange={onChangeFakturPajakFile}
-                                              className="hidden w-full h-[40px] border border-slate-300 rounded-sm focus:border focus:border-[#0077b6]  "
+                                    <>
+                                      <div className="flex flex-col gap-3 mb-3">
+                                        <div className="flex flex-col gap-1">
+                                          <div className="w-[350px]">
+                                            Faktur Pajak *) :
+                                          </div>
+                                          <div className="text-[10px] text-gray-500">
+                                            Max size 2 mb
+                                          </div>
+                                        </div>
+
+                                        <div>
+                                          <label
+                                            htmlFor="upload-fakturpajak"
+                                            className="w-fit"
+                                          >
+                                            {fakturPajakFile === null ? (
+                                              <div className="w-fit flex gap-1 items-center bg-blue-400 py-2 px-5 text-white hover:bg-blue-200 rounded-md">
+                                                <span>
+                                                  <FaCloudUploadAlt />
+                                                </span>
+                                                <div>Upload</div>
+                                              </div>
+                                            ) : (
+                                              <div className="w-fit flex gap-1 items-center bg-blue-400 py-2 px-5 text-white hover:bg-blue-200 rounded-md">
+                                                <span>
+                                                  <FaCloudUploadAlt />
+                                                </span>
+                                                <div>1 File</div>
+                                              </div>
+                                            )}
+                                          </label>
+                                          <input
+                                            type="file"
+                                            id="upload-fakturpajak"
+                                            accept=".jpg,.pdf"
+                                            onChange={onChangeFakturPajakFile}
+                                            className="hidden w-full h-[40px] border border-slate-300 rounded-sm focus:border focus:border-[#0077b6]  "
+                                          />
+                                        </div>
+                                      </div>
+                                      {fakturPajakFile !== null &&
+                                      RegExp("\\bpdf\\b").test(
+                                        fakturPajakFile.split(",")[0]
+                                      ) ? (
+                                        <div className="h-[500px] w-full mb-5">
+                                          <div className="h-full w-full">
+                                            <Viewer
+                                              fileUrl={fakturPajakPreviewFile}
                                             />
                                           </div>
                                         </div>
-                                        {fakturPajakFile !== null &&
-                                        RegExp("\\bpdf\\b").test(
-                                          fakturPajakFile.split(",")[0]
-                                        ) ? (
-                                          <div className="h-[500px] w-full mb-5">
+                                      ) : (
+                                        fakturPajakFile !== null && (
+                                          <div className="h-[300px] w-full mb-5">
                                             <div className="h-full w-full">
-                                              <Viewer
-                                                fileUrl={fakturPajakPreviewFile}
+                                              <img
+                                                src={fakturPajakPreviewFile}
+                                                alt="no"
+                                                className="w-full h-full"
                                               />
                                             </div>
                                           </div>
-                                        ) : (
-                                          fakturPajakFile !== null && (
-                                            <div className="h-[300px] w-full mb-5">
-                                              <div className="h-full w-full">
-                                                <img
-                                                  src={fakturPajakPreviewFile}
-                                                  alt="no"
-                                                  className="w-full h-full"
-                                                />
-                                              </div>
-                                            </div>
-                                          )
-                                        )}
-                                      </>
-                                    )}
+                                        )
+                                      )}
+                                    </>
 
                                     <div>
                                       <div className="italic">
