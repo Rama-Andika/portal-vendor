@@ -33,7 +33,7 @@
   },
   "scripts": {
     "start": "react-scripts start",
-    "build": "react-scripts build",
+    "build": "react-scripts build && xcopy WEB-INF build\\WEB-INF /E /I && xcopy META-INF build\\META-INF /E /I",
     "test": "react-scripts test",
     "eject": "react-scripts eject"
   },

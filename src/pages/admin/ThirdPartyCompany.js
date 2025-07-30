@@ -18,7 +18,7 @@ const apiExport = process.env.REACT_APP_EXPORT_URL;
 const urlDownloadDocument = `${apiExport}fin/transactionact/portalvendorinvoicedownload.jsp?zipName=DOCUMENT`;
 const urlDownloadDocumentSettlement = `${apiExport}fin/transactionact/portalvendorinvoicedownload.jsp?zipName=SETTLEMENT`;
 
-const optionsStatus = ["Outstanding", "Settled"];
+const optionsStatus = ["All", "Outstanding", "Settled", "Closed"];
 
 const Label = ({ children, htmlFor }) => {
   return (
@@ -39,27 +39,27 @@ const ButtonSave = ({ onClick, className = undefined }) => {
   );
 };
 
-const ButtonEdit = ({ className = undefined, onClick }) => {
-  return (
-    <button
-      onClick={onClick}
-      className={`text-white bg-[#0077B6] rounded-[5px] px-[8px] py-[2px] ${className} `}
-    >
-      Edit
-    </button>
-  );
-};
+// const ButtonEdit = ({ className = undefined, onClick }) => {
+//   return (
+//     <button
+//       onClick={onClick}
+//       className={`text-white bg-[#0077B6] rounded-[5px] px-[8px] py-[2px] ${className} `}
+//     >
+//       Edit
+//     </button>
+//   );
+// };
 
-const ButtonCancel = ({ className = undefined, onClick }) => {
-  return (
-    <button
-      onClick={onClick}
-      className={`text-white bg-[#D62828] rounded-[5px] px-[8px] py-[2px] ${className} `}
-    >
-      cancel
-    </button>
-  );
-};
+// const ButtonCancel = ({ className = undefined, onClick }) => {
+//   return (
+//     <button
+//       onClick={onClick}
+//       className={`text-white bg-[#D62828] rounded-[5px] px-[8px] py-[2px] ${className} `}
+//     >
+//       cancel
+//     </button>
+//   );
+// };
 
 const ThirdPartyCompany = ({ type = "settlement" }) => {
   const { screenSize } = useStateContext();
@@ -69,9 +69,10 @@ const ThirdPartyCompany = ({ type = "settlement" }) => {
     prNumber: "",
     startDate: dayjs(new Date()),
     endDate: dayjs(new Date()),
-    status: optionsStatus[0].toLowerCase(),
+    status: "",
     vendor: { value: "0", label: "All" },
   });
+  const [isClose, setIsClose] = useState([{ bankpoPaymentId: "", value: "" }]);
   const [loading, setLoading] = useState(false);
   const [optionVendors, setOptionVendors] = useState({ value: "", label: "" });
   const [bankpoPayments, setBankpoPayments] = useState([]);
@@ -80,15 +81,22 @@ const ThirdPartyCompany = ({ type = "settlement" }) => {
   const [count, setCount] = useState(0);
   const [limit, setLimit] = useState(0);
   const [start, setStart] = useState(0);
-  const [documentName, setDocumentName] = useState("");
-  const [documentSettlementName, setDocumentSettlementName] = useState("");
-  const [data, setData] = useState({
-    bankpoPaymentId: null,
-    settlementFile: null,
-    documentFile: null,
-    uploadSettlementDate: null,
-    uploadDocumentDate: null,
-  });
+  const [documentName, setDocumentName] = useState([
+    { bankpoPaymentId: "", name: "" },
+  ]);
+  const [documentSettlementName, setDocumentSettlementName] = useState([
+    { bankpoPaymentId: "", name: "" },
+  ]);
+  const [data, setData] = useState([
+    {
+      bankpoPaymentId: null,
+      settlementFile: null,
+      documentFile: null,
+      uploadSettlementDate: null,
+      uploadDocumentDate: null,
+      statusPortal: "",
+    },
+  ]);
 
   // Ref
   const documentInputRefs = useRef([]);
@@ -96,6 +104,7 @@ const ThirdPartyCompany = ({ type = "settlement" }) => {
 
   const fetchData = async (parameter = new Object()) => {
     try {
+      parameter["isEdufund"] = 1;
       parameter["number"] = searchParameters.prNumber;
       parameter["start_date"] = dayjs(searchParameters.startDate).format(
         "YYYY-MM-DD"
@@ -105,10 +114,8 @@ const ThirdPartyCompany = ({ type = "settlement" }) => {
       );
       parameter["vendorId"] = searchParameters.vendor.value;
 
-      if (searchParameters.status === "outstanding") {
-        parameter["status"] = "Ready To Paid";
-      } else {
-        parameter["status"] = "Paid";
+      if (searchParameters.status.length > 0) {
+        parameter["status_portal"] = searchParameters.status;
       }
       setLoading(true);
       const response = await fetch(
@@ -127,11 +134,38 @@ const ThirdPartyCompany = ({ type = "settlement" }) => {
       setTotal(result.total);
       setCount(Math.ceil(result.total / result.limit));
       setLimit(result.limit);
-      const bankpoPaymentsNew = result.data.map((item) => ({
-        ...item,
-        isEdit: false,
-      }));
+      const bankpoPaymentsNew = result.data;
       setBankpoPayments(bankpoPaymentsNew);
+
+      const dataNew = [];
+      const nameDocuments = [];
+      const isCloses = [];
+
+      bankpoPaymentsNew.forEach((item, i) => {
+        dataNew.push({
+          bankpoPaymentId: item.bankpo_payment_id,
+          settlementFile: null,
+          documentFile: null,
+          uploadSettlementDate: null,
+          uploadDocumentDate: null,
+          isClose: item.status_portal === "closed" ? "1" : "0",
+        });
+
+        nameDocuments.push({
+          bankpoPaymentId: item.bankpo_payment_id,
+          name: null,
+        });
+
+        isCloses.push({
+          bankpoPaymentId: item.bankpo_payment_id,
+          value: item.status_portal === "closed" ? "1" : "0",
+        });
+      });
+
+      setData(dataNew);
+      setDocumentName(nameDocuments);
+      setDocumentSettlementName(nameDocuments);
+      setIsClose(isCloses);
     } catch (error) {
       console.log(error);
     } finally {
@@ -166,25 +200,41 @@ const ThirdPartyCompany = ({ type = "settlement" }) => {
   const handleChangeDocument = (e, id) => {
     const file = e.target.files[0];
     if (file && file.size <= 2000000) {
-      setDocumentName(file.name);
+      setDocumentName((prev) =>
+        prev.map((d) =>
+          d.bankpoPaymentId === id ? { ...d, name: file.name } : d
+        )
+      );
       const currentDate = dayjs(new Date()).format("YYYY-MM-DD HH:mm:ss");
 
       GetBase64(e.target.files[0])
         .then((result) => {
-          setData({
-            ...data,
-            bankpoPaymentId: id,
-            documentFile: result,
-            uploadDocumentDate: currentDate,
-          });
+          setData((prev) =>
+            prev.map((d) =>
+              d.bankpoPaymentId === id
+                ? {
+                    ...d,
+                    bankpoPaymentId: id,
+                    documentFile: result,
+                    uploadDocumentDate: currentDate,
+                  }
+                : d
+            )
+          );
         })
         .catch((err) => {
-          setData({
-            ...data,
-            bankpoPaymentId: null,
-            documentFile: null,
-            uploadDocumentDate: null,
-          });
+          setData((prev) =>
+            prev.map((d) =>
+              d.bankpoPaymentId === id
+                ? {
+                    ...d,
+                    bankpoPaymentId: id,
+                    documentFile: null,
+                    uploadDocumentDate: null,
+                  }
+                : d
+            )
+          );
         });
     } else {
       toast.error("max file size is 2 mb");
@@ -194,48 +244,67 @@ const ThirdPartyCompany = ({ type = "settlement" }) => {
   const handleChangeDocumentSettlement = (e, id) => {
     const file = e.target.files[0];
     if (file && file.size <= 2000000) {
-      setDocumentSettlementName(file.name);
+      setDocumentSettlementName((prev) =>
+        prev.map((d) =>
+          d.bankpoPaymentId === id ? { ...d, name: file.name } : d
+        )
+      );
       const currentDate = dayjs(new Date()).format("YYYY-MM-DD HH:mm:ss");
 
       GetBase64(e.target.files[0])
         .then((result) => {
-          setData({
-            ...data,
-            bankpoPaymentId: id,
-            settlementFile: result,
-            uploadSettlementDate: currentDate,
-          });
+          setData((prev) =>
+            prev.map((d) =>
+              d.bankpoPaymentId === id
+                ? {
+                    ...d,
+                    bankpoPaymentId: id,
+                    settlementFile: result,
+                    uploadSettlementDate: currentDate,
+                  }
+                : d
+            )
+          );
         })
         .catch((err) => {
-          setData({
-            ...data,
-            bankpoPaymentId: null,
-            settlementFile: null,
-            uploadSettlementDate: null,
-          });
+          setData((prev) =>
+            prev.map((d) =>
+              d.bankpoPaymentId === id
+                ? {
+                    ...d,
+                    bankpoPaymentId: id,
+                    settlementFile: null,
+                    uploadSettlementDate: null,
+                  }
+                : d
+            )
+          );
         });
     } else {
       toast.error("max file size is 2 mb");
     }
   };
 
-  const handleSave = async () => {
+  const handleSave = async (id) => {
     try {
       setLoading(true);
 
       let dataNew = null;
+      dataNew = data.find((d) => d.bankpoPaymentId === id);
+      const isCloses = isClose.find((l) => l.bankpoPaymentId === id);
+
       if (type === "admin") {
-        dataNew = {
-          bankpoPaymentId: data.bankpoPaymentId,
-          documentFile: data.documentFile,
-          uploadDocumentDate: data.uploadDocumentDate,
-        };
+        dataNew.settlementFile = null;
+        dataNew.uploadSettlementDate = null;
+        if (isCloses?.value === "1") {
+          dataNew.statusPortal = "closed";
+        } else {
+          dataNew.statusPortal = "";
+        }
       } else {
-        dataNew = {
-          bankpoPaymentId: data.bankpoPaymentId,
-          settlementFile: data.settlementFile,
-          uploadSettlementDate: data.uploadSettlementDate,
-        };
+        dataNew.documentFile = null;
+        dataNew.uploadDocumentDate = null;
+        dataNew.statusPortal = "";
       }
 
       const response = await fetch(
@@ -249,11 +318,12 @@ const ThirdPartyCompany = ({ type = "settlement" }) => {
       if (!response.ok) {
         throw new Error(response.statusText);
       }
-      fetchData();
+
       toast.success("save success!");
     } catch (error) {
       toast.error("save failed!");
     } finally {
+      fetchData();
       setLoading(false);
     }
   };
@@ -288,11 +358,6 @@ const ThirdPartyCompany = ({ type = "settlement" }) => {
     fetchData();
     fetchVendor();
   }, []);
-
-  useEffect(() => {
-    setDocumentSettlementName("");
-    setDocumentName("");
-  }, [bankpoPayments]);
 
   return (
     <>
@@ -349,11 +414,17 @@ const ThirdPartyCompany = ({ type = "settlement" }) => {
                 })
               }
             >
-              {optionsStatus.map((status) => (
-                <option key={status} value={status.toLowerCase()}>
-                  {status}
-                </option>
-              ))}
+              {optionsStatus.map((status) =>
+                status === "All" ? (
+                  <option key={status} value="">
+                    {status}
+                  </option>
+                ) : (
+                  <option key={status} value={status.toLowerCase()}>
+                    {status}
+                  </option>
+                )
+              )}
             </Select>
           </div>
           <div className="flex max-sm:flex-col lg:items-center gap-1">
@@ -375,6 +446,7 @@ const ThirdPartyCompany = ({ type = "settlement" }) => {
           <table className="text-[14px]">
             <thead>
               <tr className="h-[40px]">
+                <Th>Status</Th>
                 <Th>Date</Th>
                 <Th className="!w-[280px] !min-w-[280px]">Vendor</Th>
                 <Th className="!w-[280px] !min-w-[280px]">PR Number</Th>
@@ -391,16 +463,20 @@ const ThirdPartyCompany = ({ type = "settlement" }) => {
                 <Th className="!w-[280px] !min-w-[280px]">
                   Date upload settlement
                 </Th>
-                <Th className="!w-[280px] !min-w-[280px]">Action</Th>
+                {type === "admin" && (
+                  <Th className="!w-[60px] !min-w-[60px]">Close</Th>
+                )}
+                <Th className="!w-[60px] !min-w-[60px]">Action</Th>
               </tr>
             </thead>
             <tbody>
-              {bankpoPayments.map((item) =>
-                !item.isEdit ? (
+              {bankpoPayments.map(
+                (item) => (
                   <tr
                     key={item.bankpo_payment_id}
                     className="text-center h-[40px]"
                   >
+                    <Td>{item.status_portal ?? ""}</Td>
                     <Td>
                       {item.tanggal_tt
                         ? dayjs(item.tanggal_tt).format("DD MMMM, YYYY")
@@ -409,13 +485,53 @@ const ThirdPartyCompany = ({ type = "settlement" }) => {
                     <Td>{item.supplier ?? ""}</Td>
                     <Td>{item.pr_number ?? ""}</Td>
                     <Td>
-                      <a
-                        href={`${urlDownloadDocument}&name=BANKPO_PAYMENT_DOCUMENT_${item.bankpo_payment_id}&bankpo_payment_id=${item.bankpo_payment_id}`}
-                        target="_blank"
-                        className="cursor-pointer text-blue-500"
-                      >
-                        Download file
-                      </a>
+                      <div className="flex justify-center items-center gap-2">
+                        {type === "admin" && (
+                          <>
+                            <div className="flex flex-col gap-1 items-center py-[7px]">
+                              <ButtonUpload
+                                disabled={item.status_portal === "closed"}
+                                onClick={() =>
+                                  documentInputRefs.current[
+                                    item.bankpo_payment_id
+                                  ].click()
+                                }
+                                className="w-[80px] disabled:cursor-not-allowed"
+                              />
+                              <span>
+                                {documentName.find(
+                                  (d) =>
+                                    d.bankpoPaymentId === item.bankpo_payment_id
+                                )?.name ?? ""}
+                              </span>
+                            </div>
+
+                            <Input
+                              ref={(el) =>
+                                (documentInputRefs.current[
+                                  item.bankpo_payment_id
+                                ] = el)
+                              }
+                              accept=".zip,.tar,.pdf"
+                              onChange={(e) =>
+                                handleChangeDocument(e, item.bankpo_payment_id)
+                              }
+                              className="hidden"
+                              type="file"
+                            />
+                          </>
+                        )}
+                        {item.upload_document_date !== null &&
+                          item.upload_document_date.length > 0 && (
+                            <a
+                              href={`${urlDownloadDocument}&name=BANKPO_PAYMENT_DOCUMENT_${item.bankpo_payment_id}&bankpo_payment_id=${item.bankpo_payment_id}`}
+                              target="_blank"
+                              className="cursor-pointer text-blue-500"
+                            >
+                              Download file
+                            </a>
+                          )}
+                      </div>
                     </Td>
                     <Td>
                       {item.upload_document_date
@@ -425,13 +541,56 @@ const ThirdPartyCompany = ({ type = "settlement" }) => {
                         : ""}
                     </Td>
                     <Td>
-                      <a
-                        href={`${urlDownloadDocumentSettlement}&name=BANKPO_PAYMENT_SETTLEMENT_${item.bankpo_payment_id}&bankpo_payment_id=${item.bankpo_payment_id}`}
-                        target="_blank"
-                        className="cursor-pointer text-blue-500"
-                      >
-                        Download file
-                      </a>
+                      <div className="flex justify-center items-center gap-2">
+                        {!(type === "admin") && (
+                          <>
+                            <div className="flex flex-col gap-1 items-center py-[7px]">
+                              <ButtonUpload
+                                disabled={item.status_portal === "closed"}
+                                onClick={() =>
+                                  documentSettlementInputRefs.current[
+                                    item.bankpo_payment_id
+                                  ].click()
+                                }
+                                className="w-[80px]"
+                              />
+                              <span>
+                                {documentSettlementName.find(
+                                  (d) =>
+                                    d.bankpoPaymentId === item.bankpo_payment_id
+                                )?.name ?? ""}
+                              </span>
+                            </div>
+
+                            <Input
+                              ref={(el) =>
+                                (documentSettlementInputRefs.current[
+                                  item.bankpo_payment_id
+                                ] = el)
+                              }
+                              accept=".zip,.tar,.pdf"
+                              onChange={(e) =>
+                                handleChangeDocumentSettlement(
+                                  e,
+                                  item.bankpo_payment_id
+                                )
+                              }
+                              className="hidden"
+                              type="file"
+                            />
+                          </>
+                        )}
+                        {item.upload_settlement_date !== null &&
+                          item.upload_settlement_date.length > 0 && (
+                            <a
+                              href={`${urlDownloadDocumentSettlement}&name=BANKPO_PAYMENT_SETTLEMENT_${item.bankpo_payment_id}&bankpo_payment_id=${item.bankpo_payment_id}`}
+                              target="_blank"
+                              className="cursor-pointer text-blue-500"
+                            >
+                              Download file
+                            </a>
+                          )}
+                      </div>
                     </Td>
                     <Td>
                       {item.upload_settlement_date
@@ -440,7 +599,58 @@ const ThirdPartyCompany = ({ type = "settlement" }) => {
                           )
                         : ""}
                     </Td>
+                    {type === "admin" && (
+                      <Td>
+                        <select
+                          className="disabled:bg-gray-300"
+                          disabled={
+                            item.status_portal === "closed" ||
+                            item.status_portal === "outstanding" ||
+                            item.status_portal === ""
+                          }
+                          value={
+                            isClose.find(
+                              (i) =>
+                                i.bankpoPaymentId === item.bankpo_payment_id
+                            )?.value
+                          }
+                          onChange={(e) =>
+                            setIsClose((prev) =>
+                              prev.map((i) =>
+                                i.bankpoPaymentId === item.bankpo_payment_id
+                                  ? { ...i, value: e.target.value }
+                                  : i
+                              )
+                            )
+                          }
+                        >
+                          <option value="0">No</option>
+                          <option value="1">Yes</option>
+                        </select>
+                      </Td>
+                    )}
+
                     <Td>
+                      {!(item.status_portal === "closed") && (
+                        <div className="flex items-center justify-center gap-1">
+                          <ButtonSave
+                            onClick={() => handleSave(item.bankpo_payment_id)}
+                          />
+                          {/* <ButtonCancel
+                          onClick={() => {
+                            setBankpoPayments((prev) =>
+                              prev.map((po) =>
+                                po.bankpo_payment_id === item.bankpo_payment_id
+                                  ? { ...po, isEdit: false }
+                                  : po
+                              )
+                            );
+                          }}
+                        /> */}
+                        </div>
+                      )}
+                    </Td>
+                    {/* <Td>
                       <div className="flex items-center justify-center gap-1">
                         <ButtonEdit
                           onClick={() => {
@@ -454,133 +664,133 @@ const ThirdPartyCompany = ({ type = "settlement" }) => {
                           }}
                         />
                       </div>
-                    </Td>
-                  </tr>
-                ) : (
-                  <tr
-                    key={item.bankpo_payment_id}
-                    className="text-center h-[40px]"
-                  >
-                    <Td>
-                      {item.tanggal_tt
-                        ? dayjs(item.tanggal_tt).format("DD MMMM, YYYY")
-                        : ""}
-                    </Td>
-                    <Td>{item.supplier ?? ""}</Td>
-                    <Td>{item.pr_number ?? ""}</Td>
-                    <Td>
-                      {type === "admin" ? (
-                        <>
-                          <div className="flex flex-col gap-1 items-center py-[7px]">
-                            <ButtonUpload
-                              onClick={() =>
-                                documentInputRefs.current[
-                                  item.bankpo_payment_id
-                                ].click()
-                              }
-                              className="w-[80px]"
-                            />
-                            <span>{documentName}</span>
-                          </div>
-
-                          <Input
-                            ref={(el) =>
-                              (documentInputRefs.current[
-                                item.bankpo_payment_id
-                              ] = el)
-                            }
-                            accept=".zip,.rar,.pdf"
-                            onChange={(e) =>
-                              handleChangeDocument(e, item.bankpo_payment_id)
-                            }
-                            className="hidden"
-                            type="file"
-                          />
-                        </>
-                      ) : (
-                        <a
-                          href={`${urlDownloadDocument}&name=BANKPO_PAYMENT_DOCUMENT_${item.bankpo_payment_id}&bankpo_payment_id=${item.bankpo_payment_id}`}
-                          target="_blank"
-                          className="cursor-pointer text-blue-500"
-                        >
-                          Download file
-                        </a>
-                      )}
-                    </Td>
-                    <Td>
-                      {item.upload_document_date
-                        ? dayjs(item.upload_document_date).format(
-                            "DD MMMM, YYYY"
-                          )
-                        : ""}
-                    </Td>
-                    <Td>
-                      {type === "admin" ? (
-                        <a
-                          href={`${urlDownloadDocumentSettlement}&name=BANKPO_PAYMENT_SETTLEMENT_${item.bankpo_payment_id}&bankpo_payment_id=${item.bankpo_payment_id}`}
-                          target="_blank"
-                          className="cursor-pointer text-blue-500"
-                        >
-                          Download file
-                        </a>
-                      ) : (
-                        <>
-                          <div className="flex flex-col gap-1 items-center py-[7px]">
-                            <ButtonUpload
-                              onClick={() =>
-                                documentSettlementInputRefs.current[
-                                  item.bankpo_payment_id
-                                ].click()
-                              }
-                              className="w-[80px]"
-                            />
-                            <span>{documentSettlementName}</span>
-                          </div>
-
-                          <Input
-                            ref={(el) =>
-                              (documentSettlementInputRefs.current[
-                                item.bankpo_payment_id
-                              ] = el)
-                            }
-                            accept=".zip,.rar,.pdf"
-                            onChange={(e) =>
-                              handleChangeDocumentSettlement(
-                                e,
-                                item.bankpo_payment_id
-                              )
-                            }
-                            className="hidden"
-                            type="file"
-                          />
-                        </>
-                      )}
-                    </Td>
-                    <Td>
-                      {item.upload_settlement_date
-                        ? dayjs(item.upload_settlement_date).format(
-                            "DD MMMM, YYYY"
-                          )
-                        : ""}
-                    </Td>
-                    <Td>
-                      <div className="flex items-center justify-center gap-1">
-                        <ButtonSave onClick={handleSave} />
-                        <ButtonCancel
-                          onClick={() => {
-                            setBankpoPayments((prev) =>
-                              prev.map((po) =>
-                                po.bankpo_payment_id === item.bankpo_payment_id
-                                  ? { ...po, isEdit: false }
-                                  : po
-                              )
-                            );
-                          }}
-                        />
-                      </div>
-                    </Td>
+                    </Td> */}
                   </tr>
                 )
+
+                // <tr
+                //   key={item.bankpo_payment_id}
+                //   className="text-center h-[40px]"
+                // >
+                //   <Td>
+                //     {item.tanggal_tt
+                //       ? dayjs(item.tanggal_tt).format("DD MMMM, YYYY")
+                //       : ""}
+                //   </Td>
+                //   <Td>{item.supplier ?? ""}</Td>
+                //   <Td>{item.pr_number ?? ""}</Td>
+                //   <Td>
+                //     {type === "admin" ? (
+                //       <>
+                //         <div className="flex flex-col gap-1 items-center py-[7px]">
+                //           <ButtonUpload
+                //             onClick={() =>
+                //               documentInputRefs.current[
+                //                 item.bankpo_payment_id
+                //               ].click()
+                //             }
+                //             className="w-[80px]"
+                //           />
+                //           <span>{documentName}</span>
+                //         </div>
+
+                //         <Input
+                //           ref={(el) =>
+                //             (documentInputRefs.current[
+                //               item.bankpo_payment_id
+                //             ] = el)
+                //           }
+                //           accept=".zip,.rar,.pdf"
+                //           onChange={(e) =>
+                //             handleChangeDocument(e, item.bankpo_payment_id)
+                //           }
+                //           className="hidden"
+                //           type="file"
+                //         />
+                //       </>
+                //     ) : (
+                //       <a
+                //         href={`${urlDownloadDocument}&name=BANKPO_PAYMENT_DOCUMENT_${item.bankpo_payment_id}&bankpo_payment_id=${item.bankpo_payment_id}`}
+                //         target="_blank"
+                //         className="cursor-pointer text-blue-500"
+                //       >
+                //         Download file
+                //       </a>
+                //     )}
+                //   </Td>
+                //   <Td>
+                //     {item.upload_document_date
+                //       ? dayjs(item.upload_document_date).format(
+                //           "DD MMMM, YYYY"
+                //         )
+                //       : ""}
+                //   </Td>
+                //   <Td>
+                //     {type === "admin" ? (
+                //       <a
+                //         href={`${urlDownloadDocumentSettlement}&name=BANKPO_PAYMENT_SETTLEMENT_${item.bankpo_payment_id}&bankpo_payment_id=${item.bankpo_payment_id}`}
+                //         target="_blank"
+                //         className="cursor-pointer text-blue-500"
+                //       >
+                //         Download file
+                //       </a>
+                //     ) : (
+                //       <>
+                //         <div className="flex flex-col gap-1 items-center py-[7px]">
+                //           <ButtonUpload
+                //             onClick={() =>
+                //               documentSettlementInputRefs.current[
+                //                 item.bankpo_payment_id
+                //               ].click()
+                //             }
+                //             className="w-[80px]"
+                //           />
+                //           <span>{documentSettlementName}</span>
+                //         </div>
+
+                //         <Input
+                //           ref={(el) =>
+                //             (documentSettlementInputRefs.current[
+                //               item.bankpo_payment_id
+                //             ] = el)
+                //           }
+                //           accept=".zip,.rar,.pdf"
+                //           onChange={(e) =>
+                //             handleChangeDocumentSettlement(
+                //               e,
+                //               item.bankpo_payment_id
+                //             )
+                //           }
+                //           className="hidden"
+                //           type="file"
+                //         />
+                //       </>
+                //     )}
+                //   </Td>
+                //   <Td>
+                //     {item.upload_settlement_date
+                //       ? dayjs(item.upload_settlement_date).format(
+                //           "DD MMMM, YYYY"
+                //         )
+                //       : ""}
+                //   </Td>
+                //   <Td>
+                //     <div className="flex items-center justify-center gap-1">
+                //       <ButtonSave onClick={handleSave} />
+                //       <ButtonCancel
+                //         onClick={() => {
+                //           setBankpoPayments((prev) =>
+                //             prev.map((po) =>
+                //               po.bankpo_payment_id === item.bankpo_payment_id
+                //                 ? { ...po, isEdit: false }
+                //                 : po
+                //             )
+                //           );
+                //         }}
+                //       />
+                //     </div>
+                //   </Td>
+                // </tr>
               )}
             </tbody>
           </table>
