@@ -367,7 +367,7 @@ const Profile = () => {
             if (isSave) {
               const inititalValue = {
                 id: id,
-                nama: namaPerusahaan.trim(),
+                nama: namaPerusahaan.trim().toUpperCase(),
                 kode: kode.trim(),
                 tipe_perusahaan: tipePerusahaan.value,
                 tipe_perusahaan_lainnya: tipePerusahaanText.trim(),
@@ -878,7 +878,7 @@ const Profile = () => {
                                 value={namaPerusahaan}
                                 onChange={(e) =>
                                   setNamaPerusahaan(
-                                    e.target.value.toUpperCase()
+                                    e.target.value
                                   )
                                 }
                                 type="text"
@@ -1009,7 +1009,7 @@ const Profile = () => {
                                 value={namaPerusahaan}
                                 onChange={(e) =>
                                   setNamaPerusahaan(
-                                    e.target.value.toUpperCase()
+                                    e.target.value
                                   )
                                 }
                                 type="text"
