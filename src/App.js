@@ -21,13 +21,15 @@ import ForgetPasswordConfirm from "./pages/ForgetPasswordConfirm";
 import ForgetPassword from "./pages/ForgetPassword";
 import KartuHutang from "./pages/KartuHutang";
 import LoginAdmin from "./pages/LoginAdmin";
+import { useVersionCheck } from "./hooks/useVersionCheck";
 
 function App() {
+  useVersionCheck();
   return (
     <>
       <Toaster />
       <Worker workerUrl="https://unpkg.com/pdfjs-dist@3.4.120/build/pdf.worker.min.js">
-        <BrowserRouter basename="/portal-vendor" >
+        <BrowserRouter basename="/portal-vendor">
           <Routes>
             <Route path="/" element={<Login />} />
             <Route path="/forgot-password" element={<ForgetPassword />} />

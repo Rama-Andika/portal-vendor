@@ -29,8 +29,9 @@ import Cookies from "js-cookie";
 import TableInvoice from "./table/TableInvoice";
 import { IoIosAdd } from "react-icons/io";
 import { toast, Toaster } from "sonner";
-import { GrandTotal } from "./Penagihan";
+import { CsvButton, GrandTotal } from "./Penagihan";
 import accountingNumber from "../../../components/functions/AccountingNumber";
+import Papa from "papaparse";
 
 const optionsTipePenagihan = [
   { value: "beli putus", label: "Beli Putus", key: 0 },
@@ -1021,6 +1022,71 @@ const Penagihan = () => {
   };
 
   const steps = ["Tipe Penagihan", "Billing", "Dokumen"];
+
+  const handleChangeUpload = useCallback((e) => {
+    const file = e.target.files[0];
+    if (!file) return;
+
+    Papa.parse(file, {
+      header: true, // kalau true → pakai baris pertama sebagai header
+      skipEmptyLines: true,
+      complete: function (results) {
+        const invoices = [];
+
+        const datas = results.data;
+        datas.forEach((element) => {
+          const invoice = {
+            nomorPo: "",
+            datePo: "",
+            nomorInvoice: "",
+            tanggalInvoice: "",
+            startDate: "",
+            endDate: "",
+            nilaiInvoice: "",
+            nomerSeriFakturPajak: "",
+            lokasi: { value: "", label: "" },
+            editMode: false,
+          };
+
+          Object.keys(element).forEach((key) => {
+            const value = element[key];
+            switch (key) {
+              case "nomor_po":
+                invoice.nomorPo = value;
+                break;
+              case "tanggal_po":
+                invoice.datePo = dayjs(value).isValid()
+                  ? dayjs(value).format("YYYY-MM-DD")
+                  : dayjs(new Date()).format("YYYY-MM-DD");
+                break;
+              case "nomor_invoice":
+                invoice.nomorInvoice = value;
+                break;
+              case "tanggal_invoice":
+                invoice.tanggalInvoice = dayjs(value).isValid()
+                  ? dayjs(value).format("YYYY-MM-DD")
+                  : dayjs(new Date()).format("YYYY-MM-DD");
+                break;
+              case "nilai_invoice":
+                invoice.nilaiInvoice = value;
+                break;
+              case "nomor_seri_faktur_pajak":
+                invoice.nomerSeriFakturPajak = value;
+                break;
+              default:
+                break;
+            }
+          });
+
+          invoices.push(invoice);
+        });
+
+        setInvoices(invoices);
+      },
+    });
+
+    e.target.value = null;
+  }, []);
   return (
     <>
       <Toaster position="top-center" richColors />
@@ -1190,7 +1256,8 @@ const Penagihan = () => {
                           </div> */}
                           <div className="mb-10">
                             <div className="mb-2">Daftar Invoice</div>
-                            <div className="flex flex-col gap-1">
+                            <div className="flex flex-col gap-5">
+                              <CsvButton onChange={handleChangeUpload} />
                               <div className="overflow-auto max-h-[400px]">
                                 <TableInvoice
                                   data={invoice}
@@ -1364,7 +1431,8 @@ const Penagihan = () => {
                           </div>
                           <div className="mb-10">
                             <div className="mb-2">Daftar Invoice</div>
-                            <div className="flex flex-col gap-1">
+                            <div className="flex flex-col gap-5">
+                              <CsvButton onChange={handleChangeUpload} />
                               <div className="overflow-auto max-h-[400px]">
                                 <TableInvoice
                                   data={invoice}
@@ -1843,7 +1911,8 @@ const Penagihan = () => {
                           </>
                         ) : (
                           <>
-                            <div className="flex flex-col gap-1">
+                            <div className="flex flex-col gap-5">
+                              <CsvButton onChange={handleChangeUpload} />
                               <div className="overflow-auto max-h-[400px] mb-10">
                                 <TableInvoice
                                   data={invoice}
@@ -2266,7 +2335,8 @@ const Penagihan = () => {
                                 </div> */}
                                 <div className="mb-10">
                                   <div className="mb-2">Daftar Invoice</div>
-                                  <div className="flex flex-col gap-1">
+                                  <div className="flex flex-col gap-5">
+                                    <CsvButton onChange={handleChangeUpload} />
                                     <div className="overflow-auto max-h-[400px]">
                                       <TableInvoice
                                         data={invoice}
@@ -2474,7 +2544,8 @@ const Penagihan = () => {
                                 </div>
                                 <div className="mb-10">
                                   <div className="mb-2">Daftar Invoice</div>
-                                  <div className="flex flex-col gap-1">
+                                  <div className="flex flex-col gap-5">
+                                    <CsvButton onChange={handleChangeUpload} />
                                     <div className="overflow-auto max-h-[400px]">
                                       <TableInvoice
                                         data={invoice}
@@ -3034,7 +3105,8 @@ const Penagihan = () => {
                                 </>
                               ) : (
                                 <>
-                                  <div className="flex flex-col gap-1">
+                                  <div className="flex flex-col gap-5">
+                                    <CsvButton onChange={handleChangeUpload} />
                                     <div className="overflow-auto max-h-[400px] mb-10">
                                       <TableInvoice
                                         data={invoice}

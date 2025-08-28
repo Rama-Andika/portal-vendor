@@ -94,6 +94,7 @@ const Login = () => {
     getCompany();
   }, []);
 
+
   return (
     <>
       <div className="min-h-screen relative font-roboto flex justify-center items-center">

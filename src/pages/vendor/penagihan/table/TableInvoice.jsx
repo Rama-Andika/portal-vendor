@@ -148,6 +148,7 @@ const TableInvoice = React.memo(
       }
     };
 
+
     return (
       <>
         <Toaster richColors position="top-center" />

@@ -31,6 +31,9 @@ import { IoIosAdd } from "react-icons/io";
 import TableInvoice from "./table/TableInvoice";
 import { toast, Toaster } from "sonner";
 import accountingNumber from "../../../components/functions/AccountingNumber";
+import { CSVLink } from "react-csv";
+import { BsFiletypeCsv } from "react-icons/bs";
+import Papa from "papaparse";
 
 const optionsTipePenagihan = [
   { value: "beli putus", label: "Beli Putus", key: 0 },
@@ -41,6 +44,51 @@ const optionsTipePengiriman = [
   { value: 1, label: "Kurir", key: 1 },
   { value: 2, label: "Diantar langsung ke office", key: 2 },
 ];
+
+const templateCsv = [
+  {
+    nomor_po: "",
+    tanggal_po: dayjs().format("YYYY-MM-DD"),
+    nomor_invoice: "",
+    tanggal_invoice: dayjs().format("YYYY-MM-DD"),
+    nilai_invoice: "",
+    nomor_seri_faktur_pajak: "",
+  },
+];
+
+export const CsvButton = ({ onChange }) => {
+  return (
+    <div className="flex gap-2 items-center">
+      <CSVLink
+        data={templateCsv}
+        filename="data.csv"
+        className="bg-green-400 p-2 text-white rounded-md flex gap-1 items-center w-fit"
+      >
+        <span>
+          <BsFiletypeCsv />
+        </span>
+        Download Template
+      </CSVLink>
+      <div>
+        <input
+          id="upload_csv"
+          name="upload_csv"
+          onChange={onChange}
+          type="file"
+          accept=".csv"
+          className="hidden"
+        />
+        <label
+          htmlFor="upload_csv"
+          className="bg-blue-400 p-2 text-white rounded-md flex gap-1 items-center w-fit cursor-pointer"
+        >
+          <BsFiletypeCsv />
+          Upload
+        </label>
+      </div>
+    </div>
+  );
+};
 
 const api = process.env.REACT_APP_BASEURL;
 
@@ -388,23 +436,6 @@ const Penagihan = () => {
     }
   };
 
-  const onChangeDeliveryOrderFile = (e) => {
-    if (e.target.files[0] !== undefined) {
-      if (e.target.files[0].size <= 2000000) {
-        setDeliveryOrderPreviewFile(URL.createObjectURL(e.target.files[0]));
-        GetBase64(e.target.files[0])
-          .then((result) => {
-            setDeliveryOrderFile(result);
-          })
-          .catch((err) => {
-            setDeliveryOrderFile(null);
-          });
-      } else {
-        setDeliveryOrderFile(null);
-      }
-    }
-  };
-
   const onChangeInvoiceFile = (e) => {
     if (e.target.files[0] !== undefined) {
       if (e.target.files[0].size <= 2000000) {
@@ -629,7 +660,7 @@ const Penagihan = () => {
         setInvoices(newInvoices);
       }
     }
-  }, [invoices]);
+  }, [invoices, clearValue]);
 
   const onClickDelete = useCallback(
     (index) => {
@@ -639,30 +670,25 @@ const Penagihan = () => {
     [invoices]
   );
 
-  const onClickEdit = useCallback(
-    (data, index) => {
-      setAddMode(false);
-      setInvoices((prevInvoices) =>
-        prevInvoices.map((prev, i) =>
-          i === index
-            ? { ...prev, editMode: true }
-            : { ...prev, editMode: false }
-        )
-      );
-      setInvoice({
-        nomorPo: data?.nomorPo,
-        datePo: data?.datePo,
-        nomorInvoice: data?.nomorInvoice,
-        tanggalInvoice: data?.tanggalInvoice,
-        startDate: data?.startDate,
-        endDate: data?.endDate,
-        nilaiInvoice: data?.nilaiInvoice,
-        nomerSeriFakturPajak: data?.nomerSeriFakturPajak,
-        lokasi: data?.lokasi,
-      });
-    },
-    [invoice]
-  );
+  const onClickEdit = useCallback((data, index) => {
+    setAddMode(false);
+    setInvoices((prevInvoices) =>
+      prevInvoices.map((prev, i) =>
+        i === index ? { ...prev, editMode: true } : { ...prev, editMode: false }
+      )
+    );
+    setInvoice({
+      nomorPo: data?.nomorPo,
+      datePo: data?.datePo,
+      nomorInvoice: data?.nomorInvoice,
+      tanggalInvoice: data?.tanggalInvoice,
+      startDate: data?.startDate,
+      endDate: data?.endDate,
+      nilaiInvoice: data?.nilaiInvoice,
+      nomerSeriFakturPajak: data?.nomerSeriFakturPajak,
+      lokasi: data?.lokasi,
+    });
+  }, []);
 
   const saveDraft = async () => {
     setOpenBackdrop(true);
@@ -1255,6 +1281,71 @@ const Penagihan = () => {
 
   const steps = ["Tipe Penagihan", "Billing", "Dokumen"];
 
+  const handleChangeUpload = useCallback((e) => {
+    const file = e.target.files[0];
+    if (!file) return;
+
+    Papa.parse(file, {
+      header: true, // kalau true → pakai baris pertama sebagai header
+      skipEmptyLines: true,
+      complete: function (results) {
+        const invoices = [];
+
+        const datas = results.data;
+        datas.forEach((element) => {
+          const invoice = {
+            nomorPo: "",
+            datePo: "",
+            nomorInvoice: "",
+            tanggalInvoice: "",
+            startDate: "",
+            endDate: "",
+            nilaiInvoice: "",
+            nomerSeriFakturPajak: "",
+            lokasi: { value: "", label: "" },
+            editMode: false,
+          };
+
+          Object.keys(element).forEach((key) => {
+            const value = element[key];
+            switch (key) {
+              case "nomor_po":
+                invoice.nomorPo = value;
+                break;
+              case "tanggal_po":
+                invoice.datePo = dayjs(value).isValid()
+                  ? dayjs(value).format("YYYY-MM-DD")
+                  : dayjs(new Date()).format("YYYY-MM-DD");
+                break;
+              case "nomor_invoice":
+                invoice.nomorInvoice = value;
+                break;
+              case "tanggal_invoice":
+                invoice.tanggalInvoice = dayjs(value).isValid()
+                  ? dayjs(value).format("YYYY-MM-DD")
+                  : dayjs(new Date()).format("YYYY-MM-DD");
+                break;
+              case "nilai_invoice":
+                invoice.nilaiInvoice = value;
+                break;
+              case "nomor_seri_faktur_pajak":
+                invoice.nomerSeriFakturPajak = value;
+                break;
+              default:
+                break;
+            }
+          });
+
+          invoices.push(invoice);
+        });
+
+        setInvoices(invoices);
+      },
+    });
+
+    e.target.value = null;
+  }, []);
+
   return (
     <>
       <Toaster position="top-center" richColors />
@@ -1426,7 +1517,8 @@ const Penagihan = () => {
                             </div> */}
                             <div className="mb-10">
                               <div className="mb-2">Daftar Invoice</div>
-                              <div className="flex flex-col gap-1">
+                              <div className="flex flex-col gap-5">
+                                <CsvButton onChange={handleChangeUpload} />
                                 <div className="overflow-auto max-h-[400px]">
                                   <TableInvoice
                                     data={invoice}
@@ -1600,7 +1692,8 @@ const Penagihan = () => {
                             </div>
                             <div className="mb-10">
                               <div className="mb-2">Daftar Invoice</div>
-                              <div className="flex flex-col gap-1">
+                              <div className="flex flex-col gap-5">
+                                <CsvButton onChange={handleChangeUpload} />
                                 <div className="overflow-auto max-h-[400px]">
                                   <TableInvoice
                                     data={invoice}
@@ -2169,7 +2262,8 @@ const Penagihan = () => {
                             </>
                           ) : (
                             <>
-                              <div className="flex flex-col gap-1">
+                              <div className="flex flex-col gap-5">
+                                <CsvButton onChange={handleChangeUpload} />
                                 <div className="overflow-auto max-h-[400px]">
                                   <TableInvoice
                                     data={invoice}
@@ -2622,7 +2716,10 @@ const Penagihan = () => {
                                   </div> */}
                                   <div className="mb-10">
                                     <div className="mb-2">Daftar Invoice</div>
-                                    <div className="flex flex-col gap-1">
+                                    <div className="flex flex-col gap-5">
+                                      <CsvButton
+                                        onChange={handleChangeUpload}
+                                      />
                                       <div className="overflow-auto max-h-[400px]">
                                         <TableInvoice
                                           data={invoice}
@@ -2838,7 +2935,10 @@ const Penagihan = () => {
                                   </div>
                                   <div className="mb-10">
                                     <div className="mb-2">Daftar Invoice</div>
-                                    <div className="flex flex-col gap-1">
+                                    <div className="flex flex-col gap-5">
+                                      <CsvButton
+                                        onChange={handleChangeUpload}
+                                      />
                                       <div className="overflow-auto max-h-[400px]">
                                         <TableInvoice
                                           data={invoice}
@@ -3479,7 +3579,10 @@ const Penagihan = () => {
                                   </>
                                 ) : (
                                   <>
-                                    <div className="flex flex-col gap-1">
+                                    <div className="flex flex-col gap-5">
+                                      <CsvButton
+                                        onChange={handleChangeUpload}
+                                      />
                                       <div className="overflow-auto max-h-[400px] mb-10">
                                         <TableInvoice
                                           data={invoice}
