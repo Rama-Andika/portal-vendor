@@ -100,6 +100,7 @@ const PendingTask = () => {
   };
 
   const onClikOpen = (item) => {
+    console.log(item);
     if (Cookies.get("admin_token") !== undefined) {
       handleOpen();
       setPenagihanDetail(item);
@@ -212,11 +213,12 @@ const PendingTask = () => {
           no_request: item.no_request,
           tipe_penagihan: item.tipe_penagihan,
           tipe_pengiriman: item.tipe_pengiriman,
-          nomer_po: item.nomer_po,
           tanggal_po: item.tanggal_po,
           nomer_do: item.nomer_do,
           delivery_area: item.delivery_area,
+          nomor_receives: item.nomor_receives,
           nomer_invoices: item.nomer_invoices,
+          nomor_purchases: item.nomor_purchases,
           tanggal_invoices: item.tanggal_invoices,
           start_dates: item.start_dates,
           end_dates: item.end_dates,
@@ -277,7 +279,6 @@ const PendingTask = () => {
 
   return (
     <>
-      <Toaster position="top-center" richColors />
       <div
         className={`${
           screenSize < 768 ? "px-5 pt-20" : "px-10 pt-10"

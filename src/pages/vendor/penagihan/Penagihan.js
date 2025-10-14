@@ -34,6 +34,7 @@ import accountingNumber from "../../../components/functions/AccountingNumber";
 import { CSVLink } from "react-csv";
 import { BsFiletypeCsv } from "react-icons/bs";
 import Papa from "papaparse";
+import ModalListReceive from "../components/ModalListReceive";
 
 const optionsTipePenagihan = [
   { value: "beli putus", label: "Beli Putus", key: 0 },
@@ -47,8 +48,6 @@ const optionsTipePengiriman = [
 
 const templateCsv = [
   {
-    nomor_po: "",
-    tanggal_po: dayjs().format("YYYY-MM-DD"),
     nomor_invoice: "",
     tanggal_invoice: dayjs().format("YYYY-MM-DD"),
     nilai_invoice: "",
@@ -115,9 +114,10 @@ const Penagihan = () => {
   const [addMode, setAddMode] = useState(true);
   const inputNomorInvoiceRef = useRef(null);
   const [invoice, setInvoice] = useState({
-    nomorPo: "",
+    nomorPurchase: "",
     datePo: dayjs(new Date()).format("YYYY-MM-DD"),
     nomorInvoice: "",
+    nomorReceive: "",
     tanggalInvoice: dayjs(new Date()).format("YYYY-MM-DD"),
     startDate: dayjs(new Date()).format("YYYY-MM-DD"),
     endDate: dayjs(new Date()).format("YYYY-MM-DD"),
@@ -154,13 +154,15 @@ const Penagihan = () => {
   const [createdAt, setCreatedAt] = useState();
   const [isError, setIsError] = useState(false);
   const [openBackdrop, setOpenBackdrop] = useState(false);
+  const [modalListReceive, setModalListReceive] = useState(false);
   const [id, setId] = useState(0);
   // eslint-disable-next-line no-unused-vars
   const navigate = useNavigate();
-  const vendorId = Cookies.get("vendor_id");
   const userId = Cookies.get("id");
+  const vendorId = Cookies.get("vendor_id");
   const [vendors, setVendors] = useState({});
   const [grandTotal, setGrandTotal] = useState(0);
+  const [selectedIndex, setSelectedIndex] = useState(undefined);
 
   const fetchvendor = async () => {
     setOpenBackdrop(true);
@@ -216,6 +218,19 @@ const Penagihan = () => {
     if (activeStep === 0) {
       setActiveStep((prevActiveStep) => prevActiveStep + 1);
     } else if (activeStep === 1) {
+      const isInvoiceEmpty = invoices.some(
+        (invoice) =>
+          invoice.nomorReceive === "" ||
+          invoice.nomorReceive === undefined ||
+          invoice.nomorReceive === null
+      );
+
+      if (isInvoiceEmpty) {
+        toast.error(
+          "tidak dapat melanjutkan penagihan, pastikan semua invoice memiliki nomor incoming"
+        );
+        return;
+      }
       if (invoices.length > 0) {
         setIsError(false);
         setActiveStep((prevActiveStep) => prevActiveStep + 1);
@@ -247,6 +262,20 @@ const Penagihan = () => {
     if (activeStep === 0) {
       setActiveStep((prevActiveStep) => prevActiveStep + 1);
     } else if (activeStep === 1) {
+      const isInvoiceEmpty = invoices.some(
+        (invoice) =>
+          invoice.nomorReceive === "" ||
+          invoice.nomorReceive === undefined ||
+          invoice.nomorReceive === null
+      );
+
+      if (isInvoiceEmpty) {
+        toast.error(
+          "tidak dapat melanjutkan penagihan, pastikan semua invoice memiliki nomor incoming"
+        );
+        return;
+      }
+
       if (invoices.length > 0) {
         setIsError(false);
         setActiveStep((prevActiveStep) => prevActiveStep + 1);
@@ -507,9 +536,10 @@ const Penagihan = () => {
   const clearValue = useCallback(() => {
     setInvoice({
       ...invoice,
-      nomorPo: "",
+      nomorPurchase: "",
       datePo: dayjs(new Date()).format("YYYY-MM-DD"),
       nomorInvoice: "",
+      nomorReceive: "",
       tanggalInvoice: dayjs(new Date()).format("YYYY-MM-DD"),
       nilaiInvoice: "",
       nomerSeriFakturPajak: "",
@@ -518,6 +548,7 @@ const Penagihan = () => {
   }, [invoice]);
 
   const onClickAdd = useCallback(() => {
+    setSelectedIndex(undefined);
     setAddMode(true);
     clearValue();
     if (invoices.length > 0) {
@@ -532,11 +563,12 @@ const Penagihan = () => {
   }, [invoices]);
 
   const onClickSave = useCallback(
-    (index = undefined) => {
+    async (index = undefined) => {
       const newInvoice = {
-        nomorPo: invoice.nomorPo.trim(),
+        nomorPurchase: invoice.nomorPurchase.trim(),
         datePo: invoice.datePo,
         nomorInvoice: invoice.nomorInvoice.trim(),
+        nomorReceive: invoice.nomorReceive.trim(),
         tanggalInvoice: invoice.tanggalInvoice,
         startDate: invoice.startDate,
         endDate: invoice.endDate,
@@ -561,33 +593,29 @@ const Penagihan = () => {
       if (invoices.length === 0) {
         setInvoices([newInvoice]);
       } else {
-        if (index !== undefined) {
+        if (selectedIndex !== undefined) {
           let isExists = false;
 
           if (tipePenagihan.label === "Beli Putus") {
             isExists = invoices
-              .filter((inv, i) => i !== index && inv.nomorPo.trim().length > 0)
-              .some((inv) => inv.nomorPo === invoice.nomorPo.trim());
+              .filter((_, i) => i !== selectedIndex)
+              .some(
+                (inv) =>
+                  inv.nomorInvoice === invoice.nomorInvoice.trim() ||
+                  inv.nomorReceive === invoice.nomorReceive
+              );
 
             if (isExists) {
-              toast.error("Nomor PO sudah ada pada tabel");
-              return;
-            }
-
-            isExists = invoices
-              .filter((_, i) => i !== index)
-              .some((inv) => inv.nomorInvoice === invoice.nomorInvoice.trim());
-
-            if (isExists) {
-              toast.error("Nomor invoice sudah ada pada tabel");
+              toast.error("Nomor invoice atau incoming sudah ada pada tabel");
               return;
             }
           } else {
             isExists = invoices
-              .filter((_, i) => i !== index)
+              .filter((_, i) => i !== selectedIndex)
               .some(
                 (inv) =>
                   inv.nomorInvoice === invoice.nomorInvoice.trim() ||
+                  inv.nomorReceive === invoice.nomorReceive ||
                   inv.lokasi.value === invoice.lokasi.value
               );
 
@@ -599,34 +627,28 @@ const Penagihan = () => {
 
           setInvoices((prevInvoices) =>
             prevInvoices.map((invoice, i) =>
-              i === index ? newInvoice : invoice
+              i === selectedIndex ? newInvoice : invoice
             )
           );
         } else {
           let isExists = false;
 
           if (tipePenagihan.label === "Beli Putus") {
-            isExists = invoices
-              .filter((inv, i) => inv.nomorPo.trim().length > 0)
-              .some((inv) => inv.nomorPo === invoice.nomorPo.trim());
-
-            if (isExists) {
-              toast.error("Nomor PO sudah ada pada tabel");
-              return;
-            }
-
             isExists = invoices.some(
-              (inv) => inv.nomorInvoice === invoice.nomorInvoice.trim()
+              (inv) =>
+                inv.nomorInvoice === invoice.nomorInvoice.trim() ||
+                inv.nomorReceive === invoice.nomorReceive
             );
 
             if (isExists) {
-              toast.error("Nomor invoice sudah ada pada tabel");
+              toast.error("Nomor invoice atau incoming sudah ada pada tabel");
               return;
             }
           } else {
             isExists = invoices.some(
               (inv) =>
                 inv.nomorInvoice === invoice.nomorInvoice.trim() ||
+                inv.nomorReceive === invoice.nomorReceive ||
                 inv.lokasi.value === invoice.lokasi.value
             );
 
@@ -671,6 +693,7 @@ const Penagihan = () => {
   );
 
   const onClickEdit = useCallback((data, index) => {
+    setSelectedIndex(index);
     setAddMode(false);
     setInvoices((prevInvoices) =>
       prevInvoices.map((prev, i) =>
@@ -678,9 +701,10 @@ const Penagihan = () => {
       )
     );
     setInvoice({
-      nomorPo: data?.nomorPo,
+      nomorPurchase: data?.nomorPurchase,
       datePo: data?.datePo,
       nomorInvoice: data?.nomorInvoice,
+      nomorReceive: data?.nomorReceive,
       tanggalInvoice: data?.tanggalInvoice,
       startDate: data?.startDate,
       endDate: data?.endDate,
@@ -722,10 +746,13 @@ const Penagihan = () => {
       (invoice) => invoice.nomerSeriFakturPajak
     );
 
-    const nomorPo = invoices.map((invoice) => invoice.nomorPo);
+    const nomorPurchase = invoices.map((invoice) => invoice.nomorPurchase);
     const tanggalPo = invoices.map((invoice) => invoice.datePo);
     const nomorInvoices = invoices.map((invoice) =>
       invoice.nomorInvoice.trim()
+    );
+    const nomorReceives = invoices.map((invoice) =>
+      invoice.nomorReceive.trim()
     );
     const tanggalInvoices = invoices.map((invoice) => invoice.tanggalInvoice);
     const nilaiInvoices = invoices.map((invoice) => invoice.nilaiInvoice);
@@ -738,9 +765,10 @@ const Penagihan = () => {
             vendor_id: vendorId,
             tipe_penagihan: tipePenagihan.value,
             tipe_pengiriman: tipePengiriman.value,
-            nomer_po: nomorPo,
+            nomor_purchases: nomorPurchase,
             tanggal_po: tanggalPo,
             nomer_invoices: nomorInvoices,
+            nomor_receives: nomorReceives,
             tanggal_invoices: tanggalInvoices,
             nilai_invoices: nilaiInvoices,
             nomer_seri_pajak: nomerSeriFakturPajakList,
@@ -787,9 +815,10 @@ const Penagihan = () => {
             vendor_id: vendorId,
             tipe_penagihan: tipePenagihan.value,
             tipe_pengiriman: tipePengiriman.value,
-            nomer_po: nomorPo,
+            nomor_purchases: nomorPurchase,
             tanggal_po: tanggalPo,
             nomer_invoices: nomorInvoices,
+            nomor_receives: nomorReceives,
             tanggal_invoices: tanggalInvoices,
             nilai_invoices: nilaiInvoices,
             nomer_seri_pajak: nomerSeriFakturPajakList,
@@ -870,8 +899,14 @@ const Penagihan = () => {
     const nomerSeriFakturPajakList = invoices.map(
       (invoice) => invoice.nomerSeriFakturPajak
     );
+    const nomorPurchases = invoices.map((invoice) =>
+      invoice.nomorPurchase.trim()
+    );
     const nomorInvoices = invoices.map((invoice) =>
       invoice.nomorInvoice.trim()
+    );
+    const nomorReceives = invoices.map((invoice) =>
+      invoice.nomorReceive.trim()
     );
     const startDates = invoices.map(() => invoice.startDate);
     const endDates = invoices.map(() => invoice.endDate);
@@ -907,6 +942,8 @@ const Penagihan = () => {
             tipe_pengiriman: tipePengiriman.value,
             penagihan_cons_type: penagihanConsType,
             nomer_invoices: nomorInvoices,
+            nomor_purchases: nomorPurchases,
+            nomor_receives: nomorReceives,
             start_dates: startDates,
             end_dates: endDates,
             location_ids: locationIds,
@@ -960,6 +997,8 @@ const Penagihan = () => {
             tipe_pengiriman: tipePengiriman.value,
             penagihan_cons_type: penagihanConsType,
             nomer_invoices: nomorInvoices,
+            nomor_receives: nomorReceives,
+            nomor_purchases: nomorPurchases,
             start_dates: startDates,
             end_dates: endDates,
             location_ids: locationIds,
@@ -1022,10 +1061,13 @@ const Penagihan = () => {
       (invoice) => invoice.nomerSeriFakturPajak
     );
 
-    const nomorPo = invoices.map((invoice) => invoice.nomorPo);
+    const nomorPurchase = invoices.map((invoice) => invoice.nomorPurchase);
     const tanggalPo = invoices.map((invoice) => invoice.datePo);
     const nomorInvoices = invoices.map((invoice) =>
       invoice.nomorInvoice.trim()
+    );
+    const nomorReceives = invoices.map((invoice) =>
+      invoice.nomorReceive.trim()
     );
     const tanggalInvoices = invoices.map((invoice) => invoice.tanggalInvoice);
     const nilaiInvoices = invoices.map((invoice) => invoice.nilaiInvoice);
@@ -1037,9 +1079,10 @@ const Penagihan = () => {
           vendor_id: vendorId,
           tipe_penagihan: tipePenagihan.value,
           tipe_pengiriman: tipePengiriman.value,
-          nomer_po: nomorPo,
+          nomor_purchases: nomorPurchase,
           tanggal_po: tanggalPo,
           nomer_invoices: nomorInvoices,
+          nomor_receives: nomorReceives,
           tanggal_invoices: tanggalInvoices,
           nilai_invoices: nilaiInvoices,
           nomer_seri_pajak: nomerSeriFakturPajakList,
@@ -1087,9 +1130,10 @@ const Penagihan = () => {
           vendor_id: vendorId,
           tipe_penagihan: tipePenagihan.value,
           tipe_pengiriman: tipePengiriman.value,
-          nomer_po: nomorPo,
+          nomor_purchases: nomorPurchase,
           tanggal_po: tanggalPo,
           nomer_invoices: nomorInvoices,
+          nomor_receives: nomorReceives,
           tanggal_invoices: tanggalInvoices,
           nilai_invoices: nilaiInvoices,
           nomer_seri_pajak: nomerSeriFakturPajakList,
@@ -1145,10 +1189,13 @@ const Penagihan = () => {
       (invoice) => invoice.nomerSeriFakturPajak
     );
 
-    const nomorPo = invoices.map((invoice) => invoice.nomorPo);
+    const nomorPurchases = invoices.map((invoice) => invoice.nomorPurchase);
     const tanggalPo = invoices.map((invoice) => invoice.datePo);
     const nomorInvoices = invoices.map((invoice) =>
       invoice.nomorInvoice.trim()
+    );
+    const nomorReceives = invoices.map((invoice) =>
+      invoice.nomorReceive.trim()
     );
     const startDates = invoices.map(() => invoice.startDate);
     const endDates = invoices.map(() => invoice.endDate);
@@ -1172,9 +1219,10 @@ const Penagihan = () => {
           tipe_penagihan: tipePenagihan.value,
           tipe_pengiriman: tipePengiriman.value,
           penagihan_cons_type: penagihanConsType,
-          nomer_po: nomorPo,
+          nomor_purchases: nomorPurchases,
           tanggal_po: tanggalPo,
           nomer_invoices: nomorInvoices,
+          nomor_receives: nomorReceives,
           start_dates: startDates,
           end_dates: endDates,
           location_ids: locationIds,
@@ -1227,7 +1275,9 @@ const Penagihan = () => {
           tipe_penagihan: tipePenagihan.value,
           tipe_pengiriman: tipePengiriman.value,
           penagihan_cons_type: penagihanConsType,
+          nomor_purchases: nomorPurchases,
           nomer_invoices: nomorInvoices,
+          nomor_receives: nomorReceives,
           start_dates: startDates,
           end_dates: endDates,
           location_ids: locationIds,
@@ -1286,17 +1336,18 @@ const Penagihan = () => {
     if (!file) return;
 
     Papa.parse(file, {
-      header: true, // kalau true → pakai baris pertama sebagai header
+      header: true,
       skipEmptyLines: true,
-      complete: function (results) {
+      complete: async function (results) {
+        // <--- ubah ke async
         const invoices = [];
 
-        const datas = results.data;
-        datas.forEach((element) => {
+        for (const element of results.data) {
           const invoice = {
-            nomorPo: "",
+            nomorPurchase: "",
             datePo: "",
             nomorInvoice: "",
+            nomorReceive: "",
             tanggalInvoice: "",
             startDate: "",
             endDate: "",
@@ -1306,11 +1357,11 @@ const Penagihan = () => {
             editMode: false,
           };
 
-          Object.keys(element).forEach((key) => {
+          for (const key of Object.keys(element)) {
             const value = element[key];
             switch (key) {
               case "nomor_po":
-                invoice.nomorPo = value;
+                invoice.nomorPurchase = value;
                 break;
               case "tanggal_po":
                 invoice.datePo = dayjs(value).isValid()
@@ -1319,6 +1370,18 @@ const Penagihan = () => {
                 break;
               case "nomor_invoice":
                 invoice.nomorInvoice = value;
+                try {
+                  const response = await fetch(
+                    `${api}api/portal-vendor/receive?invoice=${value ?? ""}`,
+                    { method: "GET" }
+                  );
+                  const result = await response.json();
+                  const data = result.data;
+                  invoice.nomorReceive = data.nomorReceive;
+                  invoice.nomorPurchase = data.nomorPurchase;
+                } catch (error) {
+                  console.error(error);
+                }
                 break;
               case "tanggal_invoice":
                 invoice.tanggalInvoice = dayjs(value).isValid()
@@ -1334,10 +1397,10 @@ const Penagihan = () => {
               default:
                 break;
             }
-          });
+          }
 
           invoices.push(invoice);
-        });
+        }
 
         setInvoices(invoices);
       },
@@ -1532,6 +1595,7 @@ const Penagihan = () => {
                                     onClickCancel={onClickCancel}
                                     onClickEdit={onClickEdit}
                                     onClickDelete={onClickDelete}
+                                    setModalListReceive={setModalListReceive}
                                   />
                                 </div>
                                 <GrandTotal grandTotal={grandTotal} />
@@ -1707,6 +1771,7 @@ const Penagihan = () => {
                                     onClickCancel={onClickCancel}
                                     onClickEdit={onClickEdit}
                                     onClickDelete={onClickDelete}
+                                    setModalListReceive={setModalListReceive}
                                   />
                                 </div>
                                 <GrandTotal grandTotal={grandTotal} />
@@ -2282,6 +2347,7 @@ const Penagihan = () => {
                                     onClickEdit={onClickEdit}
                                     onClickDelete={onClickDelete}
                                     activeStep={activeStep}
+                                    setModalListReceive={setModalListReceive}
                                   />
                                 </div>
                                 <GrandTotal grandTotal={grandTotal} />
@@ -2735,6 +2801,9 @@ const Penagihan = () => {
                                           onClickCancel={onClickCancel}
                                           onClickEdit={onClickEdit}
                                           onClickDelete={onClickDelete}
+                                          setModalListReceive={
+                                            setModalListReceive
+                                          }
                                         />
                                       </div>
                                       <GrandTotal grandTotal={grandTotal} />
@@ -2954,6 +3023,9 @@ const Penagihan = () => {
                                           onClickCancel={onClickCancel}
                                           onClickEdit={onClickEdit}
                                           onClickDelete={onClickDelete}
+                                          setModalListReceive={
+                                            setModalListReceive
+                                          }
                                         />
                                       </div>
                                       <GrandTotal grandTotal={grandTotal} />
@@ -3603,6 +3675,9 @@ const Penagihan = () => {
                                           onClickEdit={onClickEdit}
                                           onClickDelete={onClickDelete}
                                           activeStep={activeStep}
+                                          setModalListReceive={
+                                            setModalListReceive
+                                          }
                                         />
                                       </div>
                                       <GrandTotal grandTotal={grandTotal} />
@@ -3930,6 +4005,32 @@ const Penagihan = () => {
       >
         <CircularProgress color="inherit" />
       </Backdrop>
+
+      <ModalListReceive
+        open={modalListReceive}
+        setIsOpen={setModalListReceive}
+        vendorId={vendors.vendor_id}
+        handleSelect={(item) => {
+          setModalListReceive(false);
+          const newInvoice = {
+            nomorPurchase: item.nomorPurchase,
+            datePo: invoice.datePo,
+            nomorInvoice: item.nomorInvoice
+              ? item.nomorInvoice
+              : invoice.nomorInvoice,
+            nomorReceive: item.nomorReceive,
+            tanggalInvoice: invoice.tanggalInvoice,
+            startDate: invoice.startDate,
+            endDate: invoice.endDate,
+            nilaiInvoice: invoice.nilaiInvoice,
+            nomerSeriFakturPajak: invoice.nomerSeriFakturPajak,
+            lokasi: invoice.lokasi,
+            editMode: false,
+          };
+
+          setInvoice(newInvoice);
+        }}
+      />
     </>
   );
 };

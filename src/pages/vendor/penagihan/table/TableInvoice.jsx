@@ -29,6 +29,7 @@ const TableInvoice = React.memo(
     onClickEdit,
     onClickDelete,
     activeStep = 0,
+    setModalListReceive = () => {},
   }) => {
     const customeStyles = {
       control: (baseStyles) => ({
@@ -148,7 +149,6 @@ const TableInvoice = React.memo(
       }
     };
 
-
     return (
       <>
         <Toaster richColors position="top-center" />
@@ -160,24 +160,33 @@ const TableInvoice = React.memo(
                   Action
                 </td>
               )}
-              {vendorType === "Beli Putus" && (
-                <>
-                  <td className="w-[150px] min-w-[150px] max-w-[150px] text-center p-2">
-                    Nomor PO
-                  </td>
-                  <td className="!w-[180px] !min-w-[150px] !max-w-[150px] text-center p-2">
-                    Tanggal PO
-                  </td>
-                </>
-              )}
+
               {vendorType !== "Beli Putus" && (
                 <td className="w-[250px] min-w-[250px] max-w-[250px] text-center p-2">
                   Lokasi
                 </td>
               )}
               <td className="w-[250px] min-w-[250px] max-w-[250px] text-center p-2">
-                Nomor Invoice
+                <div className="flex flex-col">
+                  <p> Nomor Invoice</p>
+                  <span className="text-[9px]">
+                    (Tekan enter pada form untuk mencari nomor invoice)
+                  </span>
+                </div>
               </td>
+              <td className="w-[250px] min-w-[250px] max-w-[250px] text-center p-2">
+                Nomor Incoming
+              </td>
+              <td className="w-[150px] min-w-[150px] max-w-[150px] text-center p-2">
+                Nomor PO
+              </td>
+              {/* {vendorType === "Beli Putus" && (
+                <>
+                  <td className="!w-[180px] !min-w-[150px] !max-w-[150px] text-center p-2">
+                    Tanggal PO
+                  </td>
+                </>
+              )} */}
               {vendorType === "Beli Putus" && (
                 <td className="!w-[180px] !min-w-[150px] !max-w-[150px] text-center p-2">
                   Tanggal Invoice
@@ -228,19 +237,6 @@ const TableInvoice = React.memo(
                       </td>
                     )}
 
-                    {vendorType === "Beli Putus" && (
-                      <>
-                        <td className="p-2 align-top">
-                          <div>{invoice.nomorPo}</div>
-                        </td>
-                        <td className="p-2">
-                          <div>
-                            {dayjs(invoice.datePo).format("DD MMMM, YYYY")}
-                          </div>
-                        </td>
-                      </>
-                    )}
-
                     {vendorType !== "Beli Putus" && (
                       <td className="p-2 align-top">
                         <div>{invoice.lokasi?.label}</div>
@@ -250,6 +246,24 @@ const TableInvoice = React.memo(
                     <td className="p-2 align-top">
                       <div>{invoice.nomorInvoice}</div>
                     </td>
+
+                    <td className="p-2 align-top">
+                      <div>{invoice.nomorReceive}</div>
+                    </td>
+
+                    <td className="p-2 align-top">
+                      <div>{invoice.nomorPurchase}</div>
+                    </td>
+
+                    {/* {vendorType === "Beli Putus" && (
+                      <>
+                        <td className="p-2">
+                          <div>
+                            {dayjs(invoice.datePo).format("DD MMMM, YYYY")}
+                          </div>
+                        </td>
+                      </>
+                    )} */}
 
                     {vendorType === "Beli Putus" && (
                       <td className="p-2">
@@ -361,37 +375,6 @@ const TableInvoice = React.memo(
                       </td>
                     )}
 
-                    {vendorType === "Beli Putus" && (
-                      <>
-                        <td className="p-2">
-                          <input
-                            type="text"
-                            className="border-gray-400 rounded-sm h-[38px] w-full"
-                            value={data.nomorPo}
-                            onChange={(e) =>
-                              setData({
-                                ...data,
-                                nomorPo: e.target.value.toUpperCase(),
-                              })
-                            }
-                          />
-                        </td>
-                        <td className="p-2">
-                          <input
-                            type="date"
-                            className="border-gray-400 rounded-sm h-[38px] w-full"
-                            value={data.datePo}
-                            onChange={(e) =>
-                              setData({
-                                ...data,
-                                datePo: e.target.value,
-                              })
-                            }
-                          />
-                        </td>
-                      </>
-                    )}
-
                     {vendorType !== "Beli Putus" && (
                       <td className="p-2">
                         <Select
@@ -419,8 +402,37 @@ const TableInvoice = React.memo(
                         onChange={(e) =>
                           setData({ ...data, nomorInvoice: e.target.value })
                         }
+                        onKeyUp={(e) =>
+                          e.key === "Enter" && setModalListReceive(true)
+                        }
                       />
                     </td>
+
+                    <td className="p-2">
+                      <div>{data.nomorReceive}</div>
+                    </td>
+
+                    <td className="p-2">
+                      <div>{data.nomorPurchase}</div>
+                    </td>
+
+                    {/* {vendorType === "Beli Putus" && (
+                      <>
+                        <td className="p-2">
+                          <input
+                            type="date"
+                            className="border-gray-400 rounded-sm h-[38px] w-full"
+                            value={data.datePo}
+                            onChange={(e) =>
+                              setData({
+                                ...data,
+                                datePo: e.target.value,
+                              })
+                            }
+                          />
+                        </td>
+                      </>
+                    )} */}
 
                     {vendorType === "Beli Putus" && (
                       <td className="p-2">
@@ -477,38 +489,6 @@ const TableInvoice = React.memo(
                   </td>
                 )}
 
-                {vendorType === "Beli Putus" && (
-                  <>
-                    <td className="p-2">
-                      <input
-                        type="text"
-                        className="border-gray-400 rounded-sm h-[38px] w-full"
-                        value={data.nomorPo}
-                        onChange={(e) =>
-                          setData({
-                            ...data,
-                            nomorPo: e.target.value.toUpperCase(),
-                          })
-                        }
-                      />
-                    </td>
-
-                    <td className="p-2">
-                      <input
-                        type="date"
-                        className="border-gray-400 rounded-sm h-[38px] w-full"
-                        value={data.datePo}
-                        onChange={(e) =>
-                          setData({
-                            ...data,
-                            datePo: e.target.value,
-                          })
-                        }
-                      />
-                    </td>
-                  </>
-                )}
-
                 {vendorType !== "Beli Putus" && (
                   <td className="p-2">
                     <Select
@@ -534,8 +514,33 @@ const TableInvoice = React.memo(
                     onChange={(e) =>
                       setData({ ...data, nomorInvoice: e.target.value })
                     }
+                    onKeyUp={(e) =>
+                      e.key === "Enter" && setModalListReceive(true)
+                    }
                   />
                 </td>
+
+                <td className="p-2">{data.nomorReceive}</td>
+
+                <td className="p-2">{data.nomorPurchase}</td>
+
+                {/* {vendorType === "Beli Putus" && (
+                  <>
+                    <td className="p-2">
+                      <input
+                        type="date"
+                        className="border-gray-400 rounded-sm h-[38px] w-full"
+                        value={data.datePo}
+                        onChange={(e) =>
+                          setData({
+                            ...data,
+                            datePo: e.target.value,
+                          })
+                        }
+                      />
+                    </td>
+                  </>
+                )} */}
 
                 {vendorType === "Beli Putus" && (
                   <td className="p-2">

@@ -7,11 +7,11 @@ import { useEffect, useState } from "react";
 import { CgDanger } from "react-icons/cg";
 import dayjs from "dayjs";
 import accountingNumber from "../../components/functions/AccountingNumber";
-import toast from "react-hot-toast";
 import Select from "react-select";
 import isEmpty from "../../components/functions/CheckEmptyObject";
 import { RiFileExcel2Line } from "react-icons/ri";
 import ButtonSearch from "../../components/button/ButtonSearch";
+import { toast } from "sonner";
 
 const api = process.env.REACT_APP_BASEURL;
 const apiExport = process.env.REACT_APP_EXPORT_URL;
@@ -500,15 +500,7 @@ const VendorAndNonVendor = () => {
                 isErrorCopy[i] = false;
                 setisError(isErrorCopy);
 
-                toast.success(`${mcmReffNo[i].value} success!`, {
-                  position: "top-right",
-                  duration: 500,
-                  style: {
-                    borderRadius: "10px",
-                    background: "#333",
-                    color: "#fff",
-                  },
-                });
+                toast.success(`${mcmReffNo[i].value} success!`);
 
                 document.getElementById("check_all").checked = false;
                 setNumber("");
@@ -520,15 +512,7 @@ const VendorAndNonVendor = () => {
                 isErrorCopy[i] = true;
                 setisError(isErrorCopy);
 
-                toast.error(`${mcmReffNo[i].value} failed!`, {
-                  position: "top-right",
-                  duration: 500,
-                  style: {
-                    borderRadius: "10px",
-                    background: "#333",
-                    color: "#fff",
-                  },
-                });
+                toast.error(`${mcmReffNo[i].value} failed!`);
               }
             })
             .catch((err) => {
@@ -540,15 +524,7 @@ const VendorAndNonVendor = () => {
             `${
               mcmReffNo[i].value !== undefined ? mcmReffNo[i].value : ""
             } failed!`,
-            {
-              position: "top-right",
-              duration: 500,
-              style: {
-                borderRadius: "10px",
-                background: "#333",
-                color: "#fff",
-              },
-            }
+
           );
           isErrorCopy[i] = true;
           setisError(isErrorCopy);

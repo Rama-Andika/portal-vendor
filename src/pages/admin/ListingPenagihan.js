@@ -11,11 +11,9 @@ import {
   Modal,
   Pagination,
 } from "@mui/material";
-import { RiFileExcel2Line } from "react-icons/ri";
 import titleCase from "../../components/functions/TitleCase";
 import accountingNumber from "../../components/functions/AccountingNumber";
 import { useNavigate } from "react-router-dom";
-import toast from "react-hot-toast";
 import Cookies from "js-cookie";
 import isEmpty from "../../components/functions/CheckEmptyObject";
 import { PiFileZipDuotone } from "react-icons/pi";
@@ -23,6 +21,7 @@ import Select from "react-select";
 import ButtonSearch from "../../components/button/ButtonSearch";
 import { PenagihanDetail } from "../vendor/Monitoring";
 import ButtonPrintExcel from "../../components/button/ButtonPrintExcel";
+import { toast } from "sonner";
 
 const api = process.env.REACT_APP_BASEURL;
 const apiExport = process.env.REACT_APP_EXPORT_URL;
@@ -190,14 +189,7 @@ const ListingPenagihan = () => {
       handleOpen();
       setPenagihanDetail(item);
     } else {
-      toast.error("Silahkan Login Terlebih Dahulu!", {
-        position: "top-right",
-        style: {
-          borderRadius: "10px",
-          background: "#333",
-          color: "#fff",
-        },
-      });
+      toast.error("Silahkan Login Terlebih Dahulu!");
       navigate("/admin");
     }
   };
@@ -212,11 +204,12 @@ const ListingPenagihan = () => {
         no_request: item.no_request,
         tipe_penagihan: item.tipe_penagihan,
         tipe_pengiriman: item.tipe_pengiriman,
-        nomer_po: item.nomer_po,
         tanggal_po: dayjs(item.tanggal_po).format("YYYY-MM-DD HH:mm:ss"),
         nomer_do: item.nomer_do,
         delivery_area: item.delivery_area,
         nomer_invoices: item.nomer_invoices,
+        nomor_receives: item.nomor_receives,
+        nomor_purchases: item.nomor_purchases,
         tanggal_invoices: item.tanggal_invoices,
         nilai_invoices: item.nilai_invoices,
         is_pajak: item.is_pajak,
@@ -249,51 +242,23 @@ const ListingPenagihan = () => {
             setOpen(false);
             fetchData();
             setOpenBackdrop(false);
-            toast.error("Penagihan update failed!", {
-              position: "top-right",
-              style: {
-                borderRadius: "10px",
-                background: "#333",
-                color: "#fff",
-              },
-            });
+            toast.error("Penagihan update failed!");
           } else {
             setOpen(false);
             fetchData();
             setOpenBackdrop(false);
-            toast.success("Penagihan update success!", {
-              position: "top-right",
-              style: {
-                borderRadius: "10px",
-                background: "#333",
-                color: "#fff",
-              },
-            });
+            toast.success("Penagihan update success!");
           }
         })
         .catch((err) => {
           setOpenBackdrop(false);
           setOpen(false);
           fetchData();
-          toast.error("Penagihan update failed!", {
-            position: "top-right",
-            style: {
-              borderRadius: "10px",
-              background: "#333",
-              color: "#fff",
-            },
-          });
+          toast.error("Penagihan update failed!");
         });
     } else {
       navigate("/admin");
-      toast.error("Silahkan Login Terlebih Dahulu!", {
-        position: "top-right",
-        style: {
-          borderRadius: "10px",
-          background: "#333",
-          color: "#fff",
-        },
-      });
+      toast.error("Silahkan Login Terlebih Dahulu!");
     }
   };
 

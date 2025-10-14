@@ -5,7 +5,6 @@ import Select from "react-select";
 //import { MdKeyboardArrowDown } from "react-icons/md";
 import ApiDataWilayahIndonesia from "../../api/ApiDataWilayahIndonesia";
 import { PiFileZipDuotone, PiWarningCircleLight } from "react-icons/pi";
-import toast from "react-hot-toast";
 import Cookies from "js-cookie";
 import { Backdrop, CircularProgress, Fade, Modal } from "@mui/material";
 import { FaCloudUploadAlt } from "react-icons/fa";
@@ -15,6 +14,7 @@ import { useLocation, useNavigate } from "react-router-dom";
 import isEmpty from "../../components/functions/CheckEmptyObject";
 import { Viewer } from "@react-pdf-viewer/core";
 import "@react-pdf-viewer/core/lib/styles/index.css";
+import { toast } from "sonner";
 
 const options = [
   { value: "cv", label: "CV", key: 1 },
@@ -429,25 +429,11 @@ const VendorEdit = () => {
                     if (res.data === 0) {
                       fetchVendor();
                       setOpenBackdrop(false);
-                      toast.error("Update Failed!", {
-                        position: "top-right",
-                        style: {
-                          borderRadius: "10px",
-                          background: "#333",
-                          color: "#fff",
-                        },
-                      });
+                      toast.error("Update Failed!");
                     } else {
                       fetchVendor();
                       setOpenBackdrop(false);
-                      toast.success("Update Success!", {
-                        position: "top-right",
-                        style: {
-                          borderRadius: "10px",
-                          background: "#333",
-                          color: "#fff",
-                        },
-                      });
+                      toast.success("Update Success!");
                     }
                     setLoading(false);
                   })
@@ -455,25 +441,11 @@ const VendorEdit = () => {
                     setLoading(false);
                     fetchVendor();
                     setOpenBackdrop(false);
-                    toast.error("Update Failed!", {
-                      position: "top-right",
-                      style: {
-                        borderRadius: "10px",
-                        background: "#333",
-                        color: "#fff",
-                      },
-                    });
+                    toast.error("Update Failed!");
                   });
               } else {
                 navigate("/");
-                toast.error("Silahkan Login Terlebih Dahulu!", {
-                  position: "top-right",
-                  style: {
-                    borderRadius: "10px",
-                    background: "#333",
-                    color: "#fff",
-                  },
-                });
+                toast.error("Silahkan Login Terlebih Dahulu!");
               }
             }
           }
@@ -723,14 +695,7 @@ const VendorEdit = () => {
       window.location = `${apiExport}fin/transactionact/portalvendorinvoicedownload.jsp?oid=${state.vendor_id}`;
     } else {
       navigate("/admin");
-      toast.error("Silahkan Login Terlebih Dahulu!", {
-        position: "top-right",
-        style: {
-          borderRadius: "10px",
-          background: "#333",
-          color: "#fff",
-        },
-      });
+      toast.error("Silahkan Login Terlebih Dahulu!");
     }
   };
 

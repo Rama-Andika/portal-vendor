@@ -10,13 +10,13 @@ import { useStateContext } from "../../contexts/ContextProvider";
 import { useEffect, useState } from "react";
 import titleCase from "../../components/functions/TitleCase";
 import Cookies from "js-cookie";
-import toast from "react-hot-toast";
 import { useNavigate } from "react-router-dom";
 import { PiFileZipDuotone } from "react-icons/pi";
 import isEmpty from "../../components/functions/CheckEmptyObject";
 import { IoMdEye } from "react-icons/io";
 import { HiMiniPencil } from "react-icons/hi2";
 import ButtonSearch from "../../components/button/ButtonSearch";
+import { toast } from "sonner";
 
 const api = process.env.REACT_APP_BASEURL;
 const apiExport = process.env.REACT_APP_EXPORT_URL;
@@ -171,14 +171,7 @@ const VendorList = () => {
       handleOpen();
     } else {
       navigate("/admin");
-      toast.error("Silahkan Login Terlebih Dahulu!", {
-        position: "top-right",
-        style: {
-          borderRadius: "10px",
-          background: "#333",
-          color: "#fff",
-        },
-      });
+      toast.error("Silahkan Login Terlebih Dahulu!");
     }
   };
 
@@ -187,14 +180,7 @@ const VendorList = () => {
       navigate("/admin/vendor/edit", { state: { vendor_id: item.id } });
     } else {
       navigate("/admin");
-      toast.error("Silahkan Login Terlebih Dahulu!", {
-        position: "top-right",
-        style: {
-          borderRadius: "10px",
-          background: "#333",
-          color: "#fff",
-        },
-      });
+      toast.error("Silahkan Login Terlebih Dahulu!");
     }
   };
 
@@ -203,14 +189,7 @@ const VendorList = () => {
       window.location = `${apiExport}fin/transactionact/portalvendorinvoicedownload.jsp?oid=${id}`;
     } else {
       navigate("/admin");
-      toast.error("Silahkan Login Terlebih Dahulu!", {
-        position: "top-right",
-        style: {
-          borderRadius: "10px",
-          background: "#333",
-          color: "#fff",
-        },
-      });
+      toast.error("Silahkan Login Terlebih Dahulu!");
     }
   };
 

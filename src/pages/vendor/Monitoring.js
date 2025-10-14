@@ -17,8 +17,8 @@ import { DatePicker, LocalizationProvider } from "@mui/x-date-pickers";
 import { AdapterDayjs } from "@mui/x-date-pickers/AdapterDayjs";
 import { DemoContainer } from "@mui/x-date-pickers/internals/demo";
 import Select from "react-select";
-import toast from "react-hot-toast";
 import ButtonSearch from "../../components/button/ButtonSearch";
+import { toast } from "sonner";
 
 const srcStatusOptions = [
   { value: 0, label: "All", key: 0 },
@@ -36,16 +36,6 @@ export const PenagihanDetail = ({ data }) => {
     <table>
       <thead className="bg-[#305496] text-white ">
         <tr>
-          {data.tipe_penagihan === "beli putus" && (
-            <>
-              <td className="w-[150px] min-w-[150px] max-w-[150px] text-start p-2 !rounded-tl-md">
-                Nomor PO
-              </td>
-              <td className="!w-[180px] !min-w-[150px] !max-w-[150px] text-start p-2">
-                Tanggal PO
-              </td>
-            </>
-          )}
           {data.tipe_penagihan !== "beli putus" && (
             <td className="w-[250px] min-w-[250px] max-w-[250px] text-start p-2 !rounded-tl-md">
               Lokasi
@@ -53,6 +43,12 @@ export const PenagihanDetail = ({ data }) => {
           )}
           <td className="w-[150px] min-w-[150px] max-w-[150px] text-start p-2">
             Nomor Invoice
+          </td>
+          <td className="w-[150px] min-w-[150px] max-w-[150px] text-start p-2">
+            Nomor Incoming
+          </td>
+          <td className="w-[150px] min-w-[150px] max-w-[150px] text-start p-2">
+            Nomor Purchase
           </td>
           {data.tipe_penagihan === "beli putus" && (
             <td className="!w-[180px] !min-w-[150px] !max-w-[150px] text-start p-2">
@@ -73,21 +69,6 @@ export const PenagihanDetail = ({ data }) => {
         {data.nomer_invoices.length > 0 &&
           data.nomer_invoices.map((invoice, i) => (
             <tr key={i}>
-              {data.tipe_penagihan === "beli putus" && (
-                <>
-                  <td className="p-2 align-top">
-                    <div>{data.nomer_po[i]}</div>
-                  </td>
-                  <td className="p-2">
-                    <div>
-                      {data?.tanggal_po[i]
-                        ? dayjs(data.tanggal_po[i]).format("DD MMMM, YYYY")
-                        : ""}
-                    </div>
-                  </td>
-                </>
-              )}
-
               {data.tipe_penagihan !== "beli putus" && (
                 <td className="p-2 align-top">
                   <div>{data?.locations[i]?.name}</div>
@@ -96,6 +77,12 @@ export const PenagihanDetail = ({ data }) => {
 
               <td className="p-2 align-top">
                 <div>{invoice}</div>
+              </td>
+              <td className="p-2 align-top">
+                <div>{data.nomor_receives[i]}</div>
+              </td>
+              <td className="p-2 align-top">
+                <div>{data.nomor_purchases[i]}</div>
               </td>
 
               {data.tipe_penagihan === "beli putus" && (
@@ -215,14 +202,7 @@ const Monitoring = () => {
       }
     } else {
       navigate("/");
-      toast.error("Silahkan Login Terlebih Dahulu!", {
-        position: "top-right",
-        style: {
-          borderRadius: "10px",
-          background: "#333",
-          color: "#fff",
-        },
-      });
+      toast.error("Silahkan Login Terlebih Dahulu!");
     }
   };
 

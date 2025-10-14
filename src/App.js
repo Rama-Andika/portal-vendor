@@ -12,7 +12,6 @@ import ListingPenagihan from "./pages/admin/ListingPenagihan";
 import Penagihan from "./pages/vendor/penagihan/Penagihan";
 import Monitoring from "./pages/vendor/Monitoring";
 import EdtPenagihan from "./pages/vendor/penagihan/EdtPenagihan";
-import { Toaster } from "react-hot-toast";
 import AdminWhSmith from "./layouts/AdminWhSmith";
 import Admin from "./layouts/Admin";
 import { Worker } from "@react-pdf-viewer/core";
@@ -22,12 +21,13 @@ import ForgetPassword from "./pages/ForgetPassword";
 import KartuHutang from "./pages/KartuHutang";
 import LoginAdmin from "./pages/LoginAdmin";
 import { useVersionCheck } from "./hooks/useVersionCheck";
+import { Toaster } from "sonner";
 
 function App() {
   useVersionCheck();
   return (
     <>
-      <Toaster />
+      <Toaster position="top-center" richColors />
       <Worker workerUrl="https://unpkg.com/pdfjs-dist@3.4.120/build/pdf.worker.min.js">
         <BrowserRouter basename="/portal-vendor">
           <Routes>

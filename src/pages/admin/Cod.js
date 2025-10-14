@@ -13,11 +13,11 @@ import { DemoContainer } from "@mui/x-date-pickers/internals/demo";
 import { useEffect, useState } from "react";
 import dayjs from "dayjs";
 import accountingNumber from "../../components/functions/AccountingNumber";
-import toast from "react-hot-toast";
 import Select from "react-select";
 import isEmpty from "../../components/functions/CheckEmptyObject";
 import { RiFileExcel2Line } from "react-icons/ri";
 import ButtonSearch from "../../components/button/ButtonSearch";
+import { toast } from "sonner";
 
 const api = process.env.REACT_APP_BASEURL;
 const apiExport = process.env.REACT_APP_EXPORT_URL;
@@ -365,15 +365,7 @@ const Cod = () => {
                 isErrorCopy[i] = false;
                 setisError(isErrorCopy);
 
-                toast.success(`${otherBankNo[i]} success!`, {
-                  position: "top-right",
-                  duration: 1000,
-                  style: {
-                    borderRadius: "10px",
-                    background: "#333",
-                    color: "#fff",
-                  },
-                });
+                toast.success(`${otherBankNo[i]} success!`);
 
                 document.getElementById("check_all").checked = false;
                 setNumber("");
@@ -383,15 +375,7 @@ const Cod = () => {
                 isErrorCopy[i] = true;
                 setisError(isErrorCopy);
 
-                toast.error(`${otherBankNo[i]} failed!`, {
-                  position: "top-right",
-                  duration: 1000,
-                  style: {
-                    borderRadius: "10px",
-                    background: "#333",
-                    color: "#fff",
-                  },
-                });
+                toast.error(`${otherBankNo[i]} failed!`);
               }
             })
             .catch((err) => {
@@ -400,16 +384,7 @@ const Cod = () => {
             });
         } else {
           toast.error(
-            `${otherBankNo[i] !== undefined ? otherBankNo[i] : ""} failed!`,
-            {
-              position: "top-right",
-              duration: 1000,
-              style: {
-                borderRadius: "10px",
-                background: "#333",
-                color: "#fff",
-              },
-            }
+            `${otherBankNo[i] !== undefined ? otherBankNo[i] : ""} failed!`
           );
           isErrorCopy[i] = true;
           setisError(isErrorCopy);

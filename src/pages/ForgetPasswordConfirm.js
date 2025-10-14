@@ -1,10 +1,10 @@
 import { Label, TextInput } from "flowbite-react";
 import { Link, useNavigate } from "react-router-dom";
-import toast from "react-hot-toast";
 import { useState } from "react";
 import { useEffect } from "react";
 import Cookies from "js-cookie";
 import { CircularProgress } from "@mui/material";
+import { toast } from "sonner";
 
 const api = process.env.REACT_APP_BASEURL;
 const ForgetPasswordConfirm = () => {
@@ -83,14 +83,7 @@ const ForgetPasswordConfirm = () => {
 
     if (username.trim().length === 0) {
       setLoading(false);
-      return toast.error("Username cannot be empty!", {
-        position: "top-right",
-        style: {
-          borderRadius: "10px",
-          background: "#333",
-          color: "#fff",
-        },
-      });
+      return toast.error("Username cannot be empty!");
     }
 
     await fetch(`${api}api/portal-vendor/user/validation`, {
@@ -104,27 +97,13 @@ const ForgetPasswordConfirm = () => {
         if (!res.data) {
           navigate("/forgot-password", { state: { username: username } });
         } else {
-          toast.error("Username not registered!", {
-            position: "top-right",
-            style: {
-              borderRadius: "10px",
-              background: "#333",
-              color: "#fff",
-            },
-          });
+          toast.error("Username not registered!");
         }
         setLoading(false);
       })
       .catch((err) => {
         setLoading(false);
-        toast.error("Username not registered!", {
-          position: "top-right",
-          style: {
-            borderRadius: "10px",
-            background: "#333",
-            color: "#fff",
-          },
-        });
+        toast.error("Username not registered!");
       });
   };
 

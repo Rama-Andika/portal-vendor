@@ -1,23 +1,18 @@
 import {
   Backdrop,
   CircularProgress,
-  Fade,
-  Modal,
   Pagination,
 } from "@mui/material";
 import { useStateContext } from "../contexts/ContextProvider";
 import { useEffect, useState } from "react";
-import { Link, useNavigate } from "react-router-dom";
+import {  useNavigate } from "react-router-dom";
 import Cookies from "js-cookie";
 import dayjs from "dayjs";
-import isEmpty from "../components/functions/CheckEmptyObject";
 import { DatePicker, LocalizationProvider } from "@mui/x-date-pickers";
 import { AdapterDayjs } from "@mui/x-date-pickers/AdapterDayjs";
 import { DemoContainer } from "@mui/x-date-pickers/internals/demo";
 import Select from "react-select";
-import toast from "react-hot-toast";
 import accountingNumber from "../components/functions/AccountingNumber";
-import titleCase from "../components/functions/TitleCase";
 import ButtonPrintExcel from "../components/button/icon/ButtonPrintExcel";
 import ButtonPrintPdf from "../components/button/icon/ButtonPrintPdf";
 import ButtonSearch from "../components/button/ButtonSearch";

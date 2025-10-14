@@ -6,7 +6,7 @@ import { useStateContext } from "../contexts/ContextProvider";
 import { useRef } from "react";
 import { useNavigate } from "react-router-dom";
 import Cookies from "js-cookie";
-import toast from "react-hot-toast";
+import { toast } from "sonner";
 
 const api = process.env.REACT_APP_BASEURL;
 
@@ -80,15 +80,7 @@ const Navbar = ({children}) => {
     Cookies.remove("token");
     Cookies.remove("vendor_id");
     Cookies.remove("vendoroxy_id");
-    toast.success("Logout Successfully", {
-      duration: 4000,
-      position: "top-right",
-      style: {
-        borderRadius: "10px",
-        background: "#333",
-        color: "#fff",
-      },
-    });
+    toast.success("Logout Successfully");
 
     navigate("/");
   };
