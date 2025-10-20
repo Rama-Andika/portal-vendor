@@ -3,40 +3,123 @@ import { useStateContext } from "../../../contexts/ContextProvider";
 import { useEffect, useState } from "react";
 import accountingNumber from "../../../components/functions/AccountingNumber";
 import dayjs from "dayjs";
+import Select from "react-select";
+import { DatePicker, LocalizationProvider } from "@mui/x-date-pickers";
+import { AdapterDayjs } from "@mui/x-date-pickers/AdapterDayjs";
+import { DemoContainer } from "@mui/x-date-pickers/internals/demo";
+import ButtonSearch from "../../../components/button/ButtonSearch";
 
 const api = process.env.REACT_APP_BASEURL;
+
+const customeStyles = {
+  control: (baseStyles, state) => ({
+    ...baseStyles,
+  }),
+  menu: (baseStyles, state) => ({
+    ...baseStyles,
+  }),
+  option: (baseStyles, state) => ({
+    ...baseStyles,
+    backgroundColor: state.isSelected
+      ? "#569cb8"
+      : state.isFocused && "#caf0f8",
+  }),
+};
 const ModalListReceive = ({ open, setIsOpen, vendorId, handleSelect }) => {
   const { screenSize } = useStateContext();
   const [data, setData] = useState([]);
+  const [optionLokasi, setOptionLokasi] = useState([]);
 
   const handleClose = () => setIsOpen(false);
 
+  const [locationId, setLocationId] = useState("");
+  const [startDate, setStartDate] = useState(dayjs(new Date()));
+  const [endDate, setEndDate] = useState(dayjs(new Date()));
+  const [ignoreDate, setIgnoreDate] = useState(1);
+
+  const fetchData = async () => {
+    try {
+      let query = `?vendor_id=${vendorId}`;
+
+      if (locationId !== "") {
+        query += `&location_id=${locationId}`;
+      }
+
+      if (ignoreDate === 0) {
+        query += `&start_date=${dayjs(startDate).format(
+          "YYYY-MM-DD 00:00:00"
+        )}&end_date=${dayjs(endDate).format("YYYY-MM-DD 23:59:59")}`;
+      }
+
+      console.log(query);
+
+      const response = await fetch(`${api}api/portal-vendor/receives${query}`);
+
+      if (!response.ok) {
+        throw new Error(response.statusText);
+      }
+
+      const result = await response.json();
+      if (result && result.data) {
+        setData(result.data);
+      }
+    } catch (error) {
+      console.log(error);
+      setData([]);
+    }
+  };
+
   useEffect(() => {
     if (open) {
-      const fetchData = async () => {
+      fetchData();
+    }
+  }, [open]);
+
+  useEffect(() => {
+    if (open) {
+      const getLocation = async () => {
         try {
-          const response = await fetch(
-            `${api}api/portal-vendor/receives?vendor_id=${vendorId}`
-          );
+          const response = await fetch(`${api}api/location`, {
+            method: "POST",
+          });
 
           if (!response.ok) {
             throw new Error(response.statusText);
           }
 
           const result = await response.json();
-          if (result && result.data) {
-            setData(result.data);
+          if (result.data) {
+            const { data } = result;
+
+            const options = data.map((d) => ({
+              value: d.id,
+              label: d.name,
+            }));
+
+            options.unshift({
+              value: "",
+              label: "Semua Lokasi",
+            });
+
+            setOptionLokasi(options);
           }
         } catch (error) {
-          setData([]);
+          console.log(error);
         }
       };
 
-      fetchData();
+      getLocation();
     }
   }, [open]);
 
+  const handleClickSearch = (e) => {
+    e.preventDefault();
+    console.log("submit");
+    fetchData();
+  };
+
   if (!open) return null;
+
   return (
     <div>
       <Modal
@@ -59,6 +142,78 @@ const ModalListReceive = ({ open, setIsOpen, vendorId, handleSelect }) => {
             }`}
           >
             <div className="text-[20px] mb-5 font-semibold ">List Incoming</div>
+            <form
+              onSubmit={handleClickSearch}
+              className="flex flex-col gap-3 mb-5"
+            >
+              <div className="flex flex-col gap-1 w-72 max-sm:w-full">
+                <label htmlFor="location">Lokasi</label>
+                <Select
+                  className="whitespace-nowrap"
+                  options={optionLokasi}
+                  noOptionsMessage={() => "Data not found"}
+                  styles={customeStyles}
+                  value={optionLokasi.find((o) => o.value === locationId)}
+                  onChange={(value) => {
+                    setLocationId(value.value);
+                  }}
+                />
+              </div>
+              <div className="flex flex-col gap-1">
+                <label htmlFor="location">Tanggal</label>
+                <div className="flex max-sm:items-start items-center gap-2 max-sm:flex-col max-sm:gap-0">
+                  <div className="max-sm:w-full">
+                    <div className="flex max-sm:flex-col max-sm:gap-0 items-center gap-5">
+                      <div className="max-sm:w-full">
+                        <LocalizationProvider dateAdapter={AdapterDayjs}>
+                          <DemoContainer components={["DatePicker"]}>
+                            <DatePicker
+                              className="max-sm:w-full"
+                              slotProps={{ textField: { size: "small" } }}
+                              value={startDate}
+                              onChange={(value) => setStartDate(value)}
+                            />
+                          </DemoContainer>
+                        </LocalizationProvider>
+                      </div>
+                      <div>-</div>
+                      <div className="max-sm:w-full">
+                        <LocalizationProvider dateAdapter={AdapterDayjs}>
+                          <DemoContainer components={["DatePicker"]}>
+                            <DatePicker
+                              className="max-sm:w-full"
+                              slotProps={{ textField: { size: "small" } }}
+                              value={endDate}
+                              onChange={(value) => setEndDate(value)}
+                            />
+                          </DemoContainer>
+                        </LocalizationProvider>
+                      </div>
+                    </div>
+                  </div>
+                  <div className="flex gap-1 items-center text-[12px]">
+                    <div>
+                      <input
+                        id="ignoreDate"
+                        type="checkbox"
+                        className="checked:bg-[#0077b6] border-[#cecfcf]"
+                        value="1"
+                        checked={ignoreDate === 1}
+                        onChange={() =>
+                          setIgnoreDate((prev) => (prev === 1 ? 0 : 1))
+                        }
+                      />
+                    </div>
+                    <label htmlFor="ignoreDate" className="whitespace-nowrap">
+                      Abaikan
+                    </label>
+                  </div>
+                </div>
+              </div>
+              <div className="flex justify-end mt-2">
+                <ButtonSearch />
+              </div>
+            </form>
             <div className="overflow-x-auto">
               <table className="table-auto w-full">
                 <thead className="  whitespace-nowrap text-sm">
@@ -68,6 +223,7 @@ const ModalListReceive = ({ open, setIsOpen, vendorId, handleSelect }) => {
                     <th className="p-2">Nomor Incoming</th>
                     <th className="p-2">Nomor PO</th>
                     <th className="p-2">Tanggal Incoming</th>
+                    <th className="p-2">Lokasi</th>
                     <th className="p-2 text-right">Jumlah</th>
                   </tr>
                 </thead>
@@ -75,7 +231,8 @@ const ModalListReceive = ({ open, setIsOpen, vendorId, handleSelect }) => {
                   {data?.length === 0 && (
                     <tr>
                       <td className="p-2 text-center" colSpan={6}>
-                        Tidak ada data yang ditemukan, silahkan menghubungi admin
+                        Tidak ada data yang ditemukan, silahkan menghubungi
+                        admin
                       </td>
                     </tr>
                   )}
@@ -91,6 +248,9 @@ const ModalListReceive = ({ open, setIsOpen, vendorId, handleSelect }) => {
                         {item.date
                           ? dayjs(item.date).format("DD MMMM YYYY")
                           : ""}
+                      </td>
+                      <td className="p-2 whitespace-nowrap">
+                        {item.locationName}
                       </td>
                       <td className="p-2 text-right">
                         {accountingNumber(item.totalAmount)}
