@@ -33,6 +33,7 @@ const ModalListReceive = ({ open, setIsOpen, vendorId, handleSelect }) => {
   const handleClose = () => setIsOpen(false);
 
   const [locationId, setLocationId] = useState("");
+  const [poNumber, setPoNumber] = useState("");
   const [startDate, setStartDate] = useState(dayjs(new Date()));
   const [endDate, setEndDate] = useState(dayjs(new Date()));
   const [ignoreDate, setIgnoreDate] = useState(1);
@@ -43,6 +44,10 @@ const ModalListReceive = ({ open, setIsOpen, vendorId, handleSelect }) => {
 
       if (locationId !== "") {
         query += `&location_id=${locationId}`;
+      }
+
+      if (poNumber !== "") {
+        query += `&po_number=${poNumber}`;
       }
 
       if (ignoreDate === 0) {
@@ -157,6 +162,14 @@ const ModalListReceive = ({ open, setIsOpen, vendorId, handleSelect }) => {
                   onChange={(value) => {
                     setLocationId(value.value);
                   }}
+                />
+              </div>
+              <div className="flex flex-col gap-1 w-72 max-sm:w-full">
+                <label htmlFor="location">Nomor PO</label>
+                <input
+                  value={poNumber}
+                  onChange={(e) => setPoNumber(e.target.value)}
+                  className="ps-2 h-[40px] border border-[#cecfcf] rounded-sm hover:border-[#565757] focus:border focus:border-[#0077b6]  "
                 />
               </div>
               <div className="flex flex-col gap-1">
