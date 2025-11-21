@@ -10,6 +10,7 @@ import { DemoContainer } from "@mui/x-date-pickers/internals/demo";
 import ButtonSearch from "../../../components/button/ButtonSearch";
 
 const api = process.env.REACT_APP_BASEURL;
+const apiInventory = process.env.REACT_APP_INVENTORY_URL;
 
 const customeStyles = {
   control: (baseStyles, state) => ({
@@ -34,6 +35,7 @@ const ModalListReceive = ({ open, setIsOpen, vendorId, handleSelect }) => {
 
   const [locationId, setLocationId] = useState("");
   const [poNumber, setPoNumber] = useState("");
+  const [invoiceNumber, setInvoiceNumber] = useState("");
   const [startDate, setStartDate] = useState(dayjs(new Date()));
   const [endDate, setEndDate] = useState(dayjs(new Date()));
   const [ignoreDate, setIgnoreDate] = useState(1);
@@ -48,6 +50,10 @@ const ModalListReceive = ({ open, setIsOpen, vendorId, handleSelect }) => {
 
       if (poNumber !== "") {
         query += `&po_number=${poNumber}`;
+      }
+
+      if (invoiceNumber !== "") {
+        query += `&invoice_number=${invoiceNumber}`;
       }
 
       if (ignoreDate === 0) {
@@ -142,7 +148,7 @@ const ModalListReceive = ({ open, setIsOpen, vendorId, handleSelect }) => {
       >
         <Fade in={open}>
           <div
-            className={`rounded-md border-0 bg-white py-5 px-7 absolute top-[50%] left-1/2 translate-x-[-50%] translate-y-[-50%] h-[400px] overflow-y-auto z-[999999]  ${
+            className={`rounded-md border-0 bg-white py-5 px-7 absolute top-[50%] left-1/2 translate-x-[-50%] translate-y-[-50%] h-full overflow-y-auto z-[999999]  ${
               screenSize <= 1087 ? "w-[90%]" : "w-fit"
             }`}
           >
@@ -151,6 +157,25 @@ const ModalListReceive = ({ open, setIsOpen, vendorId, handleSelect }) => {
               onSubmit={handleClickSearch}
               className="flex flex-col gap-3 mb-5"
             >
+              <div className="flex items-center gap-3">
+                <div className="flex flex-col gap-1 w-72 max-sm:w-full">
+                  <label htmlFor="location">Nomor PO</label>
+                  <input
+                    value={poNumber}
+                    onChange={(e) => setPoNumber(e.target.value)}
+                    className="ps-2 h-[40px] border border-[#cecfcf] rounded-sm hover:border-[#565757] focus:border focus:border-[#0077b6]  "
+                  />
+                </div>
+                <div className="flex flex-col gap-1 w-72 max-sm:w-full">
+                  <label htmlFor="location">Nomor Invoice</label>
+                  <input
+                    value={invoiceNumber}
+                    onChange={(e) => setInvoiceNumber(e.target.value)}
+                    className="ps-2 h-[40px] border border-[#cecfcf] rounded-sm hover:border-[#565757] focus:border focus:border-[#0077b6]  "
+                  />
+                </div>
+              </div>
+
               <div className="flex flex-col gap-1 w-72 max-sm:w-full">
                 <label htmlFor="location">Lokasi</label>
                 <Select
@@ -162,14 +187,6 @@ const ModalListReceive = ({ open, setIsOpen, vendorId, handleSelect }) => {
                   onChange={(value) => {
                     setLocationId(value.value);
                   }}
-                />
-              </div>
-              <div className="flex flex-col gap-1 w-72 max-sm:w-full">
-                <label htmlFor="location">Nomor PO</label>
-                <input
-                  value={poNumber}
-                  onChange={(e) => setPoNumber(e.target.value)}
-                  className="ps-2 h-[40px] border border-[#cecfcf] rounded-sm hover:border-[#565757] focus:border focus:border-[#0077b6]  "
                 />
               </div>
               <div className="flex flex-col gap-1">
@@ -238,6 +255,8 @@ const ModalListReceive = ({ open, setIsOpen, vendorId, handleSelect }) => {
                     <th className="p-2">Tanggal Incoming</th>
                     <th className="p-2">Lokasi</th>
                     <th className="p-2 text-right">Jumlah</th>
+                    <th className="p-2">Incoming PDF</th>
+                    <th className="p-2">PO PDF</th>
                   </tr>
                 </thead>
                 <tbody>
@@ -267,6 +286,28 @@ const ModalListReceive = ({ open, setIsOpen, vendorId, handleSelect }) => {
                       </td>
                       <td className="p-2 text-right">
                         {accountingNumber(item.totalAmount)}
+                      </td>
+                      <td className="p-2 whitespace-nowrap">
+                        {item.nomorReceive && (
+                          <a
+                            href={`${apiInventory}servlet/com.project.ccs.report.RptIncomingGoodsPdfV2?incoming_number=${item.nomorReceive}&privValue=true`}
+                            target="_blank"
+                            className="text-blue-500"
+                          >
+                            Download
+                          </a>
+                        )}
+                      </td>
+                      <td className="p-2 whitespace-nowrap">
+                        {item.nomorPurchase && (
+                          <a
+                            href={`${apiInventory}servlet/com.project.ccs.report.RptPurchaseOrderPDFV2?po_number=${item.nomorPurchase}&privValue=true`}
+                            target="_blank"
+                            className="text-blue-500"
+                          >
+                            Download
+                          </a>
+                        )}
                       </td>
                     </tr>
                   ))}

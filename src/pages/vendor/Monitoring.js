@@ -30,6 +30,7 @@ const srcStatusOptions = [
 
 const api = process.env.REACT_APP_BASEURL;
 const url = process.env.REACT_APP_EXPORT_URL;
+const apiInventory = process.env.REACT_APP_INVENTORY_URL;
 
 export const PenagihanDetail = ({ data }) => {
   return (
@@ -60,8 +61,14 @@ export const PenagihanDetail = ({ data }) => {
             Nilai Invoice
           </td>
 
-          <td className="w-[250px] min-w-[250px] max-w-[250px] text-start p-2 rounded-tr-md">
+          <td className="w-[250px] min-w-[250px] max-w-[250px] text-start p-2 ">
             Nomor Seri Faktur Pajak
+          </td>
+          <td className="w-[150px] min-w-[150px] max-w-[150px] text-start p-2">
+            Incoming PDF
+          </td>
+          <td className="w-[150px] min-w-[150px] max-w-[150px] text-start p-2 rounded-tr-md">
+            PO PDF
           </td>
         </tr>
       </thead>
@@ -101,6 +108,28 @@ export const PenagihanDetail = ({ data }) => {
 
               <td className="p-2 align-top">
                 <div>{data.nomer_seri_pajak[i]}</div>
+              </td>
+              <td className="p-2 whitespace-nowrap">
+                {data.nomor_receives[i] && (
+                  <a
+                    href={`${apiInventory}servlet/com.project.ccs.report.RptIncomingGoodsPdfV2?incoming_number=${data.nomor_receives[i]}&privValue=true`}
+                    target="_blank"
+                    className="text-blue-500"
+                  >
+                    Download
+                  </a>
+                )}
+              </td>
+              <td className="p-2 whitespace-nowrap">
+                {data.nomor_purchases[i] && (
+                  <a
+                    href={`${apiInventory}servlet/com.project.ccs.report.RptPurchaseOrderPDFV2?po_number=${data.nomor_purchases[i]}&privValue=true`}
+                    target="_blank"
+                    className="text-blue-500"
+                  >
+                    Download
+                  </a>
+                )}
               </td>
             </tr>
           ))}

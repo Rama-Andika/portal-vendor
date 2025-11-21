@@ -48,7 +48,7 @@ const optionsTipePengiriman = [
 
 const templateCsv = [
   {
-    nomor_invoice: "",
+    "nomor_invoice/nomor_po": "",
     tanggal_invoice: dayjs().format("YYYY-MM-DD"),
     nilai_invoice: "",
     nomor_seri_faktur_pajak: "",
@@ -1368,11 +1368,13 @@ const Penagihan = () => {
                   ? dayjs(value).format("YYYY-MM-DD")
                   : dayjs(new Date()).format("YYYY-MM-DD");
                 break;
-              case "nomor_invoice":
+              case "nomor_invoice/nomor_po":
                 invoice.nomorInvoice = value;
                 try {
                   const response = await fetch(
-                    `${api}api/portal-vendor/receive?invoice=${value ?? ""}`,
+                    `${api}api/portal-vendor/receive?vendor_id=${
+                      vendors.vendor_id
+                    }&invoice=${value ?? ""}&po_number=${value ?? ""}`,
                     { method: "GET" }
                   );
                   const result = await response.json();
