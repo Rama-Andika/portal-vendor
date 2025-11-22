@@ -1,4 +1,4 @@
-import React, { useEffect, useState } from "react";
+import { useEffect, useState } from "react";
 import { Link, NavLink } from "react-router-dom";
 import { useStateContext } from "../contexts/ContextProvider";
 import { Sidebar } from "flowbite-react";
@@ -89,6 +89,20 @@ const SidebarComponent = ({ width }) => {
                     <LiaFileInvoiceSolid />
                   </div>
                   <div>Penagihan</div>
+                </div>
+              </NavLink>
+              <NavLink
+                to={`/vendor/purchase-order `}
+                onClick={handleCloseSidebar}
+                className={({ isActive }) =>
+                  isActive ? `${activeLink} bg-main-color` : normalLink
+                }
+              >
+                <div className="ms-[-30px] flex items-center gap-3 ">
+                  <div className="text-[24px]">
+                    <LiaFileInvoiceSolid />
+                  </div>
+                  <div>Purchase Order</div>
                 </div>
               </NavLink>
               <NavLink

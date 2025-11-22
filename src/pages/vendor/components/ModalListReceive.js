@@ -62,7 +62,6 @@ const ModalListReceive = ({ open, setIsOpen, vendorId, handleSelect }) => {
         )}&end_date=${dayjs(endDate).format("YYYY-MM-DD 23:59:59")}`;
       }
 
-      console.log(query);
 
       const response = await fetch(`${api}api/portal-vendor/receives${query}`);
 
@@ -262,7 +261,7 @@ const ModalListReceive = ({ open, setIsOpen, vendorId, handleSelect }) => {
                 <tbody>
                   {data?.length === 0 && (
                     <tr>
-                      <td className="p-2 text-center" colSpan={6}>
+                      <td className="p-2 text-center" colSpan={9}>
                         Tidak ada data yang ditemukan, silahkan menghubungi
                         admin
                       </td>

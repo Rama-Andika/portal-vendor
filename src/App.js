@@ -22,9 +22,12 @@ import KartuHutang from "./pages/KartuHutang";
 import LoginAdmin from "./pages/LoginAdmin";
 import { useVersionCheck } from "./hooks/useVersionCheck";
 import { Toaster } from "sonner";
+import { lazy, Suspense } from "react";
 
 function App() {
   useVersionCheck();
+
+  const PurchaseOrder = lazy(() => import("./pages/vendor/purchaseOrder"));
   return (
     <>
       <Toaster position="top-center" richColors />
@@ -43,6 +46,14 @@ function App() {
               <Route
                 path="vendor/penagihan/edit/:id"
                 element={<EdtPenagihan />}
+              />
+              <Route
+                path="vendor/purchase-order"
+                element={
+                  <Suspense fallback={<div>Loading...</div>}>
+                    <PurchaseOrder />
+                  </Suspense>
+                }
               />
               <Route path="vendor/monitoring" element={<Monitoring />} />
               <Route path="vendor/kartuhutang" element={<KartuHutang />} />
