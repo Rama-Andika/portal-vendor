@@ -25,6 +25,7 @@ const srcStatusOptions = [
   { value: "APPROVED", label: "Approved", key: 0 },
   { value: "DRAFT", label: "Draft", key: 1 },
   { value: "Waiting_for_approval", label: "Waiting", key: 1 },
+  { value: "REJECT", label: "Reject" },
   { value: "CLOSED", label: "Closed", key: 1 },
 ];
 
