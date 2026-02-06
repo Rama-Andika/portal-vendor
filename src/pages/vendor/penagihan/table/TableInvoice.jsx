@@ -96,8 +96,8 @@ const TableInvoice = React.memo(
                   prev.map((invoice, i) =>
                     i === index
                       ? { ...invoice, base64: result, name: file.name }
-                      : invoice
-                  )
+                      : invoice,
+                  ),
                 );
               } else {
                 setInvoiceFiles([
@@ -129,8 +129,8 @@ const TableInvoice = React.memo(
                   prev.map((pajak, i) =>
                     i === index
                       ? { ...pajak, base64: result, name: file.name }
-                      : pajak
-                  )
+                      : pajak,
+                  ),
                 );
               } else {
                 setPajakFiles([
@@ -269,7 +269,7 @@ const TableInvoice = React.memo(
                       <td className="p-2">
                         <div>
                           {dayjs(invoice.tanggalInvoice).format(
-                            "DD MMMM, YYYY"
+                            "DD MMMM, YYYY",
                           )}
                         </div>
                       </td>
@@ -400,7 +400,11 @@ const TableInvoice = React.memo(
                         className="border-gray-400 rounded-sm h-[38px] w-full"
                         value={data.nomorInvoice}
                         onChange={(e) =>
-                          setData({ ...data, nomorInvoice: e.target.value })
+                          setData({
+                            ...data,
+                            nomorInvoice: e.target.value,
+                            nomorReceive: "",
+                          })
                         }
                         onKeyUp={(e) =>
                           e.key === "Enter" && setModalListReceive(true)
@@ -469,7 +473,7 @@ const TableInvoice = React.memo(
                       />
                     </td>
                   </tr>
-                )
+                ),
               )}
 
             {addMode && activeStep !== 2 && (
@@ -512,7 +516,11 @@ const TableInvoice = React.memo(
                     className="border-gray-400 rounded-sm h-[38px] w-full"
                     value={data.nomorInvoice}
                     onChange={(e) =>
-                      setData({ ...data, nomorInvoice: e.target.value })
+                      setData({
+                        ...data,
+                        nomorInvoice: e.target.value,
+                        nomorReceive: "",
+                      })
                     }
                     onKeyUp={(e) =>
                       e.key === "Enter" && setModalListReceive(true)
@@ -578,7 +586,7 @@ const TableInvoice = React.memo(
         </table>
       </>
     );
-  }
+  },
 );
 
 export default TableInvoice;

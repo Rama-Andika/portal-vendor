@@ -382,7 +382,7 @@ const Penagihan = () => {
         (Number.isNaN(current?.nilaiInvoice)
           ? 0
           : parseFloat(current?.nilaiInvoice)),
-      0
+      0,
     );
     setGrandTotal(accountingNumber(total));
   }, [invoices]);
@@ -583,7 +583,7 @@ const Penagihan = () => {
               .some(
                 (inv) =>
                   inv.nomorInvoice === invoice.nomorInvoice.trim() ||
-                  inv.nomorReceive === invoice.nomorReceive
+                  inv.nomorReceive === invoice.nomorReceive,
               );
 
             if (isExists) {
@@ -597,7 +597,7 @@ const Penagihan = () => {
                 (inv) =>
                   inv.nomorInvoice === invoice.nomorInvoice.trim() ||
                   inv.nomorReceive === invoice.nomorReceive ||
-                  inv.lokasi.value === invoice.lokasi.value
+                  inv.lokasi.value === invoice.lokasi.value,
               );
 
             if (isExists) {
@@ -608,8 +608,8 @@ const Penagihan = () => {
 
           setInvoices((prevInvoices) =>
             prevInvoices.map((invoice, i) =>
-              i === selectedIndex ? newInvoice : invoice
-            )
+              i === selectedIndex ? newInvoice : invoice,
+            ),
           );
         } else {
           let isExists = false;
@@ -618,7 +618,7 @@ const Penagihan = () => {
             isExists = invoices.some(
               (inv) =>
                 inv.nomorInvoice === invoice.nomorInvoice.trim() ||
-                inv.nomorReceive === invoice.nomorReceive
+                inv.nomorReceive === invoice.nomorReceive,
             );
 
             if (isExists) {
@@ -630,7 +630,7 @@ const Penagihan = () => {
               (inv) =>
                 inv.nomorInvoice === invoice.nomorInvoice.trim() ||
                 inv.nomorReceive === invoice.nomorReceive ||
-                inv.lokasi.value === invoice.lokasi.value
+                inv.lokasi.value === invoice.lokasi.value,
             );
 
             if (isExists) {
@@ -647,7 +647,7 @@ const Penagihan = () => {
       }
       clearValue();
     },
-    [invoice]
+    [invoice],
   );
 
   const onClickCancel = useCallback(() => {
@@ -670,7 +670,7 @@ const Penagihan = () => {
       const newInvoices = invoices.filter((_, i) => i !== index);
       setInvoices(newInvoices);
     },
-    [invoices]
+    [invoices],
   );
 
   const onClickEdit = useCallback(
@@ -681,8 +681,8 @@ const Penagihan = () => {
         prevInvoices.map((prev, i) =>
           i === index
             ? { ...prev, editMode: true }
-            : { ...prev, editMode: false }
-        )
+            : { ...prev, editMode: false },
+        ),
       );
       setInvoice({
         nomorPurchase: data?.nomorPurchase,
@@ -697,7 +697,7 @@ const Penagihan = () => {
         lokasi: data?.lokasi,
       });
     },
-    [invoice]
+    [invoice],
   );
 
   const saveDraft = async () => {
@@ -706,18 +706,18 @@ const Penagihan = () => {
 
     // eslint-disable-next-line array-callback-return
     const nomerSeriFakturPajakList = invoices.map(
-      (invoice) => invoice.nomerSeriFakturPajak
+      (invoice) => invoice.nomerSeriFakturPajak,
     );
 
     const nomorPurchases = invoices.map((invoice) =>
-      invoice.nomorPurchase.trim()
+      invoice.nomorPurchase.trim(),
     );
     const datePo = invoices.map((invoice) => invoice.datePo);
     const nomorInvoices = invoices.map((invoice) =>
-      invoice.nomorInvoice.trim()
+      invoice.nomorInvoice.trim(),
     );
     const nomorReceives = invoices.map((invoice) =>
-      invoice.nomorReceive.trim()
+      invoice.nomorReceive.trim(),
     );
     const tanggalInvoices = invoices.map((invoice) => invoice.tanggalInvoice);
     const nilaiInvoices = invoices.map((invoice) => invoice.nilaiInvoice);
@@ -791,16 +791,16 @@ const Penagihan = () => {
 
     // eslint-disable-next-line array-callback-return
     const nomerSeriFakturPajakList = invoices.map(
-      (invoice) => invoice.nomerSeriFakturPajak
+      (invoice) => invoice.nomerSeriFakturPajak,
     );
     const nomorPurchases = invoices.map((invoice) =>
-      invoice.nomorPurchase.trim()
+      invoice.nomorPurchase.trim(),
     );
     const nomorInvoices = invoices.map((invoice) =>
-      invoice.nomorInvoice.trim()
+      invoice.nomorInvoice.trim(),
     );
     const nomorReceives = invoices.map((invoice) =>
-      invoice.nomorReceive.trim()
+      invoice.nomorReceive.trim(),
     );
     const startDates = invoices.map(() => invoice.startDate);
     const endDates = invoices.map(() => invoice.endDate);
@@ -808,12 +808,12 @@ const Penagihan = () => {
     const nilaiInvoices = invoices.map((invoice) => invoice.nilaiInvoice);
 
     const invoiceTambahanFilesNew = invoices.map((_, i) =>
-      invoiceTambahan[i] === undefined ? null : invoiceTambahan[i].base64
+      invoiceTambahan[i] === undefined ? null : invoiceTambahan[i].base64,
     );
     const fakturPajakTambahanFilesNew = invoices.map((_, i) =>
       fakturPajakTambahan[i] === undefined
         ? null
-        : fakturPajakTambahan[i].base64
+        : fakturPajakTambahan[i].base64,
     );
 
     if (Cookies.get("token") !== undefined) {
@@ -885,18 +885,18 @@ const Penagihan = () => {
 
     // eslint-disable-next-line array-callback-return
     const nomerSeriFakturPajakList = invoices.map(
-      (invoice) => invoice.nomerSeriFakturPajak
+      (invoice) => invoice.nomerSeriFakturPajak,
     );
 
     const nomorPurchases = invoices.map((invoice) =>
-      invoice.nomorPurchase.trim()
+      invoice.nomorPurchase.trim(),
     );
     const datePo = invoices.map((invoice) => invoice.datePo);
     const nomorInvoices = invoices.map((invoice) =>
-      invoice.nomorInvoice.trim()
+      invoice.nomorInvoice.trim(),
     );
     const nomorReceives = invoices.map((invoice) =>
-      invoice.nomorReceive.trim()
+      invoice.nomorReceive.trim(),
     );
     const tanggalInvoices = invoices.map((invoice) => invoice.tanggalInvoice);
     const nilaiInvoices = invoices.map((invoice) => invoice.nilaiInvoice);
@@ -962,17 +962,17 @@ const Penagihan = () => {
 
     // eslint-disable-next-line array-callback-return
     const nomerSeriFakturPajakList = invoices.map(
-      (invoice) => invoice.nomerSeriFakturPajak
+      (invoice) => invoice.nomerSeriFakturPajak,
     );
 
     const nomorPurchases = invoices.map((invoice) =>
-      invoice.nomorPurchase.trim()
+      invoice.nomorPurchase.trim(),
     );
     const nomorReceives = invoices.map((invoice) =>
-      invoice.nomorReceive.trim()
+      invoice.nomorReceive.trim(),
     );
     const nomorInvoices = invoices.map((invoice) =>
-      invoice.nomorInvoice.trim()
+      invoice.nomorInvoice.trim(),
     );
     const startDates = invoices.map(() => invoice.startDate);
     const endDates = invoices.map(() => invoice.endDate);
@@ -980,12 +980,12 @@ const Penagihan = () => {
     const nilaiInvoices = invoices.map((invoice) => invoice.nilaiInvoice);
 
     const invoiceTambahanFilesNew = invoices.map((_, i) =>
-      invoiceTambahan[i] === undefined ? null : invoiceTambahan[i].base64
+      invoiceTambahan[i] === undefined ? null : invoiceTambahan[i].base64,
     );
     const fakturPajakTambahanFilesNew = invoices.map((_, i) =>
       fakturPajakTambahan[i] === undefined
         ? null
-        : fakturPajakTambahan[i].base64
+        : fakturPajakTambahan[i].base64,
     );
 
     if (Cookies.get("token") !== undefined) {
@@ -1094,7 +1094,7 @@ const Penagihan = () => {
                     `${api}api/portal-vendor/receive?vendor_id=${
                       vendors.vendor_id
                     }&invoice=${value ?? ""}&po_number=${value ?? ""}`,
-                    { method: "GET" }
+                    { method: "GET" },
                   );
                   const result = await response.json();
                   const data = result.data;
@@ -1797,64 +1797,61 @@ const Penagihan = () => {
                                 </a>
                               )}
                             </div>
-                            {vendors.status_pajak === "PKP" && (
-                              <>
-                                <div className="flex items-center gap-3 mb-3">
-                                  <div className="flex flex-col gap-1">
-                                    <div className="w-[350px]">
-                                      Faktur Pajak
-                                    </div>
-                                    <div className="text-[10px] text-gray-500">
-                                      Max size 2 mb
-                                    </div>
-                                  </div>
 
-                                  <div className="flex items-center gap-1">
-                                    <div>
-                                      <label
-                                        htmlFor="upload-fakturpajak"
-                                        className="w-fit"
-                                      >
-                                        {fakturPajakFile === null ? (
-                                          <div className="w-fit flex gap-1 items-center bg-blue-400 py-2 px-5 text-white hover:bg-blue-200 rounded-md">
-                                            <span>
-                                              <FaCloudUploadAlt />
-                                            </span>
-                                            <div>Upload</div>
-                                          </div>
-                                        ) : (
-                                          <div className="w-fit flex gap-1 items-center bg-blue-400 py-2 px-5 text-white hover:bg-blue-200 rounded-md">
-                                            <span>
-                                              <FaCloudUploadAlt />
-                                            </span>
-                                            <div>1 File</div>
-                                          </div>
-                                        )}
-                                      </label>
-                                      <input
-                                        onChange={onChangeFakturPajakFile}
-                                        type="file"
-                                        id="upload-fakturpajak"
-                                        accept=".jpg,.pdf"
-                                        className="hidden w-full h-[40px] border border-slate-300 rounded-sm focus:border focus:border-[#0077b6]  "
-                                      />
-                                    </div>
-                                    <div>*)</div>
+                            <>
+                              <div className="flex items-center gap-3 mb-3">
+                                <div className="flex flex-col gap-1">
+                                  <div className="w-[350px]">Faktur Pajak</div>
+                                  <div className="text-[10px] text-gray-500">
+                                    Max size 2 mb
                                   </div>
-                                  {fakturPajakFileUpload[0]?.trim().length >
-                                    0 && (
-                                    <a
-                                      href={`${apiExport}fin/transactionact/view_portal_file.jsp?file=${fakturPajakFileUpload[0]}`}
-                                      target="_blank"
-                                      className="underline cursor-pointer text-blue-500"
-                                      rel="noreferrer"
-                                    >
-                                      File terupload
-                                    </a>
-                                  )}
                                 </div>
-                              </>
-                            )}
+
+                                <div className="flex items-center gap-1">
+                                  <div>
+                                    <label
+                                      htmlFor="upload-fakturpajak"
+                                      className="w-fit"
+                                    >
+                                      {fakturPajakFile === null ? (
+                                        <div className="w-fit flex gap-1 items-center bg-blue-400 py-2 px-5 text-white hover:bg-blue-200 rounded-md">
+                                          <span>
+                                            <FaCloudUploadAlt />
+                                          </span>
+                                          <div>Upload</div>
+                                        </div>
+                                      ) : (
+                                        <div className="w-fit flex gap-1 items-center bg-blue-400 py-2 px-5 text-white hover:bg-blue-200 rounded-md">
+                                          <span>
+                                            <FaCloudUploadAlt />
+                                          </span>
+                                          <div>1 File</div>
+                                        </div>
+                                      )}
+                                    </label>
+                                    <input
+                                      onChange={onChangeFakturPajakFile}
+                                      type="file"
+                                      id="upload-fakturpajak"
+                                      accept=".jpg,.pdf"
+                                      className="hidden w-full h-[40px] border border-slate-300 rounded-sm focus:border focus:border-[#0077b6]  "
+                                    />
+                                  </div>
+                                  <div>*)</div>
+                                </div>
+                                {fakturPajakFileUpload[0]?.trim().length >
+                                  0 && (
+                                  <a
+                                    href={`${apiExport}fin/transactionact/view_portal_file.jsp?file=${fakturPajakFileUpload[0]}`}
+                                    target="_blank"
+                                    className="underline cursor-pointer text-blue-500"
+                                    rel="noreferrer"
+                                  >
+                                    File terupload
+                                  </a>
+                                )}
+                              </div>
+                            </>
 
                             <div>
                               <div className="italic">
@@ -3004,61 +3001,60 @@ const Penagihan = () => {
                                       </a>
                                     )}
                                   </div>
-                                  {vendors.status_pajak === "PKP" && (
-                                    <>
-                                      <div className="flex flex-col gap-3 mb-3">
-                                        <div className="flex flex-col gap-1">
-                                          <div className="">
-                                            Faktur Pajak *) :
-                                          </div>
-                                          <div className="text-[10px] text-gray-500">
-                                            Max size 2 mb
-                                          </div>
-                                        </div>
 
-                                        <div>
-                                          <label
-                                            htmlFor="upload-fakturpajak"
-                                            className="w-fit"
-                                          >
-                                            {fakturPajakFile === null ? (
-                                              <div className="w-fit flex gap-1 items-center bg-blue-400 py-2 px-5 text-white hover:bg-blue-200 rounded-md">
-                                                <span>
-                                                  <FaCloudUploadAlt />
-                                                </span>
-                                                <div>Upload</div>
-                                              </div>
-                                            ) : (
-                                              <div className="w-fit flex gap-1 items-center bg-blue-400 py-2 px-5 text-white hover:bg-blue-200 rounded-md">
-                                                <span>
-                                                  <FaCloudUploadAlt />
-                                                </span>
-                                                <div>1 File</div>
-                                              </div>
-                                            )}
-                                          </label>
-                                          <input
-                                            type="file"
-                                            id="upload-fakturpajak"
-                                            accept=".jpg,.pdf"
-                                            onChange={onChangeFakturPajakFile}
-                                            className="hidden w-full h-[40px] border border-slate-300 rounded-sm focus:border focus:border-[#0077b6]  "
-                                          />
+                                  <>
+                                    <div className="flex flex-col gap-3 mb-3">
+                                      <div className="flex flex-col gap-1">
+                                        <div className="">
+                                          Faktur Pajak *) :
                                         </div>
-                                        {fakturPajakFileUpload[0]?.trim()
-                                          .length > 0 && (
-                                          <a
-                                            href={`${apiExport}fin/transactionact/view_portal_file.jsp?file=${fakturPajakFileUpload[0]}`}
-                                            target="_blank"
-                                            className="underline cursor-pointer text-blue-500"
-                                            rel="noreferrer"
-                                          >
-                                            File terupload
-                                          </a>
-                                        )}
+                                        <div className="text-[10px] text-gray-500">
+                                          Max size 2 mb
+                                        </div>
                                       </div>
-                                    </>
-                                  )}
+
+                                      <div>
+                                        <label
+                                          htmlFor="upload-fakturpajak"
+                                          className="w-fit"
+                                        >
+                                          {fakturPajakFile === null ? (
+                                            <div className="w-fit flex gap-1 items-center bg-blue-400 py-2 px-5 text-white hover:bg-blue-200 rounded-md">
+                                              <span>
+                                                <FaCloudUploadAlt />
+                                              </span>
+                                              <div>Upload</div>
+                                            </div>
+                                          ) : (
+                                            <div className="w-fit flex gap-1 items-center bg-blue-400 py-2 px-5 text-white hover:bg-blue-200 rounded-md">
+                                              <span>
+                                                <FaCloudUploadAlt />
+                                              </span>
+                                              <div>1 File</div>
+                                            </div>
+                                          )}
+                                        </label>
+                                        <input
+                                          type="file"
+                                          id="upload-fakturpajak"
+                                          accept=".jpg,.pdf"
+                                          onChange={onChangeFakturPajakFile}
+                                          className="hidden w-full h-[40px] border border-slate-300 rounded-sm focus:border focus:border-[#0077b6]  "
+                                        />
+                                      </div>
+                                      {fakturPajakFileUpload[0]?.trim().length >
+                                        0 && (
+                                        <a
+                                          href={`${apiExport}fin/transactionact/view_portal_file.jsp?file=${fakturPajakFileUpload[0]}`}
+                                          target="_blank"
+                                          className="underline cursor-pointer text-blue-500"
+                                          rel="noreferrer"
+                                        >
+                                          File terupload
+                                        </a>
+                                      )}
+                                    </div>
+                                  </>
 
                                   <div>
                                     <div className="italic">
