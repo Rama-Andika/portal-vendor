@@ -580,14 +580,10 @@ const Penagihan = () => {
           if (tipePenagihan.label === "Beli Putus") {
             isExists = invoices
               .filter((_, i) => i !== selectedIndex)
-              .some(
-                (inv) =>
-                  inv.nomorInvoice === invoice.nomorInvoice.trim() ||
-                  inv.nomorReceive === invoice.nomorReceive,
-              );
+              .some((inv) => inv.nomorReceive === invoice.nomorReceive);
 
             if (isExists) {
-              toast.error("Nomor invoice atau incoming sudah ada pada tabel");
+              toast.error("Nomor incoming sudah ada pada tabel");
               return;
             }
           } else {
@@ -617,12 +613,11 @@ const Penagihan = () => {
           if (tipePenagihan.label === "Beli Putus") {
             isExists = invoices.some(
               (inv) =>
-                inv.nomorInvoice === invoice.nomorInvoice.trim() ||
                 inv.nomorReceive === invoice.nomorReceive,
             );
 
             if (isExists) {
-              toast.error("Nomor invoice atau incoming sudah ada pada tabel");
+              toast.error("Nomor incoming sudah ada pada tabel");
               return;
             }
           } else {

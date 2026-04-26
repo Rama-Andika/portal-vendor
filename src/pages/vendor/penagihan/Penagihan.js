@@ -222,12 +222,12 @@ const Penagihan = () => {
         (invoice) =>
           invoice.nomorReceive === "" ||
           invoice.nomorReceive === undefined ||
-          invoice.nomorReceive === null
+          invoice.nomorReceive === null,
       );
 
       if (isInvoiceEmpty) {
         toast.error(
-          "tidak dapat melanjutkan penagihan, pastikan semua invoice memiliki nomor incoming"
+          "tidak dapat melanjutkan penagihan, pastikan semua invoice memiliki nomor incoming",
         );
         return;
       }
@@ -266,12 +266,12 @@ const Penagihan = () => {
         (invoice) =>
           invoice.nomorReceive === "" ||
           invoice.nomorReceive === undefined ||
-          invoice.nomorReceive === null
+          invoice.nomorReceive === null,
       );
 
       if (isInvoiceEmpty) {
         toast.error(
-          "tidak dapat melanjutkan penagihan, pastikan semua invoice memiliki nomor incoming"
+          "tidak dapat melanjutkan penagihan, pastikan semua invoice memiliki nomor incoming",
         );
         return;
       }
@@ -402,7 +402,7 @@ const Penagihan = () => {
         (Number.isNaN(current?.nilaiInvoice)
           ? 0
           : parseFloat(current?.nilaiInvoice)),
-      0
+      0,
     );
     setGrandTotal(accountingNumber(total));
   }, [invoices]);
@@ -599,14 +599,10 @@ const Penagihan = () => {
           if (tipePenagihan.label === "Beli Putus") {
             isExists = invoices
               .filter((_, i) => i !== selectedIndex)
-              .some(
-                (inv) =>
-                  inv.nomorInvoice === invoice.nomorInvoice.trim() ||
-                  inv.nomorReceive === invoice.nomorReceive
-              );
+              .some((inv) => inv.nomorReceive === invoice.nomorReceive);
 
             if (isExists) {
-              toast.error("Nomor invoice atau incoming sudah ada pada tabel");
+              toast.error("Nomor incoming sudah ada pada tabel");
               return;
             }
           } else {
@@ -616,7 +612,7 @@ const Penagihan = () => {
                 (inv) =>
                   inv.nomorInvoice === invoice.nomorInvoice.trim() ||
                   inv.nomorReceive === invoice.nomorReceive ||
-                  inv.lokasi.value === invoice.lokasi.value
+                  inv.lokasi.value === invoice.lokasi.value,
               );
 
             if (isExists) {
@@ -627,8 +623,8 @@ const Penagihan = () => {
 
           setInvoices((prevInvoices) =>
             prevInvoices.map((invoice, i) =>
-              i === selectedIndex ? newInvoice : invoice
-            )
+              i === selectedIndex ? newInvoice : invoice,
+            ),
           );
         } else {
           let isExists = false;
@@ -636,12 +632,11 @@ const Penagihan = () => {
           if (tipePenagihan.label === "Beli Putus") {
             isExists = invoices.some(
               (inv) =>
-                inv.nomorInvoice === invoice.nomorInvoice.trim() ||
-                inv.nomorReceive === invoice.nomorReceive
+                inv.nomorReceive === invoice.nomorReceive,
             );
 
             if (isExists) {
-              toast.error("Nomor invoice atau incoming sudah ada pada tabel");
+              toast.error("Nomor incoming sudah ada pada tabel");
               return;
             }
           } else {
@@ -649,7 +644,7 @@ const Penagihan = () => {
               (inv) =>
                 inv.nomorInvoice === invoice.nomorInvoice.trim() ||
                 inv.nomorReceive === invoice.nomorReceive ||
-                inv.lokasi.value === invoice.lokasi.value
+                inv.lokasi.value === invoice.lokasi.value,
             );
 
             if (isExists) {
@@ -666,7 +661,7 @@ const Penagihan = () => {
       }
       clearValue();
     },
-    [invoice]
+    [invoice],
   );
 
   const onClickCancel = useCallback(() => {
@@ -689,7 +684,7 @@ const Penagihan = () => {
       const newInvoices = invoices.filter((_, i) => i !== index);
       setInvoices(newInvoices);
     },
-    [invoices]
+    [invoices],
   );
 
   const onClickEdit = useCallback((data, index) => {
@@ -697,8 +692,10 @@ const Penagihan = () => {
     setAddMode(false);
     setInvoices((prevInvoices) =>
       prevInvoices.map((prev, i) =>
-        i === index ? { ...prev, editMode: true } : { ...prev, editMode: false }
-      )
+        i === index
+          ? { ...prev, editMode: true }
+          : { ...prev, editMode: false },
+      ),
     );
     setInvoice({
       nomorPurchase: data?.nomorPurchase,
@@ -743,16 +740,16 @@ const Penagihan = () => {
 
     // eslint-disable-next-line array-callback-return
     const nomerSeriFakturPajakList = invoices.map(
-      (invoice) => invoice.nomerSeriFakturPajak
+      (invoice) => invoice.nomerSeriFakturPajak,
     );
 
     const nomorPurchase = invoices.map((invoice) => invoice.nomorPurchase);
     const tanggalPo = invoices.map((invoice) => invoice.datePo);
     const nomorInvoices = invoices.map((invoice) =>
-      invoice.nomorInvoice.trim()
+      invoice.nomorInvoice.trim(),
     );
     const nomorReceives = invoices.map((invoice) =>
-      invoice.nomorReceive.trim()
+      invoice.nomorReceive.trim(),
     );
     const tanggalInvoices = invoices.map((invoice) => invoice.tanggalInvoice);
     const nilaiInvoices = invoices.map((invoice) => invoice.nilaiInvoice);
@@ -897,16 +894,16 @@ const Penagihan = () => {
 
     // eslint-disable-next-line array-callback-return
     const nomerSeriFakturPajakList = invoices.map(
-      (invoice) => invoice.nomerSeriFakturPajak
+      (invoice) => invoice.nomerSeriFakturPajak,
     );
     const nomorPurchases = invoices.map((invoice) =>
-      invoice.nomorPurchase.trim()
+      invoice.nomorPurchase.trim(),
     );
     const nomorInvoices = invoices.map((invoice) =>
-      invoice.nomorInvoice.trim()
+      invoice.nomorInvoice.trim(),
     );
     const nomorReceives = invoices.map((invoice) =>
-      invoice.nomorReceive.trim()
+      invoice.nomorReceive.trim(),
     );
     const startDates = invoices.map(() => invoice.startDate);
     const endDates = invoices.map(() => invoice.endDate);
@@ -914,12 +911,12 @@ const Penagihan = () => {
     const nilaiInvoices = invoices.map((invoice) => invoice.nilaiInvoice);
 
     const invoiceTambahanFilesNew = invoices.map((_, i) =>
-      invoiceTambahan[i] === undefined ? null : invoiceTambahan[i].base64
+      invoiceTambahan[i] === undefined ? null : invoiceTambahan[i].base64,
     );
     const fakturPajakTambahanFilesNew = invoices.map((_, i) =>
       fakturPajakTambahan[i] === undefined
         ? null
-        : fakturPajakTambahan[i].base64
+        : fakturPajakTambahan[i].base64,
     );
 
     if (invoiceTambahanFilesNew.some((inv) => inv === null)) {
@@ -1058,16 +1055,16 @@ const Penagihan = () => {
 
     // eslint-disable-next-line array-callback-return
     const nomerSeriFakturPajakList = invoices.map(
-      (invoice) => invoice.nomerSeriFakturPajak
+      (invoice) => invoice.nomerSeriFakturPajak,
     );
 
     const nomorPurchase = invoices.map((invoice) => invoice.nomorPurchase);
     const tanggalPo = invoices.map((invoice) => invoice.datePo);
     const nomorInvoices = invoices.map((invoice) =>
-      invoice.nomorInvoice.trim()
+      invoice.nomorInvoice.trim(),
     );
     const nomorReceives = invoices.map((invoice) =>
-      invoice.nomorReceive.trim()
+      invoice.nomorReceive.trim(),
     );
     const tanggalInvoices = invoices.map((invoice) => invoice.tanggalInvoice);
     const nilaiInvoices = invoices.map((invoice) => invoice.nilaiInvoice);
@@ -1186,16 +1183,16 @@ const Penagihan = () => {
 
     // eslint-disable-next-line array-callback-return
     const nomerSeriFakturPajakList = invoices.map(
-      (invoice) => invoice.nomerSeriFakturPajak
+      (invoice) => invoice.nomerSeriFakturPajak,
     );
 
     const nomorPurchases = invoices.map((invoice) => invoice.nomorPurchase);
     const tanggalPo = invoices.map((invoice) => invoice.datePo);
     const nomorInvoices = invoices.map((invoice) =>
-      invoice.nomorInvoice.trim()
+      invoice.nomorInvoice.trim(),
     );
     const nomorReceives = invoices.map((invoice) =>
-      invoice.nomorReceive.trim()
+      invoice.nomorReceive.trim(),
     );
     const startDates = invoices.map(() => invoice.startDate);
     const endDates = invoices.map(() => invoice.endDate);
@@ -1203,12 +1200,12 @@ const Penagihan = () => {
     const nilaiInvoices = invoices.map((invoice) => invoice.nilaiInvoice);
 
     const invoiceTambahanFilesNew = invoices.map((_, i) =>
-      invoiceTambahan[i] === undefined ? null : invoiceTambahan[i].base64
+      invoiceTambahan[i] === undefined ? null : invoiceTambahan[i].base64,
     );
     const fakturPajakTambahanFilesNew = invoices.map((_, i) =>
       fakturPajakTambahan[i] === undefined
         ? null
-        : fakturPajakTambahan[i].base64
+        : fakturPajakTambahan[i].base64,
     );
 
     if (Cookies.get("token") !== undefined) {
@@ -1375,7 +1372,7 @@ const Penagihan = () => {
                     `${api}api/portal-vendor/receive?vendor_id=${
                       vendors.vendor_id
                     }&invoice=${value ?? ""}&po_number=${value ?? ""}`,
-                    { method: "GET" }
+                    { method: "GET" },
                   );
                   const result = await response.json();
                   const data = result.data;
@@ -1911,7 +1908,7 @@ const Penagihan = () => {
                               </div>
                               {purchaseOrderFile !== null &&
                               RegExp("\\bpdf\\b").test(
-                                purchaseOrderFile.split(",")[0]
+                                purchaseOrderFile.split(",")[0],
                               ) ? (
                                 <div className="h-[500px] w-[500px] mb-5">
                                   <div className="h-full w-full">
@@ -2046,7 +2043,7 @@ const Penagihan = () => {
                               </div>
                               {invoiceFile !== null &&
                               RegExp("\\bpdf\\b").test(
-                                invoiceFile.split(",")[0]
+                                invoiceFile.split(",")[0],
                               ) ? (
                                 <div className="h-[500px] w-[500px] mb-5">
                                   <div className="h-full w-full">
@@ -2113,7 +2110,7 @@ const Penagihan = () => {
                               </div>
                               {kwitansiFile !== null &&
                               RegExp("\\bpdf\\b").test(
-                                kwitansiFile.split(",")[0]
+                                kwitansiFile.split(",")[0],
                               ) ? (
                                 <div className="h-[500px] w-[500px] mb-5">
                                   <div className="h-full w-full">
@@ -2180,7 +2177,7 @@ const Penagihan = () => {
                                 </div>
                                 {fakturPajakFile !== null &&
                                 RegExp("\\bpdf\\b").test(
-                                  fakturPajakFile.split(",")[0]
+                                  fakturPajakFile.split(",")[0],
                                 ) ? (
                                   <div className="h-[500px] w-[500px] mb-5">
                                     <div className="h-full w-full">
@@ -2288,7 +2285,7 @@ const Penagihan = () => {
                                 </div>
                                 {resiFile !== null &&
                                 RegExp("\\bpdf\\b").test(
-                                  resiFile.split(",")[0]
+                                  resiFile.split(",")[0],
                                 ) ? (
                                   <div className="h-[500px] w-[500px] mb-5">
                                     <div className="h-full w-full">
@@ -2401,7 +2398,7 @@ const Penagihan = () => {
                               </div>
                               {kwitansiFile !== null &&
                               RegExp("\\bpdf\\b").test(
-                                kwitansiFile.split(",")[0]
+                                kwitansiFile.split(",")[0],
                               ) ? (
                                 <div className="h-[500px] w-[500px] mb-5">
                                   <div className="h-full w-full">
@@ -2504,7 +2501,7 @@ const Penagihan = () => {
                                 </div>
                                 {resiFile !== null &&
                                 RegExp("\\bpdf\\b").test(
-                                  resiFile.split(",")[0]
+                                  resiFile.split(",")[0],
                                 ) ? (
                                   <div className="h-[500px] w-[500px] mb-5">
                                     <div className="h-full w-full">
@@ -3255,7 +3252,7 @@ const Penagihan = () => {
                                     </div>
                                     {purchaseOrderFile !== null &&
                                     RegExp("\\bpdf\\b").test(
-                                      purchaseOrderFile.split(",")[0]
+                                      purchaseOrderFile.split(",")[0],
                                     ) ? (
                                       <div className="h-[500px] w-full mb-5">
                                         <div className="h-full w-full">
@@ -3384,7 +3381,7 @@ const Penagihan = () => {
                                     </div>
                                     {invoiceFile !== null &&
                                     RegExp("\\bpdf\\b").test(
-                                      invoiceFile.split(",")[0]
+                                      invoiceFile.split(",")[0],
                                     ) ? (
                                       <div className="h-[500px] w-full mb-5">
                                         <div className="h-full w-full">
@@ -3454,7 +3451,7 @@ const Penagihan = () => {
                                     </div>
                                     {kwitansiFile !== null &&
                                     RegExp("\\bpdf\\b").test(
-                                      kwitansiFile.split(",")[0]
+                                      kwitansiFile.split(",")[0],
                                     ) ? (
                                       <div className="h-[500px] w-full mb-5">
                                         <div className="h-full w-full">
@@ -3520,7 +3517,7 @@ const Penagihan = () => {
                                       </div>
                                       {fakturPajakFile !== null &&
                                       RegExp("\\bpdf\\b").test(
-                                        fakturPajakFile.split(",")[0]
+                                        fakturPajakFile.split(",")[0],
                                       ) ? (
                                         <div className="h-[500px] w-full mb-5">
                                           <div className="h-full w-full">
@@ -3619,7 +3616,7 @@ const Penagihan = () => {
                                       </div>
                                       {resiFile !== null &&
                                       RegExp("\\bpdf\\b").test(
-                                        resiFile.split(",")[0]
+                                        resiFile.split(",")[0],
                                       ) ? (
                                         <div className="h-[500px] w-full mb-5">
                                           <div className="h-full w-full">
@@ -3733,7 +3730,7 @@ const Penagihan = () => {
                                     </div>
                                     {kwitansiFile !== null &&
                                     RegExp("\\bpdf\\b").test(
-                                      kwitansiFile.split(",")[0]
+                                      kwitansiFile.split(",")[0],
                                     ) ? (
                                       <div className="h-[500px] w-full mb-5">
                                         <div className="h-full w-full">
@@ -3833,7 +3830,7 @@ const Penagihan = () => {
                                       </div>
                                       {resiFile !== null &&
                                       RegExp("\\bpdf\\b").test(
-                                        resiFile.split(",")[0]
+                                        resiFile.split(",")[0],
                                       ) ? (
                                         <div className="h-[500px] w-full mb-5">
                                           <div className="h-full w-full">
