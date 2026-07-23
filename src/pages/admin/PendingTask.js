@@ -16,7 +16,7 @@ import Select from "react-select";
 import titleCase from "../../components/functions/TitleCase";
 import isEmpty from "../../components/functions/CheckEmptyObject";
 import accountingNumber from "../../components/functions/AccountingNumber";
-import { PiFileZipDuotone } from "react-icons/pi";
+import { PiFileZipDuotone, PiFilePdfDuotone } from "react-icons/pi";
 import Cookies from "js-cookie";
 import { useNavigate } from "react-router-dom";
 import { toast, Toaster } from "sonner";
@@ -33,6 +33,7 @@ const options = [
 
 const api = process.env.REACT_APP_BASEURL;
 const apiExport = process.env.REACT_APP_EXPORT_URL;
+const apiInventory = process.env.REACT_APP_INVENTORY_URL;
 
 const PendingTask = () => {
   const { screenSize } = useStateContext();
@@ -61,6 +62,32 @@ const PendingTask = () => {
   const navigate = useNavigate();
   const handleOpen = () => setOpen(true);
   const handleClose = () => setOpen(false);
+
+  const handleDownloadAllIncomingPdf = () => {
+    if (penagihanDetail && penagihanDetail.nomor_receives) {
+      const validReceives = penagihanDetail.nomor_receives.filter(
+        (nomor) => nomor && nomor.trim() !== "",
+      );
+
+      if (validReceives.length === 0) {
+        toast.error("Tidak ada incoming PDF untuk di-download");
+        return;
+      }
+
+      validReceives.forEach((nomor, index) => {
+        setTimeout(() => {
+          const url = `${apiInventory}servlet/com.project.ccs.report.DownloadRptIncomingGoodsPdfV2?incoming_number=${nomor}&privValue=true`;
+          const link = document.createElement("a");
+          link.href = url;
+          document.body.appendChild(link);
+          link.click();
+          document.body.removeChild(link);
+        }, index * 300);
+      });
+    } else {
+      toast.error("Data penagihan tidak valid");
+    }
+  };
 
   const customeStyles = {
     control: (baseStyles, state) => ({
@@ -407,7 +434,7 @@ const PendingTask = () => {
                       Rp.{" "}
                       {accountingNumber(
                         totalInvoice.filter((value) => value.id === item.id)[0]
-                          ?.total
+                          ?.total,
                       )}
                     </td>
 
@@ -509,7 +536,7 @@ const PendingTask = () => {
                       </div>
                     )}
                     {penagihanDetail.start_dates.some(
-                      (invoice) => invoice !== null
+                      (invoice) => invoice !== null,
                     ) > 0 && (
                       <div className="flex max-[549px]:flex-col max-[549px]:items-start gap-2">
                         <div className="w-[270px] whitespace-nowrap font-bold">
@@ -525,7 +552,7 @@ const PendingTask = () => {
                               <span>s/d</span>
                               <div className="whitespace-nowrap overflow-ellipsis overflow-hidden">
                                 {dayjs(penagihanDetail.end_dates[i]).format(
-                                  "DD/MM/YYYY"
+                                  "DD/MM/YYYY",
                                 )}
                               </div>
                             </div>
@@ -536,16 +563,25 @@ const PendingTask = () => {
                     <PenagihanDetail data={penagihanDetail} />
                   </div>
 
-                  <div className="flex items-center gap-2">
+                  <div className="flex flex-wrap items-center gap-2">
                     <a
                       href={`${apiExport}fin/transactionact/portalvendorinvoicedownload.jsp?oid=${penagihanDetail.id}`}
-                      className="mt-5 rounded-sm py-2 px-5 text-white bg-[#d4a373] w-fit cursor-pointer flex gap-1 items-center"
+                      className="mt-5 rounded-sm py-2 px-5 text-white bg-[#d4a373] w-fit cursor-pointer flex gap-1 items-center hover:opacity-90 transition-opacity"
                     >
                       <div>
                         <PiFileZipDuotone />
                       </div>
                       <div>Download</div>
                     </a>
+                    <button
+                      onClick={handleDownloadAllIncomingPdf}
+                      className="mt-5 rounded-sm py-2 px-5 text-white bg-[#e63946] w-fit cursor-pointer flex gap-2 items-center hover:bg-[#d62828] transition-colors duration-200 shadow-md font-medium"
+                    >
+                      <div>
+                        <PiFilePdfDuotone />
+                      </div>
+                      <div>Download All Incoming PDF</div>
+                    </button>
                     <ButtonPrintExcel
                       href={`${apiExport}servlet/com.project.ccs.report.RptPVPenagihanDetailXLS2?id=${penagihanDetail.id}&vendorName=${penagihanDetail.vendor.nama}`}
                     />

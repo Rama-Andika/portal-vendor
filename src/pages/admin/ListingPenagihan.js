@@ -215,10 +215,10 @@ const ListingPenagihan = () => {
         is_pajak: item.is_pajak,
         nomer_seri_pajak: item.nomer_seri_pajak,
         start_date_periode: dayjs(item.start_date_periode).format(
-          "YYYY-MM-DD HH:mm:ss"
+          "YYYY-MM-DD HH:mm:ss",
         ),
         end_date_periode: dayjs(item.end_date_periode).format(
-          "YYYY-MM-DD HH:mm:ss"
+          "YYYY-MM-DD HH:mm:ss",
         ),
         created_at: dayjs(item.created_at).format("YYYY-MM-DD HH:mm:ss"),
         updated_at: dayjs(new Date()).format("YYYY-MM-DD HH:mm:ss"),
@@ -395,6 +395,7 @@ const ListingPenagihan = () => {
                 <td className="p-5 border">Nilai Penagihan (Rp)</td>
                 <td className="p-5 border">Status</td>
                 <td className="p-5 border">Update Terakhir</td>
+                <td className="p-5 border">Tanggal Pembayaran</td>
                 <td className="p-5 border">Action</td>
               </tr>
             </thead>
@@ -426,7 +427,7 @@ const ListingPenagihan = () => {
                       Rp.{" "}
                       {accountingNumber(
                         totalInvoice.filter((value) => value.id === item.id)[0]
-                          ?.total
+                          ?.total,
                       )}
                     </td>
                     <td className="p-5 border">
@@ -434,6 +435,9 @@ const ListingPenagihan = () => {
                     </td>
                     <td className="p-5 border">
                       {dayjs(item.updated_at).format("DD/MM/YYYY HH:mm:ss")}
+                    </td>
+                    <td className="p-5 border">
+                      {item.status === "APPROVED" && dayjs(item.updated_at).add(item?.vendor?.term_pembayaran ?? 0, "day").format("DD/MM/YYYY HH:mm:ss")}
                     </td>
                     <td
                       onClick={() => onClikOpen(item)}
@@ -543,7 +547,7 @@ const ListingPenagihan = () => {
                     </div>
                   )}
                   {penagihanDetail.start_dates.some(
-                    (invoice) => invoice !== null
+                    (invoice) => invoice !== null,
                   ) > 0 && (
                     <div className="flex max-[549px]:flex-col max-[549px]:items-start gap-2">
                       <div className="w-[270px] whitespace-nowrap font-bold">
@@ -559,7 +563,7 @@ const ListingPenagihan = () => {
                             <span>s/d</span>
                             <div className="whitespace-nowrap overflow-ellipsis overflow-hidden">
                               {dayjs(penagihanDetail.end_dates[i]).format(
-                                "DD/MM/YYYY"
+                                "DD/MM/YYYY",
                               )}
                             </div>
                           </div>
