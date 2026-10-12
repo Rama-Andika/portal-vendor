@@ -187,6 +187,18 @@ const SidebarComponentAdmin = ({ width }) => {
                     Penagihan
                   </span>
                 </NavLink>
+                <NavLink
+                  to={`/admin/purchase-order`}
+                  onClick={() => handleCloseSidebar()}
+                  className={({ isActive }) =>
+                    isActive ? `${activeLink} bg-main-color` : normalLink
+                  }
+                >
+                  <HiCash />
+                  <span className="capitalize whitespace-nowrap text-[14px]">
+                    Purchase Orders
+                  </span>
+                </NavLink>
               </Sidebar.Collapse>
               <NavLink
                 to={`/admin/kartuhutang `}

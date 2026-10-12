@@ -1,9 +1,7 @@
 import { Backdrop, CircularProgress, Pagination } from "@mui/material";
 import { useEffect, useState } from "react";
-import { useNavigate } from "react-router-dom";
 import Cookies from "js-cookie";
 import dayjs from "dayjs";
-import accountingNumber from "../../../components/functions/AccountingNumber";
 import { DatePicker, LocalizationProvider } from "@mui/x-date-pickers";
 import { AdapterDayjs } from "@mui/x-date-pickers/AdapterDayjs";
 import { DemoContainer } from "@mui/x-date-pickers/internals/demo";
@@ -12,7 +10,6 @@ import { useStateContext } from "../../../contexts/ContextProvider";
 import ButtonSearch from "../../../components/button/ButtonSearch";
 
 const api = process.env.REACT_APP_BASEURL;
-const apiSecond = process.env.REACT_APP_BASEURL_SECOND;
 const apiInventory = process.env.REACT_APP_INVENTORY_URL;
 
 const customeStyles = {
@@ -54,7 +51,6 @@ const PurchaseOrder = () => {
   const [page, setPage] = useState(1);
   //end pagination state
 
-  const navigate = useNavigate();
   // eslint-disable-next-line no-new-object
   const fetchData = async () => {
     setOpenBackdrop(true);
@@ -75,11 +71,11 @@ const PurchaseOrder = () => {
 
       if (ignoreDate === 0) {
         query += `&start_date=${dayjs(startDate).format(
-          "YYYY-MM-DD 00:00:00"
+          "YYYY-MM-DD 00:00:00",
         )}&end_date=${dayjs(endDate).format("YYYY-MM-DD 23:59:59")}`;
       }
 
-      await fetch(`${apiSecond}api/oxy/purchase-orders${query}`)
+      await fetch(`${api}api/oxy/purchase-orders${query}`)
         .then((response) => response.json())
         .then((res) => {
           setTotal(res.total);
@@ -263,6 +259,7 @@ const PurchaseOrder = () => {
                   <th className="p-2">Status</th>
                   <th className="p-2">PO PDF</th>
                   <th className="p-2">Incoming PDF</th>
+                  <th className="p-2">Note</th>
                 </tr>
               </thead>
               <tbody>
@@ -306,6 +303,9 @@ const PurchaseOrder = () => {
                           Download
                         </a>
                       )}
+                    </td>
+                    <td className="p-5 border text-left">
+                      <div className="w-[200px] whitespace-normal">{item.note != null ? item.note : "-"}</div>
                     </td>
                   </tr>
                 ))}

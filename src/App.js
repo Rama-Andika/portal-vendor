@@ -28,6 +28,7 @@ function App() {
   useVersionCheck();
 
   const PurchaseOrder = lazy(() => import("./pages/vendor/purchaseOrder"));
+  const PurchaseOrderAdmin = lazy(() => import("./pages/admin/PurchaseOrder"));
   return (
     <>
       <Toaster position="top-center" richColors />
@@ -83,6 +84,14 @@ function App() {
               />
               <Route path="admin/vendor/edit" element={<VendorEdit />} />
               <Route path="admin/kartuhutang" element={<KartuHutang />} />
+              <Route
+                path="admin/purchase-order"
+                element={
+                  <Suspense fallback={<div>Loading...</div>}>
+                    <PurchaseOrderAdmin />
+                  </Suspense>
+                }
+              />
             </Route>
           </Routes>
         </BrowserRouter>
