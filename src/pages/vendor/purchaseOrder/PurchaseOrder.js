@@ -10,6 +10,7 @@ import { useStateContext } from "../../../contexts/ContextProvider";
 import ButtonSearch from "../../../components/button/ButtonSearch";
 
 const api = process.env.REACT_APP_BASEURL;
+const apiSecond = process.env.REACT_APP_BASEURL_SECOND;
 const apiInventory = process.env.REACT_APP_INVENTORY_URL;
 
 const customeStyles = {
@@ -75,7 +76,7 @@ const PurchaseOrder = () => {
         )}&end_date=${dayjs(endDate).format("YYYY-MM-DD 23:59:59")}`;
       }
 
-      await fetch(`${api}api/oxy/purchase-orders${query}`)
+      await fetch(`${apiSecond}api/oxy/purchase-orders${query}`)
         .then((response) => response.json())
         .then((res) => {
           setTotal(res.total);
@@ -305,7 +306,9 @@ const PurchaseOrder = () => {
                       )}
                     </td>
                     <td className="p-5 border text-left">
-                      <div className="w-[200px] whitespace-normal">{item.note != null ? item.note : "-"}</div>
+                      <div className="w-[200px] whitespace-normal">
+                        {item.note != null ? item.note : "-"}
+                      </div>
                     </td>
                   </tr>
                 ))}

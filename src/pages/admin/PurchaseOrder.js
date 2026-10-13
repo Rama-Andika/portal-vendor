@@ -5,11 +5,17 @@ import { DatePicker, LocalizationProvider } from "@mui/x-date-pickers";
 import { AdapterDayjs } from "@mui/x-date-pickers/AdapterDayjs";
 import { DemoContainer } from "@mui/x-date-pickers/internals/demo";
 import Select from "react-select";
+import { toast } from "sonner";
+import { PiFileZipDuotone } from "react-icons/pi";
+import JSZip from "jszip";
 import { useStateContext } from "../../contexts/ContextProvider";
 import ButtonSearch from "../../components/button/ButtonSearch";
 
 const api = process.env.REACT_APP_BASEURL;
+const apiSecond = process.env.REACT_APP_BASEURL_SECOND;
 const apiInventory = process.env.REACT_APP_INVENTORY_URL;
+
+const MAX_SELECTED_PO = 10;
 
 const customeStyles = {
   control: (baseStyles, state) => ({
@@ -32,6 +38,7 @@ const PurchaseOrder = () => {
   const [openBackdrop, setOpenBackdrop] = useState(false);
   const [optionLokasi, setOptionLokasi] = useState([]);
   const [data, setData] = useState([]);
+  const [selectedPo, setSelectedPo] = useState([]);
 
   // eslint-disable-next-line no-unused-vars
   const [locationId, setLocationId] = useState("");
@@ -48,6 +55,109 @@ const PurchaseOrder = () => {
   const [start, setStart] = useState(0);
   const [page, setPage] = useState(1);
   //end pagination state
+
+  const validItemsOnPage = data?.filter((item) => item.nomorPurchase) || [];
+
+  const isAllSelected =
+    validItemsOnPage.length > 0 &&
+    validItemsOnPage.every((item) => selectedPo.includes(item.nomorPurchase));
+
+  const handleSelectRow = (nomorPurchase) => {
+    if (!nomorPurchase) return;
+    if (selectedPo.includes(nomorPurchase)) {
+      setSelectedPo((prev) => prev.filter((id) => id !== nomorPurchase));
+    } else {
+      if (selectedPo.length >= MAX_SELECTED_PO) {
+        toast.warning(
+          `Maksimal ${MAX_SELECTED_PO} PO yang dapat dipilih sekaligus.`
+        );
+        return;
+      }
+      setSelectedPo((prev) => [...prev, nomorPurchase]);
+    }
+  };
+
+  const handleSelectAll = () => {
+    if (isAllSelected) {
+      const currentNumbers = validItemsOnPage.map((item) => item.nomorPurchase);
+      setSelectedPo((prev) => prev.filter((id) => !currentNumbers.includes(id)));
+    } else {
+      const currentNumbers = validItemsOnPage.map((item) => item.nomorPurchase);
+      const combined = Array.from(new Set([...selectedPo, ...currentNumbers]));
+      if (combined.length > MAX_SELECTED_PO) {
+        setSelectedPo(combined.slice(0, MAX_SELECTED_PO));
+        toast.info(
+          `Maksimal ${MAX_SELECTED_PO} PO terpilih untuk di-download sekaligus.`
+        );
+      } else {
+        setSelectedPo(combined);
+      }
+    }
+  };
+
+  const handleDownloadSelectedPo = async () => {
+    if (selectedPo.length === 0) {
+      toast.error("Pilih minimal satu PO untuk di-download");
+      return;
+    }
+
+    setOpenBackdrop(true);
+    const toastId = toast.loading(
+      `Sedang menyiapkan ZIP untuk ${selectedPo.length} PO PDF...`
+    );
+
+    try {
+      const zip = new JSZip();
+      let successCount = 0;
+
+      await Promise.all(
+        selectedPo.map(async (poNumber) => {
+          try {
+            const url = `${apiInventory}servlet/com.project.ccs.report.DownloadRptPurchaseOrderPDFV2?po_number=${poNumber}&privValue=true`;
+            const response = await fetch(url);
+            if (!response.ok) {
+              throw new Error(`Gagal mengunduh PO ${poNumber}`);
+            }
+            const blob = await response.blob();
+            const safePoNumber = poNumber.replace(/[/\\?%*:|"<>]/g, "_");
+            zip.file(`PurchaseOrder_${safePoNumber}.pdf`, blob);
+            successCount++;
+          } catch (err) {
+            console.error(`Error fetching PO ${poNumber}:`, err);
+          }
+        })
+      );
+
+      if (successCount === 0) {
+        toast.dismiss(toastId);
+        toast.error("Gagal mengunduh file PO");
+        setOpenBackdrop(false);
+        return;
+      }
+
+      const zipBlob = await zip.generateAsync({ type: "blob" });
+      const downloadUrl = window.URL.createObjectURL(zipBlob);
+      const link = document.createElement("a");
+      link.href = downloadUrl;
+      const timestamp = dayjs().format("YYYYMMDD_HHmmss");
+      link.download = `PurchaseOrders_${timestamp}.zip`;
+      document.body.appendChild(link);
+      link.click();
+      document.body.removeChild(link);
+      window.URL.revokeObjectURL(downloadUrl);
+
+      toast.dismiss(toastId);
+      toast.success(
+        `Berhasil mengunduh ${successCount} PO PDF dalam 1 file ZIP!`
+      );
+    } catch (error) {
+      console.error("Error creating ZIP:", error);
+      toast.dismiss(toastId);
+      toast.error("Terjadi kesalahan saat membuat file ZIP");
+    } finally {
+      setOpenBackdrop(false);
+    }
+  };
 
   // eslint-disable-next-line no-new-object
   const fetchData = async () => {
@@ -72,7 +182,7 @@ const PurchaseOrder = () => {
         )}&end_date=${dayjs(endDate).format("YYYY-MM-DD 23:59:59")}`;
       }
 
-      await fetch(`${api}api/oxy/purchase-orders${query}`)
+      await fetch(`${apiSecond}api/oxy/purchase-orders${query}`)
         .then((response) => response.json())
         .then((res) => {
           setTotal(res.total);
@@ -92,6 +202,7 @@ const PurchaseOrder = () => {
 
     limitTemp = limitTemp * value - limit;
 
+    setSelectedPo([]);
     setStart(limitTemp);
     setPage(value);
   };
@@ -143,6 +254,7 @@ const PurchaseOrder = () => {
 
   const handleClickSearch = (e) => {
     e.preventDefault();
+    setSelectedPo([]);
     fetchData();
   };
   return (
@@ -242,10 +354,48 @@ const PurchaseOrder = () => {
           </div>
         </div>
         <div className="w-full mt-20 mb-10">
+          <div className="flex justify-between items-center mb-4 flex-wrap gap-3">
+            <div className="flex items-center gap-3">
+              <button
+                type="button"
+                onClick={handleDownloadSelectedPo}
+                disabled={selectedPo.length === 0}
+                className={`px-4 py-2 rounded shadow-sm text-[13px] font-medium transition flex items-center gap-2 ${
+                  selectedPo.length > 0
+                    ? "bg-[#0077b6] text-white hover:bg-[#005f92] cursor-pointer"
+                    : "bg-gray-200 text-gray-400 cursor-not-allowed"
+                }`}
+              >
+                <PiFileZipDuotone className="text-[18px]" />
+                Download PO (ZIP) ({selectedPo.length})
+              </button>
+              {selectedPo.length > 0 && (
+                <button
+                  type="button"
+                  onClick={() => setSelectedPo([])}
+                  className="text-[13px] text-gray-500 hover:text-red-600 underline cursor-pointer"
+                >
+                  Batal Pilih
+                </button>
+              )}
+            </div>
+            <div className="text-[12px] text-gray-500">
+              * Maksimal <strong>{MAX_SELECTED_PO} PO</strong> dikemas dalam 1 file ZIP.
+            </div>
+          </div>
           <div className="w-full overflow-x-auto shadow-md text-[14px]">
             <table className="w-full table-monitoring">
               <thead>
                 <tr className="text-center whitespace-nowrap border-2 bg-[#eaf4f4]">
+                  <th className="p-2 w-10">
+                    <input
+                      type="checkbox"
+                      id="check_all_po"
+                      className="cursor-pointer checked:bg-[#0077b6] border-[#cecfcf] rounded"
+                      checked={isAllSelected}
+                      onChange={handleSelectAll}
+                    />
+                  </th>
                   <th className="p-2">Nomor PO</th>
                   <th className="p-2">Tanggal PO</th>
                   <th className="p-2">Nomor Incoming</th>
@@ -258,52 +408,67 @@ const PurchaseOrder = () => {
                 </tr>
               </thead>
               <tbody>
-                {data?.map((item, index) => (
-                  <tr
-                    key={index}
-                    className="text-center whitespace-nowrap hover:bg-slate-100 border bg-white "
-                  >
-                    <td className="p-5 border">{item.nomorPurchase}</td>
-                    <td className="p-5 border">
-                      {item.date != null
-                        ? dayjs(item.date).format("DD/MM/YYYY")
-                        : ""}
-                    </td>
-                    <td className="p-5 border">{item.incomingNumber}</td>
-                    <td className="p-5 border">
-                      {item.incomingDate != null
-                        ? dayjs(item.incomingDate).format("DD/MM/YYYY")
-                        : ""}
-                    </td>
-                    <td className="p-5 border">{item.locationName}</td>
-                    <td className="p-5 border">{item.status}</td>
-                    <td className="p-2 whitespace-nowrap">
-                      {item.nomorPurchase && (
-                        <a
-                          href={`${apiInventory}servlet/com.project.ccs.report.RptPurchaseOrderPDFV2?po_number=${item.nomorPurchase}&privValue=true`}
-                          target="_blank"
-                          className="text-blue-500"
-                        >
-                          Download
-                        </a>
-                      )}
-                    </td>
-                    <td className="p-2 whitespace-nowrap">
-                      {item.nomorPurchase && (
-                        <a
-                          href={`${apiInventory}servlet/com.project.ccs.report.RptIncomingGoodsPdfV2?incoming_number=${item.incomingNumber}&privValue=true`}
-                          target="_blank"
-                          className="text-blue-500"
-                        >
-                          Download
-                        </a>
-                      )}
-                    </td>
-                    <td className="p-5 border text-left">
-                      <div className="w-[200px] whitespace-normal">{item.note != null ? item.note : "-"}</div>
-                    </td>
-                  </tr>
-                ))}
+                {data?.map((item, index) => {
+                  const isChecked = selectedPo.includes(item.nomorPurchase);
+                  return (
+                    <tr
+                      key={index}
+                      className={`text-center whitespace-nowrap hover:bg-slate-100 border ${
+                        isChecked ? "bg-blue-50/60" : "bg-white"
+                      }`}
+                    >
+                      <td className="p-2 border text-center">
+                        {item.nomorPurchase ? (
+                          <input
+                            type="checkbox"
+                            className="cursor-pointer checked:bg-[#0077b6] border-[#cecfcf] rounded"
+                            checked={isChecked}
+                            onChange={() => handleSelectRow(item.nomorPurchase)}
+                          />
+                        ) : (
+                          "-"
+                        )}
+                      </td>
+                      <td className="p-5 border">{item.nomorPurchase}</td>
+                      <td className="p-5 border">
+                        {item.date != null
+                          ? dayjs(item.date).format("DD/MM/YYYY")
+                          : ""}
+                      </td>
+                      <td className="p-5 border">{item.incomingNumber}</td>
+                      <td className="p-5 border">
+                        {item.incomingDate != null
+                          ? dayjs(item.incomingDate).format("DD/MM/YYYY")
+                          : ""}
+                      </td>
+                      <td className="p-5 border">{item.locationName}</td>
+                      <td className="p-5 border">{item.status}</td>
+                      <td className="p-2 whitespace-nowrap">
+                        {item.nomorPurchase && (
+                          <a
+                            href={`${apiInventory}servlet/com.project.ccs.report.DownloadRptPurchaseOrderPDFV2?po_number=${item.nomorPurchase}&privValue=true`}
+                            className="text-blue-500"
+                          >
+                            Download
+                          </a>
+                        )}
+                      </td>
+                      <td className="p-2 whitespace-nowrap">
+                        {item.nomorPurchase && (
+                          <a
+                            href={`${apiInventory}servlet/com.project.ccs.report.DownloadRptIncomingGoodsPdfV2?incoming_number=${item.incomingNumber}&privValue=true`}
+                            className="text-blue-500"
+                          >
+                            Download
+                          </a>
+                        )}
+                      </td>
+                      <td className="p-5 border text-left">
+                        <div className="w-[200px] whitespace-normal">{item.note != null ? item.note : "-"}</div>
+                      </td>
+                    </tr>
+                  );
+                })}
               </tbody>
             </table>
           </div>
