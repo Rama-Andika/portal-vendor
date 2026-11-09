@@ -450,7 +450,7 @@ const Penagihan = () => {
 
   const onChangePurchaseOrderFile = (e) => {
     if (e.target.files[0] !== undefined) {
-      if (e.target.files[0].size <= 2000000) {
+      if (e.target.files[0].size <= 5000000) {
         setPurchaseOrderPreviewFile(URL.createObjectURL(e.target.files[0]));
         GetBase64(e.target.files[0])
           .then((result) => {
@@ -467,7 +467,7 @@ const Penagihan = () => {
 
   const onChangeInvoiceFile = (e) => {
     if (e.target.files[0] !== undefined) {
-      if (e.target.files[0].size <= 2000000) {
+      if (e.target.files[0].size <= 5000000) {
         setInvoicePreviewFile(URL.createObjectURL(e.target.files[0]));
         GetBase64(e.target.files[0])
           .then((result) => {
@@ -484,7 +484,7 @@ const Penagihan = () => {
 
   const onChangeKwitansiFile = (e) => {
     if (e.target.files[0] !== undefined) {
-      if (e.target.files[0].size <= 2000000) {
+      if (e.target.files[0].size <= 5000000) {
         setKwitansiPreviewFile(URL.createObjectURL(e.target.files[0]));
         GetBase64(e.target.files[0])
           .then((result) => {
@@ -501,7 +501,7 @@ const Penagihan = () => {
 
   const onChangeFakturPajakFile = (e) => {
     if (e.target.files[0] !== undefined) {
-      if (e.target.files[0].size <= 2000000) {
+      if (e.target.files[0].size <= 5000000) {
         setFakturPajakPreviewFile(URL.createObjectURL(e.target.files[0]));
         GetBase64(e.target.files[0])
           .then((result) => {
@@ -518,7 +518,7 @@ const Penagihan = () => {
 
   const onChangeResiBuktiPengirimanFile = (e) => {
     if (e.target.files[0] !== undefined) {
-      if (e.target.files[0].size <= 2000000) {
+      if (e.target.files[0].size <= 5000000) {
         setResiPreviewFile(URL.createObjectURL(e.target.files[0]));
         GetBase64(e.target.files[0])
           .then((result) => {
@@ -1870,7 +1870,7 @@ const Penagihan = () => {
                                     Purchase Order
                                   </div>
                                   <div className="text-[10px] text-gray-500">
-                                    Max size 2 mb
+                                    Max size 5 mb
                                   </div>
                                 </div>
 
@@ -1938,7 +1938,7 @@ const Penagihan = () => {
                                     Jalan)
                                   </div>
                                   <div className="text-[10px] text-gray-500">
-                                    Max size 2 mb
+                                    Max size 5 mb
                                   </div>
                                 </div>
 
@@ -2004,7 +2004,7 @@ const Penagihan = () => {
                                     Invoice (Faktur Penagihan)
                                   </div>
                                   <div className="text-[10px] text-gray-500">
-                                    Max size 2 mb
+                                    Max size 5 mb
                                   </div>
                                 </div>
 
@@ -2067,7 +2067,7 @@ const Penagihan = () => {
                                 <div className="flex flex-col gap-1 w-[350px]">
                                   <div className="">Kwitansi</div>
                                   <div className="text-[10px] text-gray-500">
-                                    Max size 2 mb
+                                    Max size 5 mb
                                   </div>
                                   <div className="text-[10px] text-gray-500">
                                     total penagihan diatas 5 juta diwajibkan
@@ -2138,7 +2138,7 @@ const Penagihan = () => {
                                       Faktur Pajak
                                     </div>
                                     <div className="text-[10px] text-gray-500">
-                                      Max size 2 mb
+                                      Max size 5 mb
                                     </div>
                                   </div>
 
@@ -2237,7 +2237,7 @@ const Penagihan = () => {
                                       Resi Bukti Pengiriman
                                     </div>
                                     <div className="text-[10px] text-gray-500">
-                                      Max size 2 mb
+                                      Max size 5 mb
                                     </div>
                                   </div>
 
@@ -2355,7 +2355,7 @@ const Penagihan = () => {
                                 <div className="flex flex-col gap-1 w-[350px] ">
                                   <div>Kwitansi </div>
                                   <div className="text-[10px] text-gray-500">
-                                    Max size 2 mb
+                                    Max size 5 mb
                                   </div>
                                   <div className="text-[10px] text-gray-500">
                                     total penagihan diatas 5 juta diwajibkan
@@ -2456,7 +2456,7 @@ const Penagihan = () => {
                                       Resi Bukti Pengiriman
                                     </div>
                                     <div className="text-[10px] text-gray-500">
-                                      Max size 2 mb
+                                      Max size 5 mb
                                     </div>
                                   </div>
 
@@ -3216,7 +3216,7 @@ const Penagihan = () => {
                                           Purchase Order
                                         </div>
                                         <div className="text-[10px] text-gray-500">
-                                          Max size 2 mb
+                                          Max size 5 mb
                                         </div>
                                       </div>
 
@@ -3281,7 +3281,7 @@ const Penagihan = () => {
                                           (Surat Jalan)
                                         </div>
                                         <div className="text-[10px] text-gray-500">
-                                          Max size 2 mb
+                                          Max size 5 mb
                                         </div>
                                       </div>
 
@@ -3345,7 +3345,7 @@ const Penagihan = () => {
                                           Invoice (Faktur Penagihan) *) :
                                         </div>
                                         <div className="text-[10px] text-gray-500">
-                                          Max size 2 mb
+                                          Max size 5 mb
                                         </div>
                                       </div>
 
@@ -3410,7 +3410,7 @@ const Penagihan = () => {
                                             Kwitansi *) :
                                           </div>
                                           <div className="text-[10px] text-gray-500">
-                                            Max size 2 mb
+                                            Max size 5 mb
                                           </div>
                                         </div>
                                         <div className="text-[10px] text-gray-500">
@@ -3481,7 +3481,7 @@ const Penagihan = () => {
                                             Faktur Pajak *) :
                                           </div>
                                           <div className="text-[10px] text-gray-500">
-                                            Max size 2 mb
+                                            Max size 5 mb
                                           </div>
                                         </div>
 
@@ -3573,7 +3573,7 @@ const Penagihan = () => {
                                             :
                                           </div>
                                           <div className="text-[10px] text-gray-500">
-                                            Max size 2 mb
+                                            Max size 5 mb
                                           </div>
                                         </div>
 
@@ -3689,7 +3689,7 @@ const Penagihan = () => {
                                             Kwitansi *) :
                                           </div>
                                           <div className="text-[10px] text-gray-500">
-                                            Max size 2 mb
+                                            Max size 5 mb
                                           </div>
                                         </div>
                                         <div className="text-[10px] text-gray-500">
@@ -3787,7 +3787,7 @@ const Penagihan = () => {
                                             :
                                           </div>
                                           <div className="text-[10px] text-gray-500">
-                                            Max size 2 mb
+                                            Max size 5 mb
                                           </div>
                                         </div>
 
